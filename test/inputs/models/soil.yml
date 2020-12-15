@@ -1,0 +1,13 @@
+---
+Group: pavement
+Type:
+  Cobblestone:
+      Interception:
+          model: Translucent
+          transparency: 0
+          optical_properties:
+                PAR: 0.15
+                NIR: 0.9
+      plot_paving: 80 # Number of cells paving the ground (0: no paving).
+...
+# nb: here will come all the soil properties when we have our soil model

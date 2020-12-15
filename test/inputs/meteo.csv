@@ -1,0 +1,8 @@
+#' name: Aquiares
+#' latitude: 15.0  # in degrees
+#' altitude: 100.0 # in meters
+#' use : relativeHumidity clearness
+date;hour_start;hour_end;temperature;relativeHumidity;VPD;clearness;Re_SW_f;wind;atmosphereCO2_ppm
+2016/06/12;12:00:00;12:30:00;25;60;150;0.75;500;1;380
+2016/06/12;12:30:00;13:00:00;26;62;150;0.75;500;1.5;380
+2016/06/12;13:00:00;13:30:00;25.3;58;150;0.75;500;1.5;380

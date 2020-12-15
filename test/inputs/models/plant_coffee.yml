@@ -1,0 +1,58 @@
+---
+Group: coffee
+Type:
+  Metamer:
+      Interception:
+          use: Translucent_1
+          Translucent_1:
+            model: Translucent
+            transparency: 0.1
+            optical_properties:
+                PAR: 0.15   # Scattering factor for PAR (400-700 nm) == reflectivity + transmissivity. And absorptivity = 1 - scattering factor
+                NIR: 0.9    # Scattering factor for NIR (780-3000 nm)
+  Leaf:
+      Interception:
+          use: Translucent_1
+          Translucent_1:
+            model: Translucent
+            transparency: 0
+            optical_properties:
+                PAR: 0.15
+                NIR: 0.9
+      Photosynthesis:
+          use: Farquharcoffee_1
+          Farquharcoffee_1:
+              model: FarquharEnBalance
+              tempCRef: 25    # °C, reference temperature of measurements
+              jMaxRef: 250    # umol[CO2] m-2 s-1, value of maximum rate of electron transport (Jmax) at the reference temperature
+              vcMaxRef: 200   # umol[electron] m-2 s-1 , maximum carboxylation rate at the reference temperature
+              rdRef: 0.6      # umol[CO2] m-2 s-1, mitochondrial respiration in the light at reference temperature (other than that associated with the PCO cycle)
+              theta: 0.853    # curvature of the light-response curve of electron transport.
+              LWratio: 1.5    # average lenght / width ratio for the component. Used to compute the boundary layer conductance.
+              nFaceStomata: 1 # number of faces of the component with stomata (1: hypostomatal, 2: amphistomatal  leaf).
+              leafEmissivity : 0.98 # Ratio between the leaf radiant emittance (also called radiant exitance) compared to the one of a black body.
+              delta_T_init: -2 # °C initialisation of the leaf temperature in relation to Tair (Tleaf= Tair-delta_T_init)
+              epsilon: 0.1     # °C criteria for convergence of the leaf temperature computation (difference between previous Tleaf and current Tleaf)
+              iter_T_max: 10   # maximum number of iterations allowed for leaf temperature computation
+              iter_A_max: 50   # maximum number of iterations allowed for Assimilation and Conductance computation
+          NRH_coffee:
+              model: NRH
+              theta: 0.6711    # convexity of the PLR (photosynthetic Light Response) curve
+              pmax: 32.91      # umol[CO2] m-2 s-1, maximum (*i.e* light-saturated) net photosynthetic rate
+              alpha: 0.06906   # umol umol-1, quantum yield of assimilation (initial slope of the PLR)
+              rd: 1.612        # umol[CO2] m-2 s-1, dark respiration rate.
+      StomatalConductance:
+        use: Medlyn_generic
+        Medlyn_generic:
+            model: Medlyn
+            g0: -0.03          # umol[CO2] m-2 s-1, residual conductance
+            g1: 12             # (-) slope of the conductance
+        Medlyn_caturra:
+            model: Medlyn
+            g0: -0.03
+            g1: 12.5
+        'Yin-Struik_caturra':  # Param values fixed in code for the moment
+            model: 'Yin-Struik'
+            g0: 0.02089956     # umol[CO2] m-2 s-1, residual conductance
+            a1: 0.9            # (-), Ci:Ca ratio in water vapour-saturated air
+            b1: 0.15           # slope of the decrease of this ratio with increasing VPD.

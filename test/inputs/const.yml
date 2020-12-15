@@ -1,0 +1,50 @@
+---
+# File for all constant values used in ARCHIMED
+
+# conversion factor from CO2 boundary layer conductance to heat boundary layer conductance
+co2_to_heat_boundary_layer_conductance: 1.32
+
+# boundary layer conductance for heat to boundary layer conductance for water ratio
+heat_to_water_boundary_layer_conductance: 1.075
+
+# CO2 conductance to water conductance factor conversion (ratio of diffusivities of H2O/CO2)
+co2_to_water_conductance: 1.57
+
+# constant used to compute forced heat boundary layer conductance
+forced_heat_BL_conductance_proportionality_factor: 333.3333333333333
+
+# atmospheric CO2 concentration (ppm)
+atmospheric_CO2_concentration: 400.0
+
+# atmospheric O2 concentration (ppm)
+atmospheric_O2_concentration: 210.0
+
+# water mol to kg conversion constant [kg.mol-1]
+water_mol_to_kg: 0.018
+
+# ratio of molecular weight of water vapour to dry air
+water_vapour_to_dry_air_molecular_weight_ratio: 0.622
+
+# specific heat of air for constant pressure [J.K-1.kg-1]
+air_specific_heat_constant_pressure: 1013.0
+
+# gravitational acceleration [m.s-2]
+gravitational_acceleration: 9.81
+
+# conversion from °C to K
+celsius_to_kelvin: 273.15
+
+# universal gas constant [J.mol-1.K-1]
+universal_gas_constant: 8.314
+
+# gaz constant of dry air (rd) [J.kg-1.K-1]
+dry_air_gaz_constant: 287.0586
+
+# reference atmospheric pressure at sea level [kPa]
+ref_atmospheric_pressure_sea_level: 101.325
+
+# Stefan-Boltzmann constant [W.m-2.K-4]
+Stefan_Boltzmann_sigma: 5.67477E-8
+
+# conversion from sunlight irradiance (W/m2) to PPFD (micromol/m2/s)
+sun_irradiance_to_photons: 4.57

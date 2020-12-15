@@ -1,0 +1,81 @@
+---
+# ARCHIMED configuration file
+# Aim: control the simulation
+
+scene: scene/coffee.ops # Path to a scene, i.e. ops, opf or gwa file.
+models:
+  - models/plant_coffee.yml  # Path to the models for the coffee
+  - models/soil.yml      # Path to the models for the soil file
+meteo: meteo.csv         # Path to the meteo file
+meteo_range: 2, 3        # use only steps from 2 to 3 (inclusive, start from 1) in meteo file
+#meteo_range: 2016/07/01 8:00:00, 2016/07/01 12:00:00       # use only steps between given date/time
+scene_rotation: 0        # Rotation of the scene from the North axe (degrees)
+sky_sectors: 16          # Must be either 1, 6, 16, 46, 136 or 406
+all_in_turtle: true      # false: direct radiation is computed using the true sun position; true: direct radiation is computed using sky sectors
+radiation_timestep: 5    # [minutes] frequency for the computation of the sun's radiation within each timestep
+scattering: true         # true: compute multiple scattering
+pixel_size: 0.3            # Size of the side of the pixel, relates to the number of rays sent in the scene for each direction (cm pixels-1). Decrease value for increased resolution.
+toricity: true           # Make the scene toric (if false, increase the plot boundaries so all components are sampled)
+cache_pixel_table: false # true: pixel tables are cached on disc instead of kept in memory (slower but use less memory + allow to reuse them).
+cache_radiation : false  # true : precomputed intercepted/scattered radiation to speed up simulation
+
+# OUTPUTS
+output_directory: output     # Path to the output directory (the folder is created if not already existing)
+simulation_directory: simdir # Optional : path to the simulation directory (replace the automatic counter based directory name generation)
+write_summary: true          # If true export the simulation summary in a csv file
+export_ops: true             # Export the scene (ops + opf). `true`: export last step, `false` don't export; `all` export scene for each meteo step; `n` export scene at nth meteo step
+
+# List of columns in the component_values.csv file:
+component_variables: &outvars
+  step_number: true    # Index of the step
+  step_duration: true  # Step duration in seconds
+  item_id: true        # Item ID (e.g. plant) as given in the OPS as plant_id
+  component_id: true   # Unique ID for the component in the item (as read in the OPF)
+  group: true          # Functional group (as given by the Group field in the plant.yml file)
+  type: true           # Component type (as given by the Type names in the plant.yml files)
+  area: true           # Component area (i.e. mesh area, m2)
+  surface_hits: true   # Component hit count per area unit (m-2)
+  barycentre_x: false  # Barycentre of the component x (~ X position of the component).
+  barycentre_y: false  # Carefull, barycentre_* variables are computed, so it slows down model execution time a little bit
+  barycentre_z: false  # Carefull, this output increase memory use (it is deleted during model execution)
+  sky_fraction: false  # Fraction of the semi-hemisphere viewed by the component that is sky
+  # Intercepted light:
+  Ri_PAR_0_f: false    # Order 0 (without scattering) irradiance (intercepted light) for PAR (W m[component]-2)
+  Ri_PAR_0_q: false    # Order 0 irradiance for PAR (J component-1 timestep-1)
+  Ri_NIR_0_f: false    # Order 0 (without scattering) irradiance (intercepted light) for NIR (W m[component]-2)
+  Ri_NIR_0_q: false    # Order 0 irradiance for NIR (J component-1 timestep-1)
+  Ri_PAR_f: false      # Order n (with scattering) irradiance for PAR (W m[component]-2)
+  Ri_NIR_f: false      # Order n (with scattering) irradiance for PAR (W m[component]-2)
+  Ri_TIR_f: false      # Intercepted TIR (from atmosphere + environment, W m[component]-2).
+  Ri_PAR_q: false      # Order n irradiance for PAR (J component-1 timestep-1)
+  Ri_NIR_q: false      # Order n irradiance for NIR (J component-1 timestep-1)
+  Ri_TIR_q: false      # Intercepted TIR (from atmosphere + environment, J component-1 timestep-1).
+  # Absorbed light
+  Ra_PAR_0_f: false    # Order 0 absorbed PAR (W m[component]-2)
+  Ra_NIR_0_f: false    # Order 0 absorbed NIR (W m[component]-2)
+  Ra_PAR_0_q: false    # Order 0 absorbed PAR (J component-1 timestep-1)
+  Ra_NIR_0_q: false    # Order 0 absorbed NIR (J component-1 timestep-1)
+  Ra_PAR_f: false      # Order n absorbed PAR (W m[component]-2)
+  Ra_NIR_f: false      # Order n absorbed NIR (W m[component]-2)
+  Ra_TIR_f: false      # Absorbed TIR (Intercepted - emmitted, W m[component]-2)
+  Ra_PAR_q: false      # Order n absorbed PAR (J component-1 timestep-1)
+  Ra_NIR_q: false      # Order n absorbed NIR (J component-1 timestep-1)
+  Ra_TIR_q: false      # Absorbed TIR (Intercepted - emitted, J component-1 timestep-1)
+  # Assimilation
+  An_f: false          # Net CO2 assimilation rate (µmol m[component]-2 s-1)
+  An_q: false          # Net assimilated CO2 (µmol component-1 timestep-1)
+  Gs: false            # Stomatal conductance for CO2 (mol m-2 s-1)
+  # Energy
+  H_f: true            # Sensible heat flux (W m[component]-2)
+  H_q: true            # Sensible heat quantity (J component-1 timestep-1)
+  LE_f: true           # Latent heat flux (W m[component]-2)
+  LE_q: true           # Latent heat quantity (J component-1 timestep-1)
+  Tr_f: false          # Transpiration flux (mm m[component]-2 s-1)
+  Tr_q: false          # Transpiration quantity (mm component-1 timestep-1)
+  T: true              # Temperature (Celsius degree)
+
+# List of columns in the OPF files output from ARCHIMED:
+opf_variables: *outvars
+opf_overwrite_variables: true
+# NB: if you need the same as component_variables, use YAML anchors as in this example.
+...
