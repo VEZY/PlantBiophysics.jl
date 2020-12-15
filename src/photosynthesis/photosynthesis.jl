@@ -32,18 +32,31 @@ photosynthesis, conductance and transpiration: scaling from leaves to canopies 
 Cell & Environment 18 (10): 1183‑1200.
 
 """
-function assimiliation(A::Fvcb,Gs::GsModel,Constants)
+function assimiliation(A::Fvcb,Gs::GsModel,constants)
     g₀ = Gs.g0 # residual conductance for CO2 in μmol[CO2] m-2 s-1
-    Γˢ = Γ_star(T,A.Tᵣ,Constants) # Gamma star (CO2 compensation point) in μmol mol-1
-    Km = Km(T,A.Tᵣ,A.O₂,Constants) # effective Michaelis–Menten coefficient for CO2
 
-    # continue here
-    JMAX = JMAXTFN(A.JMaxRef,T,EAVJ,EDVJ,DELSJ,TVJUP,TVJDN)
-    VCMAX = VCMAXTFN(A.VcMaxRef,T,EAVC,EDVC,DELSC,TVJUP,TVJDN)
+    # Tranform Celsius temperatures in Kelvin:
+    Tₖ = T - constants.K₀
+    Tᵣₖ = A.Tᵣ - constants.K₀
+
+    # Temperature dependence of the parameters:
+    Γˢ = Γ_star(Tₖ,Tᵣₖ,constants) # Gamma star (CO2 compensation point) in μmol mol-1
+    Km = Km(Tₖ,Tᵣₖ,A.O₂,constants) # effective Michaelis–Menten coefficient for CO2
+
+    # Potential electron transport rate (Jmax) at the given leaf temperature:
+    JMax = arrhenius(A.JMaxRef,A.Eₐⱼ,Tₖ,Tᵣₖ,constants,A.Hdⱼ,A.Δₛⱼ)
+
+    # if(missing())
+    VcMax = arrhenius(A.VcMaxRef,A.Eₐᵥ,Tₖ,Tᵣₖ,constants,A.Hdᵥ,A.Δₛᵥ)
+
     RD = RESP(RD0,RD0ACC,T,TMOVE,Q10F,K10F,RTEMP,DAYRESP,TBELOW)
 
 end
 
+"""
+Photosynthesis using the Farquhar–von Caemmerer–Berry (FvCB) model with
+default constant values (found in [`Constants`](@ref)).
+"""
 function assimiliation(A::Fvcb,Gs::GsModel)
     assimiliation(A,Gs,Constants())
 end
