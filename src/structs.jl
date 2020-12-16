@@ -57,7 +57,7 @@ Base.@kwdef struct Fvcb{T} <: AModel
     VcMaxRef::T = 200.0
     JMaxRef::T = 250.0
     RdRef::T = 0.6
-    Eₐᵣ::T = 46390
+    Eₐᵣ::T = 46390.0
     O₂::T = 210.0
     Eₐⱼ::T = 29680.0
     Hdⱼ::T = 200000.0
