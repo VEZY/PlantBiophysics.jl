@@ -24,13 +24,25 @@ The definition:
 - `Eₐᵥ`: activation energy (``J\\ mol^{-1}``), or the exponential rate of rise for VcMax.
 - `Hdᵥ`: rate of decrease of the function above the optimum (also called EDVC) for VcMax.
 - `Δₛᵥ`: entropy factor for VcMax.
+- `α`: quantum yield of electron transport (``mol_e\\ mol^{-1}_{quanta}``). See also eq. 4 of
+ Medlyn et al. (2002) and its implementation in [`J`](@ref)
+- `θ`: determines the curvature of the light response curve for `J~PPFD`. See also eq. 4 of
+ Medlyn et al. (2002) and its implementation in [`J`](@ref)
 
 The default values of the temperature correction parameters are taken from
 [plantecophys](https://remkoduursma.github.io/plantecophys/). If there is no negative effect
 of high temperatures on the reaction (Jmax or VcMax), then Δₛ can be set to 0.0.
 
+# Note
+
+Medlyn et al. (2002) found relatively low influence ("a slight effect") of α, θ. They also
+say that Kc, Ko and Γ* "are thought to be intrinsic properties of the Rubisco enzyme
+and are generally assumed constant among species".
+
 # See also
 
+- [`J`](@ref)
+- [`assimiliation`](@ref)
 
 # References
 
@@ -40,6 +52,11 @@ https://doi.org/10.1007/BF00384257.
 
 Farquhar, G. D., S. von von Caemmerer, et J. A. Berry. 1980. « A biochemical model of
 photosynthetic CO2 assimilation in leaves of C3 species ». Planta 149 (1): 78‑90.
+
+Medlyn, B. E., E. Dreyer, D. Ellsworth, M. Forstreuter, P. C. Harley, M. U. F. Kirschbaum,
+X. Le Roux, et al. 2002. « Temperature response of parameters of a biochemically based model
+of photosynthesis. II. A review of experimental data ». Plant, Cell & Environment 25 (9): 1167‑79.
+https://doi.org/10.1046/j.1365-3040.2002.00891.x.
 
 # Examples
 
@@ -65,6 +82,8 @@ Base.@kwdef struct Fvcb{T} <: AModel
     Eₐᵥ::T = 58550.0
     Hdᵥ::T = 200000.0
     Δₛᵥ::T = 629.26
+    α::T = 0.425
+    θ::T = 0.90
 end
 
 abstract type GsModel <: Model end
