@@ -21,7 +21,7 @@ constants = Constants()
 A = Fvcb()
 
 # Computing Jmax:
-arrhenius(A.JMaxRef,,A.Eₐⱼ,28.0-constants.K₀,A.Tᵣ-constants.K₀,constants)
+arrhenius(A.JMaxRef,A.Eₐⱼ,28.0-constants.K₀,A.Tᵣ-constants.K₀,constants)
 # ! Warning: temperatures must be given in Kelvin
 
 # Computing Vcmax:
@@ -71,11 +71,11 @@ constants = Constants()
 A = Fvcb()
 
 # Computing Jmax:
-arrhenius(A.JMaxRef,28.0-constants.K₀,A.Tᵣ-constants.K₀,A.Eₐⱼ,A.Hdⱼ,A.Δₛⱼ,constants)
+PlantBiophysics.arrhenius(A.JMaxRef,A.Eₐⱼ,28.0-constants.K₀,A.Tᵣ-constants.K₀,constants,A.Hdⱼ,A.Δₛⱼ)
 # ! Warning: temperatures must be given in Kelvin
 
 # Computing Vcmax:
-arrhenius(A.VcMaxRef,28.0-constants.K₀,A.Tᵣ-constants.K₀,A.Eₐᵥ,A.Hdᵥ,A.Δₛᵥ,constants)
+PlantBiophysics.arrhenius(A.VcMaxRef,A.Eₐᵥ,28.0-constants.K₀,A.Tᵣ-constants.K₀,constants,A.Hdᵥ,A.Δₛᵥ)
 
 ```
 """
@@ -95,8 +95,13 @@ end
 Compute the CO2 compensation point ``Γ^⋆`` (``μ mol\\ mol^{-1}``) according to equation (12)
 from Medlyn et al. (2002).
 
+NB: coulb be replaced by equation (38) from Farquhar et al. (1980),
+but Medlyn et al. (2002) states that ``Γ^⋆`` as a relatively low effect on the model outputs.
 
 # References
+
+Farquhar, G. D., S. von von Caemmerer, et J. A. Berry. 1980. « A biochemical model of
+photosynthetic CO2 assimilation in leaves of C3 species ». Planta 149 (1): 78‑90.
 
 Medlyn, B. E., E. Dreyer, D. Ellsworth, M. Forstreuter, P. C. Harley, M. U. F. Kirschbaum,
 X. Le Roux, et al. 2002. « Temperature response of parameters of a biochemically based model

@@ -43,13 +43,12 @@ function assimiliation(A::Fvcb,Gs::GsModel,constants)
     Γˢ = Γ_star(Tₖ,Tᵣₖ,constants) # Gamma star (CO2 compensation point) in μmol mol-1
     Km = Km(Tₖ,Tᵣₖ,A.O₂,constants) # effective Michaelis–Menten coefficient for CO2
 
-    # Potential electron transport rate (Jmax) at the given leaf temperature:
+    # Maximum electron transport rate at the given leaf temperature:
     JMax = arrhenius(A.JMaxRef,A.Eₐⱼ,Tₖ,Tᵣₖ,constants,A.Hdⱼ,A.Δₛⱼ)
-
-    # if(missing())
+    # Maximum rate of Rubisco activity at the given leaf temperature:
     VcMax = arrhenius(A.VcMaxRef,A.Eₐᵥ,Tₖ,Tᵣₖ,constants,A.Hdᵥ,A.Δₛᵥ)
-
-    RD = RESP(RD0,RD0ACC,T,TMOVE,Q10F,K10F,RTEMP,DAYRESP,TBELOW)
+    # Rate of mitochondrial respiration at the given leaf temperature:
+    Rd = arrhenius(A.RdRef,A.Eₐᵣ,Tₖ,Tᵣₖ,constants)
 
 end
 
