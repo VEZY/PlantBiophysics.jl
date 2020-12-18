@@ -28,9 +28,7 @@ Cell & Environment 18 (10): 1183‑1200.
 
 """
 function assimiliation(A::Fvcb,Gs::GsModel,constants)
-    # Inputs to add: T, PPFD
-
-    g₀ = Gs.g0 # residual conductance for CO2 in μmol[CO2] m-2 s-1
+    # Inputs to add: T, PPFD, VPD, Cₛ
 
     # Tranform Celsius temperatures in Kelvin:
     Tₖ = T - constants.K₀
@@ -50,8 +48,42 @@ function assimiliation(A::Fvcb,Gs::GsModel,constants)
     # cycle, and termed "day" respiration, or "light respiration" (Harley et al., 1986).
 
     # Actual electron transport rate (considering intercepted PAR and leaf temperature):
-    J = J(PPFD, A.JMax, A.α, A.θ)
+    J = J(PPFD, JMax, A.α, A.θ) # in μmol m-2 s-1
+    # RuBP regeneration
+    Vⱼ = J / 4
 
+    # ! NB: Replace by a call to the conductance model:
+    GSDIVA = (1.0 + Gs.g1 / sqrt(VPD)) / Cₛ
+
+    Cᵢⱼ = Cᵢⱼ(Vⱼ,Γˢ,Cₛ,Rd,Gs.g0,GSDIVA)
+    Wⱼ = Vⱼ * (Cᵢⱼ - Γˢ) / (Cᵢⱼ + 2.0 * Γˢ)
+
+    if Wⱼ - Rd < 1.0e-6
+        Cᵢⱼ = Cₛ
+        Wⱼ = Vⱼ * (Cᵢⱼ - Γˢ) / (Cᵢⱼ + 2.0 * Γˢ)
+    end
+
+    Cᵢᵥ = Cᵢᵥ(VcMAX,Γˢ,Cₛ,Rd,Gs.g0,GSDIVA,Km)
+
+    if Cᵢᵥ <= 0.0 | Cᵢᵥ > Cₛ
+        Wᵥ = 0.0
+    else
+        Wᵥ = VcMax * (Cᵢᵥ - Γˢ) / (Cᵢᵥ + Km)
+    end
+
+    # Net assimilation (μmol m-2 s-1)
+    A = min(Wᵥ,Wⱼ) - Rd
+
+    # Stomatal conductance (μmol m-2 s-1)
+    Gₛ = g0 + GSDIVA * A
+
+    if Gₛ > 0.0 & A > 0.0
+        Cᵢ = Cₛ - A / Gₛ
+    else
+        Cᵢ = Cₛ
+    end
+
+    return (A, Gₛ, Cᵢ)
 end
 
 """
@@ -64,8 +96,8 @@ end
 
 
 """
-Rate of electron transport using the smaller root of the quadratic equation (eq. 4 from Medlyn
-et al., 2002):
+Rate of electron transport J (``μmol\\ m^{-2}\\ s^{-1}``), computed using the smaller root
+of the quadratic equation (eq. 4 from Medlyn et al., 2002):
 
     θ * J² - (α * PPFD + JMax) * J + α * PPFD * JMax
 
@@ -75,7 +107,7 @@ are searching), and the opposite with the larger root.
 
 # Arguments
 
-- `PPFD`: absorbed photon irradiance (``μmol\\ m^{-2}\\ s^{-1}``)
+- `PPFD`: absorbed photon irradiance (``μmol_{quanta}\\ m^{-2}\\ s^{-1}``)
 - `α`: quantum yield of electron transport (``mol_e\\ mol^{-1}_{quanta}``)
 - `JMax`: maximum rate of electron transport (``μmol\\ m^{-2}\\ s^{-1}``)
 - `θ`: determines the shape of the non-rectangular hyperbola (-)
@@ -106,4 +138,57 @@ julia> plot!(x -> PlantBiophysics.J(x, A.JMaxRef, A.α * 0.5, A.θ), PPFD, label
 """
 function J(PPFD, JMax, α, θ)
   (α * PPFD + JMax - sqrt((α * PPFD + JMax)^2 - 4 * α * θ * PPFD * JMax)) / (2 * θ)
+end
+
+"""
+Analytic resolution of Cᵢ when the rate of electron transport is limiting (``μmol\\ mol^{-1}``)
+
+# Arguments
+
+- `Vⱼ`: RuBP regeneration (J/4.0, ``μmol\\ m^{-2}\\ s^{-1}``)
+- `Γˢ`: CO2 compensation point ``Γ^⋆`` (``μmol\\ mol^{-1}``)
+- `Cₛ`: stomatal CO₂ concentration (``μmol\\ mol^{-1}``)
+- `Rd`: day respiration (``μmol\\ m^{-2}\\ s^{-1}``)
+- `g0`: residual stomatal conductance (``μmol\\ m^{-2}\\ s^{-1}``)
+- `GSDIVA`: stomatal conductance term.
+"""
+function Cᵢⱼ(Vⱼ,Γˢ,Cₛ,Rd,g0,GSDIVA)
+    a = g0 + GSDIVA * (Vⱼ - Rd)
+    b = (1.0 - Cₛ * GSDIVA) * (Vⱼ - Rd) + g0 * (2.0 * Γˢ - Cₛ) -
+        GSDIVA * (Vⱼ * Γˢ + 2.0 * Γˢ * Rd)
+    c = -(1.0 - Cₛ * GSDIVA) * Γˢ * (Vⱼ + 2.0 * Rd) -
+        g0 * 2.0 * Γˢ * Cₛ
+
+    return max_root(a,b,c)
+end
+
+"""
+Analytic resolution of Cᵢ when the Rubisco activity is limiting (``μmol\\ mol^{-1}``)
+
+# Arguments
+
+- `VcMAX`: maximum rate of Rubisco activity(``μmol\\ m^{-2}\\ s^{-1}``)
+- `Γˢ`: CO2 compensation point ``Γ^⋆`` (``μmol\\ mol^{-1}``)
+- `Cₛ`: stomatal CO₂ concentration (``μmol\\ mol^{-1}``)
+- `Rd`: day respiration (``μmol\\ m^{-2}\\ s^{-1}``)
+- `g0`: residual stomatal conductance (``μmol\\ m^{-2}\\ s^{-1}``)
+- `GSDIVA`: stomatal conductance term.
+- `Km`: effective Michaelis–Menten coefficient for CO2 (``μ mol\\ mol^{-1}``)
+"""
+function Cᵢᵥ(VcMAX,Γˢ,Cₛ,Rd,g0,GSDIVA,Km)
+    a = g0 + GSDIVA * (VcMAX - Rd)
+    b = (1.0 - Cₛ * GSDIVA) * (VcMAX - Rd) + g0 * (Km - Cₛ) - GSDIVA * (VcMAX * Γˢ + Km * Rd)
+    c = -(1.0 - Cₛ * GSDIVA) * (VcMAX * Γˢ + Km * Rd) - g0 * Km * Cₛ
+
+    return max_root(a,b,c)
+end
+
+"""
+Maximum value between two roots of a quadratic equation.
+"""
+function max_root(a,b,c)
+    Δ = b^2.0 - 4.0 * a * c
+    x1 = (-b + sqrt(Δ)) / (2.0 * a)
+    x2 = (-b - sqrt(Δ)) / (2.0 * a)
+    return max(x1,x2)
 end

@@ -4,6 +4,7 @@ include("structs.jl")
 
 # Photosynthesis related files:
 include("photosynthesis/photosynthesis.jl")
+include("photosynthesis/FvCB.jl")
 include("photosynthesis/temperature-dependence.jl")
 
 # structure for photosynthesis
