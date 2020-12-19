@@ -77,6 +77,7 @@ function assimiliation(A::Fvcb,Gs::GsModel,constants)
     # Stomatal conductance (μmol m-2 s-1)
     Gₛ = g0 + GSDIVA * A
 
+    # Intercellular CO₂ concentration (Cᵢ, μmol mol)
     if Gₛ > 0.0 & A > 0.0
         Cᵢ = Cₛ - A / Gₛ
     else
@@ -93,7 +94,6 @@ default constant values (found in [`Constants`](@ref)).
 function assimiliation(A::Fvcb,Gs::GsModel)
     assimiliation(A,Gs,Constants())
 end
-
 
 """
 Rate of electron transport J (``μmol\\ m^{-2}\\ s^{-1}``), computed using the smaller root
