@@ -1,101 +1,64 @@
+"""
+Abstract model type.
+All models are subtypes of this one.
+"""
 abstract type Model end
 
 """
-Assimilation (photosynthesis) abstract model
+Assimilation (photosynthesis) abstract model.
+If you want to implement your own model, it has to be a subtype
+of this one.
 """
 abstract type AModel <: Model end
 
-
 """
-Farquhar–von Caemmerer–Berry (FvCB) model for C3 photosynthesis (Farquhar et al., 1980;
-von Caemmerer and Farquhar, 1981).
+Stomatal conductance abstract model.
+If you want to implement you own model, it has to be a subtype
+of this one.
 
-The definition:
+A GsModel subtype struct must implement at least a g0 field.
 
-- `Tᵣ`: the reference temperature (°C) at which other parameters were measured
-- `VcMaxRef`: maximum rate of Rubisco activity (``μmol\\ m^{-2}\\ s^{-1}``)
-- `JMaxRef`: potential rate of electron transport (``μmol\\ m^{-2}\\ s^{-1}``)
-- `RdRef`: mitochondrial respiration in the light at reference temperature (``μmol\\ m^{-2}\\ s^{-1}``)
-- `Eₐᵣ`: activation energy (``J\\ mol^{-1}``), or the exponential rate of rise for Rd.
-- `O₂`: intercellular dioxygen concentration (``ppm``)
-- `Eₐⱼ`: activation energy (``J\\ mol^{-1}``), or the exponential rate of rise for JMax.
-- `Hdⱼ`: rate of decrease of the function above the optimum (also called EDVJ) for JMax.
-- `Δₛⱼ`: entropy factor for JMax.
-- `Eₐᵥ`: activation energy (``J\\ mol^{-1}``), or the exponential rate of rise for VcMax.
-- `Hdᵥ`: rate of decrease of the function above the optimum (also called EDVC) for VcMax.
-- `Δₛᵥ`: entropy factor for VcMax.
-- `α`: quantum yield of electron transport (``mol_e\\ mol^{-1}_{quanta}``). See also eq. 4 of
- Medlyn et al. (2002) and its implementation in [`J`](@ref)
-- `θ`: determines the curvature of the light response curve for `J~PPFD`. See also eq. 4 of
- Medlyn et al. (2002) and its implementation in [`J`](@ref)
+Here is an example of an implementation of a new GsModel subtype with two parameters (g0 and g1):
 
-The default values of the temperature correction parameters are taken from
-[plantecophys](https://remkoduursma.github.io/plantecophys/). If there is no negative effect
-of high temperatures on the reaction (Jmax or VcMax), then Δₛ can be set to 0.0.
-
-# Note
-
-Medlyn et al. (2002) found relatively low influence ("a slight effect") of α, θ. They also
-say that Kc, Ko and Γ* "are thought to be intrinsic properties of the Rubisco enzyme
-and are generally assumed constant among species".
-
-# See also
-
-- [`J`](@ref)
-- [`assimiliation`](@ref)
-
-# References
-
-Caemmerer, S. von, et G. D. Farquhar. 1981. « Some Relationships between the Biochemistry of
-Photosynthesis and the Gas Exchange of Leaves ». Planta 153 (4): 376‑87.
-https://doi.org/10.1007/BF00384257.
-
-Farquhar, G. D., S. von von Caemmerer, et J. A. Berry. 1980. « A biochemical model of
-photosynthetic CO2 assimilation in leaves of C3 species ». Planta 149 (1): 78‑90.
-
-Medlyn, B. E., E. Dreyer, D. Ellsworth, M. Forstreuter, P. C. Harley, M. U. F. Kirschbaum,
-X. Le Roux, et al. 2002. « Temperature response of parameters of a biochemically based model
-of photosynthesis. II. A review of experimental data ». Plant, Cell & Environment 25 (9): 1167‑79.
-https://doi.org/10.1046/j.1365-3040.2002.00891.x.
-
-# Examples
+1. First, define the struct that holds your parameters values:
 
 ```julia
-Get the fieldnames:
-fieldnames(Fvcb)
-# Using default values for the model:
-A = Fvcb()
-
-A.Eₐᵥ
-```
-"""
-Base.@kwdef struct Fvcb{T} <: AModel
-    Tᵣ::T = 25.0
-    VcMaxRef::T = 200.0
-    JMaxRef::T = 250.0
-    RdRef::T = 0.6
-    Eₐᵣ::T = 46390.0
-    O₂::T = 210.0
-    Eₐⱼ::T = 29680.0
-    Hdⱼ::T = 200000.0
-    Δₛⱼ::T = 631.88
-    Eₐᵥ::T = 58550.0
-    Hdᵥ::T = 200000.0
-    Δₛᵥ::T = 629.26
-    α::T = 0.425
-    θ::T = 0.90
-end
-
-abstract type GsModel <: Model end
-
-struct Medlyn{T} <: GsModel
+struct your_gs_subtype{T} <: GsModel
  g0::T
  g1::T
 end
+```
+
+2. Define how your stomatal conductance model works by implementing your own version of the
+[`gs`](@ref) function:
+
+```julia
+function gs(Gs)
+    (1.0 + Gs.g1 / sqrt(VPD)) / Cₛ
+end
+```
+
+3. Instantiate an object of type `your_gs_subtype`:
+Gs = your_gs_subtype(0.03, 0.1)
+
+4. Call your stomatal model using dispatch on your type:
+gs_mod = gs(Gs)
+
+Please note that the result of [`gs`](@ref) is just used for the part that modifies the conductance
+according to other variables, it is used as:
+
+Gₛ = Gs.g0 + gs_mod * A
+
+Where Gₛ is the stomatal conductance for CO₂ in μmol m-2 s-1, Gs.g0 is the residual conductance, and
+A is the carbon assimilation in μmol m-2 s-1.
+
+"""
+abstract type GsModel <: Model end
 
 # Organs
 abstract type Organ end
 
+# Photosynthetic organs
 abstract type PhotoOrgan <: Organ end
 
 mutable struct Leaf{A,Gs} <: PhotoOrgan

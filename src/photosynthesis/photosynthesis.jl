@@ -6,5 +6,4 @@ For exemple to use the implementation of the Farquhar–von Caemmerer–Berry (F
 """
 function photosynthesis(leaf::Leaf)
     A = assimiliation(leaf.assimilation, leaf.conductance)
-    Gs = conductance(leaf.conductance,leaf.assimilation)
 end
