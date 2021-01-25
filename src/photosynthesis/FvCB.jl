@@ -88,6 +88,22 @@ Computation is made following Farquhar & Wong (1984), Leuning et al. (1995), and
 MAESPA model (Duursma et al., 2012).
 The resolution is analytical as first presented in Baldocchi (1994).
 
+# Arguments
+A::Fvcb,Gs::GsModel,vars,constants
+
+- `A::Fvcb`: The struct holding the parameters for the model. See [`Fvcb`](@ref).
+- `Gs::GsModel`: The struct holding the parameters for the stomatal conductance model. See
+[`Medlyn`](@ref) or [`ConstantGs`](@ref).
+- `vars::NamedTuple{(:Cₛ, :VPD),NTuple{4,Float64}}`: the values of the variables:
+    - Cₛ (ppm): the stomatal CO₂ concentration
+    - VPD (kPa): the vapor pressure deficit of the air
+
+# Examples
+
+```julia
+assimiliation(Fvcb(),Gs(),constants)
+```
+
 # References
 
 Baldocchi, Dennis. 1994. « An analytical solution for coupled leaf photosynthesis and
@@ -105,15 +121,9 @@ photosynthetic CO2 assimilation in leaves of C3 species ». Planta 149 (1): 78�
 Leuning, R., F. M. Kelliher, DGG de Pury, et E.D. Schulze. 1995. « Leaf nitrogen,
 photosynthesis, conductance and transpiration: scaling from leaves to canopies ». Plant,
 Cell & Environment 18 (10): 1183‑1200.
-
-# Examples
-
-```julia
-assimiliation(Fvcb(),Gs(),constants)
-```
 """
-function assimiliation(A::Fvcb,Gs::GsModel,constants)
-    # Inputs to add: T, PPFD, VPD, Cₛ
+function assimiliation(A::Fvcb,Gs::GsModel,vars,constants)
+    # Inputs to add: T, PPFD, VPD, Rh, Cₛ, ψₗ
 
     # Tranform Celsius temperatures in Kelvin:
     Tₖ = T - constants.K₀
@@ -137,8 +147,11 @@ function assimiliation(A::Fvcb,Gs::GsModel,constants)
     # RuBP regeneration
     Vⱼ = J / 4
 
-    # ! NB: Replace by a call to the conductance model:
-    gs_mod = (1.0 + Gs.g1 / sqrt(VPD)) / Cₛ
+    # Every variable that can be used for gs (make a PR if you need more).
+    gs_vars = (Cₛ,VPD,Rh,ψₗ)
+
+    # Stomatal conductance (umol m-2 s-1), dispatched on type of first argument (Gs):
+    gs_mod = gs_closure(Gs,gs_vars)
 
     Cᵢⱼ = Cᵢⱼ(Vⱼ,Γˢ,Cₛ,Rd,Gs.g0,gs_mod)
     Wⱼ = Vⱼ * (Cᵢⱼ - Γˢ) / (Cᵢⱼ + 2.0 * Γˢ)
@@ -159,11 +172,8 @@ function assimiliation(A::Fvcb,Gs::GsModel,constants)
     # Net assimilation (μmol m-2 s-1)
     A = min(Wᵥ,Wⱼ) - Rd
 
-    # computing stomatal closure depending on the model used (dispatch on first argument):
-    gs_mod = gs(Gs,VPD,Cₛ)
-
     # Stomatal conductance (μmol m-2 s-1)
-    Gₛ = g0 + gs_mod * A
+    Gₛ = Gs.g0 + gs_mod * A
 
     # Intercellular CO₂ concentration (Cᵢ, μmol mol)
     if Gₛ > 0.0 & A > 0.0

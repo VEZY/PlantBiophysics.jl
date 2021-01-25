@@ -17,7 +17,9 @@ Constant stomatal conductance for CO₂.
 Then used as follows:
 Gₛ = g0 + Gs.gs * A
 
+# Note
+gs_vars is just declared here for compatibility with other formats of calls.
 """
-function gs(Gs::ConstantGs)
+function gs_closure(Gs::ConstantGs,gs_vars=missing)
     Gs.gs
 end

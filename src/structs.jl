@@ -30,9 +30,13 @@ end
 ```
 
 2. Define how your stomatal conductance model works by implementing your own version of the
-[`gs`](@ref) function:
+[`gs_closure`](@ref) function:
 
 ```julia
+function gs_closure(Gs)
+    (1.0 + Gs.g1 / sqrt(VPD)) / Cₛ
+end
+
 function gs(Gs)
     (1.0 + Gs.g1 / sqrt(VPD)) / Cₛ
 end
