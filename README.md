@@ -11,68 +11,24 @@ A Julia package to simulate biophysical processes for plants, such as photosynth
 ## Roadmap
 
 - [ ] Add FvCB model
+- [ ] Add FvCB iterative model. Check the 1.0e-6 in `Cₛ = min(environment.Cₐ, environment.Cₐ - A * 1.0e-6 / Gₛ)`
 - [ ] Add conductance model
 - [ ] Add transpiration model
 - [ ] Use structures. E.g. `Leaf`, that would be a subtype of `PhotoOrgan` (for photosynthetic organ), itself a subtype of `Organ`:
   - [ ] Make the functions compatible with an MTG, e.g. apply photosynthesis to an MTG, and use the right method for each node.
   - [ ] The `Leaf` struct would have the several fields that describe the models used for computation, with all their parameters, *e.g.*:
 
-```julia
-# Types to hold model parameter values
-abstract type Model end
-abstract type AModel <: Model end
+### Notes
 
-struct Fvcb{T} <: AModel
- VcMax::T
- JMax::T
- Rd::T
-end
+The Fvcb model is implemented in two ways:
 
-abstract type GsModel <: Model end
-
-struct Medlyn{T} <: GsModel
- g0::T
- g1::T
-end
-
-# Organs
-abstract type Organ end
-
-abstract type PhotoOrgan <: Organ end
-
-struct Leaf{A,Gs} <: PhotoOrgan
-    assimilation::A
-    conductance::Gs
-end
-
-leaf = Leaf(Fvcb(10.0,50.0,3.0), Medlyn(0.033, 1.2))
-
-photosynthesis(leaf)
-
-function photosynthesis(leaf::Leaf)
-    A = assimiliation(leaf.assimilation, leaf.conductance)
-    Gs = conductance(leaf.conductance,leaf.assimilation)
-    # Maybe add A as a mutable field of leaf.conductance, and
-    # Gs for leaf.assimilation to keep the last record of the value
-    # computed?
-end
-
-function assimiliation(A::Fvcb,Gs::GsModel)
-    # Here comes the actual Fvcb model
-end
-
-function conductance(Gs::Medlyn,A::T) where T<:AModel
-    # Here comes the actual conductance model from Medlyn et al. (2011)
-end
-
-function conductance(Gs::Tuzet,A::T) where T<:AModel
-    # Here comes the actual conductance model from Tuzet et al. (2003)
-end
-```
+- as in MAESPA, where the model needs Cₛ as input. And Cₛ is computed in the energy balance model and helps to close the whole balance with leaf temperature. If needed, Cₛ can be given as Cₐ.
+- as in Archimed, where the model needs gbc, but not Cₛ (and Cₐ instead) because the model iterates over the assimilation until it finds a stable Cᵢ. This implementation
+can be less efficient because of the iterations.
 
 ## References
 
-### Similar projetcs
+### Similar projects
 
 - [MAESPA](http://maespa.github.io/)
 - [photosynthesis](https://github.com/cran/photosynthesis) R package

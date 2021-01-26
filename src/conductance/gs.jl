@@ -1,7 +1,7 @@
 # Implement the generic gs function. Then dispatch the method on the Gs argument.
 
 """
-Stomatal conductance for CO₂ (μmol m-2 s-1).
+Stomatal conductance for CO₂ (mol m-2 s-1).
 
 # Arguments
 

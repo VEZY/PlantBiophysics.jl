@@ -12,7 +12,7 @@ struct ConstantGs{T} <: GsModel
 end
 
 """
-Constant stomatal conductance for CO₂.
+Constant stomatal conductance for CO₂ (mol m-2 s-1).
 
 Then used as follows:
 Gₛ = g0 + Gs.gs * A

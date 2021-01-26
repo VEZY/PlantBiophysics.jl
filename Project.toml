@@ -3,6 +3,9 @@ uuid = "7ae8fcfa-76ad-4ec6-9ea7-5f8f5e2d6ec9"
 authors = ["remi.vezy <VEZY@users.noreply.github.com> and contributors"]
 version = "0.1.0"
 
+[deps]
+MutableNamedTuples = "af6c499f-54b4-48cc-bbd2-094bba7533c7"
+
 [compat]
 julia = "1.1"
 
