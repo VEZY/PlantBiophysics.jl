@@ -80,7 +80,7 @@ Base.@kwdef struct Fvcb{T} <: AModel
 end
 
 """
-    assimiliation(A::Fvcb,Gs::GsModel)
+    assimiliation(A::Fvcb,Gs::GsModel,environment,constants)
 
 Photosynthesis using the Farquhar–von Caemmerer–Berry (FvCB) model for C3 photosynthesis
  (Farquhar et al., 1980; von Caemmerer and Farquhar, 1981).
@@ -89,19 +89,31 @@ MAESPA model (Duursma et al., 2012).
 The resolution is analytical as first presented in Baldocchi (1994).
 
 # Arguments
-A::Fvcb,Gs::GsModel,vars,constants
 
 - `A::Fvcb`: The struct holding the parameters for the model. See [`Fvcb`](@ref).
 - `Gs::GsModel`: The struct holding the parameters for the stomatal conductance model. See
 [`Medlyn`](@ref) or [`ConstantGs`](@ref).
-- `vars::NamedTuple{(:Cₛ, :VPD),NTuple{4,Float64}}`: the values of the variables:
-    - Cₛ (ppm): the stomatal CO₂ concentration
-    - VPD (kPa): the vapor pressure deficit of the air
+- `environment::NamedTuple`: the values for the variables:
+    - T (°C): air temperature
+    - PPFD (μmol m-2 s-1): absorbed Photosynthetic Photon Flux Density
+    - Rh (0-1): air relative humidity
+    - Cₛ (ppm): stomatal CO₂ concentration
+    - VPD (kPa): vapor pressure deficit of the air
+    - ψₗ (kPa): leaf water potential
+
+# Note
+
+The mandatory variables provided in `environment` are T, PPFD, and Cₛ. Others are optional depending
+on the stomatal conductance model. For example VPD is needed for the Medlyn et al. (2011) model.
 
 # Examples
 
 ```julia
-assimiliation(Fvcb(),Gs(),constants)
+assimiliation(Fvcb(),
+              Gs(),
+              (T = 25.0, PPFD = 1000.0, Rh = missing, Cₛ = 300.0, VPD = 2.0,
+                ψₗ = missing),
+             constants)
 ```
 
 # References
@@ -122,11 +134,10 @@ Leuning, R., F. M. Kelliher, DGG de Pury, et E.D. Schulze. 1995. « Leaf nitrog
 photosynthesis, conductance and transpiration: scaling from leaves to canopies ». Plant,
 Cell & Environment 18 (10): 1183‑1200.
 """
-function assimiliation(A::Fvcb,Gs::GsModel,vars,constants)
-    # Inputs to add: T, PPFD, VPD, Rh, Cₛ, ψₗ
+function assimiliation(A::Fvcb,Gs::GsModel,environment,constants)
 
     # Tranform Celsius temperatures in Kelvin:
-    Tₖ = T - constants.K₀
+    Tₖ = environment.T - constants.K₀
     Tᵣₖ = A.Tᵣ - constants.K₀
 
     # Temperature dependence of the parameters:
@@ -143,27 +154,27 @@ function assimiliation(A::Fvcb,Gs::GsModel,vars,constants)
     # cycle, and termed "day" respiration, or "light respiration" (Harley et al., 1986).
 
     # Actual electron transport rate (considering intercepted PAR and leaf temperature):
-    J = J(PPFD, JMax, A.α, A.θ) # in μmol m-2 s-1
+    J = J(environment.PPFD, JMax, A.α, A.θ) # in μmol m-2 s-1
     # RuBP regeneration
     Vⱼ = J / 4
 
     # Every variable that can be used for gs (make a PR if you need more).
-    gs_vars = (Cₛ,VPD,Rh,ψₗ)
+    gs_vars = (environment.Cₛ,environment.VPD,environment.Rh,environment.ψₗ)
 
     # Stomatal conductance (umol m-2 s-1), dispatched on type of first argument (Gs):
     gs_mod = gs_closure(Gs,gs_vars)
 
-    Cᵢⱼ = Cᵢⱼ(Vⱼ,Γˢ,Cₛ,Rd,Gs.g0,gs_mod)
+    Cᵢⱼ = Cᵢⱼ(Vⱼ,Γˢ,environment.Cₛ,Rd,Gs.g0,gs_mod)
     Wⱼ = Vⱼ * (Cᵢⱼ - Γˢ) / (Cᵢⱼ + 2.0 * Γˢ)
 
     if Wⱼ - Rd < 1.0e-6
-        Cᵢⱼ = Cₛ
+        Cᵢⱼ = environment.Cₛ
         Wⱼ = Vⱼ * (Cᵢⱼ - Γˢ) / (Cᵢⱼ + 2.0 * Γˢ)
     end
 
-    Cᵢᵥ = Cᵢᵥ(VcMAX,Γˢ,Cₛ,Rd,Gs.g0,gs_mod,Km)
+    Cᵢᵥ = Cᵢᵥ(VcMAX,Γˢ,environment.Cₛ,Rd,Gs.g0,gs_mod,Km)
 
-    if Cᵢᵥ <= 0.0 | Cᵢᵥ > Cₛ
+    if Cᵢᵥ <= 0.0 | Cᵢᵥ > environment.Cₛ
         Wᵥ = 0.0
     else
         Wᵥ = VcMax * (Cᵢᵥ - Γˢ) / (Cᵢᵥ + Km)
@@ -177,9 +188,9 @@ function assimiliation(A::Fvcb,Gs::GsModel,vars,constants)
 
     # Intercellular CO₂ concentration (Cᵢ, μmol mol)
     if Gₛ > 0.0 & A > 0.0
-        Cᵢ = Cₛ - A / Gₛ
+        Cᵢ = environment.Cₛ - A / Gₛ
     else
-        Cᵢ = Cₛ
+        Cᵢ = environment.Cₛ
     end
 
     return (A, Gₛ, Cᵢ)
@@ -189,9 +200,69 @@ end
 Photosynthesis using the Farquhar–von Caemmerer–Berry (FvCB) model with
 default constant values (found in [`Constants`](@ref)).
 """
-function assimiliation(A::Fvcb,Gs::GsModel)
-    assimiliation(A,Gs,Constants())
+function assimiliation(A::Fvcb,Gs::GsModel,environment)
+    assimiliation(A,Gs,environment,Constants())
 end
+
+"""
+    assimiliation(A::Fvcb, Gs::GsModel; T = missing, PPFD = missing, Rh = missing,
+                    Cₛ = missing, VPD = missing, ψₗ = missing)
+
+Photosynthesis using the Farquhar–von Caemmerer–Berry (FvCB) model for C3 photosynthesis
+ (Farquhar et al., 1980; von Caemmerer and Farquhar, 1981).
+Computation is made following Farquhar & Wong (1984), Leuning et al. (1995), and the
+MAESPA model (Duursma et al., 2012).
+The resolution is analytical as first presented in Baldocchi (1994).
+
+# Arguments
+
+- `A::Fvcb`: The struct holding the parameters for the model. See [`Fvcb`](@ref).
+- `Gs::GsModel`: The struct holding the parameters for the stomatal conductance model. See
+[`Medlyn`](@ref) or [`ConstantGs`](@ref).
+- T (°C): air temperature
+- PPFD (μmol m-2 s-1): absorbed Photosynthetic Photon Flux Density
+- Rh (0-1): air relative humidity
+- Cₛ (ppm): stomatal CO₂ concentration
+- VPD (kPa): vapor pressure deficit of the air
+- ψₗ (kPa): leaf water potential
+
+# Note
+
+The mandatory inputs to provide are: A, Gs, T, PPFD, and Cₛ. Others are optional depending
+on the stomatal conductance model. For example VPD is needed for the Medlyn et al. (2011) model.
+Please note the optional inputs are keyword parameters, so they must be explicitely named.
+
+# Examples
+
+```julia
+assimiliation(Fvcb(),Gs(),
+              T = 25.0, PPFD = 1000.0, Cₛ = 300.0, VPD = 2.0)
+              )
+```
+
+# References
+
+Baldocchi, Dennis. 1994. « An analytical solution for coupled leaf photosynthesis and
+stomatal conductance models ». Tree Physiology 14 (7-8‑9): 1069‑79.
+https://doi.org/10.1093/treephys/14.7-8-9.1069.
+
+Duursma, R. A., et B. E. Medlyn. 2012. « MAESPA: a model to study interactions between water
+limitation, environmental drivers and vegetation function at tree and stand levels, with an
+example application to [CO2] × drought interactions ». Geoscientific Model Development 5
+(4): 919‑40. https://doi.org/10.5194/gmd-5-919-2012.
+
+Farquhar, G. D., S. von von Caemmerer, et J. A. Berry. 1980. « A biochemical model of
+photosynthetic CO2 assimilation in leaves of C3 species ». Planta 149 (1): 78‑90.
+
+Leuning, R., F. M. Kelliher, DGG de Pury, et E.D. Schulze. 1995. « Leaf nitrogen,
+photosynthesis, conductance and transpiration: scaling from leaves to canopies ». Plant,
+Cell & Environment 18 (10): 1183‑1200.
+"""
+function assimiliation(A::Fvcb, Gs::GsModel; T = missing, PPFD = missing, Rh = missing,
+                        Cₛ = missing, VPD = missing, ψₗ = missing)
+    assimiliation(A,Gs,environment,Constants())
+end
+
 
 """
 Rate of electron transport J (``μmol\\ m^{-2}\\ s^{-1}``), computed using the smaller root
