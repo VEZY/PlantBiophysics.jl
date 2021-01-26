@@ -5,5 +5,5 @@ For exemple to use the implementation of the Farquhar–von Caemmerer–Berry (F
 [`assimiliation`](@ref)), the `leaf.assimilation` field should be of type [`Fvcb`](@ref).
 """
 function photosynthesis(leaf::Leaf)
-    A = assimiliation(leaf.assimilation, leaf.conductance)
+    assimiliation(leaf.assimilation, leaf.conductance)
 end

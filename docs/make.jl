@@ -1,5 +1,8 @@
 using PlantBiophysics
+using Plots
 using Documenter
+
+DocMeta.setdocmeta!(PlantBiophysics, :DocTestSetup, :(using PlantBiophysics,Plots); recursive=true)
 
 makedocs(;
     modules=[PlantBiophysics],

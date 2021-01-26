@@ -290,19 +290,13 @@ https://doi.org/10.1046/j.1365-3040.2002.00891.x.
 
 # Examples
 
-```jldoctest
+```jldoctest; setup = :(using PlantBiophysics)
 # Using default values for the model:
-julia> A = Fvcb();
+julia> A = Fvcb()
+Fvcb{Float64}(25.0, 200.0, 250.0, 0.6, 46390.0, 210.0, 29680.0, 200000.0, 631.88, 58550.0, 200000.0, 629.26, 0.425, 0.9)
+
 julia> PlantBiophysics.J(1500, A.JMaxRef, A.α, A.θ)
 236.11111111111111
-
-# Plotting J~PPFD (simplification here, JMax = JMaxRef):
-julia> using Plots
-julia> PPFD = 0:100:2000
-julia> plot(x -> PlantBiophysics.J(x, A.JMaxRef, A.α, A.θ), PPFD, xlabel = "PPFD (μmol m⁻² s⁻¹)",
-            ylab = "J (μmol m⁻² s⁻¹)", label = "Default values", legend = :bottomright)
-julia> plot!(x -> PlantBiophysics.J(x, A.JMaxRef, A.α, A.θ * 0.5), PPFD, label = "θ * 0.5")
-julia> plot!(x -> PlantBiophysics.J(x, A.JMaxRef, A.α * 0.5, A.θ), PPFD, label = "α * 0.5")
 ```
 """
 function J(PPFD, JMax, α, θ)
