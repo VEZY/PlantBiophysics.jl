@@ -7,8 +7,8 @@ version = "0.1.0"
 MutableNamedTuples = "af6c499f-54b4-48cc-bbd2-094bba7533c7"
 
 [compat]
-MutableNamedTuples = "0.1"
 julia = "1.1"
+MutableNamedTuples = "0.1"
 
 [extras]
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"

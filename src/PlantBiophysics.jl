@@ -1,5 +1,7 @@
 module PlantBiophysics
 
+using MutableNamedTuples
+
 include("structs.jl")
 
 # Photosynthesis related files:
