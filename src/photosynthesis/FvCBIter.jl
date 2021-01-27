@@ -44,6 +44,14 @@ Archimed model.
 Iterative implementation, i.e. the assimilation is computed iteratively over Cᵢ. For the
 analytical resolution, see [Fvcb](@ref).
 
+# Returns
+
+A tuple with (A, Gₛ, Cᵢ):
+
+- A: carbon assimilation (μmol m-2 s-1)
+- Gₛ: stomatal conductance (mol m-2 s-1)
+- Cᵢ: intercellular CO₂ concentration (ppm)
+
 # Arguments
 
 - `A_mod::FvcbIter`: The struct holding the parameters for the model. See [`FvcbIter`](@ref).
@@ -135,6 +143,14 @@ Photosynthesis using the Farquhar–von Caemmerer–Berry (FvCB) model for C3 ph
 
 Iterative implementation, i.e. the assimilation is computed iteratively over Cᵢ. For the
 analytical resolution, see [Fvcb](@ref).
+
+# Returns
+
+A tuple with (A, Gₛ, Cᵢ):
+
+- A: carbon assimilation (μmol m-2 s-1)
+- Gₛ: stomatal conductance (mol m-2 s-1)
+- Cᵢ: intercellular CO₂ concentration (ppm)
 
 # Arguments
 

@@ -90,6 +90,14 @@ The resolution is analytical as first presented in Baldocchi (1994), and needs C
 
 If you need to use Cₐ, you can use the iterative implementation of the Fvcb model [`FvcbIter`](@ref)
 
+# Returns
+
+A tuple with (A, Gₛ, Cᵢ):
+
+- A: carbon assimilation (μmol m-2 s-1)
+- Gₛ: stomatal conductance (mol m-2 s-1)
+- Cᵢ: intercellular CO₂ concentration (ppm)
+
 # Arguments
 
 - `A_mod::Fvcb`: The struct holding the parameters for the model. See [`Fvcb`](@ref).
@@ -216,6 +224,14 @@ Computation is made following Farquhar & Wong (1984), Leuning et al. (1995), and
 MAESPA model (Duursma et al., 2012).
 The resolution is analytical as first presented in Baldocchi (1994).
 
+# Returns
+
+A tuple with (A, Gₛ, Cᵢ):
+
+- A: carbon assimilation (μmol m-2 s-1)
+- Gₛ: stomatal conductance (mol m-2 s-1)
+- Cᵢ: intercellular CO₂ concentration (ppm)
+
 # Arguments
 
 - `A_mod::Fvcb`: The struct holding the parameters for the model. See [`Fvcb`](@ref).
@@ -263,7 +279,7 @@ Cell & Environment 18 (10): 1183‑1200.
 function assimiliation(A_mod::Fvcb, Gs_mod::GsModel; Tₗ = missing, PPFD = missing, Rh = missing,
                         Cₛ = missing, VPD = missing, ψₗ = missing)
 
-    environment = MutableNamedTuple(Tₗ = Tₗ, PPFD = PPFD, Cₛ= Cₛ, VPD = VPD, ψₗ = ψₗ)
+    environment = MutableNamedTuple(Tₗ = Tₗ, PPFD = PPFD, Rh = Rh, Cₛ= Cₛ, VPD = VPD, ψₗ = ψₗ)
 
     assimiliation(A_mod,Gs_mod,environment,Constants())
 end
@@ -279,6 +295,13 @@ NB: we use the smaller root because considering the range of values for θ and �
 and PPFD and JMax, the function always tends to JMax with high PPFD with the smaller root (behavior we
 are searching), and the opposite with the larger root.
 
+# Returns
+
+A tuple with (A, Gₛ, Cᵢ):
+
+- A: carbon assimilation (μmol m-2 s-1)
+- Gₛ: stomatal conductance (mol m-2 s-1)
+- Cᵢ: intercellular CO₂ concentration (ppm)
 # Arguments
 
 - `PPFD`: absorbed photon irradiance (``μmol_{quanta}\\ m^{-2}\\ s^{-1}``)
