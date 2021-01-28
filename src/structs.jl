@@ -59,17 +59,59 @@ A is the carbon assimilation in μmol m-2 s-1.
 """
 abstract type GsModel <: Model end
 
+# Temporary, just to be compatible with Archimed. Next will move all these types to another
+# common package
+abstract type InterceptionModel <: Model end
+
+"""
+Translucent model for light interception, see [here](https://archimed-user-doc.netlify.app/3-inputs/5-models/2-models_list/).
+"""
+Base.@kwdef struct Translucent{T} <: InterceptionModel
+    transparency::T = 0.0
+    optical_properties::NamedTuple{(:PAR, :NIR),Tuple{T,T}} = (PAR = 0.15, NIR= 0.9)
+end
+
+"""
+Ignore model for light interception, see [here](https://archimed-user-doc.netlify.app/3-inputs/5-models/2-models_list/).
+Make the mesh invisible, and not computed. Can save a lot of time for the computations when there are components types
+that are not visible anyway (e.g. inside others).
+"""
+struct Ignore <: InterceptionModel end
+
 # Organs
 abstract type Organ end
+
+struct Metamer <: Organ end
+
 
 # Photosynthetic organs
 abstract type PhotoOrgan <: Organ end
 
-mutable struct Leaf{A,Gs} <: PhotoOrgan
+struct Leaf{A<: AModel, Gs <: GsModel} <: PhotoOrgan
     assimilation::A
     conductance::Gs
 end
 
+"""
+    Leaf(model::OrderedDict{String,Any})
+
+Building a leaf struct from an OrderedDict{String,Any}. This kind of input typically comes
+from a YAML model file.
+
+```julia
+models = read_model("path_to_a_model_file.yaml")
+leaf = Leaf(models)
+```
+"""
+function Leaf(model::OrderedDict{String,Any})
+    !is_model(model) && error("model argument is not a model (e.g. as returned from `read_model()`)");
+    keys(model["Type"]["Leaf"])
+end
+
+# struct ModelSet() <: Model
+#     group::String
+
+# end
 
 """
 Physical constants
