@@ -56,7 +56,7 @@ function read_model(file)
                 push!(processes, Symbol(process) => model_process)
             end
         end
-        push!(organs, organtype => (;processes...))
+        push!(organs, organtype => organtype(;processes...))
     end
 
     return organs

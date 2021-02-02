@@ -9,7 +9,7 @@ file = "inputs/models/plant_coffee.yml"
 
     model = model[Leaf]
     # @test typeof(model)
-    @test collect(keys(model)) == [:Interception,:Photosynthesis,:StomatalConductance]
+    @test typeof(model) <: Leaf
     @test typeof(model.StomatalConductance) == Medlyn{Float64}
     @test typeof(model.Interception) == Translucent{Float64}
     @test typeof(model.Photosynthesis) == Fvcb{Float64}

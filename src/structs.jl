@@ -59,39 +59,38 @@ A is the carbon assimilation in μmol m-2 s-1.
 """
 abstract type GsModel <: Model end
 
+"""
+Light interception abstract struct
+"""
+abstract type InterceptionModel <: Model end
+
 # Organs
 abstract type Organ end
-
-struct Metamer <: Organ end
 
 # Photosynthetic organs
 abstract type PhotoOrgan <: Organ end
 
-struct Leaf{A<: AModel, Gs <: GsModel} <: PhotoOrgan
-    assimilation::A
-    conductance::Gs
+
+"""
+Leaf organ, with three fields holding model types and parameter values for:
+
+ - Interception
+ - Photosynthesis
+ - StomatalConductance
+"""
+Base.@kwdef struct Leaf{I<: Union{Missing,InterceptionModel}, A<: AModel, Gs <: GsModel} <: PhotoOrgan
+    Interception::I = missing
+    Photosynthesis::A
+    StomatalConductance::Gs
 end
 
 """
-    Leaf(model::OrderedDict{String,Any})
-
-Building a leaf struct from an OrderedDict{String,Any}. This kind of input typically comes
-from a YAML model file.
-
-```julia
-models = read_model("path_to_a_model_file.yaml")
-leaf = Leaf(models)
-```
+Metamer organ, with one field holding the light interception model type and its parameter values.
 """
-function Leaf(model::OrderedDict{String,Any})
-    !is_model(model) && error("model argument is not a model (e.g. as returned from `read_model()`)");
-    keys(model["Type"]["Leaf"])
+Base.@kwdef struct Metamer{I<: Union{Missing,InterceptionModel}} <: Organ
+    Interception::I = missing
 end
 
-# struct ModelSet() <: Model
-#     group::String
-
-# end
 
 """
 Physical constants
