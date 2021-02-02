@@ -27,7 +27,7 @@ apply the different functions that would automatically dispatch to the method us
 The Fvcb model is implemented in two ways:
 
 - as in MAESPA, where the model needs Cₛ as input. And Cₛ is computed in the energy balance model and helps to close the whole balance with leaf temperature. If needed, Cₛ can be given as Cₐ.
-- as in Archimed, where the model needs gbc, but not Cₛ (and Cₐ instead) because the model iterates over the assimilation until it finds a stable Cᵢ. This implementation
+- as in Archimed, where the model needs Gbc, but not Cₛ (and Cₐ instead) because the model iterates over the assimilation until it finds a stable Cᵢ. This implementation
 can be less efficient because of the iterations.
 
 ## References

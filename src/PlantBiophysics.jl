@@ -43,7 +43,7 @@ export σ
 export Fvcb # Parameters for the Farquhar et al. (1980) model
 export FvcbIter
 export Constants
-export assimiliation
+export assimilation
 export gs
 export Medlyn
 export photosynthesis

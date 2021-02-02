@@ -34,7 +34,10 @@ Base.@kwdef struct FvcbIter{T} <: AModel
 end
 
 """
-    assimiliation(A_mod::FvcbIter,Gs_mod::GsModel,environment::MutableNamedTuple,constants)
+    assimilation(A_mod::FvcbIter,Gs_mod::GsModel,environment::MutableNamedTuple,constants)
+    assimilation(A_mod::FvcbIter,Gs_mod::GsModel,environment::MutableNamedTuple)
+    assimilation(A_mod::FvcbIter, Gs_mod::GsModel; Tₗ, PPFD, Cₐ, Gbc, Rh = missing,
+                    VPD = missing, ψₗ = missing)
 
 Photosynthesis using the Farquhar–von Caemmerer–Berry (FvCB) model for C3 photosynthesis
  (Farquhar et al., 1980; von Caemmerer and Farquhar, 1981).
@@ -57,37 +60,39 @@ A tuple with (A, Gₛ, Cᵢ):
 - `A_mod::FvcbIter`: The struct holding the parameters for the model. See [`FvcbIter`](@ref).
 - `Gs_mod::GsModel`: The struct holding the parameters for the stomatal conductance model. See
 [`Medlyn`](@ref) or [`ConstantGs`](@ref).
-- `environment::MutableNamedTuple`: the values for the variables:
+- `environment::MutableNamedTuple`: the values for the variables (can also be given as keywords):
     - Tₗ (°C): leaf temperature
     - PPFD (μmol m-2 s-1): absorbed Photosynthetic Photon Flux Density
-    - gbc (mol m-2 s-1): boundary layer conductance for CO₂
+    - Gbc (mol m-2 s-1): boundary layer conductance for CO₂
     - Rh (0-1): air relative humidity
     - Cₐ (ppm): atmospheric CO₂ concentration
     - VPD (kPa): vapor pressure deficit of the air
     - ψₗ (kPa): leaf water potential
-- `constants` a struct with constant values. If not provided, [`Constants`](@ref) is used with default
-values.
+    - Cₛ (ppm): stomatal CO₂ concentration (can be given as Cₐ at first)
+- `constants` a struct with constant values. If not provided, [`Constants`](@ref) is used with
+default values.
 
 # Note
 
-The mandatory variables provided in `environment` are Tₗ, PPFD, and Cₐ. Others are optional depending
-on the stomatal conductance model. For example VPD is needed for the Medlyn et al. (2011) model.
+The mandatory variables provided in `environment` are Tₗ, PPFD, and Cₐ. Others are optional
+depending on the stomatal conductance model. For example VPD is needed for the Medlyn et
+al. (2011) model.
 
 # Examples
 
 ```julia
-assimiliation(FvcbIter(),
-              Gs(),
-              (Tₗ = 25.0, PPFD = 1000.0, Rh = missing, Cₐ = 300.0, VPD = 2.0, gbc = 1.0,
-                ψₗ = missing),
-             constants)
+using MutableNamedTuples
+
+assimilation(FvcbIter(),
+              Medlyn(0.03,12.0),
+              MutableNamedTuple(Tₗ = 25.0, PPFD = 1000.0, Rh = missing, Cₐ = 400.0,
+                                 VPD = 2.0, Gbc = 1.0, ψₗ = missing, Cₛ = 400.0),
+             Constants())
 
 # Or using the keyword method:
-
-assimiliation(FvcbIter(),
-              Gs(),
-              Tₗ = 25.0, PPFD = 1000.0, gbc = 1.0, Cₐ = 400.0, VPD = 2.0)
-              )
+assimilation(FvcbIter(),
+              Medlyn(0.03,12.0),
+              Tₗ = 25.0, PPFD = 1000.0, Gbc = 1.0, Cₐ = 400.0, VPD = 2.0)
 ```
 
 # References
@@ -103,7 +108,7 @@ Leuning, R., F. M. Kelliher, DGG de Pury, et E.D. Schulze. 1995. « Leaf nitrog
 photosynthesis, conductance and transpiration: scaling from leaves to canopies ». Plant,
 Cell & Environment 18 (10): 1183‑1200.
 """
-function assimiliation(A_mod::FvcbIter,Gs_mod::GsModel,environment::MutableNamedTuple,
+function assimilation(A_mod::FvcbIter,Gs_mod::GsModel,environment::MutableNamedTuple,
                         constants)
 
     # Instantiate an Fvcb struct
@@ -115,17 +120,18 @@ function assimiliation(A_mod::FvcbIter,Gs_mod::GsModel,environment::MutableNamed
     environment.Cₛ = environment.Cₐ
 
     # First simulation with this value (Cₛ = Cₐ):
-    A_prev, Gₛ, Cᵢ  = assimiliation(A_mod::Fvcb,Gs_mod::GsModel,environment,constants)
+    A, Gₛ, Cᵢ  = assimilation(A_Fvcb,Gs_mod,environment,constants)
     iter = true
+    iter_max = 1
 
     while iter
 
-        A, Gₛ, Cᵢ = assimiliation(A_mod::Fvcb,Gs_mod::GsModel,environment,constants)
+        A_new, Gₛ, Cᵢ = assimilation(A_Fvcb,Gs_mod,environment,constants)
 
-        if abs(A-A_old)/A_old <= A_mod.ϵ_A || iter_max == A_mod.iter_A_max
+        if abs(A_new-A)/A <= A_mod.ϵ_A || iter_max == A_mod.iter_A_max
             iter = false
         end
-
+        A = A_new
         environment.Cₛ = min(environment.Cₐ, environment.Cₐ - A * 1.0e-6 / environment.Gbc)
 
         iter_max += 1
@@ -134,34 +140,15 @@ function assimiliation(A_mod::FvcbIter,Gs_mod::GsModel,environment::MutableNamed
     return (A, Gₛ, Cᵢ)
 end
 
-
-"""
-Photosynthesis using the iterative Farquhar–von Caemmerer–Berry (FvCB) model with
-default constant values (found in [`Constants`](@ref)).
-"""
-function assimiliation(A_mod::FvcbIter,Gs_mod::GsModel,environment::MutableNamedTuple)
-    assimiliation(A_mod,Gs_mod,environment,Constants())
+# With default constant values:
+function assimilation(A_mod::FvcbIter,Gs_mod::GsModel,environment::MutableNamedTuple)
+    assimilation(A_mod,Gs_mod,environment,Constants())
 end
 
-"""
-    assimiliation(A_mod::FvcbIter, Gs_mod::GsModel; Tₗ = missing, PPFD = missing, Rh = missing,
-                    Cₛ = missing, VPD = missing, ψₗ = missing)
-
-Keyword implementation of the iterative implementation of the assimilation using the
-Farquhar–von Caemmerer–Berry (FvCB) model for C3 photosynthesis (Farquhar et al., 1980;
-von Caemmerer and Farquhar, 1981), i.e. the assimilation is computed iteratively over Cᵢ.
-For the analytical resolution, see [Fvcb](@ref).
-
-# Examples
-
-```julia
-assimiliation(FvcbIter(),Gs(),
-              Tₗ = 25.0, PPFD = 1000.0, gbc = 1.0, Cₐ = 400.0, VPD = 2.0)
-              )
-```
-"""
-function assimiliation(A_mod::FvcbIter, Gs_mod::GsModel; Tₗ = missing, PPFD = missing, Rh = missing,
-                        Cₐ = missing, VPD = missing, ψₗ = missing)
-    environment = MutableNamedTuple(Tₗ = Tₗ, PPFD = PPFD, gbc = gbc, Cₐ = Cₐ, VPD = VPD, ψₗ = ψₗ)
-    assimiliation(A_mod,Gs_mod,environment,Constants())
+# With keyword arguments (better for users)
+function assimilation(A_mod::FvcbIter, Gs_mod::GsModel; Tₗ, PPFD, Cₐ, Gbc, Rh = missing,
+                        VPD = missing, ψₗ = missing)
+    environment = MutableNamedTuple(Tₗ = Tₗ, PPFD = PPFD, Gbc = Gbc, Cₐ = Cₐ, VPD = VPD,
+                                     ψₗ = ψₗ, Cₛ = Cₐ)
+    assimilation(A_mod,Gs_mod,environment,Constants())
 end

@@ -35,7 +35,7 @@ and are generally assumed constant among species".
 # See also
 
 - [`J`](@ref)
-- [`assimiliation`](@ref)
+- [`assimilation`](@ref)
 
 # References
 
@@ -80,9 +80,9 @@ Base.@kwdef struct Fvcb{T} <: AModel
 end
 
 """
-    assimiliation(A_mod::Fvcb,Gs_mod::GsModel,environment,constants)
-    assimiliation(A_mod::Fvcb,Gs_mod::GsModel,environment)
-    assimiliation(A_mod::Fvcb, Gs_mod::GsModel; Tₗ = missing, PPFD = missing, Rh = missing,
+    assimilation(A_mod::Fvcb,Gs_mod::GsModel,environment,constants)
+    assimilation(A_mod::Fvcb,Gs_mod::GsModel,environment)
+    assimilation(A_mod::Fvcb, Gs_mod::GsModel; Tₗ = missing, PPFD = missing, Rh = missing,
                         Cₛ = missing, VPD = missing, ψₗ = missing)
 
 Photosynthesis using the Farquhar–von Caemmerer–Berry (FvCB) model for C3 photosynthesis
@@ -122,11 +122,17 @@ on the stomatal conductance model. For example VPD is needed for the Medlyn et a
 # Examples
 
 ```julia
-assimiliation(Fvcb(),
-              Gs(),
-              (Tₗ = 25.0, PPFD = 1000.0, Rh = missing, Cₛ = 300.0, VPD = 2.0,
-                ψₗ = missing),
-             constants)
+assimilation(Fvcb(),
+              Medlyn(0.03,12.0),
+              MutableNamedTuple(Tₗ = 25.0, PPFD = 1000.0, Rh = missing, Cₛ = 400.0, VPD = 2.0,
+                                ψₗ = missing),
+             Constants())
+
+# Or using keyword arguments:
+
+assimilation(Fvcb(),Gs(),
+              Tₗ = 25.0, PPFD = 1000.0, Cₛ = 300.0, VPD = 2.0)
+              )
 ```
 
 # References
@@ -147,7 +153,7 @@ Leuning, R., F. M. Kelliher, DGG de Pury, et E.D. Schulze. 1995. « Leaf nitrog
 photosynthesis, conductance and transpiration: scaling from leaves to canopies ». Plant,
 Cell & Environment 18 (10): 1183‑1200.
 """
-function assimiliation(A_mod::Fvcb,Gs_mod::GsModel,environment,constants)
+function assimilation(A_mod::Fvcb,Gs_mod::GsModel,environment,constants)
 
     # Tranform Celsius temperatures in Kelvin:
     Tₖ = environment.Tₗ - constants.K₀
@@ -206,82 +212,18 @@ function assimiliation(A_mod::Fvcb,Gs_mod::GsModel,environment,constants)
     return (A, Gₛ, Cᵢ)
 end
 
-"""
-Photosynthesis using the Farquhar–von Caemmerer–Berry (FvCB) model with
-default constant values (found in [`Constants`](@ref)).
-"""
-function assimiliation(A_mod::Fvcb,Gs_mod::GsModel,environment)
-    assimiliation(A_mod,Gs_mod,environment,Constants())
+
+function assimilation(A_mod::Fvcb,Gs_mod::GsModel,environment)
+    assimilation(A_mod,Gs_mod,environment,Constants())
 end
 
-"""
-    assimiliation(A_mod::Fvcb, Gs_mod::GsModel; Tₗ = missing, PPFD = missing, Rh = missing,
-                    Cₛ = missing, VPD = missing, ψₗ = missing)
-
-Photosynthesis using the Farquhar–von Caemmerer–Berry (FvCB) model for C3 photosynthesis
- (Farquhar et al., 1980; von Caemmerer and Farquhar, 1981).
-Computation is made following Farquhar & Wong (1984), Leuning et al. (1995), and the
-MAESPA model (Duursma et al., 2012).
-The resolution is analytical as first presented in Baldocchi (1994).
-
-# Returns
-
-A tuple with (A, Gₛ, Cᵢ):
-
-- A: carbon assimilation (μmol m-2 s-1)
-- Gₛ: stomatal conductance (mol m-2 s-1)
-- Cᵢ: intercellular CO₂ concentration (ppm)
-
-# Arguments
-
-- `A_mod::Fvcb`: The struct holding the parameters for the model. See [`Fvcb`](@ref).
-- `Gs_mod::GsModel`: The struct holding the parameters for the stomatal conductance model. See
-[`Medlyn`](@ref) or [`ConstantGs`](@ref).
-- Tₗ (°C): air temperature
-- PPFD (μmol m-2 s-1): absorbed Photosynthetic Photon Flux Density
-- Rh (0-1): air relative humidity
-- Cₛ (ppm): stomatal CO₂ concentration
-- VPD (kPa): vapor pressure deficit of the air
-- ψₗ (kPa): leaf water potential
-
-# Note
-
-The mandatory inputs to provide are: A_mod, Gs_mod, Tₗ, PPFD, and Cₛ. Others are optional depending
-on the stomatal conductance model. For example VPD is needed for the Medlyn et al. (2011) model.
-Please note the optional inputs are keyword parameters, so they must be explicitely named.
-
-# Examples
-
-```julia
-assimiliation(Fvcb(),Gs(),
-              Tₗ = 25.0, PPFD = 1000.0, Cₛ = 300.0, VPD = 2.0)
-              )
-```
-
-# References
-
-Baldocchi, Dennis. 1994. « An analytical solution for coupled leaf photosynthesis and
-stomatal conductance models ». Tree Physiology 14 (7-8‑9): 1069‑79.
-https://doi.org/10.1093/treephys/14.7-8-9.1069.
-
-Duursma, R. A., et B. E. Medlyn. 2012. « MAESPA: a model to study interactions between water
-limitation, environmental drivers and vegetation function at tree and stand levels, with an
-example application to [CO2] × drought interactions ». Geoscientific Model Development 5
-(4): 919‑40. https://doi.org/10.5194/gmd-5-919-2012.
-
-Farquhar, G. D., S. von von Caemmerer, et J. A. Berry. 1980. « A biochemical model of
-photosynthetic CO2 assimilation in leaves of C3 species ». Planta 149 (1): 78‑90.
-
-Leuning, R., F. M. Kelliher, DGG de Pury, et E.D. Schulze. 1995. « Leaf nitrogen,
-photosynthesis, conductance and transpiration: scaling from leaves to canopies ». Plant,
-Cell & Environment 18 (10): 1183‑1200.
-"""
-function assimiliation(A_mod::Fvcb, Gs_mod::GsModel; Tₗ = missing, PPFD = missing, Rh = missing,
-                        Cₛ = missing, VPD = missing, ψₗ = missing)
+# With keyword arguments (better for users)
+function assimilation(A_mod::Fvcb, Gs_mod::GsModel; Tₗ, PPFD, Cₛ, Rh = missing,
+                        VPD = missing, ψₗ = missing)
 
     environment = MutableNamedTuple(Tₗ = Tₗ, PPFD = PPFD, Rh = Rh, Cₛ= Cₛ, VPD = VPD, ψₗ = ψₗ)
 
-    assimiliation(A_mod,Gs_mod,environment,Constants())
+    assimilation(A_mod,Gs_mod,environment,Constants())
 end
 
 
