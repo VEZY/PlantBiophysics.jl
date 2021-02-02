@@ -22,11 +22,16 @@ function read_model(file)
     group = model["Group"]
     types = collect(keys(model["Type"]))
 
-    for (i,j) in model["Type"]
+    models = Dict()
 
+    for (i,j) in model["Type"]
+        # i = "Leaf"
+        # j = model["Type"][i]
         organtype = get_organtype(i)
 
         for (k,l) in j
+            # k = "StomatalConductance"
+            # l = j[k]
             process = get_process(k)
             if !ismissing(process)
                 # Checking if there are several models or just one given without the "use" keyword:
@@ -44,13 +49,13 @@ function read_model(file)
                     error("Error in parsing process `$k` of component type `$i`. Please check.")
                 end
 
-                model = get_model(pop!(modelused, "model"), process)
-                model = instantiate(model,modelused)
+                model_process = get_model(pop!(modelused, "model"), process)
+                model_process = instantiate(model_process,modelused)
+                push!(models, process => model_process)
             end
-
         end
-        # println("Type: ",i," content: ",j)
     end
+    return models
 end
 
 """
@@ -90,13 +95,14 @@ end
 Return the model (the actual struct) given its name passed as a String.
 """
 function get_model(x,process)
-    if process == "Photosynthesis"
+    process = lowercase(process)
+    if process == "photosynthesis"
         dict = Dict("farquharenbalance" => Fvcb, "fvcb" => Fvcb, "fvcbiter" => FvcbIter)
         # NB: dict keys all in lowercase because we transform x into lowercase too to avoid mismatches
-    elseif process == "StomatalConductance"
+    elseif process == "stomatalconductance"
         dict = Dict("medlyn" => Medlyn)
-    elseif process == "Interception"
-        dict = Dict("Translucent" => Translucent, "ignore" => Ignore)
+    elseif process == "interception"
+        dict = Dict("translucent" => Translucent, "ignore" => Ignore)
     end
 
     x_lc = lowercase(x)
@@ -115,6 +121,7 @@ Instantiate a model given its parameter names, considering that parameter names 
 different compared to the model fieds (used to insure compatibility with Archimed).
 """
 function instantiate(model,param,correspondance,param_type)
+
     param_names = fieldnames(model)
 
     # For each parameter, we first search if there is the parameter named as in the fields of the input struct.
@@ -129,7 +136,7 @@ function instantiate(model,param,correspondance,param_type)
             push!(param_model, i => convert(param_type[key],param[key]))
         elseif haskey(correspondance, i)
             # The parameter was not found in param, so we try using other names from correspondance
-            push!(param_model, i => convert(param_type[correspondance[]],param[correspondance[i]]))
+            push!(param_model, i => convert(param_type[key],param[correspondance[i]]))
         end
     end
 
@@ -141,26 +148,45 @@ function instantiate(model,param,correspondance,param_type)
     return model(;param_model...)
 end
 
-function instantiate(model::Union{Fvcb,FvcbIter},param)
+function instantiate(model::Union{Type{Fvcb},Type{FvcbIter}},param)
     correspondance = Dict(:Tᵣ => "tempCRef", :VcMaxRef => "vcMaxRef", :JMaxRef => "jMaxRef",:RdRef => "rdRef", :θ => "theta")
-    param_type = [Float64 for i in 1:length(fieldnames(model))]
+    # Create a Dict holding the parameter type for each parameter
+    param_type = Dict([string(i) => Float64 for i in fieldnames(model)]...)
     instantiate(model,param,correspondance,param_type)
 end
 
-function instantiate(model::Medlyn,param)
+function instantiate(model::Type{Medlyn},param)
     correspondance = Dict()
-    param_type = [Float64 for i in 1:length(fieldnames(model))]
+    param_type = Dict([string(i) => Float64 for i in fieldnames(model)]...)
     instantiate(model,param,correspondance,param_type)
 end
 
-function instantiate(model::Translucent,param)
+function instantiate(model::Type{Translucent},param)
+
+    if haskey(param,"optical_properties")
+        isPAR = haskey(param["optical_properties"],"PAR")
+        isNIR = haskey(param["optical_properties"],"NIR")
+
+        if isPAR && isNIR
+            param["optical_properties"] =
+                instantiate(σ,param["optical_properties"],[],
+                            Dict("PAR" => Float64,"NIR" => Float64))
+        else
+            missing_optic = ["PAR","NIR"][[!isPAR,!isNIR]]
+            @error "Missing Optical properties found in `$model` model for `$missing_optic`."
+        end
+    else
+        @error "Optical properties not found in $model model. Please check file."
+    end
+
     correspondance = Dict()
-    param_type = [Float64 for i in 1:length(fieldnames(model))]
+    param_type = Dict("transparency" => Float64, "optical_properties" => OpticalProperties)
+
     instantiate(model,param,correspondance,param_type)
 end
 
 
-function instantiate(model::Ignore,param) end
+function instantiate(model::Type{Ignore},param) end
 
 
 """

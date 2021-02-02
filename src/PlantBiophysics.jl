@@ -10,6 +10,11 @@ using OrderedCollections
 # Generic structures:
 include("structs.jl")
 
+# Light interception
+include("light_interception/generic_structs.jl")
+include("light_interception/Ignore.jl")
+include("light_interception/Translucent.jl")
+
 # Photosynthesis related files:
 include("photosynthesis/photosynthesis.jl")
 include("photosynthesis/FvCB.jl")
@@ -28,6 +33,12 @@ include("io/read_model.jl")
 export read_model
 export is_model
 
+# structure for light interception
+export Translucent
+export Ignore
+export OpticalProperties
+export σ
+
 # structure for photosynthesis
 export Fvcb # Parameters for the Farquhar et al. (1980) model
 export FvcbIter
@@ -40,7 +51,8 @@ export Medlyn
 export Translucent
 export Ignore
 
-# Structure that hold models
+# Organs (structures that hold models)
 export Leaf
+export Metamer
 
 end

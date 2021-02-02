@@ -15,7 +15,7 @@ Craig V. M. Barton, Kristine Y. Crous, Paolo De Angelis, Michael Freeman, et Lis
 Global Change Biology 17 (6): 2134‑44. https://doi.org/10.1111/j.1365-2486.2010.02375.x.
 
 """
-struct Medlyn{T} <: GsModel
+Base.@kwdef struct Medlyn{T} <: GsModel
  g0::T
  g1::T
 end
