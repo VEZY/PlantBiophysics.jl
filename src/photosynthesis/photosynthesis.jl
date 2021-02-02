@@ -36,19 +36,17 @@ Keyword arguments also depend on the models used (see below).
 ```julia
 # Using Fvcb:
 leaf = Leaf(;Photosynthesis = Fvcb(), StomatalConductance = Medlyn(0.03, 12.0))
-
-photosynthesis(leaf, Tₗ = 25.0, PPFD = 1000.0, Cₛ = 300.0, VPD = 2.0)
+photosynthesis(leaf, Tₗ = 25.0, PPFD = 1000.0, Cₛ = 400.0, VPD = 2.0)
 
 # Using FvcbIter:
 leaf = Leaf(;Photosynthesis = FvcbIter(), StomatalConductance = Medlyn(0.03, 12.0))
-
-photosynthesis(leaf, Tₗ = 25.0, PPFD = 1000.0, Gbc = 1.0, VPD = 2.0)
+photosynthesis(leaf, Tₗ = 25.0, PPFD = 1000.0, Gbc = 1.0, VPD = 2.0, Cₐ = 400.0)
 
 ```
 """
-function photosynthesis(leaf::PhotoOrgan; Tₗ = missing, PPFD = missing,
+function photosynthesis(leaf::PhotoOrgan; Tₗ, PPFD,
                         Cₐ = missing, Rh = missing,
-                        Gbc = missing, Cₛ = missing, VPD = missing, ψₗ = missing,
+                        Gbc = missing, Cₛ = 0.0, VPD = missing, ψₗ = missing,
                         constants = Constants())
     environment = MutableNamedTuple(Tₗ = Tₗ, PPFD = PPFD, Cₐ = Cₐ, Rh = Rh, Gbc = Gbc,
                                     Cₛ = Cₛ, VPD = VPD, ψₗ = ψₗ)
