@@ -81,6 +81,9 @@ end
 
 """
     assimiliation(A_mod::Fvcb,Gs_mod::GsModel,environment,constants)
+    assimiliation(A_mod::Fvcb,Gs_mod::GsModel,environment)
+    assimiliation(A_mod::Fvcb, Gs_mod::GsModel; Tₗ = missing, PPFD = missing, Rh = missing,
+                        Cₛ = missing, VPD = missing, ψₗ = missing)
 
 Photosynthesis using the Farquhar–von Caemmerer–Berry (FvCB) model for C3 photosynthesis
  (Farquhar et al., 1980; von Caemmerer and Farquhar, 1981).
@@ -103,7 +106,7 @@ A tuple with (A, Gₛ, Cᵢ):
 - `A_mod::Fvcb`: The struct holding the parameters for the model. See [`Fvcb`](@ref).
 - `Gs_mod::GsModel`: The struct holding the parameters for the stomatal conductance model. See
 [`Medlyn`](@ref) or [`ConstantGs`](@ref).
-- `environment::NamedTuple`: the values for the variables:
+- `environment::NamedTuple`: the values for the variables (can also be given as keywords):
     - Tₗ (°C): leaf temperature
     - PPFD (μmol m-2 s-1): absorbed Photosynthetic Photon Flux Density
     - Rh (0-1): air relative humidity
@@ -152,7 +155,7 @@ function assimiliation(A_mod::Fvcb,Gs_mod::GsModel,environment,constants)
 
     # Temperature dependence of the parameters:
     Γˢ = Γ_star(Tₖ,Tᵣₖ,constants) # Gamma star (CO2 compensation point) in μmol mol-1
-    Km = Km(Tₖ,Tᵣₖ,A_mod.O₂,constants) # effective Michaelis–Menten coefficient for CO2
+    Km = get_km(Tₖ,Tᵣₖ,A_mod.O₂,constants) # effective Michaelis–Menten coefficient for CO2
 
     # Maximum electron transport rate at the given leaf temperature (μmol m-2 s-1):
     JMax = arrhenius(A_mod.JMaxRef,A_mod.Eₐⱼ,Tₖ,Tᵣₖ,constants,A_mod.Hdⱼ,A_mod.Δₛⱼ)
@@ -164,17 +167,14 @@ function assimiliation(A_mod::Fvcb,Gs_mod::GsModel,environment,constants)
     # cycle, and termed "day" respiration, or "light respiration" (Harley et al., 1986).
 
     # Actual electron transport rate (considering intercepted PAR and leaf temperature):
-    J = J(environment.PPFD, JMax, A_mod.α, A_mod.θ) # in μmol m-2 s-1
+    J = get_J(environment.PPFD, JMax, A_mod.α, A_mod.θ) # in μmol m-2 s-1
     # RuBP regeneration
     Vⱼ = J / 4
 
-    # Every variable that can be used for gs (make a PR if you need more).
-    gs_vars = (environment.Cₛ,environment.VPD,environment.Rh,environment.ψₗ)
-
     # Stomatal conductance (umol m-2 s-1), dispatched on type of first argument (Gs_mod):
-    gs_mod = gs_closure(Gs_mod,gs_vars)
+    gs_mod = gs_closure(Gs_mod,environment)
 
-    Cᵢⱼ = Cᵢⱼ(Vⱼ,Γˢ,environment.Cₛ,Rd,Gs_mod.g0,gs_mod)
+    Cᵢⱼ = get_Cᵢⱼ(Vⱼ,Γˢ,environment.Cₛ,Rd,Gs_mod.g0,gs_mod)
     Wⱼ = Vⱼ * (Cᵢⱼ - Γˢ) / (Cᵢⱼ + 2.0 * Γˢ)
 
     if Wⱼ - Rd < 1.0e-6
@@ -182,9 +182,9 @@ function assimiliation(A_mod::Fvcb,Gs_mod::GsModel,environment,constants)
         Wⱼ = Vⱼ * (Cᵢⱼ - Γˢ) / (Cᵢⱼ + 2.0 * Γˢ)
     end
 
-    Cᵢᵥ = Cᵢᵥ(VcMAX,Γˢ,environment.Cₛ,Rd,Gs_mod.g0,gs_mod,Km)
+    Cᵢᵥ = get_Cᵢᵥ(VcMax,Γˢ,environment.Cₛ,Rd,Gs_mod.g0,gs_mod,Km)
 
-    if Cᵢᵥ <= 0.0 | Cᵢᵥ > environment.Cₛ
+    if Cᵢᵥ <= 0.0 || Cᵢᵥ > environment.Cₛ
         Wᵥ = 0.0
     else
         Wᵥ = VcMax * (Cᵢᵥ - Γˢ) / (Cᵢᵥ + Km)
@@ -197,7 +197,7 @@ function assimiliation(A_mod::Fvcb,Gs_mod::GsModel,environment,constants)
     Gₛ = Gs_mod.g0 + gs_mod * A
 
     # Intercellular CO₂ concentration (Cᵢ, μmol mol)
-    if Gₛ > 0.0 & A > 0.0
+    if Gₛ > 0.0 && A > 0.0
         Cᵢ = environment.Cₛ - A / Gₛ
     else
         Cᵢ = environment.Cₛ
@@ -323,11 +323,11 @@ https://doi.org/10.1046/j.1365-3040.2002.00891.x.
 julia> A = Fvcb()
 Fvcb{Float64}(25.0, 200.0, 250.0, 0.6, 46390.0, 210.0, 29680.0, 200000.0, 631.88, 58550.0, 200000.0, 629.26, 0.425, 0.9)
 
-julia> PlantBiophysics.J(1500, A.JMaxRef, A.α, A.θ)
+julia> PlantBiophysics.get_J(1500, A.JMaxRef, A.α, A.θ)
 236.11111111111111
 ```
 """
-function J(PPFD, JMax, α, θ)
+function get_J(PPFD, JMax, α, θ)
   (α * PPFD + JMax - sqrt((α * PPFD + JMax)^2 - 4 * α * θ * PPFD * JMax)) / (2 * θ)
 end
 
@@ -344,7 +344,7 @@ Analytic resolution of Cᵢ when the rate of electron transport is limiting (``�
 - `gs_mod`: stomatal conductance term computed from a given implementation of a Gs model,
 e.g. [`Medlyn`](@ref).
 """
-function Cᵢⱼ(Vⱼ,Γˢ,Cₛ,Rd,g0,gs_mod)
+function get_Cᵢⱼ(Vⱼ,Γˢ,Cₛ,Rd,g0,gs_mod)
     a = g0 + gs_mod * (Vⱼ - Rd)
     b = (1.0 - Cₛ * gs_mod) * (Vⱼ - Rd) + g0 * (2.0 * Γˢ - Cₛ) -
         gs_mod * (Vⱼ * Γˢ + 2.0 * Γˢ * Rd)
@@ -368,7 +368,7 @@ Analytic resolution of Cᵢ when the Rubisco activity is limiting (``μmol\\ mol
 e.g. [`Medlyn`](@ref).
 - `Km`: effective Michaelis–Menten coefficient for CO2 (``μ mol\\ mol^{-1}``)
 """
-function Cᵢᵥ(VcMAX,Γˢ,Cₛ,Rd,g0,gs_mod,Km)
+function get_Cᵢᵥ(VcMAX,Γˢ,Cₛ,Rd,g0,gs_mod,Km)
     a = g0 + gs_mod * (VcMAX - Rd)
     b = (1.0 - Cₛ * gs_mod) * (VcMAX - Rd) + g0 * (Km - Cₛ) - gs_mod * (VcMAX * Γˢ + Km * Rd)
     c = -(1.0 - Cₛ * gs_mod) * (VcMAX * Γˢ + Km * Rd) - g0 * Km * Cₛ

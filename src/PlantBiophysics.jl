@@ -39,13 +39,14 @@ export Ignore
 export OpticalProperties
 export σ
 
-# structure for photosynthesis
+# Photosynthesis
 export Fvcb # Parameters for the Farquhar et al. (1980) model
 export FvcbIter
 export Constants
 export assimiliation
 export gs
 export Medlyn
+export photosynthesis
 
 # Temporary structures (to move to another package)
 export Translucent

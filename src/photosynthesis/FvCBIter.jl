@@ -62,9 +62,11 @@ A tuple with (A, Gₛ, Cᵢ):
     - PPFD (μmol m-2 s-1): absorbed Photosynthetic Photon Flux Density
     - gbc (mol m-2 s-1): boundary layer conductance for CO₂
     - Rh (0-1): air relative humidity
-    - Cₐ (ppm): stomatal CO₂ concentration
+    - Cₐ (ppm): atmospheric CO₂ concentration
     - VPD (kPa): vapor pressure deficit of the air
     - ψₗ (kPa): leaf water potential
+- `constants` a struct with constant values. If not provided, [`Constants`](@ref) is used with default
+values.
 
 # Note
 
@@ -76,9 +78,16 @@ on the stomatal conductance model. For example VPD is needed for the Medlyn et a
 ```julia
 assimiliation(FvcbIter(),
               Gs(),
-              (Tₗ = 25.0, PPFD = 1000.0, Rh = missing, Cₛ = 300.0, VPD = 2.0,
+              (Tₗ = 25.0, PPFD = 1000.0, Rh = missing, Cₐ = 300.0, VPD = 2.0, gbc = 1.0,
                 ψₗ = missing),
              constants)
+
+# Or using the keyword method:
+
+assimiliation(FvcbIter(),
+              Gs(),
+              Tₗ = 25.0, PPFD = 1000.0, gbc = 1.0, Cₐ = 400.0, VPD = 2.0)
+              )
 ```
 
 # References
@@ -138,38 +147,10 @@ end
     assimiliation(A_mod::FvcbIter, Gs_mod::GsModel; Tₗ = missing, PPFD = missing, Rh = missing,
                     Cₛ = missing, VPD = missing, ψₗ = missing)
 
-Photosynthesis using the Farquhar–von Caemmerer–Berry (FvCB) model for C3 photosynthesis
- (Farquhar et al., 1980; von Caemmerer and Farquhar, 1981).
-
-Iterative implementation, i.e. the assimilation is computed iteratively over Cᵢ. For the
-analytical resolution, see [Fvcb](@ref).
-
-# Returns
-
-A tuple with (A, Gₛ, Cᵢ):
-
-- A: carbon assimilation (μmol m-2 s-1)
-- Gₛ: stomatal conductance (mol m-2 s-1)
-- Cᵢ: intercellular CO₂ concentration (ppm)
-
-# Arguments
-
-- `A_mod::FvcbIter`: The struct holding the parameters for the model. See [`FvcbIter`](@ref).
-- `Gs_mod::GsModel`: The struct holding the parameters for the stomatal conductance model. See
-[`Medlyn`](@ref) or [`ConstantGs`](@ref).
-- Tₗ (°C): air temperature
-- PPFD (μmol m-2 s-1): absorbed Photosynthetic Photon Flux Density
-- gbc (mol m-2 s-1): boundary layer conductance for CO₂
-- Rh (0-1): air relative humidity
-- Cₐ (ppm): air CO₂ concentration
-- VPD (kPa): vapor pressure deficit of the air
-- ψₗ (kPa): leaf water potential
-
-# Note
-
-The mandatory inputs to provide are: A_mod, Gs_mod, Tₗ, PPFD, and Cₛ. Others are optional depending
-on the stomatal conductance model. For example VPD is needed for the Medlyn et al. (2011) model.
-Please note the optional inputs are keyword parameters, so they must be explicitely named.
+Keyword implementation of the iterative implementation of the assimilation using the
+Farquhar–von Caemmerer–Berry (FvCB) model for C3 photosynthesis (Farquhar et al., 1980;
+von Caemmerer and Farquhar, 1981), i.e. the assimilation is computed iteratively over Cᵢ.
+For the analytical resolution, see [Fvcb](@ref).
 
 # Examples
 
@@ -178,14 +159,9 @@ assimiliation(FvcbIter(),Gs(),
               Tₗ = 25.0, PPFD = 1000.0, gbc = 1.0, Cₐ = 400.0, VPD = 2.0)
               )
 ```
-
-# References
-
-Farquhar, G. D., S. von von Caemmerer, et J. A. Berry. 1980. « A biochemical model of
-photosynthetic CO2 assimilation in leaves of C3 species ». Planta 149 (1): 78‑90.
 """
 function assimiliation(A_mod::FvcbIter, Gs_mod::GsModel; Tₗ = missing, PPFD = missing, Rh = missing,
-                        Cₛ = missing, VPD = missing, ψₗ = missing)
+                        Cₐ = missing, VPD = missing, ψₗ = missing)
     environment = MutableNamedTuple(Tₗ = Tₗ, PPFD = PPFD, gbc = gbc, Cₐ = Cₐ, VPD = VPD, ψₗ = ψₗ)
     assimiliation(A_mod,Gs_mod,environment,Constants())
 end

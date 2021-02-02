@@ -139,10 +139,10 @@ https://doi.org/10.1046/j.1365-3040.2002.00891.x.
 
 ```julia
 # computing the temperature dependence of γˢ:
-Km(28,25,constants())
+get_km(28,25,210.0,Constants())
 ```
 """
-function Km(Tₖ,Tᵣₖ,O₂,constants)
+function get_km(Tₖ,Tᵣₖ,O₂,constants)
     KC = arrhenius(404.9,79430.0,Tₖ,Tᵣₖ,constants)
     KO = arrhenius(278.4,36380.0,Tₖ,Tᵣₖ,constants)
     return KC * (1.0 + O₂/KO)
