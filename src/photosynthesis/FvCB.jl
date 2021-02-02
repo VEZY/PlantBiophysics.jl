@@ -18,9 +18,9 @@ The definition:
 - `Hdᵥ`: rate of decrease of the function above the optimum (also called EDVC) for VcMax.
 - `Δₛᵥ`: entropy factor for VcMax.
 - `α`: quantum yield of electron transport (``mol_e\\ mol^{-1}_{quanta}``). See also eq. 4 of
- Medlyn et al. (2002) and its implementation in [`J`](@ref)
+Medlyn et al. (2002) and its implementation in [`get_J`](@ref)
 - `θ`: determines the curvature of the light response curve for `J~PPFD`. See also eq. 4 of
- Medlyn et al. (2002) and its implementation in [`J`](@ref)
+Medlyn et al. (2002) and its implementation in [`get_J`](@ref)
 
 The default values of the temperature correction parameters are taken from
 [plantecophys](https://remkoduursma.github.io/plantecophys/). If there is no negative effect
@@ -28,13 +28,13 @@ of high temperatures on the reaction (Jmax or VcMax), then Δₛ can be set to 0
 
 # Note
 
-Medlyn et al. (2002) found relatively low influence ("a slight effect") of α, θ. They also
+Medlyn et al. (2002) found relatively low influence ("a slight effect") of α and θ. They also
 say that Kc, Ko and Γ* "are thought to be intrinsic properties of the Rubisco enzyme
 and are generally assumed constant among species".
 
 # See also
 
-- [`J`](@ref)
+- [`get_J`](@ref)
 - [`assimilation`](@ref)
 
 # References

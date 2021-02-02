@@ -3,6 +3,8 @@
 
 ```@example
 using Plots;
+using PlantBiophysics
+
 A = Fvcb(); PPFD = 0:100:2000;
 plot(x -> PlantBiophysics.get_J(x, A.JMaxRef, A.α, A.θ), PPFD, xlabel = "PPFD (μmol m⁻² s⁻¹)",
             ylab = "J (μmol m⁻² s⁻¹)", label = "Default values", legend = :bottomright);

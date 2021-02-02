@@ -21,37 +21,38 @@ A GsModel subtype struct must implement at least a g0 field.
 Here is an example of an implementation of a new GsModel subtype with two parameters (g0 and g1):
 
 1. First, define the struct that holds your parameters values:
-
-```julia
-struct your_gs_subtype{T} <: GsModel
- g0::T
- g1::T
-end
-```
-
+    ```julia
+    struct your_gs_subtype{T} <: GsModel
+    g0::T
+    g1::T
+    end
+    ```
 2. Define how your stomatal conductance model works by implementing your own version of the
 [`gs_closure`](@ref) function:
+    ```julia
+    function gs_closure(Gs)
+        (1.0 + Gs.g1 / sqrt(VPD)) / Cₛ
+    end
 
-```julia
-function gs_closure(Gs)
-    (1.0 + Gs.g1 / sqrt(VPD)) / Cₛ
-end
-
-function gs(Gs)
-    (1.0 + Gs.g1 / sqrt(VPD)) / Cₛ
-end
-```
-
+    function gs(Gs)
+        (1.0 + Gs.g1 / sqrt(VPD)) / Cₛ
+    end
+    ```
 3. Instantiate an object of type `your_gs_subtype`:
-Gs = your_gs_subtype(0.03, 0.1)
-
+    ```julia
+    Gs = your_gs_subtype(0.03, 0.1)
+    ```
 4. Call your stomatal model using dispatch on your type:
-gs_mod = gs(Gs)
+    ```julia
+    gs_mod = gs(Gs)
+    ```
 
 Please note that the result of [`gs`](@ref) is just used for the part that modifies the conductance
 according to other variables, it is used as:
 
+```julia
 Gₛ = Gs.g0 + gs_mod * A
+```
 
 Where Gₛ is the stomatal conductance for CO₂ in μmol m-2 s-1, Gs.g0 is the residual conductance, and
 A is the carbon assimilation in μmol m-2 s-1.
