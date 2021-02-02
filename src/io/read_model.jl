@@ -22,16 +22,18 @@ function read_model(file)
     group = model["Group"]
     types = collect(keys(model["Type"]))
 
-    models = Dict()
+    organs = Dict()
 
     for (i,j) in model["Type"]
         # i = "Leaf"
         # j = model["Type"][i]
         organtype = get_organtype(i)
 
+        processes = Dict()
         for (k,l) in j
             # k = "StomatalConductance"
             # l = j[k]
+
             process = get_process(k)
             if !ismissing(process)
                 # Checking if there are several models or just one given without the "use" keyword:
@@ -51,11 +53,13 @@ function read_model(file)
 
                 model_process = get_model(pop!(modelused, "model"), process)
                 model_process = instantiate(model_process,modelused)
-                push!(models, process => model_process)
+                push!(processes, Symbol(process) => model_process)
             end
         end
+        push!(organs, organtype => (;processes...))
     end
-    return models
+
+    return organs
 end
 
 """
