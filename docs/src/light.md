@@ -1,0 +1,3 @@
+# Light interception
+
+List all models available for light interception, how to use them, what are the parameters...

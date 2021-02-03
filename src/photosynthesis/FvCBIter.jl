@@ -44,7 +44,7 @@ Computation is made following Farquhar & Wong (1984), Leuning et al. (1995), and
 Archimed model.
 
 Iterative implementation, i.e. the assimilation is computed iteratively over Cᵢ. For the
-analytical resolution, see [Fvcb](@ref).
+analytical resolution, see [`Fvcb`](@ref).
 
 # Returns
 

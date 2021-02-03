@@ -16,8 +16,17 @@ makedocs(;
     ),
     pages=[
         "Home" => "index.md",
+        "Getting started" => "get_started.md",
+        "Models" => Any[
+            "Concepts" => "concepts.md",
+            "Photosynthesis" => "photosynthesis.md",
+            "Stomatal conductance" => "gs.md",
+            "Light interception" => "light.md"],
+        "Functions" => "functions.md"
     ],
 )
+
+
 
 deploydocs(;
     repo="github.com/VEZY/PlantBiophysics.jl",
