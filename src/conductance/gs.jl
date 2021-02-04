@@ -9,7 +9,7 @@ Stomatal conductance for CO₂ (mol m-2 s-1).
 [`Medlyn`](@ref) or [`ConstantGs`](@ref).
 - A (μmol m-2 s-1): the C assimilation
 - Cₛ (ppm): the stomatal CO₂ concentration
-- VPD (kPa): the vapor pressure deficit of the air
+- VPD (kPa): the air - leaf vapor pressure deficit
 - Rh (0-1): the relative humidity of the air
 - ψₗ (kPa): the leaf water potential
 

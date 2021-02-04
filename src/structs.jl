@@ -91,18 +91,3 @@ Metamer organ, with one field holding the light interception model type and its 
 Base.@kwdef struct Metamer{I<: Union{Missing,InterceptionModel}} <: Organ
     Interception::I = missing
 end
-
-
-"""
-Physical constants
-
-The definition and default values are:
-
-- `K₀ = -273.15`: absolute zero (°C)
-- `R = 8.314`: universal gas constant (``J\\ mol^{-1}\\ K^{-1}``).
-
-"""
-Base.@kwdef struct Constants
-    K₀::Float64 = -273.15
-    R::Float64 = 8.314
-end

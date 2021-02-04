@@ -10,6 +10,9 @@ using OrderedCollections
 # Generic structures:
 include("structs.jl")
 
+# Physical constants:
+include("constants.jl")
+
 # Light interception
 include("light_interception/generic_structs.jl")
 include("light_interception/Ignore.jl")
