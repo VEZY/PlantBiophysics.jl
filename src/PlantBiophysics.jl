@@ -29,6 +29,11 @@ include("conductance/constant.jl")
 include("conductance/gs.jl")
 include("conductance/medlyn.jl")
 
+# Energy balance
+include("energy/utilities.jl")
+include("energy/longwave_energy.jl")
+# include("energy/energy_balance.jl")
+
 # File IO
 include("io/read_model.jl")
 
@@ -50,6 +55,9 @@ export assimilation
 export gs
 export Medlyn
 export photosynthesis
+
+# Physical constants
+export Constants
 
 # Temporary structures (to move to another package)
 export Translucent

@@ -52,82 +52,73 @@ complexity using MAESPA model ». Agricultural and Forest Meteorology 253‑254
 https://doi.org/10.1016/j.agrformet.2018.02.005.
 """
 function energy_balance(Tₐ,Wind,Rh,Rn,rsw,P,Wₗ,maxiter=10,adjustrn= TRUE,
-                        hypostomatous= TRUE,Dheat= 2.15e-05, skyFraction= 2,
-                        constants)
+                        hypostomatous= true, Dheat= 2.15e-05, skyFraction= 2,
+                        constants,emissivity)
+    esat= get_eₛ(Tₐ)
+    vpd= esat - Rh * esat
+    Tₗ = Tₐ
+    tLeafCalc = 0.0
+    delta_t= 0.0
+    GBVGBH = 1.075
+    rn_2= Rn
 
+    ρ = air_density(Tₐ, P, constants.Rd, constants.K₀) # in kg m-3
+    γ = psychrometric_constant(Tₐ, P, constants.Cₚ, constants.ε) # in kPa K−1
 
-  esat= get_eₛ(Tₐ)
-  vpd= esat - Rh * esat
-  Tₗ = Tₐ
-  tLeafCalc = 0.0
-  delta_t= 0.0
-  GBVGBH = 1.075
-  rn_2= Rn
-
-  ρ = air_density(Tₐ, P, constants.Rd, constants.K₀)
-
-  γ = psychrometric_constant(Tₐ, P, constants.Cₚ, constants.ε)
-
-
-
-
-  # Monteith and unsworth (2013), eq. 13.32, corrigendum from Schymanski et al. (2017):
-  a_sh= 2 # both sides exchange H
-  if hypostomatous
-    a_s= 1
-  else
-    a_s= 2
-  end
-
-
-  for i in 1:maxiter
-
-    if adjustrn
-      R_ll= (black_body(Temp = Tₐ,emissivity = 1.0)-black_body(Temp = Tₗ,emissivity = 1.0))*skyFraction
-      rn_2= Rn + R_ll
+    # Monteith and unsworth (2013), eq. 13.32, corrigendum from Schymanski et al. (2017):
+    a_sh = 2 # both sides exchange H
+    if hypostomatous
+        a_s = 1
+    else
+        a_s = 2
     end
 
-    Gbh=
-      Gb_hFree(Tₐ= Tₐ, Tₗ= Tₗ, Wₗ= Wₗ, Dheat= Dheat)+
-      Gb_hForced(Wind = Wind, Wₗ = Wₗ)
-    # NB, in MAESPA we use Rni so we add the radiation conductance also (not here)
+    for i in 1:maxiter
 
-    rbh= 1/(Gbh)
-    rbv = 1/(Gbh*GBVGBH)
-    # gamma_star= n_hypo * gamma * (rbv + rsw)/rbh
-    gamma_star= gamma * a_sh/a_s * (rbv + rsw)/rbh
-    # rv + rsw= Boundary + stomatal conductance to water vapour
+        if adjustrn
+            Rₗₗ = net_longwave_radiation(Tₗ,Tₐ,emissivity,1.0,skyFraction,constants.K₀,constants.σ)
+            rn_2 = Rn + Rₗₗ
+        end
 
-    ## Attention delta, ea et esTa expressed in KPa
-    delta = slope(Tₐ = Tₐ)
+        Gbh = Gb_hFree(Tₐ, Tₗ, Wₗ, Dheat) + Gb_hForced(Wind, Wₗ)
+        # NB, in MAESPA we use Rni so we add the radiation conductance also (not here)
 
-    LE= latent_heat_MAESPA(Rn = rn_2, Tₐ = Tₐ, vpd = vpd, gamma_star = gamma_star, rbh = rbh,
-                           delta = delta, ρ= ρ, Cₚ= constants.Cₚ,a_sh)
+        rbh= 1/(Gbh)
+        rbv = 1/(Gbh*GBVGBH)
+        # gamma_star= n_hypo * gamma * (rbv + rsw)/rbh
+        gamma_star= gamma * a_sh/a_s * (rbv + rsw)/rbh
+        # rv + rsw= Boundary + stomatal conductance to water vapour
 
-    tLeafCalc= Tₐ + (rn_2 - LE) / (ρ*constants.Cₚ * (a_sh/rbh))
+        ## Attention delta, ea et esTa expressed in KPa
+        delta = slope(Tₐ = Tₐ)
 
-    delta_t = tLeafCalc-Tₗ
-    Tₗ = tLeafCalc
+        LE= latent_heat_MAESPA(Rn = rn_2, Tₐ = Tₐ, vpd = vpd, gamma_star = gamma_star, rbh = rbh,
+                                delta = delta, ρ= ρ, Cₚ= constants.Cₚ,a_sh)
+
+        tLeafCalc= Tₐ + (rn_2 - LE) / (ρ*constants.Cₚ * (a_sh/rbh))
+
+        delta_t = tLeafCalc-Tₗ
+        Tₗ = tLeafCalc
 
 
-    # cat('Iteration',i,"\n")
-    # cat('VPD',vpd, 'KPa',"\n")
-    # cat('LE',LE, '(W m-2)',"\n")
-    # cat('H',H, '(W m-2)',"\n")
-    # cat('RBH ',rbh, '(s m-1)',"\n")
-    # cat('RBV',rbv, '(s m-1)',"\n")
-    # cat('------------------',"\n")
+        # cat('Iteration',i,"\n")
+        # cat('VPD',vpd, 'KPa',"\n")
+        # cat('LE',LE, '(W m-2)',"\n")
+        # cat('H',H, '(W m-2)',"\n")
+        # cat('RBH ',rbh, '(s m-1)',"\n")
+        # cat('RBV',rbv, '(s m-1)',"\n")
+        # cat('------------------',"\n")
 
-    if abs(delta_t)<=0.01 break end
+        if abs(delta_t)<=0.01 break end
     end
 
 
-  H= sensible_heat_MAESPA(Rn = rn_2, Tₐ = Tₐ, vpd = vpd, gamma_star = gamma_star, rbh = rbh,
-                      delta = delta, ρ= ρ, Cₚ= constants.Cₚ, a_sh= a_sh)
+    H= sensible_heat_MAESPA(Rn = rn_2, Tₐ = Tₐ, vpd = vpd, gamma_star = gamma_star, rbh = rbh,
+                        delta = delta, ρ= ρ, Cₚ= constants.Cₚ, a_sh= a_sh)
 
 
 
-  return (Rn= rn_2, Tl= Tₗ, Tₐ= Tₐ, H= H, LE= LE, rbh= rbh, rbv= rbv, iter= i)
+    return (Rn= rn_2, Tl= Tₗ, Tₐ= Tₐ, H= H, LE= LE, rbh= rbh, rbv= rbv, iter= i)
 end
 
 """
@@ -152,6 +143,7 @@ end
 function sensible_heat_MAESPA(Rn, Tₐ, vpd, gamma_star, rbh, delta, ρ, Cₚ,a_sh=2)
   (gamma_star*Rn-ρ*Cₚ*vpd*(a_sh/rbh))/(delta+gamma_star)
 end
+
 
 """
 

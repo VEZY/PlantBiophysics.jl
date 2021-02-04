@@ -12,6 +12,9 @@ known as efficiency of impaction of particles. See Allen et al. (1998), or Monte
 Unsworth (2013).
 - `ε = 0.622`: ratio of molecular weights of water vapor and air. See Monteith and
 Unsworth (2013).
+- `λ₀ = 2.501`: latent heat of vaporization for water at 0 degree (``J\\ kg^{-1}``).
+- `σ = 5.670373e-08` [Stefan-Boltzmann constant](https://en.wikipedia.org/wiki/Stefan%E2%80%93Boltzmann_law)
+in (``W\\ m^{-2}\\ K^{-4}``).
 
 # References
 
@@ -28,4 +31,6 @@ Base.@kwdef struct Constants{T}
     Dₕ₀::T = 21.2e-6
     Cₚ::T = 1013.0
     ε::T = 0.622
+    λ₀::T = 2.501e6
+    σ::T = 5.670373e-08
 end
