@@ -51,16 +51,17 @@ Maxime Soma, et al. 2018. « Measuring and modelling energy partitioning in can
 complexity using MAESPA model ». Agricultural and Forest Meteorology 253‑254 (printemps): 203‑17.
 https://doi.org/10.1016/j.agrformet.2018.02.005.
 """
-function energy_balance(Tₐ,Wind,Rh,Rn,rsw,P,Wₗ,maxiter=10,adjustrn= TRUE,
+function energy_balance(Tₐ,Wind,Rh,Rn,rsw,P,Wₗ,maxiter=10,
                         hypostomatous= true, Dheat= 2.15e-05, skyFraction= 2,
                         constants,emissivity)
-    esat= get_eₛ(Tₐ)
-    vpd= esat - Rh * esat
+    eₐ = e(Tₐ, VPD)
+    eₛ = e_sat(Tₐ)
+    vpd = eₛ - Rh * eₛ
+    eₐ = eₛ - vpd # we already have eₛ so we don't use `e()` for the computation here
     Tₗ = Tₐ
     tLeafCalc = 0.0
     delta_t= 0.0
     GBVGBH = 1.075
-    rn_2= Rn
 
     ρ = air_density(Tₐ, P, constants.Rd, constants.K₀) # in kg m-3
     γ = psychrometric_constant(Tₐ, P, constants.Cₚ, constants.ε) # in kPa K−1
@@ -75,12 +76,19 @@ function energy_balance(Tₐ,Wind,Rh,Rn,rsw,P,Wₗ,maxiter=10,adjustrn= TRUE,
 
     for i in 1:maxiter
 
-        if adjustrn
-            Rₗₗ = net_longwave_radiation(Tₗ,Tₐ,emissivity,1.0,skyFraction,constants.K₀,constants.σ)
-            rn_2 = Rn + Rₗₗ
-        end
+        # Re-computing the net radiation according to simulated leaf temperature:
+        εₐ = atmosphere_emissivity(Tₐ,eₐ,constants.K₀)
+        Rₗₗ = net_longwave_radiation(Tₗ,Tₐ,emissivity,εₐ,skyFraction,constants.K₀,constants.σ)
+        #= ? NB: we use the sky fraction here (0-2) instead of the view factor (0-1) because:
+            - we consider both sides of the leaf at the same time (1 -> leaf sees sky on one face)
+            - we consider all objects in the scene have the same temperature as the leaf
+            of interest except the atmosphere. So the leaf exchange thermal energy only with
+            the atmosphere.
+        =#
+        Rn += Rₗₗ
 
-        Gbh = Gb_hFree(Tₐ, Tₗ, Wₗ, Dheat) + Gb_hForced(Wind, Wₗ)
+        # Leaf boundary conductance for heat (m s-1):
+        Gbh = gbₕ_free(Tₐ, Tₗ, Wₗ, Dheat) + gbₕ_forced(Wind, Wₗ)
         # NB, in MAESPA we use Rni so we add the radiation conductance also (not here)
 
         rbh= 1/(Gbh)
@@ -90,12 +98,12 @@ function energy_balance(Tₐ,Wind,Rh,Rn,rsw,P,Wₗ,maxiter=10,adjustrn= TRUE,
         # rv + rsw= Boundary + stomatal conductance to water vapour
 
         ## Attention delta, ea et esTa expressed in KPa
-        delta = slope(Tₐ = Tₐ)
+        delta = e_sat_slope(Tₐ = Tₐ)
 
-        LE= latent_heat_MAESPA(Rn = rn_2, Tₐ = Tₐ, vpd = vpd, gamma_star = gamma_star, rbh = rbh,
+        LE= latent_heat_MAESPA(Rn = Rn, Tₐ = Tₐ, vpd = vpd, gamma_star = gamma_star, rbh = rbh,
                                 delta = delta, ρ= ρ, Cₚ= constants.Cₚ,a_sh)
 
-        tLeafCalc= Tₐ + (rn_2 - LE) / (ρ*constants.Cₚ * (a_sh/rbh))
+        tLeafCalc= Tₐ + (Rn - LE) / (ρ*constants.Cₚ * (a_sh/rbh))
 
         delta_t = tLeafCalc-Tₗ
         Tₗ = tLeafCalc
@@ -113,26 +121,12 @@ function energy_balance(Tₐ,Wind,Rh,Rn,rsw,P,Wₗ,maxiter=10,adjustrn= TRUE,
     end
 
 
-    H= sensible_heat_MAESPA(Rn = rn_2, Tₐ = Tₐ, vpd = vpd, gamma_star = gamma_star, rbh = rbh,
+    H= sensible_heat_MAESPA(Rn = Rn, Tₐ = Tₐ, vpd = vpd, gamma_star = gamma_star, rbh = rbh,
                         delta = delta, ρ= ρ, Cₚ= constants.Cₚ, a_sh= a_sh)
 
 
 
-    return (Rn= rn_2, Tl= Tₗ, Tₐ= Tₐ, H= H, LE= LE, rbh= rbh, rbv= rbv, iter= i)
-end
-
-"""
-    get_eₛ(T)
-
-Saturated water vapour pressure (es, in kPa) at given temperature `T` in Celsius degree.
-See Jones (1992) p. 110 for the equation.
-"""
-function get_eₛ(T)
-  0.61375 * exp(17.502 * T / (T + 240.97))
-end
-
-function slope(Tₐ,Tl)
-  (get_eₛ(Tₐ + 0.1) - get_eₛ(Tₐ)) / 0.1
+    return (Rn= Rn, Tl= Tₗ, Tₐ= Tₐ, H= H, LE= LE, rbh= rbh, rbv= rbv, iter= i)
 end
 
 
@@ -142,63 +136,4 @@ end
 
 function sensible_heat_MAESPA(Rn, Tₐ, vpd, gamma_star, rbh, delta, ρ, Cₚ,a_sh=2)
   (gamma_star*Rn-ρ*Cₚ*vpd*(a_sh/rbh))/(delta+gamma_star)
-end
-
-
-"""
-
-Leaf boundary layer conductance for heat under free convection (m s-1).
-
-# Arguments
-
-- `Tₐ` (°C): air temperature
-- `Tₗ` (°C): leaf temperature
-- `P` (kPa): air pressure
-- `Wₗ` (m): leaf width (`d` in eq. 10.9 from Monteith and Unsworth, 2013).
-- `R = 8.314`: universal gas constant (``J\\ mol^{-1}\\ K^{-1}``).
-- `Dₕ₀ = 21.5e-6`: molecular diffusivity for heat at base temperature.
-
-# Notes
-
-`R` and `Dₕ₀` can be found using [`Constants`](@Ref).
-
-# References
-
-Leuning, R., F. M. Kelliher, DGG de Pury, et E.-D. SCHULZE. 1995. « Leaf nitrogen,
-photosynthesis, conductance and transpiration: scaling from leaves to canopies ». Plant,
-Cell & Environment 18 (10): 1183‑1200.
-
-Monteith, John, et Mike Unsworth. 2013. Principles of environmental physics: plants,
-animals, and the atmosphere. Academic Press. Paragraph 10.1.3, eq. 10.9.
-"""
-function get_Gbₕ_free(Tₐ,Tₗ,P,Wₗ,R,Dₕ₀)
-    # CMOLAR = P / (R * TK(Tₐ)) # Keep it ? Used to transorm in mol m-2 s-1 from m s-1
-
-    if (Tₗ-Tₐ) > 0.0
-        Gr = 1.58e8 * Wₗ^3.0 * abs(Tₗ-Tₐ) # Grashof number (Monteith and Unsworth, 2013)
-        # !Note: Leuning et al. (1995) use 1.6 (eq. E4).
-        # Leuning et al. (1995) eq. E3:
-        Gbₕ_free = 0.5 * get_Dₕ(Dₕ₀, Tₐ) * (Gr^0.25) / Wₗ * CMOLAR
-    else
-        Gbₕ_free = 0.0
-    end
-
-    return Gbₕ_free
-end
-
-
-
-"""
-    get_Dₕ(Dₕ₀,T)
-
-Dₕ -molecular diffusivity for heat at base temperature- from Dₕ₀ (corrected by temperature).
-See Monteith and Unsworth (2013, eq. 3.10).
-
-# References
-
-Monteith, John, et Mike Unsworth. 2013. Principles of environmental physics: plants,
-animals, and the atmosphere. Academic Press. Paragraph 10.1.3., eq. 10.9.
-"""
-function get_Dₕ(Dₕ₀,T)
-    Dₕ₀ + Dₕ₀ * (1 + 0.007*T)
 end

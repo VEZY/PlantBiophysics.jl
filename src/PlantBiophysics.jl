@@ -13,6 +13,9 @@ include("structs.jl")
 # Physical constants:
 include("constants.jl")
 
+# Atmosphere computations (vapor pressure...)
+include("atmosphere.jl")
+
 # Light interception
 include("light_interception/generic_structs.jl")
 include("light_interception/Ignore.jl")
@@ -25,9 +28,13 @@ include("photosynthesis/FvCBIter.jl")
 include("photosynthesis/temperature-dependence.jl")
 
 # stomatal conductance related files:
-include("conductance/constant.jl")
-include("conductance/gs.jl")
-include("conductance/medlyn.jl")
+include("conductances/stomatal/constant.jl")
+include("conductances/stomatal/gs.jl")
+include("conductances/stomatal/medlyn.jl")
+
+
+# boundary layer conductance:
+include("conductances/boundary/gb.jl")
 
 # Energy balance
 include("energy/utilities.jl")
@@ -40,6 +47,11 @@ include("io/read_model.jl")
 # File IO:
 export read_model
 export is_model
+
+# Atmosphere
+export e
+export e_sat
+export e_sat_slope
 
 # Energy balance
 export black_body

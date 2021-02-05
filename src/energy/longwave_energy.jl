@@ -78,7 +78,7 @@ If the result is positive, then the object of interest gain energy.
 
 # Note
 
-`F₁` (also called shape factor) is a coefficient applied to the semi-hemisphere
+`F₁`, the view factor (also called shape factor) is a coefficient applied to the semi-hemisphere
 field of view of object 1 that "sees" object 2. E.g. a leaf can be viewed as a plane. If one side
 of the leaf sees only object 2 in its field of view (e.g. the sky), then `F₁ = 1`.
 Then the net longwave radiation flux for this part of the leaf is multiplied by its actual
@@ -124,4 +124,37 @@ function net_longwave_radiation(T₁,T₂,ε₁,ε₂,F₁)
     constants = Constants()
     (black_body(T₁,constants.K₀,constants.σ) - black_body(T₂,constants.K₀,constants.σ)) /
         (1.0 / ε₁ + 1.0/ε₂ - 1.0) * F₁
+end
+
+"""
+    atmosphere_emissivity(Tₐ,eₐ)
+
+Emissivity of the atmoshpere at a given temperature and vapor pressure.
+
+# Arguments
+
+- `Tₐ` (°C): air temperature
+- `eₐ` (kPa): air vapor pressure
+- `K₀` (°C): absolute zero
+
+# Examples
+
+```julia
+Tₐ = 20.0
+VPD = 1.5
+atmosphere_emissivity(Tₐ, e(Tₐ,VPD))
+```
+
+# References
+
+Leuning, R., F. M. Kelliher, DGG de Pury, et E.-D. SCHULZE. 1995. « Leaf nitrogen,
+photosynthesis, conductance and transpiration: scaling from leaves to canopies ». Plant,
+Cell & Environment 18 (10): 1183‑1200.
+"""
+function atmosphere_emissivity(Tₐ,eₐ,K₀)
+    0.642 * (eₐ * 100 / (Tₐ - K₀))^(1 / 7)
+end
+
+function atmosphere_emissivity(Tₐ,eₐ)
+    0.642 * (eₐ * 100 / (Tₐ - Constants().K₀))^(1 / 7)
 end
