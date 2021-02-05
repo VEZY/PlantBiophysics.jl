@@ -107,3 +107,61 @@ function get_Dₕ(T)
     constants = Constants()
     constants.Dₕ₀ + constants.Dₕ₀ * (1 + 0.007*T)
 end
+
+"""
+    gbh_to_gbw(gbh, Gbₕ_to_Gbₕ₂ₒ)
+    gbh_to_gbw(gbh)
+
+Boundary layer conductance for water vapor from boundary layer conductance for heat.
+
+# Arguments
+
+- `gbh` (m s-1): boundary layer conductance for heat under mixed convection.
+- `Dₕ₀`: molecular diffusivity for heat at base temperature. Use value from [`Constants`](@Ref)
+if not provided.
+
+# Note
+
+Gbₕ is the sum of free and forced convection. See [`gbₕ_free`](@ref) and [`gbₕ_forced`](@ref).
+"""
+function gbh_to_gbw(gbh, Gbₕ_to_Gbₕ₂ₒ)
+    gbh * Gbₕ_to_Gbₕ₂ₒ
+end
+
+
+function gbh_to_gbw(gbh)
+    gbh * Constants().Gbₕ_to_Gbₕ₂ₒ
+end
+
+"""
+    gamma_star(Γ, a_sh, a_s, rbv, Rsᵥ, Rbₕ)
+
+Γˢ, the CO₂ compensation point in the absence of day respiration (``mol_{CO_2}\\ mol^{-1}``).
+Also called the apparent value of psychrometer constant.
+
+# Arguments
+
+- `Γ` (``mol_{CO_2}\\ mol^{-1}``): CO₂ compensation point
+- `aₛₕ` (1,2): number of faces exchanging heat fluxes (see Schymanski et al., 2017)
+- `aₛᵥ` (1,2): number of faces exchanging water fluxes (see Schymanski et al., 2017)
+- `Rbᵥ` (s m-1): boundary layer resistance to water vapor
+- `Rsᵥ` (s m-1): stomatal resistance to water vapor
+- `Rbₕ` (s m-1): boundary layer resistance to heat
+
+# Note
+
+Using the corrigendum from Schymanski et al. (2017).
+
+# References
+
+Monteith, John L., et Mike H. Unsworth. 2013. « Chapter 13 - Steady-State Heat Balance: (i)
+Water Surfaces, Soil, and Vegetation ». In Principles of Environmental Physics (Fourth Edition),
+edited by John L. Monteith et Mike H. Unsworth, 217‑47. Boston: Academic Press.
+
+Schymanski, Stanislaus J., et Dani Or. 2017. « Leaf-Scale Experiments Reveal an Important
+Omission in the Penman–Monteith Equation ». Hydrology and Earth System Sciences 21 (2): 685‑706.
+https://doi.org/10.5194/hess-21-685-2017.
+"""
+function gamma_star(Γ, aₛₕ, aₛᵥ, Rbᵥ, Rsᵥ, Rbₕ)
+    Γ * aₛₕ / aₛᵥ * (Rbᵥ + Rsᵥ) / Rbₕ # rv + Rsᵥ= Boundary + stomatal conductance to water vapour
+end

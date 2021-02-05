@@ -9,12 +9,14 @@ The definition and default values are:
 Fick’s Law of diffusion (``m^2\\ s^{-1}``). See eq. 3.10 from Monteith and Unsworth (2013).
 - `Cₚ = 1013.0`: Specific heat of air at constant pressure (``J\\ K^{-1}\\ kg^{-1}``), also
 known as efficiency of impaction of particles. See Allen et al. (1998), or Monteith and
-Unsworth (2013).
+Unsworth (2013). NB: bigleaf R package uses 1004.834 intead.
 - `ε = 0.622`: ratio of molecular weights of water vapor and air. See Monteith and
 Unsworth (2013).
 - `λ₀ = 2.501`: latent heat of vaporization for water at 0 degree (``J\\ kg^{-1}``).
 - `σ = 5.670373e-08` [Stefan-Boltzmann constant](https://en.wikipedia.org/wiki/Stefan%E2%80%93Boltzmann_law)
 in (``W\\ m^{-2}\\ K^{-4}``).
+- `Gbₕ_to_Gbₕ₂ₒ = 1.075`: conversion coefficient from conductance to heat to conductance to water
+vapor.
 
 # References
 
@@ -33,4 +35,5 @@ Base.@kwdef struct Constants{T}
     ε::T = 0.622
     λ₀::T = 2.501e6
     σ::T = 5.670373e-08
+    Gbₕ_to_Gbₕ₂ₒ::T = 1.075
 end
