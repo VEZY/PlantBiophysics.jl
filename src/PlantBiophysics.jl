@@ -41,6 +41,12 @@ include("io/read_model.jl")
 export read_model
 export is_model
 
+# Energy balance
+export black_body
+export grey_body
+export psychrometer_constant
+export net_longwave_radiation
+
 # structure for light interception
 export Translucent
 export Ignore
