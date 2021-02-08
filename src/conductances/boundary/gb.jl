@@ -42,19 +42,7 @@ function gbₕ_free(Tₐ,Tₗ,Wₗ,Dₕ₀)
 end
 
 function gbₕ_free(Tₐ,Tₗ,Wₗ)
-    zeroT = zero(Tₐ) # make it type stable
-    constants = Constants()
-
-    if (Tₗ-Tₐ) > zeroT
-        Gr = 1.58e8 * Wₗ^3.0 * abs(Tₗ-Tₐ) # Grashof number (Monteith and Unsworth, 2013)
-        # !Note: Leuning et al. (1995) use 1.6e8 (eq. E4).
-        # Leuning et al. (1995) eq. E3:
-        Gbₕ_free = 0.5 * get_Dₕ(Tₐ,constants.Dₕ₀) * (Gr^0.25) / Wₗ
-    else
-        Gbₕ_free = zeroT
-    end
-
-    return Gbₕ_free
+    gbₕ_free(Tₐ,Tₗ,Wₗ,Constants().Dₕ₀)
 end
 
 
@@ -105,7 +93,7 @@ end
 
 function get_Dₕ(T)
     constants = Constants()
-    constants.Dₕ₀ + constants.Dₕ₀ * (1 + 0.007*T)
+    get_Dₕ(T,constants.Dₕ₀)
 end
 
 """
@@ -130,38 +118,5 @@ end
 
 
 function gbh_to_gbw(gbh)
-    gbh * Constants().Gbₕ_to_Gbₕ₂ₒ
-end
-
-"""
-    gamma_star(Γ, a_sh, a_s, rbv, Rsᵥ, Rbₕ)
-
-Γˢ, the CO₂ compensation point in the absence of day respiration (``mol_{CO_2}\\ mol^{-1}``).
-Also called the apparent value of psychrometer constant.
-
-# Arguments
-
-- `Γ` (``mol_{CO_2}\\ mol^{-1}``): CO₂ compensation point
-- `aₛₕ` (1,2): number of faces exchanging heat fluxes (see Schymanski et al., 2017)
-- `aₛᵥ` (1,2): number of faces exchanging water fluxes (see Schymanski et al., 2017)
-- `Rbᵥ` (s m-1): boundary layer resistance to water vapor
-- `Rsᵥ` (s m-1): stomatal resistance to water vapor
-- `Rbₕ` (s m-1): boundary layer resistance to heat
-
-# Note
-
-Using the corrigendum from Schymanski et al. (2017).
-
-# References
-
-Monteith, John L., et Mike H. Unsworth. 2013. « Chapter 13 - Steady-State Heat Balance: (i)
-Water Surfaces, Soil, and Vegetation ». In Principles of Environmental Physics (Fourth Edition),
-edited by John L. Monteith et Mike H. Unsworth, 217‑47. Boston: Academic Press.
-
-Schymanski, Stanislaus J., et Dani Or. 2017. « Leaf-Scale Experiments Reveal an Important
-Omission in the Penman–Monteith Equation ». Hydrology and Earth System Sciences 21 (2): 685‑706.
-https://doi.org/10.5194/hess-21-685-2017.
-"""
-function gamma_star(Γ, aₛₕ, aₛᵥ, Rbᵥ, Rsᵥ, Rbₕ)
-    Γ * aₛₕ / aₛᵥ * (Rbᵥ + Rsᵥ) / Rbₕ # rv + Rsᵥ= Boundary + stomatal conductance to water vapour
+    gbh_to_gbw(gbh, Constants().Gbₕ_to_Gbₕ₂ₒ)
 end

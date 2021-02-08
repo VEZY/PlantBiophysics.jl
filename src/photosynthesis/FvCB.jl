@@ -285,6 +285,16 @@ Analytic resolution of Cᵢ when the rate of electron transport is limiting (``�
 - `g0`: residual stomatal conductance (``μmol\\ m^{-2}\\ s^{-1}``)
 - `gs_mod`: stomatal conductance term computed from a given implementation of a Gs model,
 e.g. [`Medlyn`](@ref).
+
+
+# References
+
+Duursma, R. A., et B. E. Medlyn. 2012. « MAESPA: a model to study interactions between water
+limitation, environmental drivers and vegetation function at tree and stand levels, with an
+example application to [CO2] × drought interactions ». Geoscientific Model Development 5
+(4): 919‑40. https://doi.org/10.5194/gmd-5-919-2012.
+
+Wang and Leuning, 1998
 """
 function get_Cᵢⱼ(Vⱼ,Γˢ,Cₛ,Rd,g0,gs_mod)
     a = g0 + gs_mod * (Vⱼ - Rd)

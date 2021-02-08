@@ -10,5 +10,5 @@ end
 
 function ms_to_mol(T,P)
     constants = Constants()
-    P / (constants.R * (T - constants.K₀))
+    ms_to_mol(T,P,constants.R,constants.K₀)
 end

@@ -5,6 +5,7 @@ The definition and default values are:
 
 - `K₀ = -273.15`: absolute zero (°C)
 - `R = 8.314`: universal gas constant (``J\\ mol^{-1}\\ K^{-1}``).
+- `Rd = 287.0586`: gas constant of dry air (``J\\ kg^{-1}\\ K^{-1}``).
 - `Dₕ₀ = 21.5e-6`: molecular diffusivity for heat at base temperature, applied in the integrated form of the
 Fick’s Law of diffusion (``m^2\\ s^{-1}``). See eq. 3.10 from Monteith and Unsworth (2013).
 - `Cₚ = 1013.0`: Specific heat of air at constant pressure (``J\\ K^{-1}\\ kg^{-1}``), also
@@ -30,6 +31,7 @@ animals, and the atmosphere. Academic Press.
 Base.@kwdef struct Constants{T}
     K₀::T = -273.15
     R::T = 8.314
+    Rd::T = 287.0586
     Dₕ₀::T = 21.2e-6
     Cₚ::T = 1013.0
     ε::T = 0.622

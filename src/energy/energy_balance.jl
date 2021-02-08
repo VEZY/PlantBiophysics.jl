@@ -53,18 +53,20 @@ https://doi.org/10.1016/j.agrformet.2018.02.005.
 """
 function energy_balance(Tₐ,Wind,Rh,Rn,Rsᵥ,P,Wₗ,maxiter=10,
                         hypostomatous= true, Dheat= 2.15e-05, skyFraction= 2,
-                        constants,emissivity)
-    eₐ = e(Tₐ, VPD)
+                        constants,emissivity,epsilon)
     eₛ = e_sat(Tₐ)
-    vpd = eₛ - Rh * eₛ
-    eₐ = eₛ - vpd # we already have eₛ so we don't use `e()` for the computation here
+    eₐ = rh * e_sat(Tₐ) # we already have eₛ so we don't use `e()` for the computation here
+    vpdₐ = eₛ - eₐ
+
     Tₗ = Tₐ
     tLeafCalc = 0.0
     delta_t= 0.0
     GBVGBH = 1.075
 
     ρ = air_density(Tₐ, P, constants.Rd, constants.K₀) # in kg m-3
-    γ = psychrometric_constant(Tₐ, P, constants.Cₚ, constants.ε) # in kPa K−1
+    λ = latent_heat_vaporization(Tₐ, constants.λ₀)
+    γ = psychrometer_constant(P, λ, constants.Cₚ, constants.ε) # in kPa K−1
+    εₐ = atmosphere_emissivity(Tₐ,eₐ,constants.K₀)
 
     # Monteith and unsworth (2013), eq. 13.32, corrigendum from Schymanski et al. (2017):
     aₛₕ = 2 # both sides exchange H
@@ -77,7 +79,6 @@ function energy_balance(Tₐ,Wind,Rh,Rn,Rsᵥ,P,Wₗ,maxiter=10,
     for i in 1:maxiter
 
         # Re-computing the net radiation according to simulated leaf temperature:
-        εₐ = atmosphere_emissivity(Tₐ,eₐ,constants.K₀)
         Rₗₗ = net_longwave_radiation(Tₗ,Tₐ,emissivity,εₐ,skyFraction,constants.K₀,constants.σ)
         #= ? NB: we use the sky fraction here (0-2) instead of the view factor (0-1) because:
             - we consider both sides of the leaf at the same time (1 -> leaf sees sky on one face)
@@ -97,57 +98,50 @@ function energy_balance(Tₐ,Wind,Rh,Rn,Rsᵥ,P,Wₗ,maxiter=10,
         # Leaf boundary resistance for water vapor (s m-1):
         Rbᵥ = 1 / gbh_to_gbw(Gbₕ)
 
-        # CO2 compensation point in the absence of day respiration (mol[CO2] mol-1)
-        Γˢ = gamma_star(Γ, aₛₕ, aₛᵥ, Rbᵥ, Rsᵥ, Rbₕ)
+        # Apparent value of psychrometer constant (kPa K−1)
+        γˢ = γ_star(γ, aₛₕ, aₛᵥ, Rbᵥ, Rsᵥ, Rbₕ)
 
-        # slope of the saturation vapor pressure at air temperature
+        # slope of the saturation vapor pressure at air temperature:
         Δ = e_sat_slope(Tₐ)
 
-        λE = latent_heat_MAESPA(Rn = Rn, Tₐ = Tₐ, vpd = vpd, Γˢ = Γˢ, Rbₕ = Rbₕ,
-                                Δ = Δ, ρ= ρ, Cₚ= constants.Cₚ,aₛₕ)
+        λE = latent_heat(Rn, vpdₐ, γˢ, Rbₕ, Δ, ρ, aₛₕ, constants.Cₚ)
 
-        tLeafCalc= Tₐ + (Rn - λE) / (ρ*constants.Cₚ * (aₛₕ/Rbₕ))
+        # Transpiration:
+        ET = λE / λ
+        # Vapour pressure difference between the surface and the saturation vapour pressure:
+        Dₗ = ET * P / (Rbᵥ + Rsᵥ)
+        # ! Check that (Rbᵥ + Rsᵥ) is GV.
 
-        delta_t = tLeafCalc-Tₗ
-        Tₗ = tLeafCalc
+        Tₗ_new = Tₐ + (Rn - λE) / (ρ * constants.Cₚ * (aₛₕ / Rbₕ))
 
+        if abs(Tₗ_new - Tₗ) <= epsilon break end
 
-        # cat('Iteration',i,"\n")
-        # cat('VPD',vpd, 'KPa',"\n")
-        # cat('λE',λE, '(W m-2)',"\n")
-        # cat('H',H, '(W m-2)',"\n")
-        # cat('Rbₕ ',Rbₕ, '(s m-1)',"\n")
-        # cat('Rbᵥ',Rbᵥ, '(s m-1)',"\n")
-        # cat('------------------',"\n")
-
-        if abs(delta_t)<=0.01 break end
+        Tₗ = Tₗ_new
     end
 
 
-    H= sensible_heat_MAESPA(Rn = Rn, Tₐ = Tₐ, vpd = vpd, Γˢ = Γˢ, Rbₕ = Rbₕ,
-                        Δ = Δ, ρ= ρ, Cₚ= constants.Cₚ, aₛₕ= aₛₕ)
+    H = sensible_heat(Rn, vpdₐ, γˢ, Rbₕ, Δ, ρ, aₛₕ, constants.Cₚ)
 
 
 
-    return (Rn= Rn, Tl= Tₗ, Tₐ= Tₐ, H= H, λE= λE, Rbₕ= Rbₕ, Rbᵥ= Rbᵥ, iter= i)
+    return (Rn = Rn, Tl = Tₗ, Tₐ = Tₐ, H = H, λE = λE, Rbₕ = Rbₕ, Rbᵥ = Rbᵥ, iter = i)
 end
 
 """
-    latent_heat(Rn, Tₐ, vpd, Γˢ, Rbₕ, Δ, ρ, aₛₕ, Cₚ)
-    latent_heat(Rn, Tₐ, vpd, Γˢ, Rbₕ, Δ, ρ, aₛₕ, Cₚ)
+    latent_heat(Rn, vpdₐ, γˢ, Rbₕ, Δ, ρ, aₛₕ, Cₚ)
+    latent_heat(Rn, vpdₐ, γˢ, Rbₕ, Δ, ρ, aₛₕ)
 
-Latent heat flux using the Monteith and Unsworth (2013) definition corrected by from
+λE -the latent heat flux (W m-2)- using the Monteith and Unsworth (2013) definition corrected by
 Schymanski et al. (2017), eq.22.
 
 - `Rn` (W m-2): net radiation. Carefull: not the isothermal net radiation
-- `Tₐ`: air temperature (°C)
-- `vpd`: vapor pressure deficit (kPa)
-- `Γˢ`: apparent value of psychrometer constant (= γ * (1+ rsw/rbh))
-- `Rbₕ`: resistance for heat transfer by convection, i.e. resistance to sensible heat (s m-1)
-- `Δ`: rate of change of saturation vapor pressure with temperature (KPa K-1), i.e. the slope, ∂es(T)∂T
-- `ρ`: air density of moist air (kg m-3).
-- `aₛₕ`: number of sides that exchange energy for heat (2 for leaves)
-- `Cₚ`: specific heat of air for constant pressure (J K-1 kg-1)
+- `vpdₐ` (kPa): air-leaf vapor pressure deficit
+- `γˢ` (kPa K−1): apparent value of psychrometer constant (see [`γ_star`](@ref))
+- `Rbₕ` (s m-1): resistance for heat transfer by convection, i.e. resistance to sensible heat
+- `Δ` (KPa K-1): rate of change of saturation vapor pressure with temperature (see [`e_sat_slope`](@ref))
+- `ρ` (kg m-3): air density of moist air.
+- `aₛₕ` (1,2): number of sides that exchange energy for heat (2 for leaves)
+- `Cₚ` (J K-1 kg-1): specific heat of air for constant pressure
 
 # References
 
@@ -155,22 +149,63 @@ Monteith, J. and Unsworth, M., 2013. Principles of environmental physics: plants
 
 Schymanski et al. (2017), Leaf-scale experiments reveal an important omission in the Penman–Monteith equation,
 Hydrology and Earth System Sciences. DOI: https://doi.org/10.5194/hess-21-685-2017. See equ. 22.
-@return LE (W m-2), the latent heat flux.
 
 # Examples
+
 ```julia
-latent_heat(rn = 300, Ta = 20, Tl = 25, vpd = 2, gamma_star = 0.1461683, rbh = 50, press = 100, delta = 0.1658993)
+Tₐ = 20.0 ; P = 100.0 ;
+ρ = air_density(Tₐ, P) # in kg m-3
+Δ = e_sat_slope(Tₐ)
+
+latent_heat(300.0, 2.0, 0.1461683, 50.0, Δ, ρ, 2.0)
 ```
 """
-function latent_heat(Rn, Tₐ, vpd, Γˢ, Rbₕ, Δ, ρ, aₛₕ, Cₚ)
-  (Δ * Rn + ρ * Cₚ * vpd * (aₛₕ / Rbₕ)) / (Δ + Γˢ)
+function latent_heat(Rn, vpdₐ, γˢ, Rbₕ, Δ, ρ, aₛₕ, Cₚ)
+  (Δ * Rn + ρ * Cₚ * vpdₐ * (aₛₕ / Rbₕ)) / (Δ + γˢ)
 end
 
-function latent_heat(Rn, Tₐ, vpd, Γˢ, Rbₕ, Δ, ρ, aₛₕ)
-  (Δ * Rn + ρ * Constants().Cₚ * vpd * (aₛₕ / Rbₕ)) / (Δ + Γˢ)
+function latent_heat(Rn, vpdₐ, γˢ, Rbₕ, Δ, ρ, aₛₕ)
+    latent_heat(Rn, vpdₐ, γˢ, Rbₕ, Δ, ρ, aₛₕ, Constants().Cₚ)
 end
 
 
-function sensible_heat_MAESPA(Rn, Tₐ, vpd, Γˢ, Rbₕ, Δ, ρ, Cₚ,aₛₕ=2)
-  (Γˢ*Rn-ρ*Cₚ*vpd*(aₛₕ/Rbₕ))/(Δ+Γˢ)
+"""
+    sensible_heat(Rn, vpdₐ, γˢ, Rbₕ, Δ, ρ, aₛₕ, Cₚ)
+    sensible_heat(Rn, vpdₐ, γˢ, Rbₕ, Δ, ρ, aₛₕ)
+
+H -the sensible heat flux (W m-2)- using the Monteith and Unsworth (2013) definition corrected by
+Schymanski et al. (2017), eq.22.
+
+- `Rn` (W m-2): net radiation. Carefull: not the isothermal net radiation
+- `vpdₐ` (kPa): air-leaf vapor pressure deficit
+- `γˢ` (kPa K−1): apparent value of psychrometer constant (see [`γ_star`](@ref))
+- `Rbₕ` (s m-1): resistance for heat transfer by convection, i.e. resistance to sensible heat
+- `Δ` (KPa K-1): rate of change of saturation vapor pressure with temperature (see [`e_sat_slope`](@ref))
+- `ρ` (kg m-3): air density of moist air.
+- `aₛₕ` (1,2): number of sides that exchange energy for heat (2 for leaves)
+- `Cₚ` (J K-1 kg-1): specific heat of air for constant pressure
+
+# References
+
+Monteith, J. and Unsworth, M., 2013. Principles of environmental physics: plants, animals, and the atmosphere. Academic Press. See eq. 13.33.
+
+Schymanski et al. (2017), Leaf-scale experiments reveal an important omission in the Penman–Monteith equation,
+Hydrology and Earth System Sciences. DOI: https://doi.org/10.5194/hess-21-685-2017. See equ. 22.
+
+# Examples
+
+```julia
+Tₐ = 20.0 ; P = 100.0 ;
+ρ = air_density(Tₐ, P) # in kg m-3
+Δ = e_sat_slope(Tₐ)
+
+sensible_heat(300.0, 2.0, 0.1461683, 50.0, Δ, ρ, 2.0)
+```
+"""
+function sensible_heat(Rn, vpdₐ, γˢ, Rbₕ, Δ, ρ, aₛₕ, Cₚ)
+  (γˢ * Rn - ρ * Cₚ * vpdₐ * (aₛₕ / Rbₕ)) / (Δ + γˢ)
+end
+
+function sensible_heat(Rn, vpdₐ, γˢ, Rbₕ, Δ, ρ, aₛₕ)
+  sensible_heat(Rn, vpdₐ, γˢ, Rbₕ, Δ, ρ, aₛₕ, Constants().Cₚ)
 end

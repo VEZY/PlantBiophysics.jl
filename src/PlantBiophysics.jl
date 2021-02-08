@@ -27,17 +27,15 @@ include("photosynthesis/FvCB.jl")
 include("photosynthesis/FvCBIter.jl")
 include("photosynthesis/temperature-dependence.jl")
 
-# stomatal conductance related files:
+# Stomatal conductance related files:
 include("conductances/stomatal/constant.jl")
 include("conductances/stomatal/gs.jl")
 include("conductances/stomatal/medlyn.jl")
 
-
-# boundary layer conductance:
+# Boundary layer conductance:
 include("conductances/boundary/gb.jl")
 
 # Energy balance
-include("energy/utilities.jl")
 include("energy/longwave_energy.jl")
 # include("energy/energy_balance.jl")
 
@@ -52,6 +50,7 @@ export is_model
 export e
 export e_sat
 export e_sat_slope
+export air_density
 
 # Energy balance
 export black_body
@@ -70,9 +69,14 @@ export Fvcb # Parameters for the Farquhar et al. (1980) model
 export FvcbIter
 export Constants
 export assimilation
+export photosynthesis
+
+# Conductances
+export gbh_to_gbw
+export gbₕ_free
+export gbₕ_forced
 export gs
 export Medlyn
-export photosynthesis
 
 # Physical constants
 export Constants

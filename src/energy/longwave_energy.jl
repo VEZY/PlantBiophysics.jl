@@ -20,8 +20,7 @@ end
 
 function black_body(T)
     constants = Constants()
-    Tₖ = T - constants.K₀
-    constants.σ * (Tₖ^4.0)
+    black_body(T, constants.K₀, constants.σ)
 end
 
 
@@ -51,8 +50,7 @@ end
 
 function grey_body(T, ε)
     constants = Constants()
-    Tₖ = T - constants.K₀
-    ε * black_body(T, constants.K₀, constants.σ)
+    grey_body(T, ε, constants.K₀, constants.σ)
 end
 
 
@@ -122,8 +120,7 @@ end
 
 function net_longwave_radiation(T₁,T₂,ε₁,ε₂,F₁)
     constants = Constants()
-    (black_body(T₁,constants.K₀,constants.σ) - black_body(T₂,constants.K₀,constants.σ)) /
-        (1.0 / ε₁ + 1.0/ε₂ - 1.0) * F₁
+    net_longwave_radiation(T₁,T₂,ε₁,ε₂,F₁,constants.K₀,constants.σ)
 end
 
 """
@@ -156,5 +153,5 @@ function atmosphere_emissivity(Tₐ,eₐ,K₀)
 end
 
 function atmosphere_emissivity(Tₐ,eₐ)
-    0.642 * (eₐ * 100 / (Tₐ - Constants().K₀))^(1 / 7)
+    atmosphere_emissivity(Tₐ,eₐ,Constants().K₀)
 end

@@ -92,7 +92,7 @@ end
 
 
 """
-Compute the CO2 compensation point ``Γ^⋆`` (``μ mol\\ mol^{-1}``) according to equation (12)
+Compute the CO₂ compensation point ``Γ^⋆`` (``μ mol\\ mol^{-1}``) according to equation (12)
 from Medlyn et al. (2002).
 
 NB: coulb be replaced by equation (38) from Farquhar et al. (1980),
