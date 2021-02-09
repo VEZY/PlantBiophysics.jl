@@ -12,13 +12,6 @@ Monteith and Unsworth (2013)
 - `maxiter = 10`: maximal number of iterations allowed to close the energy balance
 - `ϵ = 0.01` (°C): maximum difference in object temperature between two iterations to
 consider convergence
-- `Rₗₗ = missing` (W m-2): net longwave radiation for the object (TIR)
-- `Gbₕ = missing` (m s-1): boundary conductance for heat (free + forced convection)
-- `λE = missing` (W m-2): latent heat flux
-- `H = missing` (W m-2): sensible heat flux
-- `Dₗ = missing` (kPa): vapour pressure difference between the surface and the saturation
-vapour pressure, also called air-to-leaf VPD
-- `Tₗ = missing` (°C): temperature of the object
 """
 Base.@kwdef struct Monteith{T,S} <: EnergyModel
     Rn::T
@@ -28,17 +21,11 @@ Base.@kwdef struct Monteith{T,S} <: EnergyModel
     ε::T = 0.955
     maxiter::S = 10
     ϵ::T = 0.01
-    Rₗₗ::Union{Missing,T} = missing
-    Gbₕ::Union{Missing,T} = missing
-    λE::Union{Missing,T} = missing
-    H::Union{Missing,T} = missing
-    Dₗ::Union{Missing,T} = missing
-    Tₗ::Union{Missing,T} = missing
 end
 
 """
-    net_radiation(energy::Monteith,photosynthesis,stomatal_conductance,meteo::Atmosphere,constants)
-    net_radiation(energy::Monteith,photosynthesis,stomatal_conductance,meteo::Atmosphere)
+    net_radiation(energy::Monteith,status,photosynthesis,stomatal_conductance,meteo::Atmosphere,constants)
+    net_radiation(energy::Monteith,status,photosynthesis,stomatal_conductance,meteo::Atmosphere)
 
 
 Leaf energy balance according to Monteith and Unsworth (2013), and corrigendum from
@@ -96,17 +83,18 @@ Maxime Soma, et al. 2018. « Measuring and modelling energy partitioning in can
 complexity using MAESPA model ». Agricultural and Forest Meteorology 253‑254 (printemps): 203‑17.
 https://doi.org/10.1016/j.agrformet.2018.02.005.
 """
-function net_radiation(energy::Monteith,photosynthesis,stomatal_conductance,meteo::Atmosphere,constants)
+function net_radiation(energy::Monteith,status,photosynthesis,stomatal_conductance,meteo::Atmosphere,constants)
 
     Tₗ = meteo.T
     Tₗ_new = zero(meteo.T)
-    Rn = energy.Rn
+    Rn = status.Rn
 
     iter = 1
 
     for i in 1:energy.maxiter
 
-        A, Gₛ, Cᵢ = assimilation(photosynthesis, stomatal_conductance, meteo, constants)
+        A, Gₛ, Cᵢ = assimilation(photosynthesis, stomatal_conductance,
+                                (status..., meteo...), constants)
 
         # Stomatal resistance to water vapor
         Rsᵥ = 1 / (gsc_to_gsw(mol_to_ms(Gₛ,meteo.T,meteo.P,constants.R,constants.K₀),constants.Gsc_to_Gsw))
@@ -160,7 +148,8 @@ function net_radiation(energy::Monteith,photosynthesis,stomatal_conductance,mete
 
 
 
-    return (Rn = Rn, Tₗ = Tₗ, H = H, λE = λE, A = A, Gₛ = Gₛ, Cᵢ = Cᵢ, Rbₕ = Rbₕ, Rbᵥ = Rbᵥ, iter = iter)
+    return (Rn = Rn, Rₗₗ = Rₗₗ, Tₗ = Tₗ, H = H, λE = λE, A = A, Gₛ = Gₛ, Cᵢ = Cᵢ, Rbₕ = Rbₕ,
+            Rbᵥ = Rbᵥ, iter = iter)
 end
 
 function net_radiation(energy::Monteith,photosynthesis,stomatal_conductance,meteo::Atmosphere)

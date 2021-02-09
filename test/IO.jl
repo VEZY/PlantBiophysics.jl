@@ -10,16 +10,16 @@ file = "inputs/models/plant_coffee.yml"
     model = model[Leaf]
     # @test typeof(model)
     @test typeof(model) <: Leaf
-    @test typeof(model.StomatalConductance) == Medlyn{Float64}
-    @test typeof(model.Interception) == Translucent{Float64}
-    @test typeof(model.Photosynthesis) == Fvcb{Float64}
+    @test typeof(model.stomatal_conductance) == Medlyn{Float64}
+    @test typeof(model.interception) == Translucent{Float64}
+    @test typeof(model.photosynthesis) == Fvcb{Float64}
 
-    @test model.StomatalConductance.g0 == -0.03
-    @test model.StomatalConductance.g1 == 12.0
+    @test model.stomatal_conductance.g0 == -0.03
+    @test model.stomatal_conductance.g1 == 12.0
 
-    @test model.Interception.transparency == 0.0
-    @test model.Interception.optical_properties == σ(0.15, 0.9)
+    @test model.interception.transparency == 0.0
+    @test model.interception.optical_properties == σ(0.15, 0.9)
 
-    @test model.Photosynthesis.VcMaxRef == 200.0 # Given in the file
-    @test model.Photosynthesis.O₂ == 210.0 # Use default value
+    @test model.photosynthesis.VcMaxRef == 200.0 # Given in the file
+    @test model.photosynthesis.O₂ == 210.0 # Use default value
 end;

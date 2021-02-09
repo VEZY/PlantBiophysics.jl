@@ -59,7 +59,7 @@ function energy_balance(object::PhotoComponent,meteo::Atmosphere,constants)
     net_radiation(object.energy, object.photosynthesis, object.stomatal_conductance, meteo, constants)
 end
 
-function energy_balance(object::PhotoComponent,meteo::Atmosphere,constants)
+function energy_balance(object::PhotoComponent,meteo::Atmosphere)
     constants = Constants()
     net_radiation(object.energy, object.photosynthesis, object.stomatal_conductance, meteo, constants)
 end

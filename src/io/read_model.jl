@@ -83,14 +83,18 @@ end
 Return the process type (the actual struct) given its name passed as a String.
 """
 function get_process(x)
-    processes = ("Interception", "Photosynthesis", "StomatalConductance")
+    x = lowercase(x)
+    # All possible ways to write the processes in the input (compared to lowecase x):
+    processes = Dict("interception" => "interception", "photosynthesis" => "photosynthesis",
+                     "stomatalconductance" => "stomatal_conductance",
+                     "stomatal_conductance" => "stomatal_conductance")
 
-    if !(x in processes)
+    if !(haskey(processes,lowercase(x)))
         @warn "Process `$x` is not implemented yet. Did you make a typo?"
         return missing
     end
 
-    return x
+    return processes[x]
 end
 
 """
@@ -103,7 +107,7 @@ function get_model(x,process)
     if process == "photosynthesis"
         dict = Dict("farquharenbalance" => Fvcb, "fvcb" => Fvcb, "fvcbiter" => FvcbIter)
         # NB: dict keys all in lowercase because we transform x into lowercase too to avoid mismatches
-    elseif process == "stomatalconductance"
+    elseif process == "stomatalconductance" || process == "stomatal_conductance"
         dict = Dict("medlyn" => Medlyn)
     elseif process == "interception"
         dict = Dict("translucent" => Translucent, "ignore" => Ignore)
@@ -122,7 +126,7 @@ end
     instantiate(x)
 
 Instantiate a model given its parameter names, considering that parameter names can be
-different compared to the model fieds (used to insure compatibility with Archimed).
+different compared to the model fields (used to insure compatibility with Archimed).
 """
 function instantiate(model,param,correspondance,param_type)
 

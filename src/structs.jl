@@ -94,29 +94,42 @@ end
 """
 Leaf component, with fields holding model types and parameter values for:
 
- - Dimensions
- - Interception
- - Energy
- - Photosynthesis
- - StomatalConductance
+- geometry:
+- interception
+- energy
+- photosynthesis
+- stomatal_conductance
+- status:
+    - `Tₗ = missing` (°C): temperature of the object
+    - `Rₗₗ = missing` (W m-2): net longwave radiation for the object (TIR)
+    - `Gbₕ = missing` (m s-1): boundary conductance for heat (free + forced convection)
+    - `λE = missing` (W m-2): latent heat flux
+    - `H = missing` (W m-2): sensible heat flux
+    - `Dₗ = missing` (kPa): vapour pressure difference between the surface and the saturation
+    vapour pressure, also called air-to-leaf VPD
 """
 Base.@kwdef struct Leaf{G <: Union{Missing,GeometryModel},
                         I <: Union{Missing,InterceptionModel},
                         E <: Union{Missing,EnergyModel},
                         A <: AModel,
-                        Gs <: GsModel} <: PhotoComponent
+                        Gs <: GsModel,
+                        S <: MutableNamedTuple} <: PhotoComponent
     geometry::G = missing
     interception::I = missing
     energy::E = missing
     photosynthesis::A
     stomatal_conductance::Gs
+    status::S = MutableNamedTuple(Tₗ = -999.0, Rn = -999.0, Rₗₗ = -999.0, PPFD = -999.0,
+                                    Cₛ = -999.0, ψₗ = -999.0, H = -999.0, λE = -999.0,
+                                    A = -999.0, Gₛ = -999.0, Cᵢ = -999.0, Gbₕ = -999.0,
+                                    Dₗ = -999.0)
 end
 
 """
 Metamer component, with one field holding the light interception model type and its parameter values.
 """
 Base.@kwdef struct Metamer{I<: Union{Missing,InterceptionModel}} <: Component
-    Interception::I = missing
+    interception::I = missing
 end
 
 """
