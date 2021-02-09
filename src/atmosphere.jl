@@ -1,8 +1,8 @@
 """
-    e(Tₐ, rh)
+    vapor_pressure(Tₐ, rh)
 Vapor pressure (kPa) at given temperature (°C) and relative hunidity (0-1).
 """
-function e(Tₐ, rh)
+function vapor_pressure(Tₐ, rh)
     rh * e_sat(Tₐ)
 end
 

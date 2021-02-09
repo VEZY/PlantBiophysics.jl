@@ -97,8 +97,8 @@ If you need to use Cₐ, you can use the iterative implementation of the Fvcb mo
 
 A tuple with (A, Gₛ, Cᵢ):
 
-- A: carbon assimilation (μmol m-2 s-1)
-- Gₛ: stomatal conductance (mol m-2 s-1)
+- A: carbon assimilation (μmol[CO₂] m-2 s-1)
+- Gₛ: stomatal conductance for CO₂ (mol[CO₂] m-2 s-1)
 - Cᵢ: intercellular CO₂ concentration (ppm)
 
 # Arguments
@@ -177,7 +177,7 @@ function assimilation(A_mod::Fvcb,Gs_mod::GsModel,environment,constants)
     # RuBP regeneration
     Vⱼ = J / 4
 
-    # Stomatal conductance (umol m-2 s-1), dispatched on type of first argument (Gs_mod):
+    # Stomatal conductance (umol[CO₂] m-2 s-1), dispatched on type of first argument (Gs_mod):
     gs_mod = gs_closure(Gs_mod,environment)
 
     Cᵢⱼ = get_Cᵢⱼ(Vⱼ,Γˢ,environment.Cₛ,Rd,Gs_mod.g0,gs_mod)
@@ -199,7 +199,7 @@ function assimilation(A_mod::Fvcb,Gs_mod::GsModel,environment,constants)
     # Net assimilation (μmol m-2 s-1)
     A = min(Wᵥ,Wⱼ) - Rd
 
-    # Stomatal conductance (μmol m-2 s-1)
+    # Stomatal conductance (μmol[CO₂] m-2 s-1)
     Gₛ = Gs_mod.g0 + gs_mod * A
 
     # Intercellular CO₂ concentration (Cᵢ, μmol mol)

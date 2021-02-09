@@ -22,12 +22,12 @@ function read_model(file)
     group = model["Group"]
     types = collect(keys(model["Type"]))
 
-    organs = Dict()
+    components = Dict()
 
     for (i,j) in model["Type"]
         # i = "Leaf"
         # j = model["Type"][i]
-        organtype = get_organtype(i)
+        componenttype = get_componenttype(i)
 
         processes = Dict()
         for (k,l) in j
@@ -56,18 +56,18 @@ function read_model(file)
                 push!(processes, Symbol(process) => model_process)
             end
         end
-        push!(organs, organtype => organtype(;processes...))
+        push!(components, componenttype => componenttype(;processes...))
     end
 
-    return organs
+    return components
 end
 
 """
-    get_organtype(x)
+    get_componenttype(x)
 
-Return the organ type (the actual struct) given its name passed as a String.
+Return the component type (the actual struct) given its name passed as a String.
 """
-function get_organtype(x)
+function get_componenttype(x)
     dict = Dict("Leaf" => Leaf, "Metamer" => Metamer)
 
     !haskey(dict, x) && error("Component type `$x` does not exist. Please name your components ",

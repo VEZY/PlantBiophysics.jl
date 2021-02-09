@@ -9,7 +9,7 @@ For more details on arguments, see [`Fvcb`](@ref).
 This structure has several more parameters:
 
 - `iter_A_max::Int`: maximum number of iterations allowed for the iteration on the assimilation.
-- `ϵ_A::T = 1`: threshold below which the assimilation is considered constant. Given in
+- `ϵ_A::T = 1`: threshold bellow which the assimilation is considered constant. Given in
 percent of change, *i.e.* 1% means that two successive assimilations with less than 1%
 difference in value are considered the same value.
 """

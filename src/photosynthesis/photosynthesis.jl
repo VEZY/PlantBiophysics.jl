@@ -1,5 +1,5 @@
 """
-    photosynthesis(leaf::PhotoOrgan; Tₗ = missing, PPFD = missing, Rh = missing,
+    photosynthesis(leaf::PhotoComponent; Tₗ = missing, PPFD = missing, Rh = missing,
                     Cₐ = missing, Cₛ = missing, VPD = missing, ψₗ = missing,
                     constants = Constants())
 
@@ -11,7 +11,7 @@ fields of the `leaf`. For exemple to use the implementation of the Farquhar–vo
 (FvCB) model (see [`assimilation`](@ref)), the `leaf.Photosynthesis` field should be of type
 [`Fvcb`](@ref).
 
-Keyword arguments also depend on the models used (see below).
+Keyword arguments also depend on the models used (see bellow).
 
 ### Photosynthesis:
 
@@ -44,7 +44,7 @@ photosynthesis(leaf, Tₗ = 25.0, PPFD = 1000.0, Gbc = 1.0, VPD = 2.0, Cₐ = 40
 
 ```
 """
-function photosynthesis(leaf::PhotoOrgan; Tₗ, PPFD,
+function photosynthesis(leaf::PhotoComponent; Tₗ, PPFD,
                         Cₐ = missing, Rh = missing,
                         Gbc = missing, Cₛ = 0.0, VPD = missing, ψₗ = missing,
                         constants = Constants())

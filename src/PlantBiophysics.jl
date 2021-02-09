@@ -13,6 +13,9 @@ include("structs.jl")
 # Physical constants:
 include("constants.jl")
 
+# Conversions
+include("conversions.jl")
+
 # Atmosphere computations (vapor pressure...)
 include("atmosphere.jl")
 
@@ -37,7 +40,8 @@ include("conductances/boundary/gb.jl")
 
 # Energy balance
 include("energy/longwave_energy.jl")
-# include("energy/energy_balance.jl")
+include("energy/energy_balance.jl")
+include("energy/Monteith.jl")
 
 # File IO
 include("io/read_model.jl")
@@ -51,12 +55,20 @@ export e
 export e_sat
 export e_sat_slope
 export air_density
+export Atmosphere
+
+# Conversions
+export rh_from_vpd
+export ms_to_mol
 
 # Energy balance
 export black_body
 export grey_body
 export psychrometer_constant
 export net_longwave_radiation
+export energy_balance # main interface to user
+export net_radiation  # each energy model implement a method for this function (called from energy_balance)
+export Monteith       # a struct to hold the values for the model of Monteith and Unsworth (2013)
 
 # structure for light interception
 export Translucent
@@ -85,7 +97,7 @@ export Constants
 export Translucent
 export Ignore
 
-# Organs (structures that hold models)
+# Components (structures that hold models)
 export Leaf
 export Metamer
 

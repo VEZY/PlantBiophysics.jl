@@ -65,29 +65,98 @@ Light interception abstract struct
 """
 abstract type InterceptionModel <: Model end
 
-# Organs
-abstract type Organ end
-
-# Photosynthetic organs
-abstract type PhotoOrgan <: Organ end
-
 
 """
-Leaf organ, with three fields holding model types and parameter values for:
-
- - Interception
- - Photosynthesis
- - StomatalConductance
+Energy balance abstract struct
 """
-Base.@kwdef struct Leaf{I<: Union{Missing,InterceptionModel}, A<: AModel, Gs <: GsModel} <: PhotoOrgan
-    Interception::I = missing
-    Photosynthesis::A
-    StomatalConductance::Gs
+abstract type EnergyModel <: Model end
+
+
+# Scene (the upper one)
+abstract type Scene end
+
+# Object
+abstract type Object <: Scene end
+
+# Components
+abstract type Component <: Object end
+
+# Photosynthetic components
+abstract type PhotoComponent <: Component end
+
+# Geometry for the dimensions of components
+abstract type GeometryModel end
+
+struct AbstractGeom
+    d
 end
 
 """
-Metamer organ, with one field holding the light interception model type and its parameter values.
+Leaf component, with fields holding model types and parameter values for:
+
+ - Dimensions
+ - Interception
+ - Energy
+ - Photosynthesis
+ - StomatalConductance
 """
-Base.@kwdef struct Metamer{I<: Union{Missing,InterceptionModel}} <: Organ
+Base.@kwdef struct Leaf{G <: Union{Missing,GeometryModel},
+                        I <: Union{Missing,InterceptionModel},
+                        E <: Union{Missing,EnergyModel},
+                        A <: AModel,
+                        Gs <: GsModel} <: PhotoComponent
+    geometry::G = missing
+    interception::I = missing
+    energy::E = missing
+    photosynthesis::A
+    stomatal_conductance::Gs
+end
+
+"""
+Metamer component, with one field holding the light interception model type and its parameter values.
+"""
+Base.@kwdef struct Metamer{I<: Union{Missing,InterceptionModel}} <: Component
     Interception::I = missing
+end
+
+"""
+Atmosphere structure to hold all values related to the meteorology / atmoshpere.
+
+# Arguments
+
+- `T` (°C): air temperature
+- `Rh = rh_from_vpd(VPD,eₛ)` (0-1): relative humidity
+- `Wind` (m s-1): wind speed
+- `P` (kPa): air pressure
+- `e = vapor_pressure(T,Rh)` (kPa): vapor pressure
+- `eₛ = e_sat(T)` (kPa): saturated vapor pressure
+- `VPD = eₛ - e` (kPa): vapor pressure deficit
+- `ρ = air_density(T, P, constants.Rd, constants.K₀)` (kg m-3): air density
+- `λ = latent_heat_vaporization(T, constants.λ₀)` (J kg-1): latent heat of vaporization
+- `γ = psychrometer_constant(P, λ, constants.Cₚ, constants.ε)` (kPa K−1): psychrometer "constant"
+- `ε = atmosphere_emissivity(T,e,constants.K₀)` (0-1): atmosphere emissivity
+
+# Notes
+
+The structure can be built using only `T`, `Rh`, `Wind` and `P`. All other variables are oprional
+and can be automatically computed using the functions given in `Arguments`.
+
+# Examples
+
+```julia
+Atmosphere(T = 20.0, Wind = 1.0, P = 101.3, Rh = 0.65)
+```
+"""
+Base.@kwdef struct Atmosphere{A} <: Scene
+    T::A
+    Wind::A
+    P::A
+    Rh::A
+    e::A = vapor_pressure(T,Rh)
+    eₛ::A = e_sat(T)
+    VPD::A = eₛ - e
+    ρ::A = air_density(T, P) # in kg m-3
+    λ::A = latent_heat_vaporization(T)
+    γ::A = psychrometer_constant(P, λ) # in kPa K−1
+    ε::A = atmosphere_emissivity(T,e)
 end

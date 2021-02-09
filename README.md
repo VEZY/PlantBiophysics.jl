@@ -14,7 +14,7 @@ A Julia package to simulate biophysical processes for plants, such as photosynth
 - [ ] Add FvCB iterative model. Check the 1.0e-6 in `Cₛ = min(environment.Cₐ, environment.Cₐ - A * 1.0e-6 / Gₛ)`
 - [x] Add conductance model
 - [ ] Add transpiration model
-- [ ] Use structures. E.g. `Leaf`, that would be a subtype of `PhotoOrgan` (for photosynthetic organ), itself a subtype of `Organ`:
+- [ ] Use structures. E.g. `Leaf`, that would be a subtype of `PhotoComponent` (for photosynthetic organ), itself a subtype of `Organ`:
   - [ ] Make the functions compatible with an MTG, e.g. apply photosynthesis to an MTG, and use the right method for each node.
   - [ ] The `Leaf` struct would have the several fields that describe the models used for computation, with all their parameters, *e.g.*:
 

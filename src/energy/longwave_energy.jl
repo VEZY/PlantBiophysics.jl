@@ -87,7 +87,7 @@ Then, if we take a leaf as object 1, and the sky as object 2, the visible fracti
 sky viewed by the leaf would be:
 
 - `0.5` if the leaf is on top of the canopy, *i.e.* the upper side of the leaf sees the sky,
-the side below sees other leaves and the soil.
+the side bellow sees other leaves and the soil.
 - between 0 and 0.5 if it is within the canopy and partly shaded by other objects.
 
 Note that `A₁` for a leaf is twice its common used leaf area, because `A₁` is the **total**
@@ -139,7 +139,7 @@ Emissivity of the atmoshpere at a given temperature and vapor pressure.
 ```julia
 Tₐ = 20.0
 VPD = 1.5
-atmosphere_emissivity(Tₐ, e(Tₐ,VPD))
+atmosphere_emissivity(Tₐ, vapor_pressure(Tₐ,VPD))
 ```
 
 # References

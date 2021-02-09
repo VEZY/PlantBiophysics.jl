@@ -18,6 +18,9 @@ Unsworth (2013).
 in (``W\\ m^{-2}\\ K^{-4}``).
 - `Gbₕ_to_Gbₕ₂ₒ = 1.075`: conversion coefficient from conductance to heat to conductance to water
 vapor.
+- `Gsc_to_Gsw = 1.57`: conversion coefficient from stomatal conductance to CO₂ to conductance to water
+vapor.
+
 
 # References
 
@@ -38,4 +41,5 @@ Base.@kwdef struct Constants{T}
     λ₀::T = 2.501e6
     σ::T = 5.670373e-08
     Gbₕ_to_Gbₕ₂ₒ::T = 1.075
+    Gsc_to_Gsw::T = 1.57
 end
