@@ -20,7 +20,7 @@ in (``W\\ m^{-2}\\ K^{-4}``).
 vapor.
 - `Gsc_to_Gsw = 1.57`: conversion coefficient from stomatal conductance to CO₂ to conductance to water
 vapor.
-
+- `Gbc_to_Gbₕ = 1.32`: conversion coefficient from boundary layer conductance to CO₂ to heat.
 
 # References
 
@@ -42,4 +42,5 @@ Base.@kwdef struct Constants{T}
     σ::T = 5.670373e-08
     Gbₕ_to_Gbₕ₂ₒ::T = 1.075
     Gsc_to_Gsw::T = 1.57
+    Gbc_to_Gbₕ::T = 1.32
 end

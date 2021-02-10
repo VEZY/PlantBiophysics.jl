@@ -124,15 +124,12 @@ on the stomatal conductance model. For example VPD is needed for the Medlyn et a
 ```julia
 assimilation(Fvcb(),
               Medlyn(0.03,12.0),
-              MutableNamedTuple(Tₗ = 25.0, PPFD = 1000.0, Rh = missing, Cₛ = 400.0, VPD = 2.0,
-                                ψₗ = missing),
-             Constants())
+              (Tₗ = 25.0, PPFD = 1000.0, Rh = missing, Cₛ = 400.0, VPD = 2.0, ψₗ = missing),
+              Constants())
 
 # Or using keyword arguments:
 
-assimilation(Fvcb(),Gs(),
-              Tₗ = 25.0, PPFD = 1000.0, Cₛ = 300.0, VPD = 2.0)
-              )
+assimilation(Fvcb(),Gs(), Tₗ = 25.0, PPFD = 1000.0, Cₛ = 300.0, VPD = 2.0))
 ```
 
 # References

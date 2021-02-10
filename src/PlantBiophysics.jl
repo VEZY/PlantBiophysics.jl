@@ -62,6 +62,7 @@ export rh_from_vpd
 export ms_to_mol
 
 # Energy balance
+export EnergyModel
 export black_body
 export grey_body
 export psychrometer_constant
@@ -75,8 +76,13 @@ export Translucent
 export Ignore
 export OpticalProperties
 export σ
+export InterceptionModel
+
+# Geometry
+export GeometryModel
 
 # Photosynthesis
+export AModel
 export Fvcb # Parameters for the Farquhar et al. (1980) model
 export FvcbIter
 export Constants
@@ -84,6 +90,7 @@ export assimilation
 export photosynthesis
 
 # Conductances
+export GsModel
 export gbh_to_gbw
 export gbₕ_free
 export gbₕ_forced

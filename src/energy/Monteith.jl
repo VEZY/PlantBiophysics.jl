@@ -12,6 +12,12 @@ Monteith and Unsworth (2013)
 - `maxiter = 10`: maximal number of iterations allowed to close the energy balance
 - `ϵ = 0.01` (°C): maximum difference in object temperature between two iterations to
 consider convergence
+
+# Examples
+
+```julia
+energy_model = Monteith(Rn = 300.0, skyFraction = 2.0) # a leaf in an illuminated chamber
+```
 """
 Base.@kwdef struct Monteith{T,S} <: EnergyModel
     Rn::T
@@ -55,12 +61,17 @@ or less than 1 if it is partly shaded.
 # Examples
 
 ```julia
+using MutableNamedTuples
+
 meteo = Atmosphere(T = 20.0, Wind = 1.0, P = 101.3, Rh = 0.65)
 energy_model = Monteith(Rn = 300.0, skyFraction = 2.0) # a leaf in an illuminated chamber
 photo_model = Fvcb()
 Gs_model = Medlyn(0.03, 12.0)
-
-net_radiation(energy_model,photo_model,Gs_model,meteo)
+status = MutableNamedTuple(Tₗ = -999.0, Rn = -999.0, Rₗₗ = -999.0, PPFD = -999.0,
+                                    Cₛ = -999.0, ψₗ = -999.0, H = -999.0, λE = -999.0,
+                                    A = -999.0, Gₛ = -999.0, Cᵢ = -999.0, Gbₕ = -999.0,
+                                    Dₗ = -999.0)
+net_radiation(energy_model,status,photo_model,Gs_model,meteo)
 ```
 
 # References
@@ -88,13 +99,15 @@ function net_radiation(energy::Monteith,status,photosynthesis,stomatal_conductan
     Tₗ = meteo.T
     Tₗ_new = zero(meteo.T)
     Rn = status.Rn
-
+    Cₛ = meteo.Cₐ
+    Dₗ = meteo.VPD
     iter = 1
 
     for i in 1:energy.maxiter
 
-        A, Gₛ, Cᵢ = assimilation(photosynthesis, stomatal_conductance,
-                                (status..., meteo...), constants)
+        envir = (Cₛ = Cₛ, Tₗ = Tₗ, VPD = Dₗ, PPFD = status.PPFD, ψₗ = status.ψₗ, Rh = meteo.Rh)
+
+        A, Gₛ, Cᵢ = assimilation(photosynthesis, stomatal_conductance, envir, constants)
 
         # Stomatal resistance to water vapor
         Rsᵥ = 1 / (gsc_to_gsw(mol_to_ms(Gₛ,meteo.T,meteo.P,constants.R,constants.K₀),constants.Gsc_to_Gsw))
@@ -118,6 +131,12 @@ function net_radiation(energy::Monteith,status,photosynthesis,stomatal_conductan
 
         # Leaf boundary resistance for water vapor (s m-1):
         Rbᵥ = 1 / gbh_to_gbw(Gbₕ)
+
+        # Leaf boundary resistance for CO₂ (umol[CO₂] m-2 s-1):
+        Gbc = ms_to_mol(Gbₕ,meteo.T,meteo.P,constants.R,constants.K₀) / constants.Gbc_to_Gbₕ
+
+        # Update Cₛ using boundary layer conductance to CO₂ and assimilation:
+        Cₛ = Cₐ - A / Gbc
 
         # Apparent value of psychrometer constant (kPa K−1)
         γˢ = γ_star(meteo.γ, energy.aₛₕ, energy.aₛᵥ, Rbᵥ, Rsᵥ, Rbₕ)
@@ -152,9 +171,9 @@ function net_radiation(energy::Monteith,status,photosynthesis,stomatal_conductan
             Rbᵥ = Rbᵥ, iter = iter)
 end
 
-function net_radiation(energy::Monteith,photosynthesis,stomatal_conductance,meteo::Atmosphere)
+function net_radiation(energy::Monteith,status,photosynthesis,stomatal_conductance,meteo::Atmosphere)
     constants = Constants()
-    net_radiation(energy,photosynthesis,stomatal_conductance,meteo, constants)
+    net_radiation(energy,status,photosynthesis,stomatal_conductance,meteo, constants)
 end
 
 

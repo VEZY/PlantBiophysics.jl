@@ -138,9 +138,10 @@ Atmosphere structure to hold all values related to the meteorology / atmoshpere.
 # Arguments
 
 - `T` (°C): air temperature
-- `Rh = rh_from_vpd(VPD,eₛ)` (0-1): relative humidity
 - `Wind` (m s-1): wind speed
 - `P` (kPa): air pressure
+- `Rh = rh_from_vpd(VPD,eₛ)` (0-1): relative humidity
+- `Cₐ` (ppm): air CO₂ concentration
 - `e = vapor_pressure(T,Rh)` (kPa): vapor pressure
 - `eₛ = e_sat(T)` (kPa): saturated vapor pressure
 - `VPD = eₛ - e` (kPa): vapor pressure deficit
@@ -165,6 +166,7 @@ Base.@kwdef struct Atmosphere{A} <: Scene
     Wind::A
     P::A
     Rh::A
+    Cₐ::A = 400.0
     e::A = vapor_pressure(T,Rh)
     eₛ::A = e_sat(T)
     VPD::A = eₛ - e
