@@ -30,6 +30,7 @@ or less than 1 if it is partly shaded.
 `d` is the minimal dimension of the surface of an object in contact with the air.
 
 # Examples
+
 ```julia
 meteo = Atmosphere(T = 20.0, Wind = 1.0, P = 101.3, Rh = 0.65)
 energy_balance(meteo,Constants())

@@ -80,13 +80,14 @@ export InterceptionModel
 
 # Geometry
 export GeometryModel
+export AbstractGeom
 
 # Photosynthesis
 export AModel
 export Fvcb # Parameters for the Farquhar et al. (1980) model
 export FvcbIter
 export Constants
-export assimilation
+export assimilation!
 export photosynthesis
 
 # Conductances
@@ -105,6 +106,7 @@ export Translucent
 export Ignore
 
 # Components (structures that hold models)
+export PhotoComponent
 export Leaf
 export Metamer
 

@@ -4,8 +4,6 @@ Monteith and Unsworth (2013)
 
 # Arguments
 
-- `Rn` (W m-2): net global radiation for the object (PAR + NIR + TIR)
-- `skyFraction` (0-2): view factor between the object and the sky for both faces.
 - `aₛₕ = 2`: number of faces of the object that exchange sensible heat fluxes
 - `aₛᵥ = 1`: number of faces of the object that exchange latent heat fluxes (hypostomatous => 1)
 - `ε = 0.955`: emissivity of the object
@@ -16,12 +14,10 @@ consider convergence
 # Examples
 
 ```julia
-energy_model = Monteith(Rn = 300.0, skyFraction = 2.0) # a leaf in an illuminated chamber
+energy_model = Monteith() # a leaf in an illuminated chamber
 ```
 """
 Base.@kwdef struct Monteith{T,S} <: EnergyModel
-    Rn::T
-    skyFraction::T
     aₛₕ::S = 2
     aₛᵥ::S = 1
     ε::T = 0.955
@@ -64,14 +60,18 @@ or less than 1 if it is partly shaded.
 using MutableNamedTuples
 
 meteo = Atmosphere(T = 20.0, Wind = 1.0, P = 101.3, Rh = 0.65)
-energy_model = Monteith(Rn = 300.0, skyFraction = 2.0) # a leaf in an illuminated chamber
-photo_model = Fvcb()
-Gs_model = Medlyn(0.03, 12.0)
-status = MutableNamedTuple(Tₗ = -999.0, Rn = -999.0, Rₗₗ = -999.0, PPFD = -999.0,
-                                    Cₛ = -999.0, ψₗ = -999.0, H = -999.0, λE = -999.0,
-                                    A = -999.0, Gₛ = -999.0, Cᵢ = -999.0, Gbₕ = -999.0,
-                                    Dₗ = -999.0)
-net_radiation(energy_model,status,photo_model,Gs_model,meteo)
+
+leaf = Leaf(geometry = AbstractGeom(0.03),
+            energy = Monteith(),
+            photosynthesis = Fvcb(),
+            stomatal_conductance = Medlyn(0.03, 12.0),
+            status = MutableNamedTuple(Tₗ = -999.0, Rn = 300.0, skyFraction = 2.0, # 2.0 for a leaf in an illuminated chamber
+                                        PPFD = -999.0,Cₛ = -999.0, ψₗ = -999.0, H = -999.0, λE = -999.0,
+                                        A = -999.0, Gₛ = -999.0, Cᵢ = -999.0, Gbₕ = -999.0,
+                                        Dₗ = -999.0, Rₗₗ = -999.0))
+
+net_radiation(leaf,meteo)
+leaf.status.Rn
 ```
 
 # References
@@ -94,98 +94,109 @@ Maxime Soma, et al. 2018. « Measuring and modelling energy partitioning in can
 complexity using MAESPA model ». Agricultural and Forest Meteorology 253‑254 (printemps): 203‑17.
 https://doi.org/10.1016/j.agrformet.2018.02.005.
 """
-function net_radiation(energy::Monteith,status,photosynthesis,stomatal_conductance,meteo::Atmosphere,constants)
+function net_radiation(leaf::Leaf{G,I,<:Monteith,A,Gs,S},meteo::Atmosphere,constants) where {G,I,A,Gs,S}
 
+    # Initialisations
     Tₗ = meteo.T
     Tₗ_new = zero(meteo.T)
-    Rn = status.Rn
-    Cₛ = meteo.Cₐ
-    Dₗ = meteo.VPD
+    leaf.status.Cₛ = meteo.Cₐ
+    leaf.status.Dₗ = meteo.VPD
+    γˢ = Rbₕ = Δ = zero(meteo.T)
+
     iter = 1
 
-    for i in 1:energy.maxiter
+    # Iterative resolution of the energy balance
+    for i in 1:leaf.energy.maxiter
 
-        envir = (Cₛ = Cₛ, Tₗ = Tₗ, VPD = Dₗ, PPFD = status.PPFD, ψₗ = status.ψₗ, Rh = meteo.Rh)
-
-        A, Gₛ, Cᵢ = assimilation(photosynthesis, stomatal_conductance, envir, constants)
+        # Update A, Gₛ, Cᵢ from leaf.status:
+        assimilation!(leaf, meteo, constants)
 
         # Stomatal resistance to water vapor
-        Rsᵥ = 1 / (gsc_to_gsw(mol_to_ms(Gₛ,meteo.T,meteo.P,constants.R,constants.K₀),constants.Gsc_to_Gsw))
+        Rsᵥ = 1 / (gsc_to_gsw(mol_to_ms(leaf.status.Gₛ,meteo.T,meteo.P,constants.R,constants.K₀),
+                                constants.Gsc_to_Gsw))
 
         # Re-computing the net radiation according to simulated leaf temperature:
-        Rₗₗ = net_longwave_radiation(Tₗ,meteo.T,energy.ε,meteo.ε,energy.skyFraction,constants.K₀,constants.σ)
+        leaf.status.Rₗₗ = net_longwave_radiation(leaf.status.Tₗ,meteo.T,leaf.energy.ε,meteo.ε,
+                                                leaf.status.skyFraction,constants.K₀,constants.σ)
         #= ? NB: we use the sky fraction here (0-2) instead of the view factor (0-1) because:
             - we consider both sides of the leaf at the same time (1 -> leaf sees sky on one face)
             - we consider all objects in the scene have the same temperature as the leaf
             of interest except the atmosphere. So the leaf exchange thermal energy only with
             the atmosphere.
         =#
-        Rn += Rₗₗ
+        leaf.status.Rn += leaf.status.Rₗₗ
 
         # Leaf boundary conductance for heat (m s-1):
-        Gbₕ = gbₕ_free(meteo.T, Tₗ, object.geometry.d, constants.Dₕ₀) + gbₕ_forced(meteo.Wind, object.geometry.d)
+        leaf.status.Gbₕ = gbₕ_free(meteo.T, leaf.status.Tₗ, leaf.geometry.d, constants.Dₕ₀) +
+                             gbₕ_forced(meteo.Wind, leaf.geometry.d)
         # NB, in MAESPA we use Rni so we add the radiation conductance also (not here)
 
         # Leaf boundary resistance for heat (s m-1):
-        Rbₕ = 1 / Gbₕ
+        Rbₕ = 1 / leaf.status.Gbₕ
 
         # Leaf boundary resistance for water vapor (s m-1):
-        Rbᵥ = 1 / gbh_to_gbw(Gbₕ)
+        Rbᵥ = 1 / gbh_to_gbw(leaf.status.Gbₕ)
 
         # Leaf boundary resistance for CO₂ (umol[CO₂] m-2 s-1):
-        Gbc = ms_to_mol(Gbₕ,meteo.T,meteo.P,constants.R,constants.K₀) / constants.Gbc_to_Gbₕ
+        Gbc = ms_to_mol(leaf.status.Gbₕ,meteo.T,meteo.P,constants.R,constants.K₀) /
+                constants.Gbc_to_Gbₕ
 
         # Update Cₛ using boundary layer conductance to CO₂ and assimilation:
-        Cₛ = Cₐ - A / Gbc
+        leaf.status.Cₛ = meteo.Cₐ - leaf.status.A / Gbc
 
         # Apparent value of psychrometer constant (kPa K−1)
-        γˢ = γ_star(meteo.γ, energy.aₛₕ, energy.aₛᵥ, Rbᵥ, Rsᵥ, Rbₕ)
+        γˢ = γ_star(meteo.γ, leaf.energy.aₛₕ, leaf.energy.aₛᵥ, Rbᵥ, Rsᵥ, Rbₕ)
 
         # slope of the saturation vapor pressure at air temperature:
         Δ = e_sat_slope(meteo.T)
 
-        λE = latent_heat(Rn, meteo.vpd, γˢ, Rbₕ, Δ, meteo.ρ, energy.aₛₕ, constants.Cₚ)
+        leaf.status.λE = latent_heat(leaf.status.Rn, meteo.VPD, γˢ, Rbₕ, Δ, meteo.ρ,
+                                        leaf.energy.aₛₕ, constants.Cₚ)
+
+        # If potential evaporation is needed, here is how to compute it:
+        # γˢₑ = γ_star(meteo.γ, energy.aₛₕ, 1, Rbᵥ, 1.0e-9, Rbₕ) # Rsᵥ is inf. low
+        # Ev = latent_heat(leaf.status.Rn, meteo.VPD, γˢₑ, Rbₕ, Δ, meteo.ρ, energy.aₛₕ, constants.Cₚ)
 
         # Transpiration:
-        ET = λE / meteo.λ
+        ET = leaf.status.λE / meteo.λ
 
         # Vapour pressure difference between the surface and the saturation vapour pressure:
-        Dₗ = ET * meteo.P / ((Rbᵥ + Rsᵥ) * energy.aₛₕ / energy.aₛᵥ)
+        Dₗ = ET * meteo.P / ((Rbᵥ + Rsᵥ) * leaf.energy.aₛₕ / leaf.energy.aₛᵥ)
         # ! Check this computation
 
-        Tₗ_new = meteo.T + (Rn - λE) / (meteo.ρ * constants.Cₚ * (energy.aₛₕ / Rbₕ))
+        Tₗ_new = meteo.T + (leaf.status.Rn - leaf.status.λE) /
+                (meteo.ρ * constants.Cₚ * (leaf.energy.aₛₕ / Rbₕ))
 
-        if abs(Tₗ_new - Tₗ) <= ϵ break end
+        if abs(Tₗ_new - leaf.status.Tₗ) <= leaf.energy.ϵ break end
 
-        Tₗ = Tₗ_new
+        leaf.status.Tₗ = Tₗ_new
 
         iter += 1
     end
 
 
-    H = sensible_heat(Rn, meteo.vpd, γˢ, Rbₕ, Δ, meteo.ρ, energy.aₛₕ, constants.Cₚ)
+    H = sensible_heat(leaf.status.Rn, meteo.VPD, γˢ, Rbₕ, Δ, meteo.ρ, leaf.energy.aₛₕ, constants.Cₚ)
 
 
-
-    return (Rn = Rn, Rₗₗ = Rₗₗ, Tₗ = Tₗ, H = H, λE = λE, A = A, Gₛ = Gₛ, Cᵢ = Cᵢ, Rbₕ = Rbₕ,
-            Rbᵥ = Rbᵥ, iter = iter)
+    nothing
+    # return (Rn = Rn, Rₗₗ = Rₗₗ, Tₗ = Tₗ, H = H, λE = λE, A = An, Gₛ = Gₛ, Cᵢ = Cᵢ, Rbₕ = Rbₕ,
+    #         Rbᵥ = Rbᵥ, iter = iter)
 end
 
-function net_radiation(energy::Monteith,status,photosynthesis,stomatal_conductance,meteo::Atmosphere)
-    constants = Constants()
-    net_radiation(energy,status,photosynthesis,stomatal_conductance,meteo, constants)
+function net_radiation(leaf::Leaf{G,I,<:Monteith,A,Gs,S},meteo::Atmosphere) where {G,I,A,Gs,S}
+    net_radiation(leaf, meteo, Constants())
 end
 
 
 """
-    latent_heat(Rn, vpd, γˢ, Rbₕ, Δ, ρ, aₛₕ, Cₚ)
-    latent_heat(Rn, vpd, γˢ, Rbₕ, Δ, ρ, aₛₕ)
+    latent_heat(Rn, VPD, γˢ, Rbₕ, Δ, ρ, aₛₕ, Cₚ)
+    latent_heat(Rn, VPD, γˢ, Rbₕ, Δ, ρ, aₛₕ)
 
 λE -the latent heat flux (W m-2)- using the Monteith and Unsworth (2013) definition corrected by
 Schymanski et al. (2017), eq.22.
 
 - `Rn` (W m-2): net radiation. Carefull: not the isothermal net radiation
-- `vpd` (kPa): air vapor pressure deficit
+- `VPD` (kPa): air vapor pressure deficit
 - `γˢ` (kPa K−1): apparent value of psychrometer constant (see [`γ_star`](@ref))
 - `Rbₕ` (s m-1): resistance for heat transfer by convection, i.e. resistance to sensible heat
 - `Δ` (KPa K-1): rate of change of saturation vapor pressure with temperature (see [`e_sat_slope`](@ref))
@@ -210,24 +221,24 @@ Tₐ = 20.0 ; P = 100.0 ;
 latent_heat(300.0, 2.0, 0.1461683, 50.0, Δ, ρ, 2.0)
 ```
 """
-function latent_heat(Rn, vpd, γˢ, Rbₕ, Δ, ρ, aₛₕ, Cₚ)
-  (Δ * Rn + ρ * Cₚ * vpd * (aₛₕ / Rbₕ)) / (Δ + γˢ)
+function latent_heat(Rn, VPD, γˢ, Rbₕ, Δ, ρ, aₛₕ, Cₚ)
+  (Δ * Rn + ρ * Cₚ * VPD * (aₛₕ / Rbₕ)) / (Δ + γˢ)
 end
 
-function latent_heat(Rn, vpd, γˢ, Rbₕ, Δ, ρ, aₛₕ)
-    latent_heat(Rn, vpd, γˢ, Rbₕ, Δ, ρ, aₛₕ, Constants().Cₚ)
+function latent_heat(Rn, VPD, γˢ, Rbₕ, Δ, ρ, aₛₕ)
+    latent_heat(Rn, VPD, γˢ, Rbₕ, Δ, ρ, aₛₕ, Constants().Cₚ)
 end
 
 
 """
-    sensible_heat(Rn, vpd, γˢ, Rbₕ, Δ, ρ, aₛₕ, Cₚ)
-    sensible_heat(Rn, vpd, γˢ, Rbₕ, Δ, ρ, aₛₕ)
+    sensible_heat(Rn, VPD, γˢ, Rbₕ, Δ, ρ, aₛₕ, Cₚ)
+    sensible_heat(Rn, VPD, γˢ, Rbₕ, Δ, ρ, aₛₕ)
 
 H -the sensible heat flux (W m-2)- using the Monteith and Unsworth (2013) definition corrected by
 Schymanski et al. (2017), eq.22.
 
 - `Rn` (W m-2): net radiation. Carefull: not the isothermal net radiation
-- `vpd` (kPa): air vapor pressure deficit
+- `VPD` (kPa): air vapor pressure deficit
 - `γˢ` (kPa K−1): apparent value of psychrometer constant (see [`γ_star`](@ref))
 - `Rbₕ` (s m-1): resistance for heat transfer by convection, i.e. resistance to sensible heat
 - `Δ` (KPa K-1): rate of change of saturation vapor pressure with temperature (see [`e_sat_slope`](@ref))
@@ -252,10 +263,10 @@ Tₐ = 20.0 ; P = 100.0 ;
 sensible_heat(300.0, 2.0, 0.1461683, 50.0, Δ, ρ, 2.0)
 ```
 """
-function sensible_heat(Rn, vpd, γˢ, Rbₕ, Δ, ρ, aₛₕ, Cₚ)
-  (γˢ * Rn - ρ * Cₚ * vpd * (aₛₕ / Rbₕ)) / (Δ + γˢ)
+function sensible_heat(Rn, VPD, γˢ, Rbₕ, Δ, ρ, aₛₕ, Cₚ)
+  (γˢ * Rn - ρ * Cₚ * VPD * (aₛₕ / Rbₕ)) / (Δ + γˢ)
 end
 
-function sensible_heat(Rn, vpd, γˢ, Rbₕ, Δ, ρ, aₛₕ)
-  sensible_heat(Rn, vpd, γˢ, Rbₕ, Δ, ρ, aₛₕ, Constants().Cₚ)
+function sensible_heat(Rn, VPD, γˢ, Rbₕ, Δ, ρ, aₛₕ)
+  sensible_heat(Rn, VPD, γˢ, Rbₕ, Δ, ρ, aₛₕ, Constants().Cₚ)
 end

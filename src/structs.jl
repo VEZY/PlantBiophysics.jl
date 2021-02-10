@@ -87,26 +87,59 @@ abstract type PhotoComponent <: Component end
 # Geometry for the dimensions of components
 abstract type GeometryModel end
 
-struct AbstractGeom
+"""
+    AbstractGeom(d)
+
+The most simple geometry used to represent an abstract leaf, with only one field `d` (m) that
+defines the characteristic dimension, *e.g.* the leaf width. It is used to compute the
+boundary conductance for heat (see eq. 10.9 from Monteith and Unsworth, 2013).
+
+# Examples
+
+```julia
+AbstractGeom(0.03) # A leaf with a width of 3 cm.
+```
+"""
+struct AbstractGeom <: GeometryModel
     d
 end
 
 """
+    Leaf{
+        geometry <: Union{Missing,GeometryModel},
+        interception <: Union{Missing,InterceptionModel},
+        energy <: Union{Missing,EnergyModel},
+        photosynthesis <: AModel,
+        stomatal_conductance <: GsModel,
+        status <: MutableNamedTuple
+        }
+
 Leaf component, with fields holding model types and parameter values for:
 
-- geometry:
-- interception
-- energy
-- photosynthesis
-- stomatal_conductance
-- status:
-    - `Tₗ = missing` (°C): temperature of the object
-    - `Rₗₗ = missing` (W m-2): net longwave radiation for the object (TIR)
-    - `Gbₕ = missing` (m s-1): boundary conductance for heat (free + forced convection)
-    - `λE = missing` (W m-2): latent heat flux
-    - `H = missing` (W m-2): sensible heat flux
-    - `Dₗ = missing` (kPa): vapour pressure difference between the surface and the saturation
-    vapour pressure, also called air-to-leaf VPD
+# Arguments
+
+- `geometry <: Union{Missing,GeometryModel}`: A geometry model, e.g. [`AbstractGeom`](@ref).
+- `interception <: Union{Missing,InterceptionModel}`: An interception model.
+- `energy <: Union{Missing,EnergyModel}`: An energy model, e.g. [`Monteith`](@ref).
+- `photosynthesis <: AModel`: A photosynthesis model, e.g. [`Fvcb`](@ref)
+- `stomatal_conductance <: GsModel`: A stomatal conductance model, e.g. [`Medlyn`](@ref) or
+[`ConstantGs`](@ref)
+- `status <: MutableNamedTuple`: a struct used to track the status (*i.e.* the variables) of
+the leaf. *e.g.*:
+    - `Tₗ` (°C): leaf temperature
+    - `PPFD` (μmol m-2 s-1): absorbed Photosynthetic Photon Flux Density
+    - `Cₛ` (ppm): stomatal CO₂ concentration
+    - `ψₗ` (kPa): leaf water potential
+    - `A` (μmol m-2 s-1): carbon assimilation
+    - `Tₗ` (°C): temperature of the object
+    - `Rn` (W m-2): net global radiation for the object (PAR + NIR + TIR)
+    - `skyFraction` (0-2): view factor between the object and the sky for both faces.
+    - `Rₗₗ` (W m-2): net longwave radiation for the object (TIR)
+    - `Gbₕ` (m s-1): boundary conductance for heat (free + forced convection)
+    - `λE` (W m-2): latent heat flux
+    - `H` (W m-2): sensible heat flux
+    - `Dₗ` (kPa): vapour pressure difference between the surface and the saturation vapour
+    pressure, also called air-to-leaf VPD
 """
 Base.@kwdef struct Leaf{G <: Union{Missing,GeometryModel},
                         I <: Union{Missing,InterceptionModel},
@@ -119,10 +152,10 @@ Base.@kwdef struct Leaf{G <: Union{Missing,GeometryModel},
     energy::E = missing
     photosynthesis::A
     stomatal_conductance::Gs
-    status::S = MutableNamedTuple(Tₗ = -999.0, Rn = -999.0, Rₗₗ = -999.0, PPFD = -999.0,
-                                    Cₛ = -999.0, ψₗ = -999.0, H = -999.0, λE = -999.0,
-                                    A = -999.0, Gₛ = -999.0, Cᵢ = -999.0, Gbₕ = -999.0,
-                                    Dₗ = -999.0)
+    status::S = MutableNamedTuple(Tₗ = -999.0, Rn = -999.0, skyFraction = -999.0, Rₗₗ = -999.0,
+                                    PPFD = -999.0,Cₛ = -999.0, ψₗ = -999.0, H = -999.0,
+                                    λE = -999.0, A = -999.0, Gₛ = -999.0, Cᵢ = -999.0,
+                                    Gbₕ = -999.0, Dₗ = -999.0)
 end
 
 """

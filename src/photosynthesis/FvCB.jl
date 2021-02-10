@@ -80,10 +80,7 @@ Base.@kwdef struct Fvcb{T} <: AModel
 end
 
 """
-    assimilation(A_mod::Fvcb,Gs_mod::GsModel,environment,constants)
-    assimilation(A_mod::Fvcb,Gs_mod::GsModel,environment)
-    assimilation(A_mod::Fvcb, Gs_mod::GsModel; Tₗ = missing, PPFD = missing, Rh = missing,
-                        Cₛ = missing, VPD = missing, ψₗ = missing)
+    assimilation!(leaf::Leaf{G,I,E,<:Fvcb,<:GsModel,S},constants = Constants())
 
 Photosynthesis using the Farquhar–von Caemmerer–Berry (FvCB) model for C3 photosynthesis
  (Farquhar et al., 1980; von Caemmerer and Farquhar, 1981).
@@ -95,7 +92,7 @@ If you need to use Cₐ, you can use the iterative implementation of the Fvcb mo
 
 # Returns
 
-A tuple with (A, Gₛ, Cᵢ):
+Either modify in place or returns a tuple with (A, Gₛ, Cᵢ):
 
 - A: carbon assimilation (μmol[CO₂] m-2 s-1)
 - Gₛ: stomatal conductance for CO₂ (mol[CO₂] m-2 s-1)
@@ -103,33 +100,30 @@ A tuple with (A, Gₛ, Cᵢ):
 
 # Arguments
 
-- `A_mod::Fvcb`: The struct holding the parameters for the model. See [`Fvcb`](@ref).
-- `Gs_mod::GsModel`: The struct holding the parameters for the stomatal conductance model. See
-[`Medlyn`](@ref) or [`ConstantGs`](@ref).
-- `environment::NamedTuple`: the values for the variables (can also be given as keywords):
-    - Tₗ (°C): leaf temperature
-    - PPFD (μmol m-2 s-1): absorbed Photosynthetic Photon Flux Density
-    - Rh (0-1): air relative humidity
-    - Cₛ (ppm): stomatal CO₂ concentration
-    - VPD (kPa): vapor pressure deficit of the air
-    - ψₗ (kPa): leaf water potential
+- `leaf::Leaf{.,.,.,<:Fvcb,<:GsModel,.}`: A [`Leaf`](@ref) struct holding the parameters for
+the model
+- `meteo`: meteorology structure, see [`Atmosphere`](@ref)
+- `constants = Constants()`: physical constants. See [`Constants`](@ref) for more details
 
 # Note
 
-The mandatory variables provided in `environment` are Tₗ, PPFD, and Cₛ. Others are optional depending
+The mandatory variables provided in `leaf.status` are Tₗ, PPFD, and Cₛ. Others are optional depending
 on the stomatal conductance model. For example VPD is needed for the Medlyn et al. (2011) model.
 
 # Examples
 
 ```julia
-assimilation(Fvcb(),
-              Medlyn(0.03,12.0),
-              (Tₗ = 25.0, PPFD = 1000.0, Rh = missing, Cₛ = 400.0, VPD = 2.0, ψₗ = missing),
-              Constants())
+using MutableNamedTuples
 
-# Or using keyword arguments:
+meteo = Atmosphere(T = 20.0, Wind = 1.0, P = 101.3, Rh = 0.65)
+leaf = Leaf(photosynthesis = Fvcb(),
+            stomatal_conductance = Medlyn(0.03, 12.0),
+            status = MutableNamedTuple(Tₗ = 25.0,PPFD = 1000.0, Cₛ = 400.0,
+                                        A = -999.0, Gₛ = -999.0, Cᵢ = -999.0))
 
-assimilation(Fvcb(),Gs(), Tₗ = 25.0, PPFD = 1000.0, Cₛ = 300.0, VPD = 2.0))
+assimilation!(leaf,meteo,Constants())
+
+leaf.status.A
 ```
 
 # References
@@ -150,78 +144,76 @@ Leuning, R., F. M. Kelliher, DGG de Pury, et E.D. Schulze. 1995. « Leaf nitrog
 photosynthesis, conductance and transpiration: scaling from leaves to canopies ». Plant,
 Cell & Environment 18 (10): 1183‑1200.
 """
-function assimilation(A_mod::Fvcb,Gs_mod::GsModel,environment,constants)
+function assimilation!(leaf::Leaf{G,I,E,<:Fvcb,<:GsModel,S},meteo,constants = Constants()) where {G,I,E,S}
 
     # Tranform Celsius temperatures in Kelvin:
-    Tₖ = environment.Tₗ - constants.K₀
-    Tᵣₖ = A_mod.Tᵣ - constants.K₀
+    Tₖ = leaf.status.Tₗ - constants.K₀
+    Tᵣₖ = leaf.photosynthesis.Tᵣ - constants.K₀
 
     # Temperature dependence of the parameters:
-    Γˢ = Γ_star(Tₖ,Tᵣₖ,constants) # Gamma star (CO2 compensation point) in μmol mol-1
-    Km = get_km(Tₖ,Tᵣₖ,A_mod.O₂,constants) # effective Michaelis–Menten coefficient for CO2
+    Γˢ = Γ_star(Tₖ,Tᵣₖ,constants.R) # Gamma star (CO2 compensation point) in μmol mol-1
+    Km = get_km(Tₖ,Tᵣₖ,leaf.photosynthesis.O₂,constants.R) # effective Michaelis–Menten coefficient for CO2
 
     # Maximum electron transport rate at the given leaf temperature (μmol m-2 s-1):
-    JMax = arrhenius(A_mod.JMaxRef,A_mod.Eₐⱼ,Tₖ,Tᵣₖ,constants,A_mod.Hdⱼ,A_mod.Δₛⱼ)
+    JMax = arrhenius(leaf.photosynthesis.JMaxRef,leaf.photosynthesis.Eₐⱼ,Tₖ,Tᵣₖ,
+                        leaf.photosynthesis.Hdⱼ,leaf.photosynthesis.Δₛⱼ,constants.R)
     # Maximum rate of Rubisco activity at the given leaf temperature (μmol m-2 s-1):
-    VcMax = arrhenius(A_mod.VcMaxRef,A_mod.Eₐᵥ,Tₖ,Tᵣₖ,constants,A_mod.Hdᵥ,A_mod.Δₛᵥ)
+    VcMax = arrhenius(leaf.photosynthesis.VcMaxRef,leaf.photosynthesis.Eₐᵥ,Tₖ,Tᵣₖ,
+                        leaf.photosynthesis.Hdᵥ,leaf.photosynthesis.Δₛᵥ,constants.R)
     # Rate of mitochondrial respiration at the given leaf temperature (μmol m-2 s-1):
-    Rd = arrhenius(A_mod.RdRef,A_mod.Eₐᵣ,Tₖ,Tᵣₖ,constants)
+    Rd = arrhenius(leaf.photosynthesis.RdRef,leaf.photosynthesis.Eₐᵣ,Tₖ,Tᵣₖ,constants.R)
     # Rd is also described as the CO2 release in the light by processes other than the PCO
     # cycle, and termed "day" respiration, or "light respiration" (Harley et al., 1986).
 
     # Actual electron transport rate (considering intercepted PAR and leaf temperature):
-    J = get_J(environment.PPFD, JMax, A_mod.α, A_mod.θ) # in μmol m-2 s-1
+    J = get_J(leaf.status.PPFD, JMax, leaf.photosynthesis.α, leaf.photosynthesis.θ) # in μmol m-2 s-1
     # RuBP regeneration
     Vⱼ = J / 4
 
     # Stomatal conductance (umol[CO₂] m-2 s-1), dispatched on type of first argument (Gs_mod):
-    gs_mod = gs_closure(Gs_mod,environment)
+    gs_mod = gs_closure(leaf,meteo)
 
-    Cᵢⱼ = get_Cᵢⱼ(Vⱼ,Γˢ,environment.Cₛ,Rd,Gs_mod.g0,gs_mod)
+    Cᵢⱼ = get_Cᵢⱼ(Vⱼ,Γˢ,leaf.status.Cₛ,Rd,leaf.stomatal_conductance.g0,gs_mod)
     Wⱼ = Vⱼ * (Cᵢⱼ - Γˢ) / (Cᵢⱼ + 2.0 * Γˢ)
 
     if Wⱼ - Rd < 1.0e-6
-        Cᵢⱼ = environment.Cₛ
+        Cᵢⱼ = leaf.status.Cₛ
         Wⱼ = Vⱼ * (Cᵢⱼ - Γˢ) / (Cᵢⱼ + 2.0 * Γˢ)
     end
 
-    Cᵢᵥ = get_Cᵢᵥ(VcMax,Γˢ,environment.Cₛ,Rd,Gs_mod.g0,gs_mod,Km)
+    Cᵢᵥ = get_Cᵢᵥ(VcMax,Γˢ,leaf.status.Cₛ,Rd,leaf.stomatal_conductance.g0,gs_mod,Km)
 
-    if Cᵢᵥ <= 0.0 || Cᵢᵥ > environment.Cₛ
+    if Cᵢᵥ <= 0.0 || Cᵢᵥ > leaf.status.Cₛ
         Wᵥ = 0.0
     else
         Wᵥ = VcMax * (Cᵢᵥ - Γˢ) / (Cᵢᵥ + Km)
     end
 
     # Net assimilation (μmol m-2 s-1)
-    A = min(Wᵥ,Wⱼ) - Rd
+    leaf.status.A = min(Wᵥ,Wⱼ) - Rd
 
     # Stomatal conductance (μmol[CO₂] m-2 s-1)
-    Gₛ = Gs_mod.g0 + gs_mod * A
+    leaf.status.Gₛ = leaf.stomatal_conductance.g0 + gs_mod * leaf.status.A
 
     # Intercellular CO₂ concentration (Cᵢ, μmol mol)
-    if Gₛ > 0.0 && A > 0.0
-        Cᵢ = environment.Cₛ - A / Gₛ
+    if leaf.status.Gₛ > 0.0 && leaf.status.A > 0.0
+        leaf.status.Cᵢ = leaf.status.Cₛ - leaf.status.A / leaf.status.Gₛ
     else
-        Cᵢ = environment.Cₛ
+        leaf.status.Cᵢ = leaf.status.Cₛ
     end
 
-    return (A, Gₛ, Cᵢ)
-end
-
-
-function assimilation(A_mod::Fvcb,Gs_mod::GsModel,environment)
-    assimilation(A_mod,Gs_mod,environment,Constants())
+    # return (A, Gₛ, Cᵢ)
+    nothing
 end
 
 # With keyword arguments (better for users)
-function assimilation(A_mod::Fvcb, Gs_mod::GsModel; Tₗ, PPFD, Cₛ, Rh = missing,
-                        VPD = missing, ψₗ = missing)
+# function assimilation(A_mod::Fvcb, Gs_mod::GsModel; Tₗ, PPFD, Cₛ, Rh = missing,
+#                         VPD = missing, ψₗ = missing)
 
-    environment = MutableNamedTuple(Tₗ = Tₗ, PPFD = PPFD, Rh = Rh, Cₛ= Cₛ, VPD = VPD, ψₗ = ψₗ)
+#     environment = MutableNamedTuple(Tₗ = Tₗ, PPFD = PPFD, Rh = Rh, Cₛ= Cₛ, VPD = VPD, ψₗ = ψₗ)
 
-    assimilation(A_mod,Gs_mod,environment,Constants())
-end
+#     assimilation(A_mod,Gs_mod,environment,Constants())
+# end
 
 
 """
