@@ -21,6 +21,7 @@ vapor.
 - `Gsc_to_Gsw = 1.57`: conversion coefficient from stomatal conductance to CO₂ to conductance to water
 vapor.
 - `Gbc_to_Gbₕ = 1.32`: conversion coefficient from boundary layer conductance to CO₂ to heat.
+- `Mₕ₂ₒ = 18.0e-3` (kg mol-1): Molar mass for water.
 
 # References
 
@@ -43,4 +44,5 @@ Base.@kwdef struct Constants{T}
     Gbₕ_to_Gbₕ₂ₒ::T = 1.075
     Gsc_to_Gsw::T = 1.57
     Gbc_to_Gbₕ::T = 1.32
+    Mₕ₂ₒ::T = 18.0e-3
 end

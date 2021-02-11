@@ -20,6 +20,10 @@ Gₛ = g0 + Gs.gs * A
 # Note
 gs_vars is just declared here for compatibility with other formats of calls.
 """
-function gs_closure(Gs::ConstantGs,gs_vars=missing)
-    Gs.gs
+function gs_closure(leaf::Leaf{G,I,E,A,<:ConstantGs,S},meteo=missing) where {G,I,E,A,S}
+    leaf.stomatal_conductance.gs
+end
+
+function gs(leaf::Leaf{G,I,E,A,<:ConstantGs,S},gs_mod) where {G,I,E,A,S}
+    leaf.stomatal_conductance.gs
 end

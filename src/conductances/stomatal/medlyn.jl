@@ -66,5 +66,13 @@ Craig V. M. Barton, Kristine Y. Crous, Paolo De Angelis, Michael Freeman, et Lis
 Global Change Biology 17 (6): 2134‑44. https://doi.org/10.1111/j.1365-2486.2010.02375.x.
 """
 function gs_closure(leaf::Leaf{G,I,E,A,<:Medlyn,S},meteo) where {G,I,E,A,S}
-        (1.0 + leaf.stomatal_conductance.g1 / sqrt(meteo.VPD)) / leaf.status.Cₛ
+    (1.0 + leaf.stomatal_conductance.g1 / sqrt(meteo.VPD)) / leaf.status.Cₛ
+end
+
+function gs(leaf::Leaf{G,I,E,A,<:Medlyn,S},gs_mod) where {G,I,E,A,S}
+    leaf.stomatal_conductance.g0 + gs_mod * leaf.status.A
+end
+
+function gs(leaf::Leaf{G,I,E,A,<:Medlyn,S},meteo::M) where {G,I,E,A,S,M<:Atmosphere}
+    leaf.stomatal_conductance.g0 + gs_closure * leaf.status.A
 end

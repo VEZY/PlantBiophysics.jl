@@ -182,6 +182,7 @@ Atmosphere structure to hold all values related to the meteorology / atmoshpere.
 - `λ = latent_heat_vaporization(T, constants.λ₀)` (J kg-1): latent heat of vaporization
 - `γ = psychrometer_constant(P, λ, constants.Cₚ, constants.ε)` (kPa K−1): psychrometer "constant"
 - `ε = atmosphere_emissivity(T,e,constants.K₀)` (0-1): atmosphere emissivity
+- `Δ = e_sat_slope(meteo.T)` (0-1): slope of the saturation vapor pressure at air temperature
 
 # Notes
 
@@ -207,4 +208,5 @@ Base.@kwdef struct Atmosphere{A} <: Scene
     λ::A = latent_heat_vaporization(T)
     γ::A = psychrometer_constant(P, λ) # in kPa K−1
     ε::A = atmosphere_emissivity(T,e)
+    Δ::A = e_sat_slope(T)
 end

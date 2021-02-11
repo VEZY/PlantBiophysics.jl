@@ -77,40 +77,43 @@ function rh_from_vpd(VPD,eₛ)
 end
 
 """
-    gbh_to_gbw(gbh, Gbₕ_to_Gbₕ₂ₒ)
-    gbh_to_gbw(gbh)
+    gbh_to_gbw(gbh, Gbₕ_to_Gbₕ₂ₒ = Constants().Gbₕ_to_Gbₕ₂ₒ)
+    gbw_to_gbh(gbh, Gbₕ_to_Gbₕ₂ₒ = Constants().Gbₕ_to_Gbₕ₂ₒ)
 
 Boundary layer conductance for water vapor from boundary layer conductance for heat.
 
 # Arguments
 
 - `gbh` (m s-1): boundary layer conductance for heat under mixed convection.
-- `Dₕ₀`: molecular diffusivity for heat at base temperature. Use value from [`Constants`](@Ref)
-if not provided.
+- `Gbₕ_to_Gbₕ₂ₒ`: conversion factor.
 
 # Note
 
 Gbₕ is the sum of free and forced convection. See [`gbₕ_free`](@ref) and [`gbₕ_forced`](@ref).
 """
-function gbh_to_gbw(gbh, Gbₕ_to_Gbₕ₂ₒ)
+function gbh_to_gbw(gbh, Gbₕ_to_Gbₕ₂ₒ = Constants().Gbₕ_to_Gbₕ₂ₒ)
     gbh * Gbₕ_to_Gbₕ₂ₒ
 end
 
-
-function gbh_to_gbw(gbh)
-    gbh_to_gbw(gbh, Constants().Gbₕ_to_Gbₕ₂ₒ)
+function gbw_to_gbh(gbh, Gbₕ_to_Gbₕ₂ₒ = Constants().Gbₕ_to_Gbₕ₂ₒ)
+    gbh / Gbₕ_to_Gbₕ₂ₒ
 end
 
+
 """
-    gsc_to_gsw(Gₛ, Gsc_to_Gsw)
-    gsc_to_gsw(Gₛ)
+    gsc_to_gsw(Gₛ, Gsc_to_Gsw = Constants().Gsc_to_Gsw)
 
 Conversion of a stomatal conductance for CO₂ into stomatal conductance for H₂O.
 """
-function gsc_to_gsw(Gₛ, Gsc_to_Gsw)
+function gsc_to_gsw(Gₛ, Gsc_to_Gsw = Constants().Gsc_to_Gsw)
     Gₛ * Gsc_to_Gsw
 end
 
-function gsc_to_gsw(Gₛ)
-        gsc_to_gsw(Gₛ, Constants().Gsc_to_Gsw)
+"""
+    gsw_to_gsc(Gₛ, Gsc_to_Gsw = Constants().Gsc_to_Gsw)
+
+Conversion of a stomatal conductance for H₂O into stomatal conductance for CO₂.
+"""
+function gsw_to_gsc(Gₛ, Gsc_to_Gsw = Constants().Gsc_to_Gsw)
+    Gₛ / Gsc_to_Gsw
 end

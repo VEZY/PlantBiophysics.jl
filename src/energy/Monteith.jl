@@ -26,6 +26,8 @@ Base.@kwdef struct Monteith{T,S} <: EnergyModel
 end
 
 """
+    net_radiation!(energy::Monteith,status,photosynthesis,stomatal_conductance,meteo::Atmosphere,constants)
+    net_radiation!(energy::Monteith,status,photosynthesis,stomatal_conductance,meteo::Atmosphere)
     net_radiation(energy::Monteith,status,photosynthesis,stomatal_conductance,meteo::Atmosphere,constants)
     net_radiation(energy::Monteith,status,photosynthesis,stomatal_conductance,meteo::Atmosphere)
 
@@ -57,20 +59,36 @@ or less than 1 if it is partly shaded.
 # Examples
 
 ```julia
+using PlantBiophysics
 using MutableNamedTuples
 
-meteo = Atmosphere(T = 20.0, Wind = 1.0, P = 101.3, Rh = 0.65)
+meteo = Atmosphere(T = 22.0, Wind = 0.8333, P = 101.325, Rh = 0.4490995)
+
+# Using a constant value for Gs:
 
 leaf = Leaf(geometry = AbstractGeom(0.03),
             energy = Monteith(),
             photosynthesis = Fvcb(),
-            stomatal_conductance = Medlyn(0.03, 12.0),
-            status = MutableNamedTuple(Tₗ = -999.0, Rn = 300.0, skyFraction = 2.0, # 2.0 for a leaf in an illuminated chamber
-                                        PPFD = -999.0,Cₛ = -999.0, ψₗ = -999.0, H = -999.0, λE = -999.0,
+            stomatal_conductance = ConstantGs(0.0, 0.0011046215514372282),
+            status = MutableNamedTuple(Tₗ = -999.0, Rn = 13.747, skyFraction = 2.0, # 2.0 for a leaf in an illuminated chamber
+                                        PPFD = 1500.0,Cₛ = -999.0, ψₗ = -999.0, H = -999.0, λE = -999.0,
                                         A = -999.0, Gₛ = -999.0, Cᵢ = -999.0, Gbₕ = -999.0,
                                         Dₗ = -999.0, Rₗₗ = -999.0))
 
-net_radiation(leaf,meteo)
+net_radiation!(leaf,meteo)
+leaf.status.Rn
+
+# Using the model from Medlyn et al. (2011) for Gs:
+leaf = Leaf(geometry = AbstractGeom(0.03),
+            energy = Monteith(),
+            photosynthesis = Fvcb(),
+            stomatal_conductance = Medlyn(0.03, 12.0),
+            status = MutableNamedTuple(Tₗ = -999.0, Rn = 13.747, skyFraction = 2.0, # 2.0 for a leaf in an illuminated chamber
+                                        PPFD = 1000.0,Cₛ = -999.0, ψₗ = -999.0, H = -999.0, λE = -999.0,
+                                        A = -999.0, Gₛ = -999.0, Cᵢ = -999.0, Gbₕ = -999.0,
+                                        Dₗ = -999.0, Rₗₗ = -999.0))
+
+net_radiation!(leaf,meteo)
 leaf.status.Rn
 ```
 
@@ -94,15 +112,15 @@ Maxime Soma, et al. 2018. « Measuring and modelling energy partitioning in can
 complexity using MAESPA model ». Agricultural and Forest Meteorology 253‑254 (printemps): 203‑17.
 https://doi.org/10.1016/j.agrformet.2018.02.005.
 """
-function net_radiation(leaf::Leaf{G,I,<:Monteith,A,Gs,S},meteo::Atmosphere,constants) where {G,I,A,Gs,S}
+function net_radiation!(leaf::Leaf{G,I,<:Monteith,A,Gs,S},meteo::Atmosphere,constants) where {G,I,A,Gs,S}
 
     # Initialisations
-    Tₗ = meteo.T
+    leaf.status.Tₗ = meteo.T
     Tₗ_new = zero(meteo.T)
     leaf.status.Cₛ = meteo.Cₐ
     leaf.status.Dₗ = meteo.VPD
     γˢ = Rbₕ = Δ = zero(meteo.T)
-
+    Rn_in = leaf.status.Rn
     iter = 1
 
     # Iterative resolution of the energy balance
@@ -116,15 +134,19 @@ function net_radiation(leaf::Leaf{G,I,<:Monteith,A,Gs,S},meteo::Atmosphere,const
                                 constants.Gsc_to_Gsw))
 
         # Re-computing the net radiation according to simulated leaf temperature:
-        leaf.status.Rₗₗ = net_longwave_radiation(leaf.status.Tₗ,meteo.T,leaf.energy.ε,meteo.ε,
-                                                leaf.status.skyFraction,constants.K₀,constants.σ)
+        # leaf.status.Rₗₗ = net_longwave_radiation(leaf.status.Tₗ,meteo.T,leaf.energy.ε,meteo.ε,
+        #                                         leaf.status.skyFraction,constants.K₀,constants.σ)
         #= ? NB: we use the sky fraction here (0-2) instead of the view factor (0-1) because:
             - we consider both sides of the leaf at the same time (1 -> leaf sees sky on one face)
             - we consider all objects in the scene have the same temperature as the leaf
             of interest except the atmosphere. So the leaf exchange thermal energy only with
             the atmosphere.
         =#
-        leaf.status.Rn += leaf.status.Rₗₗ
+
+        leaf.status.Rₗₗ = (grey_body(meteo.T,1.0) - grey_body(leaf.status.Tₗ, 1.0))*leaf.status.skyFraction
+
+        Rn_in = leaf.status.Rn + leaf.status.Rₗₗ
+        # ? NB: we only move around the Rn that was given originally.
 
         # Leaf boundary conductance for heat (m s-1):
         leaf.status.Gbₕ = gbₕ_free(meteo.T, leaf.status.Tₗ, leaf.geometry.d, constants.Dₕ₀) +
@@ -147,35 +169,37 @@ function net_radiation(leaf::Leaf{G,I,<:Monteith,A,Gs,S},meteo::Atmosphere,const
         # Apparent value of psychrometer constant (kPa K−1)
         γˢ = γ_star(meteo.γ, leaf.energy.aₛₕ, leaf.energy.aₛᵥ, Rbᵥ, Rsᵥ, Rbₕ)
 
-        # slope of the saturation vapor pressure at air temperature:
-        Δ = e_sat_slope(meteo.T)
-
-        leaf.status.λE = latent_heat(leaf.status.Rn, meteo.VPD, γˢ, Rbₕ, Δ, meteo.ρ,
+        leaf.status.λE = latent_heat(Rn_in, meteo.VPD, γˢ, Rbₕ, meteo.Δ, meteo.ρ,
                                         leaf.energy.aₛₕ, constants.Cₚ)
 
         # If potential evaporation is needed, here is how to compute it:
         # γˢₑ = γ_star(meteo.γ, energy.aₛₕ, 1, Rbᵥ, 1.0e-9, Rbₕ) # Rsᵥ is inf. low
-        # Ev = latent_heat(leaf.status.Rn, meteo.VPD, γˢₑ, Rbₕ, Δ, meteo.ρ, energy.aₛₕ, constants.Cₚ)
+        # Ev = latent_heat(Rn_in, meteo.VPD, γˢₑ, Rbₕ, meteo.Δ, meteo.ρ, energy.aₛₕ, constants.Cₚ)
 
-        # Transpiration:
-        ET = leaf.status.λE / meteo.λ
+        # Transpiration (mol[H₂O] m-2 s-1):
+        ET = leaf.status.λE / meteo.λ * constants.Mₕ₂ₒ
+        # ET / constants.Mₕ₂ₒ to get mm s-1 <=> kg m-2 s-1 <=> l m-2 s-1
 
         # Vapour pressure difference between the surface and the saturation vapour pressure:
-        Dₗ = ET * meteo.P / ((Rbᵥ + Rsᵥ) * leaf.energy.aₛₕ / leaf.energy.aₛᵥ)
-        # ! Check this computation
+        # Dₗ = ET * meteo.P / ((Rbᵥ + Rsᵥ) * leaf.energy.aₛₕ / leaf.energy.aₛᵥ)
+        # ! Check this computation (moved below)
 
-        Tₗ_new = meteo.T + (leaf.status.Rn - leaf.status.λE) /
+        Tₗ_new = meteo.T + (Rn_in - leaf.status.λE) /
                 (meteo.ρ * constants.Cₚ * (leaf.energy.aₛₕ / Rbₕ))
 
         if abs(Tₗ_new - leaf.status.Tₗ) <= leaf.energy.ϵ break end
 
         leaf.status.Tₗ = Tₗ_new
 
+        # Vapour pressure difference between the surface and the saturation vapour pressure:
+        Dₗ = e_sat(leaf.status.Tₗ) - e_sat( meteo.T) *  meteo.Rh
+
         iter += 1
     end
 
-
-    H = sensible_heat(leaf.status.Rn, meteo.VPD, γˢ, Rbₕ, Δ, meteo.ρ, leaf.energy.aₛₕ, constants.Cₚ)
+    leaf.status.Rn = Rn_in # update Rn in the end.
+    leaf.status.H = sensible_heat(leaf.status.Rn, meteo.VPD, γˢ, Rbₕ, meteo.Δ, meteo.ρ,
+                                    leaf.energy.aₛₕ, constants.Cₚ)
 
 
     nothing
@@ -183,10 +207,21 @@ function net_radiation(leaf::Leaf{G,I,<:Monteith,A,Gs,S},meteo::Atmosphere,const
     #         Rbᵥ = Rbᵥ, iter = iter)
 end
 
-function net_radiation(leaf::Leaf{G,I,<:Monteith,A,Gs,S},meteo::Atmosphere) where {G,I,A,Gs,S}
-    net_radiation(leaf, meteo, Constants())
+function net_radiation!(leaf::Leaf{G,I,<:Monteith,A,Gs,S},meteo::Atmosphere) where {G,I,A,Gs,S}
+    net_radiation!(leaf, meteo, Constants())
 end
 
+function net_radiation(leaf::Leaf{G,I,<:Monteith,A,Gs,S},meteo::Atmosphere,constants) where {G,I,A,Gs,S}
+    leaf_tmp = deepcopy(leaf)
+    net_radiation!(leaf_tmp, meteo, constants)
+    return leaf_tmp.status
+end
+
+function net_radiation(leaf::Leaf{G,I,<:Monteith,A,Gs,S},meteo::Atmosphere) where {G,I,A,Gs,S}
+    leaf_tmp = deepcopy(leaf)
+    net_radiation!(leaf_tmp, meteo, Constants())
+    return leaf_tmp.status
+end
 
 """
     latent_heat(Rn, VPD, γˢ, Rbₕ, Δ, ρ, aₛₕ, Cₚ)

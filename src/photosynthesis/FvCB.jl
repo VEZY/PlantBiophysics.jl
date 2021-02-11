@@ -170,7 +170,7 @@ function assimilation!(leaf::Leaf{G,I,E,<:Fvcb,<:GsModel,S},meteo,constants = Co
     # RuBP regeneration
     Vⱼ = J / 4
 
-    # Stomatal conductance (umol[CO₂] m-2 s-1), dispatched on type of first argument (Gs_mod):
+    # Stomatal conductance (mol[CO₂] m-2 s-1), dispatched on type of first argument (Gs_mod):
     gs_mod = gs_closure(leaf,meteo)
 
     Cᵢⱼ = get_Cᵢⱼ(Vⱼ,Γˢ,leaf.status.Cₛ,Rd,leaf.stomatal_conductance.g0,gs_mod)
@@ -194,6 +194,7 @@ function assimilation!(leaf::Leaf{G,I,E,<:Fvcb,<:GsModel,S},meteo,constants = Co
 
     # Stomatal conductance (μmol[CO₂] m-2 s-1)
     leaf.status.Gₛ = leaf.stomatal_conductance.g0 + gs_mod * leaf.status.A
+    leaf.status.Gₛ = gs(leaf,gs_mod)
 
     # Intercellular CO₂ concentration (Cᵢ, μmol mol)
     if leaf.status.Gₛ > 0.0 && leaf.status.A > 0.0

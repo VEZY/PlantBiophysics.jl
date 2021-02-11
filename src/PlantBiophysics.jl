@@ -60,6 +60,11 @@ export Atmosphere
 # Conversions
 export rh_from_vpd
 export ms_to_mol
+export mol_to_ms
+export gbh_to_gbw
+export gbw_to_gbh
+export gsw_to_gsc
+export gsc_to_gsw
 
 # Energy balance
 export EnergyModel
@@ -68,8 +73,12 @@ export grey_body
 export psychrometer_constant
 export net_longwave_radiation
 export energy_balance # main interface to user
-export net_radiation  # each energy model implement a method for this function (called from energy_balance)
+export net_radiation!  # each energy model implement a method for this function (called from energy_balance)
+export net_radiation
 export Monteith       # a struct to hold the values for the model of Monteith and Unsworth (2013)
+export latent_heat
+export sensible_heat
+export γ_star
 
 # structure for light interception
 export Translucent
@@ -97,6 +106,7 @@ export gbₕ_free
 export gbₕ_forced
 export gs
 export Medlyn
+export ConstantGs
 
 # Physical constants
 export Constants
