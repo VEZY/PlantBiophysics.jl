@@ -1,5 +1,6 @@
 using PlantBiophysics
 using OrderedCollections
+using MutableNamedTuples
 using Test
 
 @testset "File IO" begin
