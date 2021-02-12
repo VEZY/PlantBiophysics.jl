@@ -60,7 +60,6 @@ or less than 1 if it is partly shaded.
 
 ```julia
 using PlantBiophysics
-using MutableNamedTuples
 
 meteo = Atmosphere(T = 22.0, Wind = 0.8333, P = 101.325, Rh = 0.4490995)
 
@@ -70,23 +69,20 @@ leaf = Leaf(geometry = AbstractGeom(0.03),
             energy = Monteith(),
             photosynthesis = Fvcb(),
             stomatal_conductance = ConstantGs(0.0, 0.0011046215514372282),
-            status = MutableNamedTuple(Tₗ = -999.0, Rn = 13.747, skyFraction = 2.0, # 2.0 for a leaf in an illuminated chamber
-                                        PPFD = 1500.0,Cₛ = -999.0, ψₗ = -999.0, H = -999.0, λE = -999.0,
-                                        A = -999.0, Gₛ = -999.0, Cᵢ = -999.0, Gbₕ = -999.0,
-                                        Dₗ = -999.0, Rₗₗ = -999.0))
+            status = Status(Rn = 13.747, skyFraction = 2.0, # 2.0 for a leaf in an illuminated chamber
+                            PPFD = 1500.0))
 
 net_radiation!(leaf,meteo)
 leaf.status.Rn
+leaf.status.A
 
 # Using the model from Medlyn et al. (2011) for Gs:
 leaf = Leaf(geometry = AbstractGeom(0.03),
             energy = Monteith(),
             photosynthesis = Fvcb(),
             stomatal_conductance = Medlyn(0.03, 12.0),
-            status = MutableNamedTuple(Tₗ = -999.0, Rn = 13.747, skyFraction = 2.0, # 2.0 for a leaf in an illuminated chamber
-                                        PPFD = 1000.0,Cₛ = -999.0, ψₗ = -999.0, H = -999.0, λE = -999.0,
-                                        A = -999.0, Gₛ = -999.0, Cᵢ = -999.0, Gbₕ = -999.0,
-                                        Dₗ = -999.0, Rₗₗ = -999.0))
+            status = Status(Rn = 13.747, skyFraction = 2.0, # 2.0 for a leaf in an illuminated chamber
+                            PPFD = 1500.0))
 
 net_radiation!(leaf,meteo)
 leaf.status.Rn
