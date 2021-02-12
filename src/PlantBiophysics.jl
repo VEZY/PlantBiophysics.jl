@@ -117,6 +117,7 @@ export Constants
 # Temporary structures (to move to another package)
 export Translucent
 export Ignore
+export get_km, Γ_star, arrhenius, get_J, gs_closure, get_Cᵢⱼ,get_Cᵢᵥ,get_Dₕ
 
 # Components (structures that hold models)
 export PhotoComponent

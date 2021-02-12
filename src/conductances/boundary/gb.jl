@@ -26,10 +26,10 @@ Cell & Environment 18 (10): 1183‑1200.
 Monteith, John, et Mike Unsworth. 2013. Principles of environmental physics: plants,
 animals, and the atmosphere. Academic Press. Paragraph 10.1.3, eq. 10.9.
 """
-function gbₕ_free(Tₐ,Tₗ,d,Dₕ₀)
+function gbₕ_free(Tₐ,Tₗ,d,Dₕ₀ = Constants().Dₕ₀)
     zeroT = zero(Tₐ) # make it type stable
 
-    if (Tₗ-Tₐ) > zeroT
+    if abs(Tₗ-Tₐ) > zeroT
         Gr = 1.58e8 * d^3.0 * abs(Tₗ-Tₐ) # Grashof number (Monteith and Unsworth, 2013)
         # !Note: Leuning et al. (1995) use 1.6e8 (eq. E4).
         # Leuning et al. (1995) eq. E3:
@@ -39,10 +39,6 @@ function gbₕ_free(Tₐ,Tₗ,d,Dₕ₀)
     end
 
     return Gbₕ_free
-end
-
-function gbₕ_free(Tₐ,Tₗ,d)
-    gbₕ_free(Tₐ,Tₗ,d,Constants().Dₕ₀)
 end
 
 
@@ -90,12 +86,6 @@ if not provided.
 Monteith, John, et Mike Unsworth. 2013. Principles of environmental physics: plants,
 animals, and the atmosphere. Academic Press. Paragraph 10.1.3., eq. 10.9.
 """
-function get_Dₕ(T,Dₕ₀)
+function get_Dₕ(T,Dₕ₀ = Constants().Dₕ₀)
     Dₕ₀ + Dₕ₀ * (1 + 0.007*T)
-end
-
-
-function get_Dₕ(T)
-    constants = Constants()
-    get_Dₕ(T,constants.Dₕ₀)
 end

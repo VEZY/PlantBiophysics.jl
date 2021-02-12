@@ -86,6 +86,9 @@ leaf = Leaf(geometry = AbstractGeom(0.03),
 
 net_radiation!(leaf,meteo)
 leaf.status.Rn
+leaf.status.A
+leaf.status.Cₛ
+leaf.status.Cᵢ
 ```
 
 # References
@@ -111,7 +114,7 @@ https://doi.org/10.1016/j.agrformet.2018.02.005.
 function net_radiation!(leaf::Leaf{G,I,<:Monteith,A,Gs,S},meteo::Atmosphere,constants) where {G,I,A,Gs,S}
 
     # Initialisations
-    leaf.status.Tₗ = meteo.T
+    leaf.status.Tₗ = meteo.T - 0.2
     Tₗ_new = zero(meteo.T)
     leaf.status.Cₛ = meteo.Cₐ
     leaf.status.Dₗ = meteo.VPD
@@ -144,7 +147,7 @@ function net_radiation!(leaf::Leaf{G,I,<:Monteith,A,Gs,S},meteo::Atmosphere,cons
         Rn_in = leaf.status.Rn + leaf.status.Rₗₗ
         # ? NB: we only move around the Rn that was given originally.
 
-        # Leaf boundary conductance for heat (m s-1):
+        # Leaf boundary conductance for heat (m s-1), one sided:
         leaf.status.Gbₕ = gbₕ_free(meteo.T, leaf.status.Tₗ, leaf.geometry.d, constants.Dₕ₀) +
                              gbₕ_forced(meteo.Wind, leaf.geometry.d)
         # NB, in MAESPA we use Rni so we add the radiation conductance also (not here)
@@ -155,12 +158,12 @@ function net_radiation!(leaf::Leaf{G,I,<:Monteith,A,Gs,S},meteo::Atmosphere,cons
         # Leaf boundary resistance for water vapor (s m-1):
         Rbᵥ = 1 / gbh_to_gbw(leaf.status.Gbₕ)
 
-        # Leaf boundary resistance for CO₂ (umol[CO₂] m-2 s-1):
+        # Leaf boundary resistance for CO₂ (mol[CO₂] m-2 s-1):
         Gbc = ms_to_mol(leaf.status.Gbₕ,meteo.T,meteo.P,constants.R,constants.K₀) /
                 constants.Gbc_to_Gbₕ
 
         # Update Cₛ using boundary layer conductance to CO₂ and assimilation:
-        leaf.status.Cₛ = meteo.Cₐ - leaf.status.A / Gbc
+        leaf.status.Cₛ = min(meteo.Cₐ, meteo.Cₐ - leaf.status.A / (Gbc * leaf.energy.aₛᵥ))
 
         # Apparent value of psychrometer constant (kPa K−1)
         γˢ = γ_star(meteo.γ, leaf.energy.aₛₕ, leaf.energy.aₛᵥ, Rbᵥ, Rsᵥ, Rbₕ)

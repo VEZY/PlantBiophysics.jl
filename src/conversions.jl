@@ -54,9 +54,16 @@ end
 
 """
 Conversion factor between conductance in ``m\\ s^{-1}`` to ``mol\\ m^{-2}\\ s^{-1}``.
+
+# Arguments
+
+- `T` (°C): air temperature
+- `P` (kPa): air pressure
+- `R` (``J\\ mol^{-1}\\ K^{-1}``): universal gas constant.
+- `K₀` (°C): absolute zero
 """
 function f_ms_to_mol(T,P,R,K₀)
-    P / (R * (T - K₀))
+    (P * 1000) / (R * (T - K₀))
 end
 
 

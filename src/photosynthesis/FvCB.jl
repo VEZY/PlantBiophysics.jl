@@ -144,7 +144,7 @@ Leuning, R., F. M. Kelliher, DGG de Pury, et E.D. Schulze. 1995. « Leaf nitrog
 photosynthesis, conductance and transpiration: scaling from leaves to canopies ». Plant,
 Cell & Environment 18 (10): 1183‑1200.
 """
-function assimilation!(leaf::Leaf{G,I,E,<:Fvcb,<:GsModel,S},meteo,constants = Constants()) where {G,I,E,S}
+function assimilation!(leaf::Leaf{G,I,E,<:Fvcb,<:GsModel,S}, meteo, constants = Constants()) where {G,I,E,S}
 
     # Tranform Celsius temperatures in Kelvin:
     Tₖ = leaf.status.Tₗ - constants.K₀
@@ -192,8 +192,7 @@ function assimilation!(leaf::Leaf{G,I,E,<:Fvcb,<:GsModel,S},meteo,constants = Co
     # Net assimilation (μmol m-2 s-1)
     leaf.status.A = min(Wᵥ,Wⱼ) - Rd
 
-    # Stomatal conductance (μmol[CO₂] m-2 s-1)
-    leaf.status.Gₛ = leaf.stomatal_conductance.g0 + gs_mod * leaf.status.A
+    # Stomatal conductance (mol[CO₂] m-2 s-1)
     leaf.status.Gₛ = gs(leaf,gs_mod)
 
     # Intercellular CO₂ concentration (Cᵢ, μmol mol)
