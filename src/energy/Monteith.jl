@@ -74,7 +74,7 @@ leaf = Leaf(geometry = AbstractGeom(0.03),
 
 net_radiation!(leaf,meteo)
 leaf.status.Rn
-leaf.status.A
+julia> 12.263846777524357
 
 # Using the model from Medlyn et al. (2011) for Gs:
 leaf = Leaf(geometry = AbstractGeom(0.03),
@@ -86,7 +86,9 @@ leaf = Leaf(geometry = AbstractGeom(0.03),
 
 net_radiation!(leaf,meteo)
 leaf.status.Rn
+leaf.status.Rₗₗ
 leaf.status.A
+leaf.status.Gₛ
 leaf.status.Cₛ
 leaf.status.Cᵢ
 ```
@@ -133,16 +135,15 @@ function net_radiation!(leaf::Leaf{G,I,<:Monteith,A,Gs,S},meteo::Atmosphere,cons
                                 constants.Gsc_to_Gsw))
 
         # Re-computing the net radiation according to simulated leaf temperature:
-        # leaf.status.Rₗₗ = net_longwave_radiation(leaf.status.Tₗ,meteo.T,leaf.energy.ε,meteo.ε,
-        #                                         leaf.status.skyFraction,constants.K₀,constants.σ)
+        leaf.status.Rₗₗ = net_longwave_radiation(leaf.status.Tₗ,meteo.T,leaf.energy.ε,meteo.ε,
+                                                leaf.status.skyFraction,constants.K₀,constants.σ)
         #= ? NB: we use the sky fraction here (0-2) instead of the view factor (0-1) because:
             - we consider both sides of the leaf at the same time (1 -> leaf sees sky on one face)
             - we consider all objects in the scene have the same temperature as the leaf
             of interest except the atmosphere. So the leaf exchange thermal energy only with
             the atmosphere.
         =#
-
-        leaf.status.Rₗₗ = (grey_body(meteo.T,1.0) - grey_body(leaf.status.Tₗ, 1.0))*leaf.status.skyFraction
+        # leaf.status.Rₗₗ = (grey_body(meteo.T,1.0) - grey_body(leaf.status.Tₗ, 1.0))*leaf.status.skyFraction
 
         Rn_in = leaf.status.Rn + leaf.status.Rₗₗ
         # ? NB: we only move around the Rn that was given originally.
