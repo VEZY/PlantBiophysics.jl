@@ -8,12 +8,40 @@
 
 A Julia package to simulate biophysical processes for plants, such as photosynthesis, conductances for heat, water and carbon, latent and sensible energy fluxes and temperature.
 
+## Examples
+
+Here is an example usage with a simulation of the energy balance and assimilation of a leaf:
+
+```julia
+using PlantBiophysics
+
+# Declaring the meteorology for the simulated time-step:
+meteo = Atmosphere(T = 22.0, Wind = 0.8333, P = 101.325, Rh = 0.4490995)
+
+# Using the model from Medlyn et al. (2011) for Gs and the model of Monteith and Unsworth (2013) for the
+# energy balance:
+leaf = Leaf(geometry = AbstractGeom(0.03),
+            energy = Monteith(),
+            photosynthesis = Fvcb(),
+            stomatal_conductance = Medlyn(0.03, 12.0),
+            status = Status(Rn = 13.747, skyFraction = 2.0, # 2.0 for a leaf in an illuminated chamber
+                            PPFD = 1500.0))
+
+net_radiation!(leaf,meteo)
+leaf.status.Rn
+leaf.status.Rₗₗ
+leaf.status.A
+leaf.status.Gₛ
+leaf.status.Cₛ
+leaf.status.Cᵢ
+```
+
 ## Roadmap
 
 - [x] Add FvCB model
-- [ ] Add FvCB iterative model. Check the 1.0e-6 in `Cₛ = min(environment.Cₐ, environment.Cₐ - A * 1.0e-6 / Gₛ)`
+- [x] Add FvCB iterative model (to update).
 - [x] Add conductance model
-- [ ] Add transpiration model
+- [x] Add transpiration model
 - [ ] Use structures. E.g. `Leaf`, that would be a subtype of `PhotoComponent` (for photosynthetic organ), itself a subtype of `Organ`:
   - [ ] Make the functions compatible with an MTG, e.g. apply photosynthesis to an MTG, and use the right method for each node.
   - [ ] The `Leaf` struct would have the several fields that describe the models used for computation, with all their parameters, *e.g.*:
