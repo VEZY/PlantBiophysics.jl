@@ -36,11 +36,12 @@ function run_simulation!(data,params,aₛᵥ)
                     stomatal_conductance = ConstantGs(0.0, gsw_to_gsc(ms_to_mol(data.g_sw[i],data.T_a[i] - params["T0"],data.P_a[i]/1000))),
                     Rn = data.Rn_leaf[i], skyFraction = 2.0)
         out = energy_balance(leaf,meteo,cst)
-        data.Tₗ[i]= out.Tₗ
-        data.λE[i]= out.λE
-        data.H[i]= out.H
-        data.Rn[i]= out.Rn
-        data.rbh[i]= 1/out.Gbₕ
+
+        data.Tₗ[i] = out.Tₗ
+        data.λE[i] = out.λE
+        data.H[i] = out.H
+        data.Rn[i] = out.Rn
+        data.rbh[i] = 1/out.Gbₕ
     end
     data
 end

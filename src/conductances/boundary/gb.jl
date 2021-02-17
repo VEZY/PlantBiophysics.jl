@@ -84,8 +84,8 @@ if not provided.
 # References
 
 Monteith, John, et Mike Unsworth. 2013. Principles of environmental physics: plants,
-animals, and the atmosphere. Academic Press. Paragraph 10.1.3., eq. 10.9.
+animals, and the atmosphere. Academic Press. Paragraph 10.1.3.
 """
 function get_Dₕ(T,Dₕ₀ = Constants().Dₕ₀)
-    Dₕ₀ + Dₕ₀ * (1 + 0.007*T)
+    Dₕ₀ * (1 + 0.007*T)
 end
