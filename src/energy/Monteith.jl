@@ -128,7 +128,7 @@ function net_radiation!(leaf::Leaf{G,I,<:Monteith,A,Gs,S},meteo::Atmosphere,cons
         assimilation!(leaf, meteo, constants)
 
         # Stomatal resistance to water vapor
-        Rsᵥ = 1 / (gsc_to_gsw(mol_to_ms(leaf.status.Gₛ,meteo.T,meteo.P,constants.R,constants.K₀),
+        Rsᵥ = 1.0 / (gsc_to_gsw(mol_to_ms(leaf.status.Gₛ,meteo.T,meteo.P,constants.R,constants.K₀),
                                 constants.Gsc_to_Gsw))
 
         # Re-computing the net radiation according to simulated leaf temperature:
