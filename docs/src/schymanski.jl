@@ -1,6 +1,7 @@
 # Compare simulations with measurements from Schymanski et al. (2017) extracted from this
 # Github [repository](https://github.com/schymans/Schymanski_leaf-scale_2016).
 
+using PlantBiophysics
 using DataFrames
 using CSV
 using Plots
@@ -9,6 +10,7 @@ using Plots
 maxiter = 20 # Maximum number of iterations for the algorithm to converge
 aₛᵥ = 1 # number of sides used for transpiration (hypostomatous: 1, amphistomatous: 2)
 cst = Constants(Cₚ = 1004.834)
+A = 20.0 # Not used.
 
 # Defining key functions:
 function read_dict(file)
@@ -61,7 +63,7 @@ params = read_dict("data/schymanski_et_al_2017/vdict_6a.txt")
 run_simulation!(results1_6a,params,aₛᵥ)
 
 scatter(results1_6a.v_w, results1_6a.Elmeas, ylim = (-400,400),
-        ylab = "Energy flux from leaf (W m-2)",
+        ylab = "Energy flux from leaf (W m-2)",legend=:inline,
         xlab = "Wind speed (m s-1)", label = "LE meas", color = "blue")
 scatter!(results1_6a.v_w, results1_6a.Hlmeas,label = "H meas", color = "red")
 scatter!(results1_6a.v_w, results1_6a.Rn_leaf,label = "Rn meas", color = "green")
@@ -69,3 +71,4 @@ scatter!(results1_6a.v_w, results1_6a.Hlmeas + results1_6a.Elmeas,label = "H+LE 
 plot!(results1_6a.v_w, results1_6a.H,label = "H sim", color = "red")
 plot!(results1_6a.v_w, results1_6a.λE,label = "LE sim", color = "blue")
 plot!(results1_6a.v_w, results1_6a.Rn,label = "Rn sim", color = "green")
+savefig("schymanski_et_al_2017_6a.svg")

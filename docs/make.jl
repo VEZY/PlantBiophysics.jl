@@ -1,8 +1,11 @@
 using PlantBiophysics
-using Plots
 using Documenter
+using PlantBiophysics
+using DataFrames
+using CSV
+using Plots
 
-DocMeta.setdocmeta!(PlantBiophysics, :DocTestSetup, :(using PlantBiophysics,Plots); recursive=true)
+DocMeta.setdocmeta!(PlantBiophysics, :DocTestSetup, :(using PlantBiophysics,Plots,DataFrames,CSV); recursive=true)
 
 makedocs(;
     modules=[PlantBiophysics],
@@ -21,6 +24,7 @@ makedocs(;
             "Concepts" => "concepts.md",
             "Photosynthesis" => "photosynthesis.md",
             "Stomatal conductance" => "gs.md",
+            "Energy balance" => "energy_balance.md",
             "Light interception" => "light.md"],
         "Functions" => "functions.md"
     ],

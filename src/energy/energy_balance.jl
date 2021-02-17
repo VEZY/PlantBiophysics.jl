@@ -1,8 +1,8 @@
 """
-    energy_balance(meteo::Atmosphere,leaf::PhotoComponent,constants)
-    energy_balance(meteo::Atmosphere,leaf::PhotoComponent)
+    energy_balance(object::PhotoComponent,meteo::Atmosphere,constants = Constants())
+    energy_balance!(object::PhotoComponent,meteo::Atmosphere,constants = Constants())
 
-Energy balance of the object.
+Energy balance of an object.
 
 # Arguments
 
@@ -65,21 +65,13 @@ Maxime Soma, et al. 2018. « Measuring and modelling energy partitioning in can
 complexity using MAESPA model ». Agricultural and Forest Meteorology 253‑254 (printemps): 203‑17.
 https://doi.org/10.1016/j.agrformet.2018.02.005.
 """
-function energy_balance(object::PhotoComponent,meteo::Atmosphere,constants)
+function energy_balance(object::PhotoComponent,meteo::Atmosphere,constants = Constants())
     object_tmp = deepcopy(object)
     net_radiation!(object_tmp,meteo,constants)
     return object_tmp.status
 end
 
-function energy_balance(object::PhotoComponent,meteo::Atmosphere)
-    energy_balance(object::PhotoComponent,meteo::Atmosphere, Constants())
-end
-
-function energy_balance!(object::PhotoComponent,meteo::Atmosphere,constants)
+function energy_balance!(object::PhotoComponent,meteo::Atmosphere,constants = Constants())
     net_radiation!(object,meteo,constants)
     return nothing
-end
-
-function energy_balance!(object::PhotoComponent,meteo::Atmosphere)
-    energy_balance!(object::PhotoComponent,meteo::Atmosphere, Constants())
 end

@@ -41,38 +41,31 @@ The other approach (close to Archimed model) closes the energy balance using ene
 
 # Arguments
 
-- `energy::Monteith`: a `Monteith` struct, see [`Monteith`](@ref)
-- `photosynthesis`: a photosynthesis model, see [`assimilation`](@ref) and *e.g.* [`Fvcb`](@ref)
-- `stomatal_conductance`: a stomatal conductance model, see [`gs`](@ref) and *e.g.* [`Medlyn`](@ref)
-- `meteo::Atmosphere`: a meteorology structure, see e.g. [`Atmosphere`](@ref)
-- `constants`: a structure to hold physical constants
+- `leaf::Leaf{.,.,<:Monteith,.,.,.}`: A [`Leaf`](@ref) struct holding the parameters for
+the model
+- `meteo`: meteorology structure, see [`Atmosphere`](@ref)
+- `constants = Constants()`: physical constants. See [`Constants`](@ref) for more details
 
 # Note
 
-The skyFraction is equal to 2 if all the leaf is viewing is sky (e.g. in a controlled chamber), 1
-if the leaf is *e.g.* up on the canopy where the upper side of the leaf sees the sky, and the
-side bellow sees soil + other leaves that are all considered at the same temperature than the leaf,
-or less than 1 if it is partly shaded.
-
-`d` is the minimal dimension of the surface of an object in contact with the air.
-
+The skyFraction in the variables is equal to 2 if all the leaf is viewing is sky (e.g. in a
+controlled chamber), 1 if the leaf is *e.g.* up on the canopy where the upper side of the
+leaf sees the sky, and the side bellow sees soil + other leaves that are all considered at
+the same temperature than the leaf, or less than 1 if it is partly shaded.
 # Examples
 
 ```julia
-using PlantBiophysics
-
 meteo = Atmosphere(T = 22.0, Wind = 0.8333, P = 101.325, Rh = 0.4490995)
 
 # Using a constant value for Gs:
-
 leaf = Leaf(geometry = AbstractGeom(0.03),
             energy = Monteith(),
             photosynthesis = Fvcb(),
-            stomatal_conductance = ConstantGs(0.0, 0.0011046215514372282),
+            stomatal_conductance = ConstantGs(0.0, 0.0011),
             Rn = 13.747, skyFraction = 1.0)
 net_radiation!(leaf,meteo)
 leaf.status.Rn
-julia> 12.980255696829108
+julia> 12.902547446281233
 
 # Using the model from Medlyn et al. (2011) for Gs:
 leaf = Leaf(geometry = AbstractGeom(0.03),
@@ -110,7 +103,7 @@ Maxime Soma, et al. 2018. « Measuring and modelling energy partitioning in can
 complexity using MAESPA model ». Agricultural and Forest Meteorology 253‑254 (printemps): 203‑17.
 https://doi.org/10.1016/j.agrformet.2018.02.005.
 """
-function net_radiation!(leaf::Leaf{G,I,<:Monteith,A,Gs,S},meteo::Atmosphere,constants) where {G,I,A,Gs,S}
+function net_radiation!(leaf::Leaf{G,I,<:Monteith,A,Gs,S},meteo::Atmosphere,constants = Constants()) where {G,I,A,Gs,S}
 
     # Initialisations
     leaf.status.Tₗ = meteo.T - 0.2
