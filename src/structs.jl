@@ -156,84 +156,28 @@ Intialise model variables based on their instances.
 init_variables(Monteith(), Medlyn(0.03,12.0))
 ```
 """
-function init_variables(vars...)
-    var_names = variables(vars...)
+function init_variables(models...)
+    var_names = variables(models...)
     MutableNamedTuple(; zip(var_names,fill(zero(Float64),length(var_names)))...)
 end
 
-
 """
-    Status(Tₗ = -999.0, Rn = -999.0, skyFraction = -999.0, PPFD = -999.0, Cₛ = -999.0,
-            ψₗ = -999.0, H = -999.0, λE = -999.0, A = -999.0, Gₛ = -999.0, Cᵢ = -999.0,
-            Gbₕ = -999.0, Dₗ = -999.0, Rₗₗ = -999.0)
+    Leaf(geometry, interception, energy, photosynthesis, stomatal_conductance, status)
+    Leaf(;geometry = missing, interception = missing, energy = missing,
+            photosynthesis = missing, stomatal_conductance = missing,status...)
 
-Structure to hold all values related to the status of an object (*e.g.* a [`Leaf`](@ref)). Their
-values are often computed by a model.
-
-# Arguments
-
-## Light interception model  (see [`InterceptionModel`](@ref))
-
-- `Rn` (W m-2): net global radiation (PAR + NIR + TIR). Often computed from a light interception model
-- `PPFD` (μmol m-2 s-1): absorbed Photosynthetic Photon Flux Density
-- `skyFraction` (0-2): view factor between the object and the sky for both faces.
-
-## Energy balance model (see [`energy_balance`](@ref))
-
-- `Tₗ` (°C): temperature of the object. Often computed from an energy balance model.
-- `Rₗₗ` (W m-2): net longwave radiation for the object (TIR)
-- `Cₛ` (ppm): stomatal CO₂ concentration
-- `ψₗ` (kPa): leaf water potential
-- `H` (W m-2): sensible heat flux
-- `λE` (W m-2): latent heat flux
-- `Dₗ` (kPa): vapour pressure difference between the surface and the saturation vapour
-
-## Photosynthesis model (see [`photosynthesis`](@ref))
-
-- `A` (μmol m-2 s-1): carbon assimilation
-- `Gbₕ` (m s-1): boundary conductance for heat (free + forced convection)
-- `Cᵢ` (ppm): intercellular CO₂ concentration
-
-"""
-Base.@kwdef mutable struct Status{T}
-    Tₗ::T = -999.0
-    Rn::T = -999.0
-    skyFraction::T = -999.0
-    PPFD::T = -999.0
-    Cₛ::T = -999.0
-    ψₗ::T = -999.0
-    H::T = -999.0
-    λE::T = -999.0
-    A::T = -999.0
-    Gₛ::T = -999.0
-    Cᵢ::T = -999.0
-    Gbₕ::T = -999.0
-    Dₗ::T = -999.0
-    Rₗₗ::T = -999.0
-end
-
-"""
-    Leaf{
-        geometry <: Union{Missing,GeometryModel},
-        interception <: Union{Missing,InterceptionModel},
-        energy <: Union{Missing,EnergyModel},
-        photosynthesis <: AModel,
-        stomatal_conductance <: GsModel,
-        status <: MutableNamedTuple
-        }
-
-Leaf component, with fields holding model types and parameter values for:
+Leaf component, with fields holding model types and their parameter values
 
 # Arguments
 
 - `geometry <: Union{Missing,GeometryModel}`: A geometry model, e.g. [`AbstractGeom`](@ref).
 - `interception <: Union{Missing,InterceptionModel}`: An interception model.
 - `energy <: Union{Missing,EnergyModel}`: An energy model, e.g. [`Monteith`](@ref).
-- `photosynthesis <: AModel`: A photosynthesis model, e.g. [`Fvcb`](@ref)
-- `stomatal_conductance <: GsModel`: A stomatal conductance model, e.g. [`Medlyn`](@ref) or
+- `photosynthesis <: Union{Missing,AModel}`: A photosynthesis model, e.g. [`Fvcb`](@ref)
+- `stomatal_conductance <: Union{Missing,GsModel}`: A stomatal conductance model, e.g. [`Medlyn`](@ref) or
 [`ConstantGs`](@ref)
-- `status <: MutableNamedTuple`: a mutable struct to track the status (*i.e.* the variables) of
-the leaf. The default values are found using [`init_variables`](@ref).
+- `status <: MutableNamedTuple`: a mutable named tuple to track the status (*i.e.* the variables) of
+the leaf. Values are set to `0.0` if not provided as VarArgs (see examples)
 
 # Details
 
@@ -267,29 +211,60 @@ The status field depends on the input models, but generally the variables are:
 # A leaf with a width of 0.03 m, that uses the Monteith and Unsworth (2013) model for energy
 # balance, The Farquhar et al. (1980) model for photosynthesis, and a constant stomatal
 # conductance for CO₂ of 0.0011 with no residual conductance. The status of
-# the leaf is not set yet (`init_variables()` is called under the hood):
-
+# the leaf is not set yet, all are initialised at `0.0`:
 Leaf(geometry = AbstractGeom(0.03),
      energy = Monteith(),
      photosynthesis = Fvcb(),
      stomatal_conductance = ConstantGs(0.0, 0.0011))
+
+# If we need to initialise some variables at different values, we can call the leaf as:
+
+Leaf(photosynthesis = Fvcb(),Cᵢ = 380.0)
+
+# Or again:
+Leaf(photosynthesis = Fvcb(), energy = Monteith(), Cᵢ = 380.0, Tₗ = 20.0)
 ```
 """
-Base.@kwdef struct Leaf{G <: Union{Missing,GeometryModel},
-                        I <: Union{Missing,InterceptionModel},
-                        E <: Union{Missing,EnergyModel},
-                        A <: AModel,
-                        Gs <: GsModel,
-                        S <: MutableNamedTuple} <: PhotoComponent
-    geometry::G = missing
-    interception::I = missing
-    energy::E = missing
+struct Leaf{G <: Union{Missing,GeometryModel},
+            I <: Union{Missing,InterceptionModel},
+            E <: Union{Missing,EnergyModel},
+            A <: Union{Missing,AModel},
+            Gs <: Union{Missing,GsModel},
+            S <: MutableNamedTuple} <: PhotoComponent
+    geometry::G
+    interception::I
+    energy::E
     photosynthesis::A
     stomatal_conductance::Gs
-    status::S = init_variables(geometry,interception,energy,photosynthesis,stomatal_conductance)
+    status::S
 end
 
+function Leaf(;geometry = missing, interception = missing, energy = missing,
+                photosynthesis = missing, stomatal_conductance = missing,status...)
+    status = init_variables_manual(geometry, interception, energy, photosynthesis,
+        stomatal_conductance;status...)
+    Leaf(geometry,interception,energy,photosynthesis,stomatal_conductance,status)
+end
 
+"""
+    init_variables_manual(models...;vars...)
+
+Return an initialisation of the model variables with given values.
+
+# Examples
+
+```julia
+init_variables_manual(Monteith(); Tₗ = 20.0)
+```
+"""
+function init_variables_manual(models...;vars...)
+    init_vars = init_variables(models...)
+    new_vals = (;vars...)
+    for i in keys(new_vals)
+        setproperty!(init_vars,i,new_vals[i])
+    end
+    init_vars
+end
 
 """
 Metamer component, with one field holding the light interception model type and its parameter values.

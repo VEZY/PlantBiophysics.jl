@@ -25,7 +25,6 @@ include("light_interception/Ignore.jl")
 include("light_interception/Translucent.jl")
 
 # Photosynthesis related files:
-include("photosynthesis/photosynthesis.jl")
 include("photosynthesis/FvCB.jl")
 include("photosynthesis/FvCBIter.jl")
 include("photosynthesis/temperature-dependence.jl")
@@ -97,7 +96,6 @@ export Fvcb # Parameters for the Farquhar et al. (1980) model
 export FvcbIter
 export Constants
 export assimilation!
-export photosynthesis
 
 # Conductances
 export GsModel
@@ -108,9 +106,6 @@ export gs
 export Medlyn
 export ConstantGs
 
-# Outputs
-export Status
-
 # Physical constants
 export Constants
 
@@ -118,7 +113,7 @@ export Constants
 export Translucent
 export Ignore
 export get_km, Γ_star, arrhenius, get_J, gs_closure, get_Cᵢⱼ,get_Cᵢᵥ,get_Dₕ
-export variables, Model
+export variables, Model, init_variables, init_variables_manual
 
 # Components (structures that hold models)
 export PhotoComponent

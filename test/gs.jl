@@ -12,11 +12,7 @@ meteo = Atmosphere(T = 28.0, Wind = 0.8333, P = 101.325, Rh = 0.47)
 # Defining the leaf struct:
 leaf = Leaf(photosynthesis = Fvcb(),
             stomatal_conductance = Gs, # Instance of a Medlyn type
-            status = MutableNamedTuple(A = A, Cₛ = Cₛ))
-
-# Computing the stomatal conductance using the Medlyn et al. (2011) model:
-
-
+            A = A, Cₛ = Cₛ, Dₗ = meteo.VPD)
 
 # Computing the stomatal conductance using the Medlyn et al. (2011) model:
 

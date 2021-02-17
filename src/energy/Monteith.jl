@@ -73,20 +73,17 @@ leaf = Leaf(geometry = AbstractGeom(0.03),
             energy = Monteith(),
             photosynthesis = Fvcb(),
             stomatal_conductance = ConstantGs(0.0, 0.0011046215514372282),
-            status = Status(Rn = 13.747, skyFraction = 2.0, # 2.0 for a leaf in an illuminated chamber
-                            PPFD = 1500.0))
-
+            Rn = 13.747, skyFraction = 1.0)
 net_radiation!(leaf,meteo)
 leaf.status.Rn
-julia> 12.263846777524357
+julia> 12.980255696829108
 
 # Using the model from Medlyn et al. (2011) for Gs:
 leaf = Leaf(geometry = AbstractGeom(0.03),
             energy = Monteith(),
             photosynthesis = Fvcb(),
             stomatal_conductance = Medlyn(0.03, 12.0),
-            status = Status(Rn = 13.747, skyFraction = 2.0, # 2.0 for a leaf in an illuminated chamber
-                            PPFD = 1500.0))
+            Rn = 13.747, skyFraction = 1.0, PPFD = 1500.0)
 
 net_radiation!(leaf,meteo)
 leaf.status.Rn

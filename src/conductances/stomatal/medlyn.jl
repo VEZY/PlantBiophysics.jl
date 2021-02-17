@@ -32,34 +32,31 @@ the computation of the stomatal conductance.
 
 The result of this function is then used as:
 
-    gs_mod = gs_closure(Gs,gs_vars)
+    gs_mod = gs_closure(leaf,meteo)
 
-    # And then stomatal conductance (μmol m-2 s-1):
-    Gₛ = Gs.g0 + gs_mod * A
+    # And then stomatal conductance (μmol m-2 s-1) calling [`gs`](@ref):
+    Gₛ = leaf.stomatal_conductance.g0 + gs_mod * leaf.status.A
 
 # Arguments
 
 - `leaf::Leaf{.,.,.,<:Fvcb,<:GsModel,.}`: A [`Leaf`](@ref) struct holding the parameters for
-the model
-- `meteo`: meteorology structure, see [`Atmosphere`](@ref). Is used to hold the values for
-the VPD (kPa, the vapor pressure deficit of the air) here.
+the model.
+- `meteo`: meteorology structure, see [`Atmosphere`](@ref). Is not used in this model.
 
 # Examples
 
 ```julia
-using MutableNamedTuples
-
 meteo = Atmosphere(T = 20.0, Wind = 1.0, P = 101.3, Rh = 0.65)
 
 leaf = Leaf(photosynthesis = Fvcb(),
             stomatal_conductance = Medlyn(0.03, 12.0),
-            status = MutableNamedTuple(Cₛ = 400.0))
+            Cₛ = 380.0, Dₗ = meteo.VPD)
 
 
-gs_mod = PlantBiophysics.gs_closure(leaf, meteo)
+gs_mod = gs_closure(leaf, meteo)
 
 A = 20 # example assimilation (μmol m-2 s-1)
-gs = leaf.stomatal_conductance.g0 + gs_mod * A
+Gs = leaf.stomatal_conductance.g0 + gs_mod * A
 ```
 
 # References
@@ -96,7 +93,7 @@ meteo = Atmosphere(T = 22.0, Wind = 0.8333, P = 101.325, Rh = 0.4490995)
 
 leaf = Leaf(photosynthesis = Fvcb(),
             stomatal_conductance = Medlyn(0.03,0.1), # Instance of a Medlyn type
-            status = MutableNamedTuple(A = 20.0, Cₛ = 380.0))
+            A = 20.0, Cₛ = 380.0, Dₗ = meteo.VPD)
 
 # Computing the stomatal conductance using the Medlyn et al. (2011) model:
 gs(leaf,meteo)

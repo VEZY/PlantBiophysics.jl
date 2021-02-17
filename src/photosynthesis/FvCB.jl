@@ -122,8 +122,7 @@ using MutableNamedTuples
 meteo = Atmosphere(T = 20.0, Wind = 1.0, P = 101.3, Rh = 0.65)
 leaf = Leaf(photosynthesis = Fvcb(),
             stomatal_conductance = Medlyn(0.03, 12.0),
-            status = MutableNamedTuple(Tₗ = 25.0,PPFD = 1000.0, Cₛ = 400.0,
-                                        A = -999.0, Gₛ = -999.0, Cᵢ = -999.0))
+            Tₗ = 25.0,PPFD = 1000.0, Cₛ = 400.0)
 
 assimilation!(leaf,meteo,Constants())
 
