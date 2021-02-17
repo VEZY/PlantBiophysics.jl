@@ -31,10 +31,6 @@ end
 
 """
     net_radiation!(energy::Monteith,status,photosynthesis,stomatal_conductance,meteo::Atmosphere,constants)
-    net_radiation!(energy::Monteith,status,photosynthesis,stomatal_conductance,meteo::Atmosphere)
-    net_radiation(energy::Monteith,status,photosynthesis,stomatal_conductance,meteo::Atmosphere,constants)
-    net_radiation(energy::Monteith,status,photosynthesis,stomatal_conductance,meteo::Atmosphere)
-
 
 Leaf energy balance according to Monteith and Unsworth (2013), and corrigendum from
 Schymanski et al. (2017). The computation is close to the one from the MAESPA model (Duursma
@@ -206,22 +202,6 @@ function net_radiation!(leaf::Leaf{G,I,<:Monteith,A,Gs,S},meteo::Atmosphere,cons
     nothing
     # return (Rn = Rn, Rₗₗ = Rₗₗ, Tₗ = Tₗ, H = H, λE = λE, A = An, Gₛ = Gₛ, Cᵢ = Cᵢ, Rbₕ = Rbₕ,
     #         Rbᵥ = Rbᵥ, iter = iter)
-end
-
-function net_radiation!(leaf::Leaf{G,I,<:Monteith,A,Gs,S},meteo::Atmosphere) where {G,I,A,Gs,S}
-    net_radiation!(leaf, meteo, Constants())
-end
-
-function net_radiation(leaf::Leaf{G,I,<:Monteith,A,Gs,S},meteo::Atmosphere,constants) where {G,I,A,Gs,S}
-    leaf_tmp = deepcopy(leaf)
-    net_radiation!(leaf_tmp, meteo, constants)
-    return leaf_tmp.status
-end
-
-function net_radiation(leaf::Leaf{G,I,<:Monteith,A,Gs,S},meteo::Atmosphere) where {G,I,A,Gs,S}
-    leaf_tmp = deepcopy(leaf)
-    net_radiation!(leaf_tmp, meteo, Constants())
-    return leaf_tmp.status
 end
 
 """

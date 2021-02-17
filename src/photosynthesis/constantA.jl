@@ -55,7 +55,7 @@ function assimilation!(leaf::Leaf{G,I,E,<:ConstantA,<:GsModel,S}, meteo, constan
     leaf.status.A = leaf.photosynthesis.A
 
     # Stomatal conductance (mol[CO₂] m-2 s-1)
-    leaf.status.Gₛ = gs(leaf,gs_mod)
+    leaf.status.Gₛ = gs(leaf,meteo)
 
     # Intercellular CO₂ concentration (Cᵢ, μmol mol)
     if leaf.status.Gₛ > 0.0 && leaf.status.A > 0.0

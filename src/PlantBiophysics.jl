@@ -32,7 +32,7 @@ include("photosynthesis/FvCBIter.jl")
 include("photosynthesis/temperature-dependence.jl")
 
 # Stomatal conductance related files:
-include("conductances/stomatal/constant.jl")
+include("conductances/stomatal/constantGs.jl")
 include("conductances/stomatal/medlyn.jl")
 
 # Boundary layer conductance:

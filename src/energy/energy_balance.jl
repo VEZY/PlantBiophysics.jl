@@ -33,7 +33,16 @@ or less than 1 if it is partly shaded.
 
 ```julia
 meteo = Atmosphere(T = 20.0, Wind = 1.0, P = 101.3, Rh = 0.65)
-energy_balance(meteo,Constants())
+
+# Using the model of Monteith and Unsworth (2013) for energy, Farquhar et al. (1980) for
+# photosynthesis, and Medlyn et al. (2011) for stomatal conductance:
+leaf = Leaf(geometry = AbstractGeom(0.03),
+            energy = Monteith(),
+            photosynthesis = Fvcb(),
+            stomatal_conductance = Medlyn(0.03, 12.0),
+            Rn = 13.747, skyFraction = 1.0, PPFD = 1500.0)
+
+energy_balance(leaf,meteo)
 ```
 
 # References
@@ -57,10 +66,20 @@ complexity using MAESPA model ». Agricultural and Forest Meteorology 253‑254
 https://doi.org/10.1016/j.agrformet.2018.02.005.
 """
 function energy_balance(object::PhotoComponent,meteo::Atmosphere,constants)
-    net_radiation(object.energy, object.photosynthesis, object.stomatal_conductance, meteo, constants)
+    object_tmp = deepcopy(object)
+    net_radiation!(object_tmp,meteo,constants)
+    return object_tmp.status
 end
 
 function energy_balance(object::PhotoComponent,meteo::Atmosphere)
-    constants = Constants()
-    net_radiation(object.energy, object.photosynthesis, object.stomatal_conductance, meteo, constants)
+    energy_balance(object::PhotoComponent,meteo::Atmosphere, Constants())
+end
+
+function energy_balance!(object::PhotoComponent,meteo::Atmosphere,constants)
+    net_radiation!(object,meteo,constants)
+    return nothing
+end
+
+function energy_balance!(object::PhotoComponent,meteo::Atmosphere)
+    energy_balance!(object::PhotoComponent,meteo::Atmosphere, Constants())
 end

@@ -31,3 +31,7 @@ end
 function gs(leaf::Leaf{G,I,E,A,<:ConstantGs,S},gs_mod) where {G,I,E,A,S}
     leaf.stomatal_conductance.gs
 end
+
+function gs(leaf::Leaf{G,I,E,A,<:ConstantGs,S},meteo::M) where {G,I,E,A,S,M<:Atmosphere}
+    leaf.stomatal_conductance.gs
+end
