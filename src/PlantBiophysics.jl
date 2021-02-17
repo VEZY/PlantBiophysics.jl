@@ -25,13 +25,14 @@ include("light_interception/Ignore.jl")
 include("light_interception/Translucent.jl")
 
 # Photosynthesis related files:
+include("photosynthesis/photosynthesis.jl")
+include("photosynthesis/constantA.jl")
 include("photosynthesis/FvCB.jl")
 include("photosynthesis/FvCBIter.jl")
 include("photosynthesis/temperature-dependence.jl")
 
 # Stomatal conductance related files:
 include("conductances/stomatal/constant.jl")
-include("conductances/stomatal/gs.jl")
 include("conductances/stomatal/medlyn.jl")
 
 # Boundary layer conductance:
@@ -92,10 +93,13 @@ export AbstractGeom
 
 # Photosynthesis
 export AModel
+export ConstantA
 export Fvcb # Parameters for the Farquhar et al. (1980) model
-export FvcbIter
+export FvcbIter # To update...
 export Constants
 export assimilation!
+export photosynthesis!
+export photosynthesis
 
 # Conductances
 export GsModel
@@ -113,7 +117,10 @@ export Constants
 export Translucent
 export Ignore
 export get_km, Γ_star, arrhenius, get_J, gs_closure, get_Cᵢⱼ,get_Cᵢᵥ,get_Dₕ
-export variables, Model, init_variables, init_variables_manual
+
+
+export Model
+export variables
 
 # Components (structures that hold models)
 export PhotoComponent

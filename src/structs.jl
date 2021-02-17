@@ -181,7 +181,8 @@ the leaf. Values are set to `0.0` if not provided as VarArgs (see examples)
 
 # Details
 
-The status field depends on the input models, but generally the variables are:
+The status field depends on the input models. You can get the variables needed by a model using
+[`variables`](@ref) on the instantiation of a model. Generally the variables are:
 
 ## Light interception model  (see [`InterceptionModel`](@ref))
 

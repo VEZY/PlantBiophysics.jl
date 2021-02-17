@@ -80,7 +80,7 @@ Base.@kwdef struct Fvcb{T} <: AModel
 end
 
 function variables(::Fvcb)
-    (:A,:Gₛ,:Cᵢ)
+    (:A,:Gₛ,:Cᵢ,:Tₗ,:PPFD,:Cₛ)
 end
 
 """
@@ -109,23 +109,17 @@ the model
 - `meteo`: meteorology structure, see [`Atmosphere`](@ref)
 - `constants = Constants()`: physical constants. See [`Constants`](@ref) for more details
 
-# Note
-
-The mandatory variables provided in `leaf.status` are Tₗ, PPFD, and Cₛ. Others are optional depending
-on the stomatal conductance model. For example VPD is needed for the Medlyn et al. (2011) model.
-
 # Examples
 
 ```julia
-using MutableNamedTuples
-
 meteo = Atmosphere(T = 20.0, Wind = 1.0, P = 101.3, Rh = 0.65)
+
 leaf = Leaf(photosynthesis = Fvcb(),
             stomatal_conductance = Medlyn(0.03, 12.0),
             Tₗ = 25.0,PPFD = 1000.0, Cₛ = 400.0)
+# NB: we need  to initalise Tₗ, PPFD and Cₛ
 
 assimilation!(leaf,meteo,Constants())
-
 leaf.status.A
 ```
 
