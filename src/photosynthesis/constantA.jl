@@ -1,6 +1,6 @@
 
 """
-Constant (forced) assimilation, given in ``\mu mol\\ m^{-2}\\ s^{-1}``.
+Constant (forced) assimilation, given in ``μmol\\ m^{-2}\\ s^{-1}``.
 
 # Examples
 

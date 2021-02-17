@@ -74,6 +74,7 @@ end
 Conversion between VPD and rh.
 
 # Examples
+
 ```julia
 eₛ = e_sat(Tₐ)
 rh_from_vpd(1.5,eₛ)
@@ -81,6 +82,22 @@ rh_from_vpd(1.5,eₛ)
 """
 function rh_from_vpd(VPD,eₛ)
     one(VPD) - VPD / eₛ
+end
+
+"""
+    rh_from_e(VPD,eₛ)
+
+Conversion between e (kPa) and rh (0-1).
+
+# Examples
+
+```julia
+rh_from_e(1.5,25.0)
+```
+"""
+function rh_from_e(e,Tₐ)
+    eₛ = e_sat(Tₐ)
+    min(one(e), e/eₛ)
 end
 
 """

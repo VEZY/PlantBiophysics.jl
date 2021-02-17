@@ -59,6 +59,7 @@ export Atmosphere
 
 # Conversions
 export rh_from_vpd
+export rh_from_e
 export ms_to_mol
 export mol_to_ms
 export gbh_to_gbw
