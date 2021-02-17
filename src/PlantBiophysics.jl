@@ -118,6 +118,7 @@ export Constants
 export Translucent
 export Ignore
 export get_km, Γ_star, arrhenius, get_J, gs_closure, get_Cᵢⱼ,get_Cᵢᵥ,get_Dₕ
+export variables, Model
 
 # Components (structures that hold models)
 export PhotoComponent

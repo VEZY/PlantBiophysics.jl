@@ -85,7 +85,7 @@ abstract type Component <: Object end
 abstract type PhotoComponent <: Component end
 
 # Geometry for the dimensions of components
-abstract type GeometryModel end
+abstract type GeometryModel <: Model end
 
 """
     AbstractGeom(d)
@@ -104,6 +104,62 @@ struct AbstractGeom <: GeometryModel
     d
 end
 
+"""
+    variables(::Type)
+    variables(::Type, vars...)
+
+Returns a tuple with the name of the output variables of a model, or a union of the output
+variables for several models.
+
+# Note
+
+Each model can (and should) have a method for this function.
+
+# Examples
+
+```julia
+variables(Monteith())
+
+variables(Monteith(), Medlyn(0.03,12.0))
+```
+"""
+function variables(v::T, vars...) where T <: Union{Missing,Model}
+    union(variables(v), variables(vars...))
+end
+
+"""
+    variables(::Missing)
+
+Returns an empty tuple because missing models do not return any variables.
+"""
+function variables(::Missing)
+    ()
+end
+
+"""
+    variables(::Model)
+
+Returns an empty tuple by default.
+"""
+function variables(::Model)
+    ()
+end
+
+"""
+    init_variables(vars...)
+
+Intialise model variables based on their instances.
+
+# Examples
+
+```julia
+init_variables(Monteith(), Medlyn(0.03,12.0))
+```
+"""
+function init_variables(vars...)
+    var_names = variables(vars...)
+    MutableNamedTuple(; zip(var_names,fill(zero(Float64),length(var_names)))...)
+end
 
 
 """
@@ -156,7 +212,6 @@ Base.@kwdef mutable struct Status{T}
     Rₗₗ::T = -999.0
 end
 
-
 """
     Leaf{
         geometry <: Union{Missing,GeometryModel},
@@ -164,7 +219,7 @@ end
         energy <: Union{Missing,EnergyModel},
         photosynthesis <: AModel,
         stomatal_conductance <: GsModel,
-        status <: Union{MutableNamedTuple,status}
+        status <: MutableNamedTuple
         }
 
 Leaf component, with fields holding model types and parameter values for:
@@ -177,36 +232,47 @@ Leaf component, with fields holding model types and parameter values for:
 - `photosynthesis <: AModel`: A photosynthesis model, e.g. [`Fvcb`](@ref)
 - `stomatal_conductance <: GsModel`: A stomatal conductance model, e.g. [`Medlyn`](@ref) or
 [`ConstantGs`](@ref)
-- `status <: Union{MutableNamedTuple,status}`: a mutable struct to track the status (*i.e.* the variables) of
-the leaf. *e.g.*:
-    - `Tₗ` (°C): leaf temperature
-    - `PPFD` (μmol m-2 s-1): absorbed Photosynthetic Photon Flux Density
-    - `Cₛ` (ppm): stomatal CO₂ concentration
-    - `ψₗ` (kPa): leaf water potential
-    - `A` (μmol m-2 s-1): carbon assimilation
-    - `Tₗ` (°C): temperature of the object
-    - `Rn` (W m-2): net global radiation for the object (PAR + NIR + TIR)
-    - `skyFraction` (0-2): view factor between the object and the sky for both faces.
-    - `Rₗₗ` (W m-2): net longwave radiation for the object (TIR)
-    - `Gbₕ` (m s-1): boundary conductance for heat (free + forced convection)
-    - `λE` (W m-2): latent heat flux
-    - `H` (W m-2): sensible heat flux
-    - `Dₗ` (kPa): vapour pressure difference between the surface and the saturation vapour
-    pressure, also called air-to-leaf VPD
+- `status <: MutableNamedTuple`: a mutable struct to track the status (*i.e.* the variables) of
+the leaf. The default values are found using [`init_variables`](@ref).
+
+# Details
+
+The status field depends on the input models, but generally the variables are:
+
+## Light interception model  (see [`InterceptionModel`](@ref))
+
+- `Rn` (W m-2): net global radiation (PAR + NIR + TIR). Often computed from a light interception model
+- `PPFD` (μmol m-2 s-1): absorbed Photosynthetic Photon Flux Density
+- `skyFraction` (0-2): view factor between the object and the sky for both faces.
+
+## Energy balance model (see [`energy_balance`](@ref))
+
+- `Tₗ` (°C): temperature of the object. Often computed from an energy balance model.
+- `Rₗₗ` (W m-2): net longwave radiation for the object (TIR)
+- `Cₛ` (ppm): stomatal CO₂ concentration
+- `ψₗ` (kPa): leaf water potential
+- `H` (W m-2): sensible heat flux
+- `λE` (W m-2): latent heat flux
+- `Dₗ` (kPa): vapour pressure difference between the surface and the saturation vapour
+
+## Photosynthesis model (see [`photosynthesis`](@ref))
+
+- `A` (μmol m-2 s-1): carbon assimilation
+- `Gbₕ` (m s-1): boundary conductance for heat (free + forced convection)
+- `Cᵢ` (ppm): intercellular CO₂ concentration
 
 # Examples
 
 ```julia
 # A leaf with a width of 0.03 m, that uses the Monteith and Unsworth (2013) model for energy
 # balance, The Farquhar et al. (1980) model for photosynthesis, and a constant stomatal
-# conductance for CO₂ of 0.0011046215514372282 with no residual conductance. The status of
-# the leaf is not set yet (`Status()` is called without arguments):
+# conductance for CO₂ of 0.0011 with no residual conductance. The status of
+# the leaf is not set yet (`init_variables()` is called under the hood):
 
 Leaf(geometry = AbstractGeom(0.03),
      energy = Monteith(),
      photosynthesis = Fvcb(),
-     stomatal_conductance = ConstantGs(0.0, 0.0011046215514372282),
-     status = Status())
+     stomatal_conductance = ConstantGs(0.0, 0.0011))
 ```
 """
 Base.@kwdef struct Leaf{G <: Union{Missing,GeometryModel},
@@ -214,14 +280,16 @@ Base.@kwdef struct Leaf{G <: Union{Missing,GeometryModel},
                         E <: Union{Missing,EnergyModel},
                         A <: AModel,
                         Gs <: GsModel,
-                        S <: Union{MutableNamedTuple,Status}} <: PhotoComponent
+                        S <: MutableNamedTuple} <: PhotoComponent
     geometry::G = missing
     interception::I = missing
     energy::E = missing
     photosynthesis::A
     stomatal_conductance::Gs
-    status::S = Status()
+    status::S = init_variables(geometry,interception,energy,photosynthesis,stomatal_conductance)
 end
+
+
 
 """
 Metamer component, with one field holding the light interception model type and its parameter values.

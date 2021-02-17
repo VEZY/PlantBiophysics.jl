@@ -20,6 +20,10 @@ Base.@kwdef struct Medlyn{T} <: GsModel
  g1::T
 end
 
+function variables(::Medlyn)
+    (:Dₗ,:Cₛ,:A)
+end
+
 """
     gs_closure(leaf::Leaf{G,I,E,A,<:Medlyn,S},meteo)
 

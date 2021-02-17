@@ -25,6 +25,10 @@ Base.@kwdef struct Monteith{T,S} <: EnergyModel
     ϵ::T = 0.01
 end
 
+function variables(::Monteith)
+    (:Tₗ,:Rn,:skyFraction,:PPFD,:Cₛ,:ψₗ,:H,:λE,:A,:Gₛ,:Cᵢ,:Gbₕ,:Dₗ,:Rₗₗ)
+end
+
 """
     net_radiation!(energy::Monteith,status,photosynthesis,stomatal_conductance,meteo::Atmosphere,constants)
     net_radiation!(energy::Monteith,status,photosynthesis,stomatal_conductance,meteo::Atmosphere)

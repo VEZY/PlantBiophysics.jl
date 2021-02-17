@@ -79,6 +79,10 @@ Base.@kwdef struct Fvcb{T} <: AModel
     θ::T = 0.90
 end
 
+function variables(::Fvcb)
+    (:A,:Gₛ,:Cᵢ)
+end
+
 """
     assimilation!(leaf::Leaf{G,I,E,<:Fvcb,<:GsModel,S},constants = Constants())
 
