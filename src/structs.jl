@@ -54,28 +54,6 @@ Used to describe photosynthetic components.
 """
 abstract type AbstractPhotoComponent <: AbstractComponent end
 
-# Geometry for the dimensions of components
-abstract type AbstractGeometryModel <: AbstractModel end
-
-"""
-    Geom1D(d)
-
-The most simple geometry used to represent an abstract object, with only one field `d` (m) that
-defines the characteristic dimension, *e.g.* the leaf width, or the diameter of a trunk. It is
-used to compute the boundary conductance for heat (see eq. 10.9 from Monteith and Unsworth,
-2013).
-
-# Examples
-
-```julia
-# A leaf with a width of 3 cm would be declared as:
-Geom1D(0.03)
-```
-"""
-struct Geom1D <: AbstractGeometryModel
-    d
-end
-
 """
     variables(::Type)
     variables(::Type, vars...)
@@ -134,9 +112,9 @@ function init_variables(models...)
 end
 
 """
-    Leaf(geometry, interception, energy, photosynthesis, stomatal_conductance, status)
-    Leaf(;geometry = missing, interception = missing, energy = missing,
-            photosynthesis = missing, stomatal_conductance = missing,status...)
+    Leaf(interception, energy, photosynthesis, stomatal_conductance, status)
+    Leaf(;interception = missing, energy = missing, photosynthesis = missing,
+        stomatal_conductance = missing,status...)
 
 Leaf component, which is a subtype of `AbstractPhotoComponent` implenting a component with
 a photosynthetic activity. It could be a leaf, or a leaflet, or whatever kind of component
@@ -145,7 +123,6 @@ is short, simple and self-explanatory.
 
 # Arguments
 
-- `geometry <: Union{Missing,AbstractGeometryModel}`: A geometry model, e.g. [`Geom1D`](@ref).
 - `interception <: Union{Missing,AbstractInterceptionModel}`: An interception model.
 - `energy <: Union{Missing,AbstractEnergyModel}`: An energy model, e.g. [`Monteith`](@ref).
 - `photosynthesis <: Union{Missing,AbstractAModel}`: A photosynthesis model, e.g. [`Fvcb`](@ref)
@@ -188,8 +165,7 @@ The status field depends on the input models. You can get the variables needed b
 # balance, The Farquhar et al. (1980) model for photosynthesis, and a constant stomatal
 # conductance for CO₂ of 0.0011 with no residual conductance. The status of
 # the leaf is not set yet, all are initialised at `0.0`:
-Leaf(geometry = Geom1D(0.03),
-     energy = Monteith(),
+Leaf(energy = Monteith(),
      photosynthesis = Fvcb(),
      stomatal_conductance = ConstantGs(0.0, 0.0011))
 
@@ -201,13 +177,11 @@ Leaf(photosynthesis = Fvcb(),Cᵢ = 380.0)
 Leaf(photosynthesis = Fvcb(), energy = Monteith(), Cᵢ = 380.0, Tₗ = 20.0)
 ```
 """
-struct Leaf{G <: Union{Missing,AbstractGeometryModel},
-            I <: Union{Missing,AbstractInterceptionModel},
+struct Leaf{I <: Union{Missing,AbstractInterceptionModel},
             E <: Union{Missing,AbstractEnergyModel},
             A <: Union{Missing,AbstractAModel},
             Gs <: Union{Missing,AbstractGsModel},
             S <: MutableNamedTuple} <: AbstractPhotoComponent
-    geometry::G
     interception::I
     energy::E
     photosynthesis::A
@@ -215,12 +189,21 @@ struct Leaf{G <: Union{Missing,AbstractGeometryModel},
     status::S
 end
 
-function Leaf(;geometry = missing, interception = missing, energy = missing,
+function Leaf(;interception = missing, energy = missing,
                 photosynthesis = missing, stomatal_conductance = missing,status...)
-    status = init_variables_manual(geometry, interception, energy, photosynthesis,
+    status = init_variables_manual(interception, energy, photosynthesis,
         stomatal_conductance;status...)
-    Leaf(geometry,interception,energy,photosynthesis,stomatal_conductance,status)
+    Leaf(interception,energy,photosynthesis,stomatal_conductance,status)
 end
+
+struct Component{I <: Union{Missing,AbstractInterceptionModel},
+                 E <: Union{Missing,AbstractEnergyModel},
+                 S <: MutableNamedTuple} <: AbstractComponent
+    interception::I
+    energy::E
+    status::S
+end
+
 
 """
     init_variables_manual(models...;vars...)

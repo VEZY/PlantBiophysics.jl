@@ -6,6 +6,7 @@ Monteith and Unsworth (2013)
 
 - `aₛₕ = 2`: number of faces of the object that exchange sensible heat fluxes
 - `aₛᵥ = 1`: number of faces of the object that exchange latent heat fluxes (hypostomatous => 1)
+- `d` (m): characteristic dimension, *e.g.* leaf width (see eq. 10.9 from Monteith and Unsworth, 2013).
 - `ε = 0.955`: emissivity of the object
 - `maxiter = 10`: maximal number of iterations allowed to close the energy balance
 - `ϵ = 0.01` (°C): maximum difference in object temperature between two iterations to
@@ -20,6 +21,7 @@ energy_model = Monteith() # a leaf in an illuminated chamber
 Base.@kwdef struct Monteith{T,S} <: AbstractEnergyModel
     aₛₕ::S = 2
     aₛᵥ::S = 1
+    d::T = 0.03
     ε::T = 0.955
     maxiter::S = 10
     ϵ::T = 0.01
@@ -37,29 +39,29 @@ Schymanski et al. (2017). The computation is close to the one from the MAESPA mo
 et al., 2012, Vezy et al., 2018) here. The leaf temperature is computed iteratively to close
 the energy balance using the mass flux (~ Rn - λE).
 
-The other approach (close to Archimed model) closes the energy balance using energy flux.
-
 # Arguments
 
 - `leaf::Leaf{.,.,<:Monteith,.,.,.}`: A [`Leaf`](@ref) struct holding the parameters for
-the model
+the model with initialisations for:
+    - `Rn` (W m-2): net global radiation (PAR + NIR + TIR). Often computed from a light interception model
+    - `skyFraction` (0-2): view factor between the object and the sky for both faces (see details).
 - `meteo`: meteorology structure, see [`Atmosphere`](@ref)
 - `constants = Constants()`: physical constants. See [`Constants`](@ref) for more details
 
-# Note
+# Details
 
 The skyFraction in the variables is equal to 2 if all the leaf is viewing is sky (e.g. in a
 controlled chamber), 1 if the leaf is *e.g.* up on the canopy where the upper side of the
 leaf sees the sky, and the side bellow sees soil + other leaves that are all considered at
 the same temperature than the leaf, or less than 1 if it is partly shaded.
+
 # Examples
 
 ```julia
 meteo = Atmosphere(T = 22.0, Wind = 0.8333, P = 101.325, Rh = 0.4490995)
 
 # Using a constant value for Gs:
-leaf = Leaf(geometry = Geom1D(0.03),
-            energy = Monteith(),
+leaf = Leaf(energy = Monteith(d = 0.03),
             photosynthesis = Fvcb(),
             stomatal_conductance = ConstantGs(0.0, 0.0011),
             Rn = 13.747, skyFraction = 1.0)
@@ -68,8 +70,7 @@ leaf.status.Rn
 julia> 12.902547446281233
 
 # Using the model from Medlyn et al. (2011) for Gs:
-leaf = Leaf(geometry = Geom1D(0.03),
-            energy = Monteith(),
+leaf = Leaf(energy = Monteith(d = 0.03),
             photosynthesis = Fvcb(),
             stomatal_conductance = Medlyn(0.03, 12.0),
             Rn = 13.747, skyFraction = 1.0, PPFD = 1500.0)
@@ -140,8 +141,8 @@ function net_radiation!(leaf::Leaf{G,I,<:Monteith,A,Gs,S},meteo::Atmosphere,cons
         # ? NB: we only move around the Rn that was given originally.
 
         # Leaf boundary conductance for heat (m s-1), one sided:
-        leaf.status.Gbₕ = gbₕ_free(meteo.T, leaf.status.Tₗ, leaf.geometry.d, constants.Dₕ₀) +
-                             gbₕ_forced(meteo.Wind, leaf.geometry.d)
+        leaf.status.Gbₕ = gbₕ_free(meteo.T, leaf.status.Tₗ, leaf.status.d, constants.Dₕ₀) +
+                             gbₕ_forced(meteo.Wind, leaf.status.d)
         # NB, in MAESPA we use Rni so we add the radiation conductance also (not here)
 
         # Leaf boundary resistance for heat (s m-1):

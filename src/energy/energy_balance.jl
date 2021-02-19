@@ -27,8 +27,6 @@ if the leaf is *e.g.* up on the canopy where the upper side of the leaf sees the
 side bellow sees soil + other leaves that are all considered at the same temperature than the leaf,
 or less than 1 if it is partly shaded.
 
-`d` is the minimal dimension of the surface of an object in contact with the air.
-
 # Examples
 
 ```julia
@@ -36,8 +34,7 @@ meteo = Atmosphere(T = 20.0, Wind = 1.0, P = 101.3, Rh = 0.65)
 
 # Using the model of Monteith and Unsworth (2013) for energy, Farquhar et al. (1980) for
 # photosynthesis, and Medlyn et al. (2011) for stomatal conductance:
-leaf = Leaf(geometry = Geom1D(0.03),
-            energy = Monteith(),
+leaf = Leaf(energy = Monteith(d = 0.03),
             photosynthesis = Fvcb(),
             stomatal_conductance = Medlyn(0.03, 12.0),
             Rn = 13.747, skyFraction = 1.0, PPFD = 1500.0)

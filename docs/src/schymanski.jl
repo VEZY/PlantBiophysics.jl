@@ -32,11 +32,10 @@ function run_simulation!(data,params,aₛᵥ)
                             Wind = Float64(data.v_w[i]),
                             P = data.P_a[i] / 1000,
                             Rh = data.rh[i])
-        leaf = Leaf(geometry = Geom1D(data.L_l[i]),
-                    energy = Monteith(aₛᵥ = aₛᵥ, maxiter = maxiter),
+        leaf = Leaf(energy = Monteith(aₛᵥ = aₛᵥ, maxiter = maxiter),
                     photosynthesis = ConstantA(A),
                     stomatal_conductance = ConstantGs(0.0, gsw_to_gsc(ms_to_mol(data.g_sw[i],data.T_a[i] - params["T0"],data.P_a[i]/1000))),
-                    Rn = data.Rn_leaf[i], skyFraction = 2.0)
+                    Rn = data.Rn_leaf[i], skyFraction = 2.0, d = data.L_l[i])
         out = energy_balance(leaf,meteo,cst)
 
         data.Tₗ[i] = out.Tₗ

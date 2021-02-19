@@ -48,6 +48,8 @@ For more examples, please read the documentation.
   - [ ] add a tutorial for a single leaf at one time-step
   - [ ] add a tutorial for a single leaf at several time-step
   - [ ] add a tutorial for a plant
+  - [ ] How to implement a new model -> e.g. conductance
+  - [ ] How to implement a new component -> modify `get_componenttype()` + add methods to functions eventually
 
 ### Notes
 

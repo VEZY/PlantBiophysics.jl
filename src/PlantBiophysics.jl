@@ -88,10 +88,6 @@ export OpticalProperties
 export σ
 export AbstractInterceptionModel
 
-# Geometry
-export AbstractGeometryModel
-export Geom1D # one dimensional geometry
-
 # Photosynthesis
 export AbstractAModel
 export ConstantA
@@ -119,7 +115,7 @@ export Translucent
 export Ignore
 export get_km, Γ_star, arrhenius, get_J, gs_closure, get_Cᵢⱼ,get_Cᵢᵥ,get_Dₕ
 export init_variables_manual, init_variables, Fvcb_net_assimiliation
-
+export get_componenttype, get_process, get_model, instantiate
 
 export AbstractModel
 export variables
