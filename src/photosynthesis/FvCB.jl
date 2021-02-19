@@ -92,11 +92,12 @@ Computation is made following Farquhar & Wong (1984), Leuning et al. (1995), and
 MAESPA model (Duursma et al., 2012).
 The resolution is analytical as first presented in Baldocchi (1994), and needs Cₛ as input.
 
-If you need to use Cₐ, you can use the iterative implementation of the Fvcb model [`FvcbIter`](@ref)
+If you prefer to use Gbc, you can use the iterative implementation of the Fvcb model
+[`FvcbIter`](@ref)
 
 # Returns
 
-Either modify in place or returns a tuple with (A, Gₛ, Cᵢ):
+Modify the first argument in place for A, Gₛ and Cᵢ:
 
 - A: carbon assimilation (μmol[CO₂] m-2 s-1)
 - Gₛ: stomatal conductance for CO₂ (mol[CO₂] m-2 s-1)
@@ -105,9 +106,21 @@ Either modify in place or returns a tuple with (A, Gₛ, Cᵢ):
 # Arguments
 
 - `leaf::Leaf{.,.,.,<:Fvcb,<:GsModel,.}`: A [`Leaf`](@ref) struct holding the parameters for
-the model
+the model with initialisations for:
+    - `Tₗ` (°C): leaf temperature
+    - `PPFD` (μmol m-2 s-1): absorbed Photosynthetic Photon Flux Density
+    - `Cₛ` (mol m-2 s-1): surface CO₂ concentration.
+    - `Dₗ` (mol m-2 s-1): vapour pressure difference between the surface and the air saturation
+    vapour pressure in case you're using the stomatal conductance model of [`Medlyn`](@ref).
 - `meteo`: meteorology structure, see [`Atmosphere`](@ref)
 - `constants = Constants()`: physical constants. See [`Constants`](@ref) for more details
+
+# Note
+
+`Tₗ`, `PPFD`, `Cₛ` (and `Dₗ` if you use [`Medlyn`](@ref)) must be initialised by the user by
+providing them as keyword arguments (see examples). If in doubt, it is simpler to compute
+the energy balance of the leaf with the photosynthesis to get those variables. See
+[`energy_balance`](@ref) for more details.
 
 # Examples
 
@@ -116,11 +129,12 @@ meteo = Atmosphere(T = 20.0, Wind = 1.0, P = 101.3, Rh = 0.65)
 
 leaf = Leaf(photosynthesis = Fvcb(),
             stomatal_conductance = Medlyn(0.03, 12.0),
-            Tₗ = 25.0,PPFD = 1000.0, Cₛ = 400.0)
+            Tₗ = 25.0,PPFD = 1000.0, Cₛ = 400.0, Dₗ = meteo.VPD)
 # NB: we need  to initalise Tₗ, PPFD and Cₛ
 
 assimilation!(leaf,meteo,Constants())
 leaf.status.A
+leaf.status.Cᵢ
 ```
 
 # References
@@ -171,15 +185,22 @@ function assimilation!(leaf::Leaf{G,I,E,<:Fvcb,<:GsModel,S}, meteo, constants = 
     gs_mod = gs_closure(leaf,meteo)
 
     Cᵢⱼ = get_Cᵢⱼ(Vⱼ,Γˢ,leaf.status.Cₛ,Rd,leaf.stomatal_conductance.g0,gs_mod)
-    Wⱼ = Vⱼ * (Cᵢⱼ - Γˢ) / (Cᵢⱼ + 2.0 * Γˢ)
 
+    # Electron-transport-limited rate of CO2 assimilation (RuBP regeneration-limited):
+    Wⱼ = Vⱼ * (Cᵢⱼ - Γˢ) / (Cᵢⱼ + 2.0 * Γˢ) # also called Aⱼ
+    # See Von Caemmerer, Susanna. 2000. Biochemical models of leaf photosynthesis.
+    # Csiro publishing, eq. 2.23.
+    # NB: here the equation is modified because we use Vⱼ instead of J, but it is the same.
+
+    # If Rd is larger than Wⱼ, no assimilation:
     if Wⱼ - Rd < 1.0e-6
-        Cᵢⱼ = leaf.status.Cₛ
+        Cᵢⱼ = Γˢ
         Wⱼ = Vⱼ * (Cᵢⱼ - Γˢ) / (Cᵢⱼ + 2.0 * Γˢ)
     end
 
     Cᵢᵥ = get_Cᵢᵥ(VcMax,Γˢ,leaf.status.Cₛ,Rd,leaf.stomatal_conductance.g0,gs_mod,Km)
 
+    # Rubisco-carboxylation-limited rate of CO₂ assimilation (RuBP activity-limited):
     if Cᵢᵥ <= 0.0 || Cᵢᵥ > leaf.status.Cₛ
         Wᵥ = 0.0
     else
@@ -193,13 +214,7 @@ function assimilation!(leaf::Leaf{G,I,E,<:Fvcb,<:GsModel,S}, meteo, constants = 
     leaf.status.Gₛ = gs(leaf,gs_mod)
 
     # Intercellular CO₂ concentration (Cᵢ, μmol mol)
-    if leaf.status.Gₛ > 0.0 && leaf.status.A > 0.0
-        leaf.status.Cᵢ = leaf.status.Cₛ - leaf.status.A / leaf.status.Gₛ
-    else
-        leaf.status.Cᵢ = leaf.status.Cₛ
-    end
-
-    # return (A, Gₛ, Cᵢ)
+    leaf.status.Cᵢ = min(leaf.status.Cₛ, leaf.status.Cₛ - leaf.status.A / leaf.status.Gₛ)
     nothing
 end
 
@@ -243,6 +258,8 @@ Medlyn, B. E., E. Dreyer, D. Ellsworth, M. Forstreuter, P. C. Harley, M. U. F. K
 X. Le Roux, et al. 2002. « Temperature response of parameters of a biochemically based model
 of photosynthesis. II. A review of experimental data ». Plant, Cell & Environment 25 (9): 1167‑79.
 https://doi.org/10.1046/j.1365-3040.2002.00891.x.
+
+Von Caemmerer, Susanna. 2000. Biochemical models of leaf photosynthesis. Csiro publishing.
 
 # Examples
 

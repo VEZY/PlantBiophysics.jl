@@ -26,7 +26,7 @@ Base.@kwdef struct Monteith{T,S} <: EnergyModel
 end
 
 function variables(::Monteith)
-    (:Tₗ,:Rn,:skyFraction,:PPFD,:Cₛ,:ψₗ,:H,:λE,:A,:Gₛ,:Cᵢ,:Gbₕ,:Dₗ,:Rₗₗ)
+    (:Tₗ,:Rn,:skyFraction,:PPFD,:Cₛ,:ψₗ,:H,:λE,:A,:Gₛ,:Cᵢ,:Gbₕ,:Dₗ,:Rₗₗ,:Gbc)
 end
 
 """
@@ -81,6 +81,7 @@ leaf.status.A
 leaf.status.Gₛ
 leaf.status.Cₛ
 leaf.status.Cᵢ
+leaf.status.Gbc
 ```
 
 # References
@@ -150,11 +151,11 @@ function net_radiation!(leaf::Leaf{G,I,<:Monteith,A,Gs,S},meteo::Atmosphere,cons
         Rbᵥ = 1 / gbh_to_gbw(leaf.status.Gbₕ)
 
         # Leaf boundary resistance for CO₂ (mol[CO₂] m-2 s-1):
-        Gbc = ms_to_mol(leaf.status.Gbₕ,meteo.T,meteo.P,constants.R,constants.K₀) /
-                constants.Gbc_to_Gbₕ
+        leaf.status.Gbc = ms_to_mol(leaf.status.Gbₕ,meteo.T,meteo.P,constants.R,constants.K₀) /
+            constants.Gbc_to_Gbₕ
 
         # Update Cₛ using boundary layer conductance to CO₂ and assimilation:
-        leaf.status.Cₛ = min(meteo.Cₐ, meteo.Cₐ - leaf.status.A / (Gbc * leaf.energy.aₛᵥ))
+        leaf.status.Cₛ = min(meteo.Cₐ, meteo.Cₐ - leaf.status.A / (leaf.status.Gbc * leaf.energy.aₛᵥ))
 
         # Apparent value of psychrometer constant (kPa K−1)
         γˢ = γ_star(meteo.γ, leaf.energy.aₛₕ, leaf.energy.aₛᵥ, Rbᵥ, Rsᵥ, Rbₕ)

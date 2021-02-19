@@ -262,6 +262,7 @@ function init_variables_manual(models...;vars...)
     init_vars = init_variables(models...)
     new_vals = (;vars...)
     for i in keys(new_vals)
+        !in(i,keys(init_vars)) && @error "Key $i not found as a variable of any provided models"
         setproperty!(init_vars,i,new_vals[i])
     end
     init_vars

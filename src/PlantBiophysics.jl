@@ -118,6 +118,7 @@ export Constants
 export Translucent
 export Ignore
 export get_km, Γ_star, arrhenius, get_J, gs_closure, get_Cᵢⱼ,get_Cᵢᵥ,get_Dₕ
+export init_variables_manual, init_variables, Fvcb_net_assimiliation
 
 
 export Model

@@ -93,6 +93,10 @@ end
 CO₂ compensation point ``Γ^⋆`` (``μ mol\\ mol^{-1}``) according to equation (12)
 from Medlyn et al. (2002).
 
+> ``Γ^⋆`` is the [CO₂] at which oxygenation proceeds at
+twice the rate of carboxylation causing photosynthetic uptake of CO2 to be exactly
+compensated by photorespiratory CO₂ release (Sharkey et al., 2007).
+
 # Notes
 
 Could be replaced by equation (38) from Farquhar et al. (1980), but Medlyn et al. (2002)
@@ -122,6 +126,11 @@ Medlyn, B. E., E. Dreyer, D. Ellsworth, M. Forstreuter, P. C. Harley, M. U. F. K
 X. Le Roux, et al. 2002. « Temperature response of parameters of a biochemically based model
 of photosynthesis. II. A review of experimental data ». Plant, Cell & Environment 25 (9): 1167‑79.
 https://doi.org/10.1046/j.1365-3040.2002.00891.x.
+
+Sharkey, Thomas D., Carl J. Bernacchi, Graham D. Farquhar, et Eric L. Singsaas. 2007.
+« Fitting Photosynthetic Carbon Dioxide Response Curves for C3 Leaves ». Plant, Cell &
+Environment 30 (9): 1035‑40. https://doi.org/10.1111/j.1365-3040.2007.01710.x.
+
 """
 function Γ_star(Tₖ,Tᵣₖ,R = Constants().R)
     arrhenius(42.75,37830.0,Tₖ,Tᵣₖ,R)
