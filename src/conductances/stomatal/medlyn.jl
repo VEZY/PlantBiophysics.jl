@@ -25,7 +25,7 @@ function variables(::Medlyn)
 end
 
 """
-    gs_closure(leaf::Leaf{G,I,E,A,<:Medlyn,S},meteo)
+    gs_closure(leaf::Leaf{I,E,A,<:Medlyn,S},meteo)
 
 Stomatal closure for CO₂ according to Medlyn et al. (2011). Carefull, this is just a part of
 the computation of the stomatal conductance.
@@ -39,7 +39,7 @@ The result of this function is then used as:
 
 # Arguments
 
-- `leaf::Leaf{.,.,.,<:Fvcb,<:AbstractGsModel,.}`: A [`Leaf`](@ref) struct holding the parameters for
+- `leaf::Leaf{.,.,<:Fvcb,<:AbstractGsModel,.}`: A [`Leaf`](@ref) struct holding the parameters for
 the model.
 - `meteo`: meteorology structure, see [`Atmosphere`](@ref). Is not used in this model.
 
@@ -66,20 +66,20 @@ Craig V. M. Barton, Kristine Y. Crous, Paolo De Angelis, Michael Freeman, et Lis
 2011. « Reconciling the optimal and empirical approaches to modelling stomatal conductance ».
 Global Change Biology 17 (6): 2134‑44. https://doi.org/10.1111/j.1365-2486.2010.02375.x.
 """
-function gs_closure(leaf::Leaf{G,I,E,A,<:Medlyn,S},meteo) where {G,I,E,A,S}
+function gs_closure(leaf::Leaf{I,E,A,<:Medlyn,S},meteo) where {I,E,A,S}
     (1.0 + leaf.stomatal_conductance.g1 / sqrt(leaf.status.Dₗ)) / leaf.status.Cₛ
 end
 
 
 """
-    gs(leaf::Leaf{G,I,E,A,<:Medlyn,S},gs_mod)
-    gs(leaf::Leaf{G,I,E,A,<:Medlyn,S},meteo<:Atmosphere)
+    gs(leaf::Leaf{I,E,A,<:Medlyn,S},gs_mod)
+    gs(leaf::Leaf{I,E,A,<:Medlyn,S},meteo<:Atmosphere)
 
 Stomatal conductance for CO₂ (mol m-2 s-1) according to Medlyn et al. (2011).
 
 # Arguments
 
-- `leaf::Leaf{G,I,E,A,<:Medlyn,S}`: A leaf struct holding the parameters for the model. See
+- `leaf::Leaf{I,E,A,<:Medlyn,S}`: A leaf struct holding the parameters for the model. See
 [`Leaf`](@ref), and [`Medlyn`](@ref) or [`ConstantGs`](@ref) for the conductance models.
 - `gs_mod`: the output from [`gs_closure`](@ref)
 - `meteo<:Atmosphere`: meteo data, see [`Atmosphere`](@ref)
@@ -107,10 +107,10 @@ Craig V. M. Barton, Kristine Y. Crous, Paolo De Angelis, Michael Freeman, et Lis
 Global Change Biology 17 (6): 2134‑44. https://doi.org/10.1111/j.1365-2486.2010.02375.x.
 ```
 """
-function gs(leaf::Leaf{G,I,E,A,<:Medlyn,S},gs_mod) where {G,I,E,A,S}
+function gs(leaf::Leaf{I,E,A,<:Medlyn,S},gs_mod) where {I,E,A,S}
     leaf.stomatal_conductance.g0 + gs_mod * leaf.status.A
 end
 
-function gs(leaf::Leaf{G,I,E,A,<:Medlyn,S},meteo::M) where {G,I,E,A,S,M<:Atmosphere}
+function gs(leaf::Leaf{I,E,A,<:Medlyn,S},meteo::M) where {I,E,A,S,M<:Atmosphere}
     leaf.stomatal_conductance.g0 + gs_closure(leaf,meteo) * leaf.status.A
 end

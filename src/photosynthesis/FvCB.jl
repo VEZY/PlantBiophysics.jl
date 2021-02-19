@@ -84,7 +84,7 @@ function variables(::Fvcb)
 end
 
 """
-    assimilation!(leaf::Leaf{G,I,E,<:Fvcb,<:AbstractGsModel,S},constants = Constants())
+    assimilation!(leaf::Leaf{I,E,<:Fvcb,<:AbstractGsModel,S},constants = Constants())
 
 Photosynthesis using the Farquhar–von Caemmerer–Berry (FvCB) model for C3 photosynthesis
  (Farquhar et al., 1980; von Caemmerer and Farquhar, 1981).
@@ -105,7 +105,7 @@ Modify the first argument in place for A, Gₛ and Cᵢ:
 
 # Arguments
 
-- `leaf::Leaf{.,.,.,<:Fvcb,<:AbstractGsModel,.}`: A [`Leaf`](@ref) struct holding the parameters for
+- `leaf::Leaf{.,.,<:Fvcb,<:AbstractGsModel,.}`: A [`Leaf`](@ref) struct holding the parameters for
 the model with initialisations for:
     - `Tₗ` (°C): leaf temperature
     - `PPFD` (μmol m-2 s-1): absorbed Photosynthetic Photon Flux Density
@@ -155,7 +155,8 @@ Leuning, R., F. M. Kelliher, DGG de Pury, et E.D. Schulze. 1995. « Leaf nitrog
 photosynthesis, conductance and transpiration: scaling from leaves to canopies ». Plant,
 Cell & Environment 18 (10): 1183‑1200.
 """
-function assimilation!(leaf::Leaf{G,I,E,<:Fvcb,<:AbstractGsModel,S}, meteo, constants = Constants()) where {G,I,E,S}
+function assimilation!(leaf::Leaf{I,E,<:Fvcb,<:AbstractGsModel,S}, meteo,
+    constants = Constants()) where {I,E,S}
 
     # Tranform Celsius temperatures in Kelvin:
     Tₖ = leaf.status.Tₗ - constants.K₀

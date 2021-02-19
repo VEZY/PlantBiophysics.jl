@@ -41,7 +41,7 @@ the energy balance using the mass flux (~ Rn - λE).
 
 # Arguments
 
-- `leaf::Leaf{.,.,<:Monteith,.,.,.}`: A [`Leaf`](@ref) struct holding the parameters for
+- `leaf::Leaf{.,<:Monteith,.,.,.}`: A [`Leaf`](@ref) struct holding the parameters for
 the model with initialisations for:
     - `Rn` (W m-2): net global radiation (PAR + NIR + TIR). Often computed from a light interception model
     - `skyFraction` (0-2): view factor between the object and the sky for both faces (see details).
@@ -105,7 +105,7 @@ Maxime Soma, et al. 2018. « Measuring and modelling energy partitioning in can
 complexity using MAESPA model ». Agricultural and Forest Meteorology 253‑254 (printemps): 203‑17.
 https://doi.org/10.1016/j.agrformet.2018.02.005.
 """
-function net_radiation!(leaf::Leaf{G,I,<:Monteith,A,Gs,S},meteo::Atmosphere,constants = Constants()) where {G,I,A,Gs,S}
+function net_radiation!(leaf::Leaf{I,<:Monteith,A,Gs,S},meteo::Atmosphere,constants = Constants()) where {I,A,Gs,S}
 
     # Initialisations
     leaf.status.Tₗ = meteo.T - 0.2

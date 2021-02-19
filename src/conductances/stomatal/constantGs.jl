@@ -24,14 +24,14 @@ Gₛ = g0 + Gs.gs * A
 # Note
 gs_vars is just declared here for compatibility with other formats of calls.
 """
-function gs_closure(leaf::Leaf{G,I,E,A,<:ConstantGs,S},meteo=missing) where {G,I,E,A,S}
+function gs_closure(leaf::Leaf{I,E,A,<:ConstantGs,S},meteo=missing) where {I,E,A,S}
     leaf.stomatal_conductance.gs - leaf.stomatal_conductance.g0
 end
 
-function gs(leaf::Leaf{G,I,E,A,<:ConstantGs,S},gs_mod) where {G,I,E,A,S}
+function gs(leaf::Leaf{I,E,A,<:ConstantGs,S},gs_mod) where {I,E,A,S}
     leaf.stomatal_conductance.gs
 end
 
-function gs(leaf::Leaf{G,I,E,A,<:ConstantGs,S},meteo::M) where {G,I,E,A,S,M<:Atmosphere}
+function gs(leaf::Leaf{I,E,A,<:ConstantGs,S},meteo::M) where {I,E,A,S,M<:Atmosphere}
     leaf.stomatal_conductance.gs
 end
