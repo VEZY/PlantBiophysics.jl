@@ -22,12 +22,11 @@ function read_model(file)
     group = model["Group"]
     types = collect(keys(model["Type"]))
 
-    components = Dict()
+    components = Dict{String,AbstractComponent}()
 
     for (i,j) in model["Type"]
         # i = "Leaf"
         # j = model["Type"][i]
-        componenttype = get_componenttype(i)
 
         processes = Dict()
         for (k,l) in j
@@ -56,24 +55,60 @@ function read_model(file)
                 push!(processes, Symbol(process) => model_process)
             end
         end
-        push!(components, componenttype => componenttype(;processes...))
+
+        processes = (;sort(processes)...)
+        # Get the component type based on the models used (*e.g.*, if photosynthetic, use `Leaf`):
+        componenttype = get_component_type(processes...)
+
+        push!(components, i => componenttype(;processes...))
     end
 
     return components
 end
 
 """
-    get_componenttype(x)
+    get_component_type(processes)
 
-Return the component type (the actual struct) given its name passed as a String.
+Return the component type (the actual struct) given the processes passed as a named Tuple.
+It is considered a `Leaf` if it presents models for `photosynthesis` and
+`stomatal_conductance`, and optionally for `interception` and `energy`.
 """
-function get_componenttype(x)
-    dict = Dict("Leaf" => Leaf, "Metamer" => Metamer)
+function get_component_type(::I,::E,::A,::Gs) where {I<:AbstractInterceptionModel,
+    E<:AbstractEnergyModel,A<:AbstractAModel,Gs<:AbstractGsModel}
 
-    !haskey(dict, x) && error("Component type `$x` does not exist. Please name your components ",
-    "after the naming convention. Choices are: $(keys(dict))");
+    return Leaf
+end
 
-    return dict[x]
+function get_component_type(::I,::A,::Gs) where {I<:AbstractInterceptionModel,A<:AbstractAModel,Gs<:AbstractGsModel}
+
+    return Leaf
+end
+
+function get_component_type(::A,::Gs) where {A<:AbstractAModel,Gs<:AbstractGsModel}
+
+    return Leaf
+end
+
+"""
+    get_component_type(processes)
+
+Return the component type (the actual struct) given the processes passed as a named Tuple.
+
+It is considered a `Component` if it presents models for `interception` and `energy` only.
+"""
+function get_component_type(::I,::E) where {I<:AbstractInterceptionModel,E<:AbstractEnergyModel}
+
+    return Component
+end
+
+function get_component_type(::I) where I<:AbstractInterceptionModel
+
+    return Component
+end
+
+# Default get_component_type if no component match the models inputed:
+function get_component_type(processes...)
+    error("Can't find any component type to hold models: $processes");
 end
 
 
