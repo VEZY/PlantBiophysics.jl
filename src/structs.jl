@@ -138,7 +138,10 @@ end
     Leaf(;geometry = missing, interception = missing, energy = missing,
             photosynthesis = missing, stomatal_conductance = missing,status...)
 
-Leaf component, with fields holding model types and their parameter values
+Leaf component, which is a subtype of `AbstractPhotoComponent` implenting a component with
+a photosynthetic activity. It could be a leaf, or a leaflet, or whatever kind of component
+that is photosynthetic. The name `Leaf` was chosen not because it is generic, but because it
+is short, simple and self-explanatory.
 
 # Arguments
 

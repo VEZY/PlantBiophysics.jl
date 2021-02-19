@@ -36,7 +36,7 @@ For more examples, please read the documentation.
 - [x] Add FvCB iterative model
 - [x] Add stomatal + boundary layer conductance models
 - [x] Add energy balance model, coupled with photosynthesis amd stomatal conductance models
-- [ ] Make the functions compatible with an MTG, e.g. apply photosynthesis to an MTG, and use the right method for each node.
+- [ ] Make the functions compatible with an MTG, e.g. apply photosynthesis to an MTG, and use the right method for each node. NB: I think the models should be a field of the node.
 - [ ] Make the functions compatible with several meteorological time-steps
 - [ ] Evaluate using Schymanski et al. (2017) data + leaf measurements models.
 - [ ] Add more documentation + tutorial:
