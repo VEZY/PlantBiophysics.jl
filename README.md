@@ -48,8 +48,12 @@ For more examples, please read the documentation.
   - [ ] add a tutorial for a single leaf at one time-step
   - [ ] add a tutorial for a single leaf at several time-step
   - [ ] add a tutorial for a plant
-  - [ ] How to implement a new model -> e.g. conductance
-  - [ ] How to implement a new component -> modify `get_componenttype()` + add methods to functions eventually
+  - [ ] How to implement a new model -> e.g. conductance (add a `variables` method)
+  - [ ] How to implement a new component:
+    - add a component type (subtype of `AbstractComponent` or `AbstractPhotoComponent`)
+    - add a keyword method for the type and use `init_variables_manual`
+    - modify `get_component_type()`
+    - add methods to functions eventually (unless they are already compatible)
 
 ### Notes
 

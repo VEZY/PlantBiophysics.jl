@@ -1,122 +1,10 @@
-"""
-Abstract model type. All models are subtypes of this one, see *e.g.* [`AbstractAModel`](@ref)
-"""
-abstract type AbstractModel end
-
-"""
-Assimilation (photosynthesis) abstract model. All photosynthesis models must be a subtype of
-this.
-"""
-abstract type AbstractAModel <: AbstractModel end
-
-"""
-Stomatal conductance abstract model. All stomatal conductance models must be a subtype of
-this.
-
-An AbstractGsModel subtype struct must implement at least a g0 field.
-"""
-abstract type AbstractGsModel <: AbstractModel end
-
-"""
-Light interception abstract struct. All light interception models must be a subtype of this.
-"""
-abstract type AbstractInterceptionModel <: AbstractModel end
-
-
-"""
-Energy balance abstract struct. All energy balance models must be a subtype of this.
-"""
-abstract type AbstractEnergyModel <: AbstractModel end
-
-
-# AbstractScene (the upper one)
-"""
-Used to describe a scene, the higher spatial representation for a simulation. A scene
-usually contains objects such as plants, soils, solar panels....
-"""
-abstract type AbstractScene end
-
-# AbstractObject
-"""
-Used to describe objects in a scene (*e.g.* plants, soils, solar panels...).
-"""
-abstract type AbstractObject <: AbstractScene end
-
-# Components
-"""
-Used to describe object components (*e.g.* leaves, metamers...).
-"""
-abstract type AbstractComponent <: AbstractObject end
-
-# Photosynthetic components
-"""
-Used to describe photosynthetic components.
-"""
-abstract type AbstractPhotoComponent <: AbstractComponent end
-
-"""
-    variables(::Type)
-    variables(::Type, vars...)
-
-Returns a tuple with the name of the output variables of a model, or a union of the output
-variables for several models.
-
-# Note
-
-Each model can (and should) have a method for this function.
-
-# Examples
-
-```julia
-variables(Monteith())
-
-variables(Monteith(), Medlyn(0.03,12.0))
-```
-"""
-function variables(v::T, vars...) where T <: Union{Missing,AbstractModel}
-    union(variables(v), variables(vars...))
-end
-
-"""
-    variables(::Missing)
-
-Returns an empty tuple because missing models do not return any variables.
-"""
-function variables(::Missing)
-    ()
-end
-
-"""
-    variables(::AbstractModel)
-
-Returns an empty tuple by default.
-"""
-function variables(::AbstractModel)
-    ()
-end
-
-"""
-    init_variables(vars...)
-
-Intialise model variables based on their instances.
-
-# Examples
-
-```julia
-init_variables(Monteith(), Medlyn(0.03,12.0))
-```
-"""
-function init_variables(models...)
-    var_names = variables(models...)
-    MutableNamedTuple(; zip(var_names,fill(zero(Float64),length(var_names)))...)
-end
 
 """
     Leaf(interception, energy, photosynthesis, stomatal_conductance, status)
     Leaf(;interception = missing, energy = missing, photosynthesis = missing,
         stomatal_conductance = missing,status...)
 
-Leaf component, which is a subtype of `AbstractPhotoComponent` implenting a component with
+Leaf component, which is a subtype of `AbstractPhotoComponent` implementing a component with
 a photosynthetic activity. It could be a leaf, or a leaflet, or whatever kind of component
 that is photosynthetic. The name `Leaf` was chosen not because it is generic, but because it
 is short, simple and self-explanatory.
@@ -196,6 +84,28 @@ function Leaf(;interception = missing, energy = missing,
     Leaf(interception,energy,photosynthesis,stomatal_conductance,status)
 end
 
+"""
+    Component(interception, energy, status)
+    Component(;interception = missing, energy = missing, status...)
+
+Generic component, which is a subtype of `AbstractComponent` implementing a component with
+an interception model and an energy balance model. It can be anything such as a trunk, a
+solar panel or else.
+
+# Arguments
+
+- `interception <: Union{Missing,AbstractInterceptionModel}`: An interception model.
+- `energy <: Union{Missing,AbstractEnergyModel}`: An energy model.
+- `status <: MutableNamedTuple`: a mutable named tuple to track the status (*i.e.* the variables) of
+the component. Values are set to `0.0` if not provided as VarArgs (see examples)
+
+# Examples
+
+```julia
+# An internode in a plant:
+Component(energy = Monteith())
+```
+"""
 struct Component{I <: Union{Missing,AbstractInterceptionModel},
                  E <: Union{Missing,AbstractEnergyModel},
                  S <: MutableNamedTuple} <: AbstractComponent
@@ -204,34 +114,11 @@ struct Component{I <: Union{Missing,AbstractInterceptionModel},
     status::S
 end
 
-
-"""
-    init_variables_manual(models...;vars...)
-
-Return an initialisation of the model variables with given values.
-
-# Examples
-
-```julia
-init_variables_manual(Monteith(); Tₗ = 20.0)
-```
-"""
-function init_variables_manual(models...;vars...)
-    init_vars = init_variables(models...)
-    new_vals = (;vars...)
-    for i in keys(new_vals)
-        !in(i,keys(init_vars)) && @error "Key $i not found as a variable of any provided models"
-        setproperty!(init_vars,i,new_vals[i])
-    end
-    init_vars
+function Component(;interception = missing, energy = missing,status...)
+    status = init_variables_manual(interception, energy;status...)
+    Component(interception,energy,status)
 end
 
-"""
-Metamer component, with one field holding the light interception model type and its parameter values.
-"""
-Base.@kwdef struct Metamer{I<: Union{Missing,AbstractInterceptionModel}} <: AbstractComponent
-    interception::I = missing
-end
 
 """
 Atmosphere structure to hold all values related to the meteorology / atmoshpere.

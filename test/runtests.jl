@@ -3,9 +3,9 @@ using OrderedCollections
 using MutableNamedTuples
 using Test
 
-# @testset "File IO" begin
-#     include("IO.jl")
-# end
+@testset "File IO" begin
+    include("IO.jl")
+end
 
 @testset "Structures" begin
     include("structs.jl")

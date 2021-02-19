@@ -8,16 +8,21 @@ using YAML
 using OrderedCollections
 
 # Generic structures:
-include("structs.jl")
+include("structs/Abstract_component_structs.jl")
+include("structs/Abstract_model_structs.jl")
+include("structs/concrete_component_structs.jl")
 
 # Physical constants:
-include("constants.jl")
+include("structs/constants.jl")
+
+# Models helpers:
+include("models_helpers.jl")
+
+# Atmosphere computations (vapor pressure...)
+include("structs/atmosphere.jl")
 
 # Conversions
 include("conversions.jl")
-
-# Atmosphere computations (vapor pressure...)
-include("atmosphere.jl")
 
 # Light interception
 include("light_interception/generic_structs.jl")
