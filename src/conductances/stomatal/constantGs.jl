@@ -6,7 +6,7 @@ Then used as follows:
 Gs = ConstantGs(0.03,0.1)
 Gₛ = Gs.g0 + Gs.gs * A
 """
-struct ConstantGs{T} <: GsModel
+struct ConstantGs{T} <: AbstractGsModel
  g0::T
  gs::T
 end

@@ -10,7 +10,67 @@ CurrentModule = PlantBiophysics
 [![Code Style: Blue](https://img.shields.io/badge/code%20style-blue-4495d1.svg)](https://github.com/invenia/BlueStyle)
 [![ColPrac: Contributor's Guide on Collaborative Practices for Community Packages](https://img.shields.io/badge/ColPrac-Contributor's%20Guide-blueviolet)](https://github.com/SciML/ColPrac)
 
-A Julia package to simulate biophysical processes for plants, such as photosynthesis, conductances for heat, water and carbon, latent and sensible energy fluxes and temperature.
+## Overview
+
+`PlantBiophysics.jl` is a Julia package to simulate biophysical processes for plants such as photosynthesis, conductances for heat, water vapor and CO₂, latent, sensible energy fluxes, net radiation and temperature.
+
+## Installation
+
+To install the package, enter the julia package manager mode by pressing `]` in the REPL, and then execute the following command:
+
+```julia
+add https://github.com/VEZY/PlantBiophysics.jl
+```
+
+To use the package, execute this command from the julia REPL:
+
+```julia
+using PlantBiophysics
+```
+
+## Examples
+
+Here is an example usage with a simulation of the energy balance and assimilation of a leaf
+with some default values.
+
+First you have to define the meteorological conditions using `Atmosphere()` as follows:
+
+```julia
+# Declaring the meteorology for the simulated time-step:
+meteo = Atmosphere(T = 22.0, Wind = 0.8333, P = 101.325, Rh = 0.4490995)
+```
+
+Then defines which model to use for each process, and their parameter values:
+
+```julia
+# Using the model from Medlyn et al. (2011) for Gs and the model of Monteith and Unsworth (2013) for the energy balance:
+leaf = Leaf(geometry = Geom1D(0.03),
+            energy = Monteith(),
+            photosynthesis = Fvcb(),
+            stomatal_conductance = Medlyn(0.03, 12.0),
+            Rn = 13.747, skyFraction = 1.0, PPFD = 1500.0)
+```
+
+Then, run the simulation of the energy balance and assimilation:
+
+```julia
+energy_balance(leaf,meteo)
+```
+
+Now the variables that were simulated by the models were updated in the leaf status. To access the values, do as follow:
+
+```julia
+leaf.status.Rn
+leaf.status.Rₗₗ
+leaf.status.A
+leaf.status.Gₛ
+leaf.status.Cₛ
+leaf.status.Cᵢ
+```
+
+And that's it!
+
+You can see more examples in the following pages.
 
 ## Similar projects
 

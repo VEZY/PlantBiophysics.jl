@@ -62,7 +62,7 @@ A = Fvcb()
 A.Eₐᵥ
 ```
 """
-Base.@kwdef struct Fvcb{T} <: AModel
+Base.@kwdef struct Fvcb{T} <: AbstractAModel
     Tᵣ::T = 25.0
     VcMaxRef::T = 200.0
     JMaxRef::T = 250.0
@@ -84,7 +84,7 @@ function variables(::Fvcb)
 end
 
 """
-    assimilation!(leaf::Leaf{G,I,E,<:Fvcb,<:GsModel,S},constants = Constants())
+    assimilation!(leaf::Leaf{G,I,E,<:Fvcb,<:AbstractGsModel,S},constants = Constants())
 
 Photosynthesis using the Farquhar–von Caemmerer–Berry (FvCB) model for C3 photosynthesis
  (Farquhar et al., 1980; von Caemmerer and Farquhar, 1981).
@@ -105,7 +105,7 @@ Modify the first argument in place for A, Gₛ and Cᵢ:
 
 # Arguments
 
-- `leaf::Leaf{.,.,.,<:Fvcb,<:GsModel,.}`: A [`Leaf`](@ref) struct holding the parameters for
+- `leaf::Leaf{.,.,.,<:Fvcb,<:AbstractGsModel,.}`: A [`Leaf`](@ref) struct holding the parameters for
 the model with initialisations for:
     - `Tₗ` (°C): leaf temperature
     - `PPFD` (μmol m-2 s-1): absorbed Photosynthetic Photon Flux Density
@@ -155,7 +155,7 @@ Leuning, R., F. M. Kelliher, DGG de Pury, et E.D. Schulze. 1995. « Leaf nitrog
 photosynthesis, conductance and transpiration: scaling from leaves to canopies ». Plant,
 Cell & Environment 18 (10): 1183‑1200.
 """
-function assimilation!(leaf::Leaf{G,I,E,<:Fvcb,<:GsModel,S}, meteo, constants = Constants()) where {G,I,E,S}
+function assimilation!(leaf::Leaf{G,I,E,<:Fvcb,<:AbstractGsModel,S}, meteo, constants = Constants()) where {G,I,E,S}
 
     # Tranform Celsius temperatures in Kelvin:
     Tₖ = leaf.status.Tₗ - constants.K₀
@@ -219,7 +219,7 @@ function assimilation!(leaf::Leaf{G,I,E,<:Fvcb,<:GsModel,S}, meteo, constants = 
 end
 
 # With keyword arguments (better for users)
-# function assimilation(A_mod::Fvcb, Gs_mod::GsModel; Tₗ, PPFD, Cₛ, Rh = missing,
+# function assimilation(A_mod::Fvcb, Gs_mod::AbstractGsModel; Tₗ, PPFD, Cₛ, Rh = missing,
 #                         VPD = missing, ψₗ = missing)
 
 #     environment = MutableNamedTuple(Tₗ = Tₗ, PPFD = PPFD, Rh = Rh, Cₛ= Cₛ, VPD = VPD, ψₗ = ψₗ)

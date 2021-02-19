@@ -1,6 +1,6 @@
 """
-    energy_balance(object::PhotoComponent,meteo::Atmosphere,constants = Constants())
-    energy_balance!(object::PhotoComponent,meteo::Atmosphere,constants = Constants())
+    energy_balance(object::AbstractPhotoComponent,meteo::Atmosphere,constants = Constants())
+    energy_balance!(object::AbstractPhotoComponent,meteo::Atmosphere,constants = Constants())
 
 Energy balance of an object.
 
@@ -36,7 +36,7 @@ meteo = Atmosphere(T = 20.0, Wind = 1.0, P = 101.3, Rh = 0.65)
 
 # Using the model of Monteith and Unsworth (2013) for energy, Farquhar et al. (1980) for
 # photosynthesis, and Medlyn et al. (2011) for stomatal conductance:
-leaf = Leaf(geometry = AbstractGeom(0.03),
+leaf = Leaf(geometry = Geom1D(0.03),
             energy = Monteith(),
             photosynthesis = Fvcb(),
             stomatal_conductance = Medlyn(0.03, 12.0),
@@ -65,13 +65,13 @@ Maxime Soma, et al. 2018. « Measuring and modelling energy partitioning in can
 complexity using MAESPA model ». Agricultural and Forest Meteorology 253‑254 (printemps): 203‑17.
 https://doi.org/10.1016/j.agrformet.2018.02.005.
 """
-function energy_balance(object::PhotoComponent,meteo::Atmosphere,constants = Constants())
+function energy_balance(object::AbstractPhotoComponent,meteo::Atmosphere,constants = Constants())
     object_tmp = deepcopy(object)
     net_radiation!(object_tmp,meteo,constants)
     return object_tmp.status
 end
 
-function energy_balance!(object::PhotoComponent,meteo::Atmosphere,constants = Constants())
+function energy_balance!(object::AbstractPhotoComponent,meteo::Atmosphere,constants = Constants())
     net_radiation!(object,meteo,constants)
     return nothing
 end

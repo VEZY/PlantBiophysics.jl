@@ -6,7 +6,7 @@
 [![Code Style: Blue](https://img.shields.io/badge/code%20style-blue-4495d1.svg)](https://github.com/invenia/BlueStyle)
 [![ColPrac: Contributor's Guide on Collaborative Practices for Community Packages](https://img.shields.io/badge/ColPrac-Contributor's%20Guide-blueviolet)](https://github.com/SciML/ColPrac)
 
-A Julia package to simulate biophysical processes for plants, such as photosynthesis, conductances for heat, water and carbon, latent and sensible energy fluxes and temperature.
+A Julia package to simulate biophysical processes for plants such as photosynthesis, conductances for heat, water vapor and CO₂, latent, sensible energy fluxes, net radiation and temperature.
 
 ## Examples
 
@@ -20,34 +20,34 @@ meteo = Atmosphere(T = 22.0, Wind = 0.8333, P = 101.325, Rh = 0.4490995)
 
 # Using the model from Medlyn et al. (2011) for Gs and the model of Monteith and Unsworth (2013) for the
 # energy balance:
-leaf = Leaf(geometry = AbstractGeom(0.03),
+leaf = Leaf(geometry = Geom1D(0.03),
             energy = Monteith(),
             photosynthesis = Fvcb(),
             stomatal_conductance = Medlyn(0.03, 12.0),
             Rn = 13.747, skyFraction = 1.0, PPFD = 1500.0)
 
-net_radiation!(leaf,meteo)
-leaf.status.Rn
-leaf.status.Rₗₗ
-leaf.status.A
-leaf.status.Gₛ
-leaf.status.Cₛ
-leaf.status.Cᵢ
+energy_balance(leaf,meteo)
 ```
 
+For more examples, please read the documentation.
 ## Roadmap
 
 - [x] Add FvCB model
-- [x] Add FvCB iterative model (to update).
-- [x] Add conductance model
-- [x] Add transpiration model
-- [ ] Use structures. E.g. `Leaf`, that would be a subtype of `PhotoComponent` (for photosynthetic organ), itself a subtype of `Organ`:
-  - [ ] Make the functions compatible with an MTG, e.g. apply photosynthesis to an MTG, and use the right method for each node.
-  - [ ] The `Leaf` struct would have the several fields that describe the models used for computation, with all their parameters, *e.g.*:
-
-In the end, the user would typically have a set of input files describing the models of choice and their
-values. Then, the user would create a photosynthetic object (or a set of) holding those values, and will
-apply the different functions that would automatically dispatch to the method using the type of the model.
+- [x] Add FvCB iterative model
+- [x] Add stomatal + boundary layer conductance models
+- [x] Add energy balance model, coupled with photosynthesis amd stomatal conductance models
+- [ ] Make the functions compatible with an MTG, e.g. apply photosynthesis to an MTG, and use the right method for each node.
+- [ ] Make the functions compatible with several meteorological time-steps
+- [ ] Evaluate using Schymanski et al. (2017) data + leaf measurements models.
+- [ ] Add more documentation + tutorial:
+  - [ ] add doc about the design (components, models, model values, multiple dispatch)
+  - [ ] add doc about input files
+  - [ ] add doc for each process
+  - [ ] add a list of models for each process
+  - [ ] add documentation for each model
+  - [ ] add a tutorial for a single leaf at one time-step
+  - [ ] add a tutorial for a single leaf at several time-step
+  - [ ] add a tutorial for a plant
 
 ### Notes
 
@@ -57,9 +57,7 @@ The Fvcb model is implemented in two ways:
 - as in Archimed, where the model needs Gbc, but not Cₛ (and Cₐ instead) because the model iterates over the assimilation until it finds a stable Cᵢ. This implementation
 can be less efficient because of the iterations.
 
-## References
-
-### Similar projects
+## Similar projects
 
 - [MAESPA](http://maespa.github.io/)
 - [photosynthesis](https://github.com/cran/photosynthesis) R package
@@ -67,7 +65,7 @@ can be less efficient because of the iterations.
 Leuning et al. (1995)
 - [LeafGasExchange](https://github.com/TESTgroup-BNL/LeafGasExchange) R package
 
-### Scientific references
+## References
 
 Baldocchi, Dennis. 1994. « An analytical solution for coupled leaf photosynthesis and
 stomatal conductance models ». Tree Physiology 14 (7-8‑9): 1069‑79.

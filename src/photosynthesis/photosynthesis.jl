@@ -1,6 +1,6 @@
 """
-    photosynthesis(leaf::PhotoComponent,meteo,constants = Constants())
-    photosynthesis!(leaf::PhotoComponent,meteo,constants = Constants())
+    photosynthesis(leaf::AbstractPhotoComponent,meteo,constants = Constants())
+    photosynthesis!(leaf::AbstractPhotoComponent,meteo,constants = Constants())
 
 Generic photosynthesis model for photosynthetic organs. Computes the assimilation and
 stomatal conductance according to the models set for `leaf`.
@@ -23,12 +23,12 @@ leaf = Leaf(photosynthesis = Fvcb(),
 photosynthesis(leaf, meteo)
 ```
 """
-function photosynthesis(leaf::PhotoComponent,meteo,constants = Constants())
+function photosynthesis(leaf::AbstractPhotoComponent,meteo,constants = Constants())
     leaf_tmp = deepcopy(leaf)
     assimilation!(leaf_tmp, meteo, constants)
     leaf_tmp.status
 end
 
-function photosynthesis!(leaf::PhotoComponent,meteo,constants = Constants())
+function photosynthesis!(leaf::AbstractPhotoComponent,meteo,constants = Constants())
     assimilation!(leaf, meteo, constants)
 end

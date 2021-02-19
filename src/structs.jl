@@ -1,106 +1,78 @@
 """
-Abstract model type.
-All models are subtypes of this one.
+Abstract model type. All models are subtypes of this one, see *e.g.* [`AbstractAModel`](@ref)
 """
-abstract type Model end
-
-"""
-Assimilation (photosynthesis) abstract model.
-If you want to implement your own model, it has to be a subtype
-of this one.
-"""
-abstract type AModel <: Model end
+abstract type AbstractModel end
 
 """
-Stomatal conductance abstract model.
-If you want to implement you own model, it has to be a subtype
-of this one.
-
-A GsModel subtype struct must implement at least a g0 field.
-
-Here is an example of an implementation of a new GsModel subtype with two parameters (g0 and g1):
-
-1. First, define the struct that holds your parameters values:
-    ```julia
-    struct your_gs_subtype{T} <: GsModel
-    g0::T
-    g1::T
-    end
-    ```
-2. Define how your stomatal conductance model works by implementing your own version of the
-[`gs_closure`](@ref) function:
-    ```julia
-    function gs_closure(Gs)
-        (1.0 + Gs.g1 / sqrt(VPD)) / Cₛ
-    end
-
-    function gs(Gs)
-        (1.0 + Gs.g1 / sqrt(VPD)) / Cₛ
-    end
-    ```
-3. Instantiate an object of type `your_gs_subtype`:
-    ```julia
-    Gs = your_gs_subtype(0.03, 0.1)
-    ```
-4. Call your stomatal model using dispatch on your type:
-    ```julia
-    gs_mod = gs(Gs)
-    ```
-
-Please note that the result of [`gs`](@ref) is just used for the part that modifies the conductance
-according to other variables, it is used as:
-
-```julia
-Gₛ = Gs.g0 + gs_mod * A
-```
-
-Where Gₛ is the stomatal conductance for CO₂ in μmol m-2 s-1, Gs.g0 is the residual conductance, and
-A is the carbon assimilation in μmol m-2 s-1.
+Assimilation (photosynthesis) abstract model. All photosynthesis models must be a subtype of
+this.
+"""
+abstract type AbstractAModel <: AbstractModel end
 
 """
-abstract type GsModel <: Model end
+Stomatal conductance abstract model. All stomatal conductance models must be a subtype of
+this.
+
+An AbstractGsModel subtype struct must implement at least a g0 field.
+"""
+abstract type AbstractGsModel <: AbstractModel end
 
 """
-Light interception abstract struct
+Light interception abstract struct. All light interception models must be a subtype of this.
 """
-abstract type InterceptionModel <: Model end
+abstract type AbstractInterceptionModel <: AbstractModel end
 
 
 """
-Energy balance abstract struct
+Energy balance abstract struct. All energy balance models must be a subtype of this.
 """
-abstract type EnergyModel <: Model end
+abstract type AbstractEnergyModel <: AbstractModel end
 
 
-# Scene (the upper one)
-abstract type Scene end
+# AbstractScene (the upper one)
+"""
+Used to describe a scene, the higher spatial representation for a simulation. A scene
+usually contains objects such as plants, soils, solar panels....
+"""
+abstract type AbstractScene end
 
-# Object
-abstract type Object <: Scene end
+# AbstractObject
+"""
+Used to describe objects in a scene (*e.g.* plants, soils, solar panels...).
+"""
+abstract type AbstractObject <: AbstractScene end
 
 # Components
-abstract type Component <: Object end
+"""
+Used to describe object components (*e.g.* leaves, metamers...).
+"""
+abstract type AbstractComponent <: AbstractObject end
 
 # Photosynthetic components
-abstract type PhotoComponent <: Component end
+"""
+Used to describe photosynthetic components.
+"""
+abstract type AbstractPhotoComponent <: AbstractComponent end
 
 # Geometry for the dimensions of components
-abstract type GeometryModel <: Model end
+abstract type AbstractGeometryModel <: AbstractModel end
 
 """
-    AbstractGeom(d)
+    Geom1D(d)
 
-The most simple geometry used to represent an abstract leaf, with only one field `d` (m) that
-defines the characteristic dimension, *e.g.* the leaf width. It is used to compute the
-boundary conductance for heat (see eq. 10.9 from Monteith and Unsworth, 2013).
+The most simple geometry used to represent an abstract object, with only one field `d` (m) that
+defines the characteristic dimension, *e.g.* the leaf width, or the diameter of a trunk. It is
+used to compute the boundary conductance for heat (see eq. 10.9 from Monteith and Unsworth,
+2013).
 
 # Examples
 
 ```julia
-AbstractGeom(0.03) # A leaf with a width of 3 cm.
+# A leaf with a width of 3 cm would be declared as:
+Geom1D(0.03)
 ```
 """
-struct AbstractGeom <: GeometryModel
+struct Geom1D <: AbstractGeometryModel
     d
 end
 
@@ -123,7 +95,7 @@ variables(Monteith())
 variables(Monteith(), Medlyn(0.03,12.0))
 ```
 """
-function variables(v::T, vars...) where T <: Union{Missing,Model}
+function variables(v::T, vars...) where T <: Union{Missing,AbstractModel}
     union(variables(v), variables(vars...))
 end
 
@@ -137,11 +109,11 @@ function variables(::Missing)
 end
 
 """
-    variables(::Model)
+    variables(::AbstractModel)
 
 Returns an empty tuple by default.
 """
-function variables(::Model)
+function variables(::AbstractModel)
     ()
 end
 
@@ -170,11 +142,11 @@ Leaf component, with fields holding model types and their parameter values
 
 # Arguments
 
-- `geometry <: Union{Missing,GeometryModel}`: A geometry model, e.g. [`AbstractGeom`](@ref).
-- `interception <: Union{Missing,InterceptionModel}`: An interception model.
-- `energy <: Union{Missing,EnergyModel}`: An energy model, e.g. [`Monteith`](@ref).
-- `photosynthesis <: Union{Missing,AModel}`: A photosynthesis model, e.g. [`Fvcb`](@ref)
-- `stomatal_conductance <: Union{Missing,GsModel}`: A stomatal conductance model, e.g. [`Medlyn`](@ref) or
+- `geometry <: Union{Missing,AbstractGeometryModel}`: A geometry model, e.g. [`Geom1D`](@ref).
+- `interception <: Union{Missing,AbstractInterceptionModel}`: An interception model.
+- `energy <: Union{Missing,AbstractEnergyModel}`: An energy model, e.g. [`Monteith`](@ref).
+- `photosynthesis <: Union{Missing,AbstractAModel}`: A photosynthesis model, e.g. [`Fvcb`](@ref)
+- `stomatal_conductance <: Union{Missing,AbstractGsModel}`: A stomatal conductance model, e.g. [`Medlyn`](@ref) or
 [`ConstantGs`](@ref)
 - `status <: MutableNamedTuple`: a mutable named tuple to track the status (*i.e.* the variables) of
 the leaf. Values are set to `0.0` if not provided as VarArgs (see examples)
@@ -184,7 +156,7 @@ the leaf. Values are set to `0.0` if not provided as VarArgs (see examples)
 The status field depends on the input models. You can get the variables needed by a model using
 [`variables`](@ref) on the instantiation of a model. Generally the variables are:
 
-## Light interception model  (see [`InterceptionModel`](@ref))
+## Light interception model  (see [`AbstractInterceptionModel`](@ref))
 
 - `Rn` (W m-2): net global radiation (PAR + NIR + TIR). Often computed from a light interception model
 - `PPFD` (μmol m-2 s-1): absorbed Photosynthetic Photon Flux Density
@@ -213,7 +185,7 @@ The status field depends on the input models. You can get the variables needed b
 # balance, The Farquhar et al. (1980) model for photosynthesis, and a constant stomatal
 # conductance for CO₂ of 0.0011 with no residual conductance. The status of
 # the leaf is not set yet, all are initialised at `0.0`:
-Leaf(geometry = AbstractGeom(0.03),
+Leaf(geometry = Geom1D(0.03),
      energy = Monteith(),
      photosynthesis = Fvcb(),
      stomatal_conductance = ConstantGs(0.0, 0.0011))
@@ -226,12 +198,12 @@ Leaf(photosynthesis = Fvcb(),Cᵢ = 380.0)
 Leaf(photosynthesis = Fvcb(), energy = Monteith(), Cᵢ = 380.0, Tₗ = 20.0)
 ```
 """
-struct Leaf{G <: Union{Missing,GeometryModel},
-            I <: Union{Missing,InterceptionModel},
-            E <: Union{Missing,EnergyModel},
-            A <: Union{Missing,AModel},
-            Gs <: Union{Missing,GsModel},
-            S <: MutableNamedTuple} <: PhotoComponent
+struct Leaf{G <: Union{Missing,AbstractGeometryModel},
+            I <: Union{Missing,AbstractInterceptionModel},
+            E <: Union{Missing,AbstractEnergyModel},
+            A <: Union{Missing,AbstractAModel},
+            Gs <: Union{Missing,AbstractGsModel},
+            S <: MutableNamedTuple} <: AbstractPhotoComponent
     geometry::G
     interception::I
     energy::E
@@ -271,7 +243,7 @@ end
 """
 Metamer component, with one field holding the light interception model type and its parameter values.
 """
-Base.@kwdef struct Metamer{I<: Union{Missing,InterceptionModel}} <: Component
+Base.@kwdef struct Metamer{I<: Union{Missing,AbstractInterceptionModel}} <: AbstractComponent
     interception::I = missing
 end
 
@@ -305,7 +277,7 @@ and can be automatically computed using the functions given in `Arguments`.
 Atmosphere(T = 20.0, Wind = 1.0, P = 101.3, Rh = 0.65)
 ```
 """
-Base.@kwdef struct Atmosphere{A} <: Scene
+Base.@kwdef struct Atmosphere{A} <: AbstractScene
     T::A
     Wind::A
     P::A

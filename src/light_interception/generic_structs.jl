@@ -1,4 +1,4 @@
 """
 Optical properties abstract struct
 """
-abstract type OpticalProperties <: InterceptionModel end
+abstract type OpticalProperties <: AbstractInterceptionModel end

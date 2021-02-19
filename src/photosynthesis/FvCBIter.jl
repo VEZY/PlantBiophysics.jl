@@ -13,7 +13,7 @@ This structure has several more parameters:
 percent of change, *i.e.* 1% means that two successive assimilations with less than 1%
 difference in value are considered the same value.
 """
-Base.@kwdef struct FvcbIter{T} <: AModel
+Base.@kwdef struct FvcbIter{T} <: AbstractAModel
     Tᵣ::T = 25.0
     VcMaxRef::T = 200.0
     JMaxRef::T = 250.0
@@ -37,7 +37,7 @@ function variables(::FvcbIter)
 end
 
 """
-    assimilation!(leaf::Leaf{G,I,E,<:FvcbIter,<:GsModel,S}, meteo, constants = Constants())
+    assimilation!(leaf::Leaf{G,I,E,<:FvcbIter,<:AbstractGsModel,S}, meteo, constants = Constants())
 
 Photosynthesis using the Farquhar–von Caemmerer–Berry (FvCB) model for C3 photosynthesis
  (Farquhar et al., 1980; von Caemmerer and Farquhar, 1981).
@@ -57,7 +57,7 @@ Modify the first argument in place for A, Gₛ and Cᵢ:
 
 # Arguments
 
-- `leaf::Leaf{.,.,.,<:FvcbIter,<:GsModel,.}`: A [`Leaf`](@ref) struct holding the parameters for
+- `leaf::Leaf{.,.,.,<:FvcbIter,<:AbstractGsModel,.}`: A [`Leaf`](@ref) struct holding the parameters for
 the model with initialisations for:
     - `Tₗ` (°C): leaf temperature
     - `PPFD` (μmol m-2 s-1): absorbed Photosynthetic Photon Flux Density
@@ -102,7 +102,7 @@ Leuning, R., F. M. Kelliher, DGG de Pury, et E.D. Schulze. 1995. « Leaf nitrog
 photosynthesis, conductance and transpiration: scaling from leaves to canopies ». Plant,
 Cell & Environment 18 (10): 1183‑1200.
 """
-function assimilation!(leaf::Leaf{G,I,E,<:FvcbIter,<:GsModel,S}, meteo, constants = Constants()) where {G,I,E,S}
+function assimilation!(leaf::Leaf{G,I,E,<:FvcbIter,<:AbstractGsModel,S}, meteo, constants = Constants()) where {G,I,E,S}
 
     # Start with a probable value for Cₛ and Cᵢ:
     leaf.status.Cₛ = meteo.Cₐ

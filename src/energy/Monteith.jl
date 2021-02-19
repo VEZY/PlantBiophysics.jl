@@ -17,7 +17,7 @@ consider convergence
 energy_model = Monteith() # a leaf in an illuminated chamber
 ```
 """
-Base.@kwdef struct Monteith{T,S} <: EnergyModel
+Base.@kwdef struct Monteith{T,S} <: AbstractEnergyModel
     aₛₕ::S = 2
     aₛᵥ::S = 1
     ε::T = 0.955
@@ -58,7 +58,7 @@ the same temperature than the leaf, or less than 1 if it is partly shaded.
 meteo = Atmosphere(T = 22.0, Wind = 0.8333, P = 101.325, Rh = 0.4490995)
 
 # Using a constant value for Gs:
-leaf = Leaf(geometry = AbstractGeom(0.03),
+leaf = Leaf(geometry = Geom1D(0.03),
             energy = Monteith(),
             photosynthesis = Fvcb(),
             stomatal_conductance = ConstantGs(0.0, 0.0011),
@@ -68,7 +68,7 @@ leaf.status.Rn
 julia> 12.902547446281233
 
 # Using the model from Medlyn et al. (2011) for Gs:
-leaf = Leaf(geometry = AbstractGeom(0.03),
+leaf = Leaf(geometry = Geom1D(0.03),
             energy = Monteith(),
             photosynthesis = Fvcb(),
             stomatal_conductance = Medlyn(0.03, 12.0),

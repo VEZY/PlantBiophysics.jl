@@ -13,7 +13,7 @@ end
 """
 Translucent model for light interception, see [here](https://archimed-platform.github.io/archimed-phys-user-doc//3-inputs/5-models/2-models_list/).
 """
-Base.@kwdef struct Translucent{T} <: InterceptionModel
+Base.@kwdef struct Translucent{T} <: AbstractInterceptionModel
     transparency::T = 0.0
     optical_properties::σ = σ()
 end

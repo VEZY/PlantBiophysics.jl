@@ -8,7 +8,7 @@ Constant (forced) assimilation, given in ``μmol\\ m^{-2}\\ s^{-1}``.
 ConstantA(30.0)
 ```
 """
-Base.@kwdef struct ConstantA{T} <: AModel
+Base.@kwdef struct ConstantA{T} <: AbstractAModel
     A::T = 25.0
 end
 
@@ -17,7 +17,7 @@ function variables(::ConstantA)
 end
 
 """
-    assimilation!(leaf::Leaf{G,I,E,<:ConstantA,<:GsModel,S},constants = Constants())
+    assimilation!(leaf::Leaf{G,I,E,<:ConstantA,<:AbstractGsModel,S},constants = Constants())
 
 Constant photosynthesis.
 
@@ -31,7 +31,7 @@ Modify the leaf status in place for A, Gₛ and Cᵢ:
 
 # Arguments
 
-- `leaf::Leaf{.,.,.,<:ConstantA,<:GsModel,.}`: A [`Leaf`](@ref) struct holding the parameters for
+- `leaf::Leaf{.,.,.,<:ConstantA,<:AbstractGsModel,.}`: A [`Leaf`](@ref) struct holding the parameters for
 the model with initialisations for:
     - `Cₛ` (mol m-2 s-1): surface CO₂ concentration.
     - `Dₗ` (mol m-2 s-1): vapour pressure difference between the surface and the air saturation
@@ -59,7 +59,7 @@ assimilation!(leaf,meteo,Constants())
 leaf.status.A
 ```
 """
-function assimilation!(leaf::Leaf{G,I,E,<:ConstantA,<:GsModel,S}, meteo, constants = Constants()) where {G,I,E,S}
+function assimilation!(leaf::Leaf{G,I,E,<:ConstantA,<:AbstractGsModel,S}, meteo, constants = Constants()) where {G,I,E,S}
 
     # Net assimilation (μmol m-2 s-1)
     leaf.status.A = leaf.photosynthesis.A

@@ -68,7 +68,7 @@ export gsw_to_gsc
 export gsc_to_gsw
 
 # Energy balance
-export EnergyModel
+export AbstractEnergyModel
 export black_body
 export grey_body
 export psychrometer_constant
@@ -86,14 +86,14 @@ export Translucent
 export Ignore
 export OpticalProperties
 export σ
-export InterceptionModel
+export AbstractInterceptionModel
 
 # Geometry
-export GeometryModel
-export AbstractGeom
+export AbstractGeometryModel
+export Geom1D # one dimensional geometry
 
 # Photosynthesis
-export AModel
+export AbstractAModel
 export ConstantA
 export Fvcb # Parameters for the Farquhar et al. (1980) model
 export FvcbIter # To update...
@@ -103,7 +103,7 @@ export photosynthesis!
 export photosynthesis
 
 # Conductances
-export GsModel
+export AbstractGsModel
 export gbh_to_gbw
 export gbₕ_free
 export gbₕ_forced
@@ -121,11 +121,11 @@ export get_km, Γ_star, arrhenius, get_J, gs_closure, get_Cᵢⱼ,get_Cᵢᵥ,ge
 export init_variables_manual, init_variables, Fvcb_net_assimiliation
 
 
-export Model
+export AbstractModel
 export variables
 
 # Components (structures that hold models)
-export PhotoComponent
+export AbstractPhotoComponent
 export Leaf
 export Metamer
 
