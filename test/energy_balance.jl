@@ -10,16 +10,11 @@ constants = Constants()
 # In Monteith and Unsworth (2013) p.230, they say at a standard pressure of 101.3 kPa,
 # λ has a value of about 66 Pa K−1 at 0 ◦C increasing to 67 Pa K−1 at 20 ◦C:
 @testset "Psychrometer constant" begin
-    @test psychrometer_constant(0.0, 101.3) * 1000 ≈ 65.9651894869062 # in Pa K-1
-    @test psychrometer_constant(20.0, 101.3) * 1000 ≈ 67.23680111943287 # in Pa K-1
+    λ₀ = latent_heat_vaporization(0.0, constants.λ₀)
+    @test psychrometer_constant(101.3,λ₀) * 1000 ≈ 65.9651894869062 # in Pa K-1
+    λ₂₀ = latent_heat_vaporization(20.0, constants.λ₀)
+    @test psychrometer_constant(101.3,λ₂₀) * 1000 ≈ 67.23680111943287 # in Pa K-1
 end;
-
-
-@testset "Psychrometer constant" begin
-    @test psychrometer_constant(0.0, 101.3) * 1000 ≈ 65.9651894869062 # in Pa K-1
-    @test psychrometer_constant(20.0, 101.3) * 1000 ≈ 67.23680111943287 # in Pa K-1
-end;
-
 
 @testset "Black body" begin
     # Testing that both calls return the same value with default parameters:
@@ -41,5 +36,6 @@ end;
             net_longwave_radiation(25.0,20.0,0.955,1.0,1.0)
     # Example from Cengel (2003), Example 12-7 (p. 627):
     # Cengel, Y, et Transfer Mass Heat. 2003. A practical approach. New York, NY, USA: McGraw-Hill.
-    @test net_longwave_radiation(526.85,226.85000000000002,0.2,0.7,1.0,constants.K₀,constants.σ) ≈ 3625.6066521315793
+    @test net_longwave_radiation(526.85,226.85000000000002,0.2,0.7,1.0,constants.K₀,constants.σ) ≈ -3625.6066521315793
+    # NB: we compute it opposite (negative when energy is lost, positive for a gain)
 end;

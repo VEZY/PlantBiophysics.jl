@@ -80,6 +80,7 @@ export Monteith       # a struct to hold the values for the model of Monteith an
 export latent_heat
 export sensible_heat
 export γ_star
+export latent_heat_vaporization
 
 # structure for light interception
 export Translucent
