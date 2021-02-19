@@ -58,10 +58,7 @@ function assimilation!(leaf::Leaf{G,I,E,<:ConstantA,<:GsModel,S}, meteo, constan
     leaf.status.Gₛ = gs(leaf,meteo)
 
     # Intercellular CO₂ concentration (Cᵢ, μmol mol)
-    if leaf.status.Gₛ > 0.0 && leaf.status.A > 0.0
-        leaf.status.Cᵢ = leaf.status.Cₛ - leaf.status.A / leaf.status.Gₛ
-    else
-        leaf.status.Cᵢ = leaf.status.Cₛ
-    end
+    leaf.status.Cᵢ = min(leaf.status.Cₛ, leaf.status.Cₛ - leaf.status.A / leaf.status.Gₛ)
+
     nothing
 end
