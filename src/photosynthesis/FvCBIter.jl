@@ -69,9 +69,9 @@ the model with initialisations for:
 
 # Note
 
-`Tₗ`, `PPFD`, `Gbc` (and `Dₗ` if you use [`Medlyn`](@ref)) must be initialised by the user by
-providing them as keyword arguments (see examples). If in doubt, it is simpler to compute
-the energy balance of the leaf with the photosynthesis to get those variables. See
+`Tₗ`, `PPFD`, `Gbc` (and `Dₗ` if you use [`Medlyn`](@ref)) must be initialised by providing
+them as keyword arguments (see examples). If in doubt, it is simpler to compute the energy
+balance of the leaf with the photosynthesis to get those variables. See
 [`energy_balance`](@ref) for more details.
 
 # Examples

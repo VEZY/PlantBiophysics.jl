@@ -117,9 +117,9 @@ the model with initialisations for:
 
 # Note
 
-`Tₗ`, `PPFD`, `Cₛ` (and `Dₗ` if you use [`Medlyn`](@ref)) must be initialised by the user by
-providing them as keyword arguments (see examples). If in doubt, it is simpler to compute
-the energy balance of the leaf with the photosynthesis to get those variables. See
+`Tₗ`, `PPFD`, `Cₛ` (and `Dₗ` if you use [`Medlyn`](@ref)) must be initialised by providing
+them as keyword arguments (see examples). If in doubt, it is simpler to compute the energy
+balance of the leaf with the photosynthesis to get those variables. See
 [`energy_balance`](@ref) for more details.
 
 # Examples
@@ -129,7 +129,7 @@ meteo = Atmosphere(T = 20.0, Wind = 1.0, P = 101.3, Rh = 0.65)
 
 leaf = Leaf(photosynthesis = Fvcb(),
             stomatal_conductance = Medlyn(0.03, 12.0),
-            Tₗ = 25.0,PPFD = 1000.0, Cₛ = 400.0, Dₗ = meteo.VPD)
+            Tₗ = 25.0, PPFD = 1000.0, Cₛ = 400.0, Dₗ = meteo.VPD)
 # NB: we need  to initalise Tₗ, PPFD and Cₛ
 
 assimilation!(leaf,meteo,Constants())

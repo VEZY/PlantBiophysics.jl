@@ -13,20 +13,22 @@ fields of `leaf`. For exemple to use the implementation of the Farquhar–von Ca
 # Examples
 
 ```julia
+meteo = Atmosphere(T = 20.0, Wind = 1.0, P = 101.3, Rh = 0.65)
+
 # Using Fvcb model:
 leaf = Leaf(photosynthesis = Fvcb(),
             stomatal_conductance = Medlyn(0.03, 12.0),
-            Tₗ = 25.0,PPFD = 1000.0, Cₛ = 400.0)
+            Tₗ = 25.0, PPFD = 1000.0, Cₛ = 400.0, Dₗ = meteo.VPD)
 
-photosynthesis(leaf, Tₗ = 25.0, PPFD = 1000.0, Cₛ = 400.0, VPD = 2.0)
+photosynthesis(leaf, meteo)
 ```
 """
 function photosynthesis(leaf::PhotoComponent,meteo,constants = Constants())
     leaf_tmp = deepcopy(leaf)
-    assimilation(leaf_tmp, meteo, constants)
+    assimilation!(leaf_tmp, meteo, constants)
     leaf_tmp.status
 end
 
 function photosynthesis!(leaf::PhotoComponent,meteo,constants = Constants())
-    assimilation(leaf, meteo, constants)
+    assimilation!(leaf, meteo, constants)
 end

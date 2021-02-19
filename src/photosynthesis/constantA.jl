@@ -32,9 +32,19 @@ Modify the leaf status in place for A, Gₛ and Cᵢ:
 # Arguments
 
 - `leaf::Leaf{.,.,.,<:ConstantA,<:GsModel,.}`: A [`Leaf`](@ref) struct holding the parameters for
-the model
+the model with initialisations for:
+    - `Cₛ` (mol m-2 s-1): surface CO₂ concentration.
+    - `Dₗ` (mol m-2 s-1): vapour pressure difference between the surface and the air saturation
+    vapour pressure in case you're using the stomatal conductance model of [`Medlyn`](@ref).
 - `meteo`: meteorology structure, see [`Atmosphere`](@ref)
 - `constants = Constants()`: physical constants. See [`Constants`](@ref) for more details
+
+# Note
+
+`Cₛ` (and `Dₗ` if you use [`Medlyn`](@ref)) must be initialised by providing them as keyword
+arguments (see examples). If in doubt, it is simpler to compute the energy balance of the
+leaf with the photosynthesis to get those variables. See [`energy_balance`](@ref) for more
+details.
 
 # Examples
 
