@@ -39,3 +39,32 @@ end;
     @test net_longwave_radiation(526.85,226.85000000000002,0.2,0.7,1.0,constants.K₀,constants.σ) ≈ -3625.6066521315793
     # NB: we compute it opposite (negative when energy is lost, positive for a gain)
 end;
+
+
+
+@testset "energy_balance(Leaf{.,Monteith{Float64,Int64},Fvcb{Float64},Medlyn{Float64},.})" begin
+    # Reference value:
+    ref = (Tₗ = 17.683040276741586, Rn = 21.192838205401863,
+        Cₛ = 348.98760802257027, H = -120.2353875816707, λE = 141.42822578707253,
+        A = 34.27207394773156, Gₛ = 1.4261995419918079, Cᵢ = 325.51680897777874,
+        Gbₕ = 0.02133679097176768, Dₗ = 0.8214484239448965, Rₗₗ = 7.445838205401865,
+        Gbc = 0.6718382067419053)
+
+    meteo = Atmosphere(T = 20.0, Wind = 1.0, P = 101.3, Rh = 0.65)
+    leaf = Leaf(energy = Monteith(),
+                photosynthesis = Fvcb(),
+                stomatal_conductance = Medlyn(0.03, 12.0),
+                Rn = 13.747, skyFraction = 1.0, PPFD = 1500.0, d = 0.03)
+
+    non_mutating = energy_balance(leaf,meteo)
+
+    for i in keys(ref)
+        @test non_mutating[i] ≈ ref[i]
+    end
+
+    # Mutating the leaf:
+    energy_balance!(leaf,meteo)
+    for i in keys(ref)
+        @test leaf.status[i] ≈ ref[i]
+    end
+end;
