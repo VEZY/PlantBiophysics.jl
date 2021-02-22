@@ -22,7 +22,7 @@ function read_model(file)
     group = model["Group"]
     types = collect(keys(model["Type"]))
 
-    components = Dict{String,AbstractComponent}()
+    components = Dict{String,AbstractComponentModel}()
 
     for (i,j) in model["Type"]
         # i = "Leaf"

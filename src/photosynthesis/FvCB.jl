@@ -35,7 +35,7 @@ and are generally assumed constant among species".
 # See also
 
 - [`get_J`](@ref)
-- [`assimilation`](@ref)
+- [`assimilation!`](@ref)
 
 # References
 

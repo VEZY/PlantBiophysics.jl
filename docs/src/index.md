@@ -44,17 +44,16 @@ Then defines which model to use for each process, and their parameter values:
 
 ```julia
 # Using the model from Medlyn et al. (2011) for Gs and the model of Monteith and Unsworth (2013) for the energy balance:
-leaf = Leaf(geometry = Geom1D(0.03),
-            energy = Monteith(),
+leaf = Leaf(energy = Monteith(),
             photosynthesis = Fvcb(),
             stomatal_conductance = Medlyn(0.03, 12.0),
-            Rn = 13.747, skyFraction = 1.0, PPFD = 1500.0)
+            Rn = 13.747, skyFraction = 1.0, PPFD = 1500.0, d = 0.03)
 ```
 
 Then, run the simulation of the energy balance and assimilation:
 
 ```julia
-energy_balance(leaf,meteo)
+energy_balance!(leaf,meteo)
 ```
 
 Now the variables that were simulated by the models were updated in the leaf status. To access the values, do as follow:

@@ -4,6 +4,12 @@ Abstract model type. All models are subtypes of this one, see *e.g.* [`AbstractA
 abstract type AbstractModel end
 
 """
+Abstract structure to hold all models for object components (*e.g.* leaves, metamers...).
+"""
+abstract type AbstractComponentModel <: AbstractModel end
+
+
+"""
 Assimilation (photosynthesis) abstract model. All photosynthesis models must be a subtype of
 this.
 """

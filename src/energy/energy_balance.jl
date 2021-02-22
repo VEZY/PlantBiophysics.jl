@@ -1,6 +1,6 @@
 """
-    energy_balance(object::AbstractPhotoComponent,meteo::Atmosphere,constants = Constants())
-    energy_balance!(object::AbstractPhotoComponent,meteo::Atmosphere,constants = Constants())
+    energy_balance(object::AbstractComponentModel,meteo::Atmosphere,constants = Constants())
+    energy_balance!(object::AbstractComponentModel,meteo::Atmosphere,constants = Constants())
 
 Computes the energy balance of a component based on the type of the model it was parameterized
 with in `object.energy`.
@@ -12,7 +12,7 @@ At the moment, two models are implemented in the package:
 
 # Arguments
 
-- `object::AbstractPhotoComponent`: a [`Component`](@ref) struct.
+- `object::AbstractComponentModel`: a [`Component`](@ref) struct.
 - `meteo`: meteorology structure, see [`Atmosphere`](@ref)
 - `constants = Constants()`: physical constants. See [`Constants`](@ref) for more details
 
@@ -74,18 +74,18 @@ Maxime Soma, et al. 2018. « Measuring and modelling energy partitioning in can
 complexity using MAESPA model ». Agricultural and Forest Meteorology 253‑254 (printemps): 203‑17.
 https://doi.org/10.1016/j.agrformet.2018.02.005.
 """
-function energy_balance(object::AbstractPhotoComponent,meteo::Atmosphere,constants = Constants())
+function energy_balance(object::AbstractComponentModel,meteo::Atmosphere,constants = Constants())
     object_tmp = deepcopy(object)
     net_radiation!(object_tmp,meteo,constants)
     return object_tmp.status
 end
 
-function energy_balance!(object::AbstractPhotoComponent,meteo::Atmosphere,constants = Constants())
+function energy_balance!(object::AbstractComponentModel,meteo::Atmosphere,constants = Constants())
     net_radiation!(object,meteo,constants)
     return nothing
 end
 
-function energy_balance!(object::Dict{String,PlantBiophysics.AbstractComponent},meteo::Atmosphere,constants = Constants())
+function energy_balance!(object::Dict{String,PlantBiophysics.AbstractComponentModel},meteo::Atmosphere,constants = Constants())
     for i in keys(object)
         net_radiation!(object[i],meteo,constants)
     end

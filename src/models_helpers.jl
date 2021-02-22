@@ -41,8 +41,8 @@ function variables(::AbstractModel)
 end
 
 """
-    init_status!(object::Dict{String,AbstractComponent};vars...)
-    init_status!(component::AbstractComponent;vars...)
+    init_status!(object::Dict{String,AbstractComponentModel};vars...)
+    init_status!(component::AbstractComponentModel;vars...)
 
 Intialise model variables for components with user input.
 
@@ -53,7 +53,7 @@ model = read_model("a-model-file.yml")
 init_status!(model, Tₗ = 25.0, PPFD = 1000.0, Cₛ = 400.0, Dₗ = 1.2)
 ```
 """
-function init_status!(object::Dict{String,AbstractComponent};vars...)
+function init_status!(object::Dict{String,AbstractComponentModel};vars...)
     new_vals = (;vars...)
 
     for (component_name,component) in object
@@ -67,7 +67,7 @@ function init_status!(object::Dict{String,AbstractComponent};vars...)
     end
 end
 
-function init_status!(component::AbstractComponent;vars...)
+function init_status!(component::AbstractComponentModel;vars...)
     new_vals = (;vars...)
     for j in keys(new_vals)
         if !in(j,keys(component.status))

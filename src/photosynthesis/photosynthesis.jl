@@ -1,7 +1,7 @@
 """
-    photosynthesis(leaf::AbstractPhotoComponent,meteo,constants = Constants())
-    photosynthesis!(leaf::AbstractPhotoComponent,meteo,constants = Constants())
-    photosynthesis!(object::Dict{String,PlantBiophysics.AbstractComponent},
+    photosynthesis(leaf::AbstractComponentModel,meteo,constants = Constants())
+    photosynthesis!(leaf::AbstractComponentModel,meteo,constants = Constants())
+    photosynthesis!(object::Dict{String,PlantBiophysics.AbstractComponentModel},
         meteo::Atmosphere,constants = Constants())
 
 Generic photosynthesis model for photosynthetic organs. Computes the assimilation and
@@ -10,7 +10,7 @@ stomatal conductance according to the models set for `leaf`, or for each compone
 
 The models used are defined by the types of the `photosynthesis` and `stomatal_conductance`
 fields of `leaf`. For exemple to use the implementation of the Farquhar–von Caemmerer–Berry
-(FvCB) model (see [`assimilation`](@ref)), the `leaf.photosynthesis` field should be of type
+(FvCB) model (see [`assimilation!`](@ref)), the `leaf.photosynthesis` field should be of type
 [`Fvcb`](@ref).
 
 # Examples
@@ -37,18 +37,18 @@ model["Leaf"].status.A
 
 ```
 """
-function photosynthesis(leaf::AbstractPhotoComponent,meteo,constants = Constants())
+function photosynthesis(leaf::AbstractComponentModel,meteo,constants = Constants())
     leaf_tmp = deepcopy(leaf)
     assimilation!(leaf_tmp, meteo, constants)
     leaf_tmp.status
 end
 
-function photosynthesis!(leaf::AbstractPhotoComponent,meteo,constants = Constants())
+function photosynthesis!(leaf::AbstractComponentModel,meteo,constants = Constants())
     assimilation!(leaf, meteo, constants)
 end
 
 
-function photosynthesis!(object::Dict{String,PlantBiophysics.AbstractComponent},
+function photosynthesis!(object::Dict{String,PlantBiophysics.AbstractComponentModel},
     meteo::Atmosphere,constants = Constants())
 
     for i in keys(object)

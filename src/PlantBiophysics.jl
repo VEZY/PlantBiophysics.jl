@@ -8,7 +8,6 @@ using YAML
 using OrderedCollections
 
 # Generic structures:
-include("structs/Abstract_component_structs.jl")
 include("structs/Abstract_model_structs.jl")
 include("structs/concrete_component_structs.jl")
 
@@ -55,6 +54,9 @@ include("io/read_model.jl")
 # File IO:
 export read_model
 export is_model
+
+# Physical constants
+export Constants
 
 # Status
 export init_status!
@@ -116,9 +118,6 @@ export gs
 export Medlyn
 export ConstantGs
 
-# Physical constants
-export Constants
-
 # Temporary structures (to move to another package)
 export Translucent
 export Ignore
@@ -130,7 +129,7 @@ export AbstractModel
 export variables
 
 # Components (structures that hold models)
-export AbstractPhotoComponent
+export AbstractComponentModel
 export Leaf
 export Metamer
 

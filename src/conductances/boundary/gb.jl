@@ -10,11 +10,11 @@ Leaf boundary layer conductance for heat under **free** convection (m s-1).
 - `Tₗ` (°C): leaf temperature
 - `d` (m): characteristic dimension, *e.g.* leaf width (see eq. 10.9 from Monteith and Unsworth, 2013).
 - `Dₕ₀ = 21.5e-6`: molecular diffusivity for heat at base temperature. Use value from
-[`Constants`](@Ref) if not provided.
+[`Constants`](@ref) if not provided.
 
 # Note
 
-`R` and `Dₕ₀` can be found using [`Constants`](@Ref). To transform in ``mol\\ m^{-2}\\ s^{-1}``,
+`R` and `Dₕ₀` can be found using [`Constants`](@ref). To transform in ``mol\\ m^{-2}\\ s^{-1}``,
 use [`ms_to_mol`](@ref).
 
 # References
@@ -78,7 +78,7 @@ See Monteith and Unsworth (2013, eq. 3.10).
 # Arguments
 
 - `Tₐ` (°C): temperature
-- `Dₕ₀`: molecular diffusivity for heat at base temperature. Use value from [`Constants`](@Ref)
+- `Dₕ₀`: molecular diffusivity for heat at base temperature. Use value from [`Constants`](@ref)
 if not provided.
 
 # References

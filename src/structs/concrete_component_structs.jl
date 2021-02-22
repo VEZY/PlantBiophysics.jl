@@ -4,7 +4,7 @@
     Leaf(;interception = missing, energy = missing, photosynthesis = missing,
         stomatal_conductance = missing,status...)
 
-Leaf component, which is a subtype of `AbstractPhotoComponent` implementing a component with
+Leaf component, which is a subtype of `AbstractComponentModel` implementing a component with
 a photosynthetic activity. It could be a leaf, or a leaflet, or whatever kind of component
 that is photosynthetic. The name `Leaf` was chosen not because it is generic, but because it
 is short, simple and self-explanatory.
@@ -69,7 +69,7 @@ struct Leaf{I <: Union{Missing,AbstractInterceptionModel},
             E <: Union{Missing,AbstractEnergyModel},
             A <: Union{Missing,AbstractAModel},
             Gs <: Union{Missing,AbstractGsModel},
-            S <: MutableNamedTuple} <: AbstractPhotoComponent
+            S <: MutableNamedTuple} <: AbstractComponentModel
     interception::I
     energy::E
     photosynthesis::A
@@ -88,7 +88,7 @@ end
     Component(interception, energy, status)
     Component(;interception = missing, energy = missing, status...)
 
-Generic component, which is a subtype of `AbstractComponent` implementing a component with
+Generic component, which is a subtype of `AbstractComponentModel` implementing a component with
 an interception model and an energy balance model. It can be anything such as a trunk, a
 solar panel or else.
 
@@ -108,7 +108,7 @@ Component(energy = Monteith())
 """
 struct Component{I <: Union{Missing,AbstractInterceptionModel},
                  E <: Union{Missing,AbstractEnergyModel},
-                 S <: MutableNamedTuple} <: AbstractComponent
+                 S <: MutableNamedTuple} <: AbstractComponentModel
     interception::I
     energy::E
     status::S
@@ -150,7 +150,7 @@ and can be automatically computed using the functions given in `Arguments`.
 Atmosphere(T = 20.0, Wind = 1.0, P = 101.3, Rh = 0.65)
 ```
 """
-Base.@kwdef struct Atmosphere{A} <: AbstractScene
+Base.@kwdef struct Atmosphere{A}
     T::A
     Wind::A
     P::A
