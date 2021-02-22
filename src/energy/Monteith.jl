@@ -9,7 +9,7 @@ Monteith and Unsworth (2013)
 - `d` (m): characteristic dimension, *e.g.* leaf width (see eq. 10.9 from Monteith and Unsworth, 2013).
 - `ε = 0.955`: emissivity of the object
 - `maxiter = 10`: maximal number of iterations allowed to close the energy balance
-- `ϵ = 0.01` (°C): maximum difference in object temperature between two iterations to
+- `ΔT = 0.01` (°C): maximum difference in object temperature between two iterations to
 consider convergence
 
 # Examples
@@ -24,7 +24,7 @@ Base.@kwdef struct Monteith{T,S} <: AbstractEnergyModel
     d::T = 0.03
     ε::T = 0.955
     maxiter::S = 10
-    ϵ::T = 0.01
+    ΔT::T = 0.01
 end
 
 function variables(::Monteith)
@@ -32,7 +32,8 @@ function variables(::Monteith)
 end
 
 """
-    net_radiation!(energy::Monteith,status,photosynthesis,stomatal_conductance,meteo::Atmosphere,constants)
+    net_radiation!(leaf::Leaf{I,<:Monteith,A,Gs,S},meteo::Atmosphere,constants = Constants())
+    net_radiation(leaf::Leaf{I,<:Monteith,A,Gs,S},meteo::Atmosphere,constants = Constants())
 
 Leaf energy balance according to Monteith and Unsworth (2013), and corrigendum from
 Schymanski et al. (2017). The computation is close to the one from the MAESPA model (Duursma
@@ -179,7 +180,7 @@ function net_radiation!(leaf::Leaf{I,<:Monteith,A,Gs,S},meteo::Atmosphere,consta
         Tₗ_new = meteo.T + (Rn_in - leaf.status.λE) /
                 (meteo.ρ * constants.Cₚ * (leaf.energy.aₛₕ / Rbₕ))
 
-        if abs(Tₗ_new - leaf.status.Tₗ) <= leaf.energy.ϵ break end
+        if abs(Tₗ_new - leaf.status.Tₗ) <= leaf.energy.ΔT break end
 
         leaf.status.Tₗ = Tₗ_new
 

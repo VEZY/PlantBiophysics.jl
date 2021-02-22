@@ -18,7 +18,8 @@ variables(Monteith(), Medlyn(0.03,12.0))
 ```
 """
 function variables(v::T, vars...) where T <: Union{Missing,AbstractModel}
-    union(variables(v), variables(vars...))
+    # union(variables(v), variables(vars...))
+    length((vars...,)) > 0 ? union(variables(v), variables(vars...)) : variables(v)
 end
 
 """
@@ -26,7 +27,7 @@ end
 
 Returns an empty tuple because missing models do not return any variables.
 """
-function variables(::Missing)
+function variables(v::Missing)
     ()
 end
 
@@ -37,6 +38,31 @@ Returns an empty tuple by default.
 """
 function variables(::AbstractModel)
     ()
+end
+
+"""
+    init_variables(vars...)
+
+Intialise model variables based on their instances.
+
+# Examples
+
+```julia
+init_variables(Monteith(), Medlyn(0.03,12.0))
+```
+"""
+function init_status!(object::Dict{String,PlantBiophysics.AbstractComponent};vars...)
+    new_vals = (;vars...)
+
+    for (component_name,component) in object
+        for j in keys(new_vals)
+            if !in(j,keys(component.status))
+                @info "Key $j not found as a variable for any provided models in $component_name"
+                continue
+            end
+            setproperty!(component.status,j,new_vals[j])
+        end
+    end
 end
 
 """

@@ -5,9 +5,9 @@ file = "inputs/models/plant_coffee.yml"
 @testset "read_model()" begin
     model = read_model(file)
 
-    @test all([haskey(model,i) for i in [Metamer,Leaf]])
+    @test all([haskey(model,i) for i in ["Metamer","Leaf"]])
 
-    model = model[Leaf]
+    model = model["Leaf"]
     # @test typeof(model)
     @test typeof(model) <: Leaf
     @test typeof(model.stomatal_conductance) == Medlyn{Float64}

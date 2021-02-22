@@ -46,6 +46,7 @@ include("conductances/boundary/gb.jl")
 # Energy balance
 include("energy/longwave_energy.jl")
 include("energy/energy_balance.jl")
+include("energy/Missing.jl")
 include("energy/Monteith.jl")
 
 # File IO
@@ -54,6 +55,9 @@ include("io/read_model.jl")
 # File IO:
 export read_model
 export is_model
+
+# Status
+export init_status!
 
 # Atmosphere
 export e
@@ -79,8 +83,7 @@ export grey_body
 export psychrometer_constant
 export net_longwave_radiation
 export energy_balance # main interface to user
-export net_radiation!  # each energy model implement a method for this function (called from energy_balance)
-export net_radiation
+export energy_balance! # main interface to user
 export Monteith       # a struct to hold the values for the model of Monteith and Unsworth (2013)
 export latent_heat
 export sensible_heat

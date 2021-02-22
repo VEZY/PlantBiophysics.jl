@@ -9,7 +9,7 @@ For more details on arguments, see [`Fvcb`](@ref).
 This structure has several more parameters:
 
 - `iter_A_max::Int`: maximum number of iterations allowed for the iteration on the assimilation.
-- `ϵ_A::T = 1`: threshold bellow which the assimilation is considered constant. Given in
+- `ΔT_A::T = 1`: threshold bellow which the assimilation is considered constant. Given in
 percent of change, *i.e.* 1% means that two successive assimilations with less than 1%
 difference in value are considered the same value.
 """
@@ -29,7 +29,7 @@ Base.@kwdef struct FvcbIter{T} <: AbstractAModel
     α::T = 0.425
     θ::T = 0.90
     iter_A_max::Int = 20
-    ϵ_A::T = 1.0
+    ΔT_A::T = 1.0
 end
 
 function variables(::FvcbIter)
@@ -156,7 +156,7 @@ function assimilation!(leaf::Leaf{I,E,<:FvcbIter,<:AbstractGsModel,S}, meteo,
             A_new = Fvcb_net_assimiliation(leaf.status.Cᵢ,Vⱼ,Γˢ,VcMax,Km,Rd)
         end
 
-        if abs(A_new - leaf.status.A) / leaf.status.A <= leaf.photosynthesis.ϵ_A ||
+        if abs(A_new - leaf.status.A) / leaf.status.A <= leaf.photosynthesis.ΔT_A ||
             iter_inc == leaf.photosynthesis.iter_A_max
 
             iter = false

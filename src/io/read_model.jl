@@ -28,9 +28,9 @@ function read_model(file)
         # i = "Leaf"
         # j = model["Type"][i]
 
-        processes = Dict()
+        processes = Dict{Symbol,AbstractModel}()
         for (k,l) in j
-            # k = "StomatalConductance"
+            # k = "Interception"
             # l = j[k]
 
             process = get_process(k)
@@ -73,8 +73,8 @@ Return the component type (the actual struct) given the processes passed as a na
 It is considered a `Leaf` if it presents models for `photosynthesis` and
 `stomatal_conductance`, and optionally for `interception` and `energy`.
 """
-function get_component_type(::I,::E,::A,::Gs) where {I<:AbstractInterceptionModel,
-    E<:AbstractEnergyModel,A<:AbstractAModel,Gs<:AbstractGsModel}
+function get_component_type(::E,::I,::A,::Gs) where {E<:AbstractEnergyModel,
+    I<:AbstractInterceptionModel,A<:AbstractAModel,Gs<:AbstractGsModel}
 
     return Leaf
 end
@@ -120,9 +120,11 @@ Return the process type (the actual struct) given its name passed as a String.
 function get_process(x)
     x = lowercase(x)
     # All possible ways to write the processes in the input (compared to lowecase x):
-    processes = Dict("interception" => "interception", "photosynthesis" => "photosynthesis",
-                     "stomatalconductance" => "stomatal_conductance",
-                     "stomatal_conductance" => "stomatal_conductance")
+    processes = Dict("interception" => "interception",
+                        "energy" => "energy",
+                        "photosynthesis" => "photosynthesis",
+                        "stomatalconductance" => "stomatal_conductance",
+                        "stomatal_conductance" => "stomatal_conductance")
 
     if !(haskey(processes,lowercase(x)))
         @warn "Process `$x` is not implemented yet. Did you make a typo?"
@@ -140,12 +142,15 @@ Return the model (the actual struct) given its name passed as a String.
 function get_model(x,process)
     process = lowercase(process)
     if process == "photosynthesis"
-        dict = Dict("farquharenbalance" => Fvcb, "fvcb" => Fvcb, "fvcbiter" => FvcbIter)
+        dict = Dict("farquharenbalance" => Fvcb, "fvcb" => Fvcb,
+                    "fvcbiter" => FvcbIter, "ignore" => Ignore)
         # NB: dict keys all in lowercase because we transform x into lowercase too to avoid mismatches
     elseif process == "stomatalconductance" || process == "stomatal_conductance"
         dict = Dict("medlyn" => Medlyn)
     elseif process == "interception"
         dict = Dict("translucent" => Translucent, "ignore" => Ignore)
+    elseif process == "energy"
+        dict = Dict("monteith" => Monteith, "ignore" => Ignore)
     end
 
     x_lc = lowercase(x)
@@ -197,6 +202,15 @@ function instantiate(model::Union{Type{Fvcb},Type{FvcbIter}},param)
     param_type = Dict([string(i) => Float64 for i in fieldnames(model)]...)
     instantiate(model,param,correspondance,param_type)
 end
+
+function instantiate(model::Type{Monteith},param)
+    correspondance = Dict(:ash => "aₛₕ", :asv => "aₛᵥ", :epsilon => "ε",:lambda => "ΔT")
+    # Create a Dict holding the parameter type for each parameter
+    param_type = Dict("aₛₕ" => Int, "aₛᵥ" => Int, "d" => Float64, "ε" => Float64,
+                        "maxiter" => Int, "ΔT" => Float64)
+    instantiate(model,param,correspondance,param_type)
+end
+
 
 function instantiate(model::Type{Medlyn},param)
     correspondance = Dict()

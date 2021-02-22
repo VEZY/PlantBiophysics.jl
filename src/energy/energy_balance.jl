@@ -2,30 +2,26 @@
     energy_balance(object::AbstractPhotoComponent,meteo::Atmosphere,constants = Constants())
     energy_balance!(object::AbstractPhotoComponent,meteo::Atmosphere,constants = Constants())
 
-Energy balance of an object.
+Computes the energy balance of a component based on the type of the model it was parameterized
+with in `object.energy`.
+
+At the moment, two models are implemented in the package:
+
+- [`Monteith`](@ref): the model found in Monteith and Unsworth (2013)
+- `Missing`: if no computation of the energy balance is needed
 
 # Arguments
 
-- `Tₐ` (°C): air temperature
-- `Wind` (m s-1): wind speed
-- `Rh` (0-1): air relative humidity
-- `Rn` (W m-2): net radiation
-- `Rsᵥ` (s m-1): stomatal resistance to water vapor
-- `P` (kPa): air pressure
-- `d` (m): characteristic dimension, *e.g.* leaf width (`d` in eq. 10.9 from Monteith and Unsworth, 2013).
-- `Dheat` (m s-1): molecular diffusivity for heat
-- `maxiter::Int`: maximum number of iterations
-- `adjustrn::Bool`: adjust the Rn value for longwave emission after re-computing the leaf temperature?
-- `hypostomatous::Bool`: is the leaf hypostomatous?
-- `skyFraction` (0-2): fraction of sky viewed by the leaf.
-
+- `object::AbstractPhotoComponent`: a [`Component`](@ref) struct.
+- `meteo`: meteorology structure, see [`Atmosphere`](@ref)
+- `constants = Constants()`: physical constants. See [`Constants`](@ref) for more details
 
 # Note
 
-The skyFraction is equal to 2 if all the leaf is viewing is sky (e.g. in a controlled chamber), 1
-if the leaf is *e.g.* up on the canopy where the upper side of the leaf sees the sky, and the
-side bellow sees soil + other leaves that are all considered at the same temperature than the leaf,
-or less than 1 if it is partly shaded.
+Some models need initialisations for some variables. For example [`Monteith`](@ref) requires
+to initialise a value for `Rn` and `skyFraction`. If you read the models from a file, you can
+use [`init_status!`](@ref) (see examples).
+
 
 # Examples
 
@@ -70,5 +66,29 @@ end
 
 function energy_balance!(object::AbstractPhotoComponent,meteo::Atmosphere,constants = Constants())
     net_radiation!(object,meteo,constants)
+    return nothing
+end
+
+
+"""
+
+```julia
+meteo = Atmosphere(T = 20.0, Wind = 1.0, P = 101.3, Rh = 0.65)
+
+model = read_model("a-model-file.yml")
+# An example model file is available here:
+# "https://raw.githubusercontent.com/VEZY/PlantBiophysics/main/test/inputs/models/plant_coffee.yml"
+
+
+init_status!(Rn = 13.747, skyFraction = 1.0, PPFD = 1500.0)
+
+energy_balance!(model, meteo)
+```
+
+"""
+function energy_balance!(object::Dict{String,PlantBiophysics.AbstractComponent},meteo::Atmosphere,constants = Constants())
+    for i in keys(object)
+        net_radiation!(object[i],meteo,constants)
+    end
     return nothing
 end
