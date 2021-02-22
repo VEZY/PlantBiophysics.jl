@@ -28,7 +28,7 @@ function read_model(file)
         # i = "Leaf"
         # j = model["Type"][i]
 
-        processes = Dict{Symbol,AbstractModel}()
+        processes = Dict{Symbol,Union{Missing,AbstractModel}}()
         for (k,l) in j
             # k = "Interception"
             # l = j[k]
@@ -52,7 +52,9 @@ function read_model(file)
 
                 model_process = get_model(pop!(modelused, "model"), process)
                 model_process = instantiate(model_process,modelused)
-                push!(processes, Symbol(process) => model_process)
+                if !ismissing(model_process)
+                    push!(processes, Symbol(process) => model_process)
+                end
             end
         end
 
@@ -74,6 +76,12 @@ It is considered a `Leaf` if it presents models for `photosynthesis` and
 `stomatal_conductance`, and optionally for `interception` and `energy`.
 """
 function get_component_type(::E,::I,::A,::Gs) where {E<:AbstractEnergyModel,
+    I<:AbstractInterceptionModel,A<:AbstractAModel,Gs<:AbstractGsModel}
+
+    return Leaf
+end
+
+function get_component_type(::E,::A,::Gs) where {E<:AbstractEnergyModel,
     I<:AbstractInterceptionModel,A<:AbstractAModel,Gs<:AbstractGsModel}
 
     return Leaf
@@ -244,7 +252,9 @@ function instantiate(model::Type{Translucent},param)
 end
 
 
-function instantiate(model::Type{Ignore},param) end
+function instantiate(model::Type{Ignore},param)
+    missing
+end
 
 
 """

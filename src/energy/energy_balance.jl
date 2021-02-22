@@ -36,6 +36,22 @@ leaf = Leaf(energy = Monteith(),
             Rn = 13.747, skyFraction = 1.0, PPFD = 1500.0, d = 0.03)
 
 energy_balance(leaf,meteo)
+
+# Using a model file:
+model = read_model("a-model-file.yml")
+
+# An example model file is available here:
+# "https://raw.githubusercontent.com/VEZY/PlantBiophysics/main/test/inputs/models/plant_coffee.yml"
+
+# Initialising the mandatory variables:
+init_status!(model, Rn = 13.747, skyFraction = 1.0, PPFD = 1500.0, Tₗ = 25.0, d = 0.03)
+
+# Running a simulation for all component types in the same scene:
+energy_balance!(model, meteo)
+
+model["Leaf"].status.Rn
+model["Leaf"].status.A
+model["Leaf"].status.Cᵢ
 ```
 
 # References
@@ -69,27 +85,6 @@ function energy_balance!(object::AbstractPhotoComponent,meteo::Atmosphere,consta
     return nothing
 end
 
-
-"""
-
-```julia
-meteo = Atmosphere(T = 20.0, Wind = 1.0, P = 101.3, Rh = 0.65)
-
-model = read_model("a-model-file.yml")
-# An example model file is available here:
-# "https://raw.githubusercontent.com/VEZY/PlantBiophysics/main/test/inputs/models/plant_coffee.yml"
-
-# Initialising the mandatory variables:
-
-init_status!(model, Rn = 13.747, skyFraction = 1.0, PPFD = 1500.0, Tₗ = 25.0, d = 0.03)
-energy_balance!(model, meteo)
-
-model["Leaf"].status.Rn
-model["Leaf"].status.A
-model["Leaf"].status.Cᵢ
-```
-
-"""
 function energy_balance!(object::Dict{String,PlantBiophysics.AbstractComponent},meteo::Atmosphere,constants = Constants())
     for i in keys(object)
         net_radiation!(object[i],meteo,constants)
