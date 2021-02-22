@@ -6,7 +6,6 @@ Monteith and Unsworth (2013)
 
 - `aₛₕ = 2`: number of faces of the object that exchange sensible heat fluxes
 - `aₛᵥ = 1`: number of faces of the object that exchange latent heat fluxes (hypostomatous => 1)
-- `d` (m): characteristic dimension, *e.g.* leaf width (see eq. 10.9 from Monteith and Unsworth, 2013).
 - `ε = 0.955`: emissivity of the object
 - `maxiter = 10`: maximal number of iterations allowed to close the energy balance
 - `ΔT = 0.01` (°C): maximum difference in object temperature between two iterations to
@@ -21,14 +20,13 @@ energy_model = Monteith() # a leaf in an illuminated chamber
 Base.@kwdef struct Monteith{T,S} <: AbstractEnergyModel
     aₛₕ::S = 2
     aₛᵥ::S = 1
-    d::T = 0.03
     ε::T = 0.955
     maxiter::S = 10
     ΔT::T = 0.01
 end
 
 function variables(::Monteith)
-    (:Tₗ,:Rn,:skyFraction,:PPFD,:Cₛ,:ψₗ,:H,:λE,:A,:Gₛ,:Cᵢ,:Gbₕ,:Dₗ,:Rₗₗ,:Gbc)
+    (:Tₗ,:Rn,:skyFraction,:PPFD,:Cₛ,:ψₗ,:H,:λE,:A,:Gₛ,:Cᵢ,:Gbₕ,:Dₗ,:Rₗₗ,:Gbc,:d)
 end
 
 """
@@ -46,6 +44,7 @@ the energy balance using the mass flux (~ Rn - λE).
 the model with initialisations for:
     - `Rn` (W m-2): net global radiation (PAR + NIR + TIR). Often computed from a light interception model
     - `skyFraction` (0-2): view factor between the object and the sky for both faces (see details).
+    - `d` (m): characteristic dimension, *e.g.* leaf width (see eq. 10.9 from Monteith and Unsworth, 2013).
 - `meteo`: meteorology structure, see [`Atmosphere`](@ref)
 - `constants = Constants()`: physical constants. See [`Constants`](@ref) for more details
 
@@ -62,19 +61,19 @@ the same temperature than the leaf, or less than 1 if it is partly shaded.
 meteo = Atmosphere(T = 22.0, Wind = 0.8333, P = 101.325, Rh = 0.4490995)
 
 # Using a constant value for Gs:
-leaf = Leaf(energy = Monteith(d = 0.03),
+leaf = Leaf(energy = Monteith(),
             photosynthesis = Fvcb(),
             stomatal_conductance = ConstantGs(0.0, 0.0011),
-            Rn = 13.747, skyFraction = 1.0)
+            Rn = 13.747, skyFraction = 1.0, d = 0.03)
 net_radiation!(leaf,meteo)
 leaf.status.Rn
 julia> 12.902547446281233
 
 # Using the model from Medlyn et al. (2011) for Gs:
-leaf = Leaf(energy = Monteith(d = 0.03),
+leaf = Leaf(energy = Monteith(),
             photosynthesis = Fvcb(),
             stomatal_conductance = Medlyn(0.03, 12.0),
-            Rn = 13.747, skyFraction = 1.0, PPFD = 1500.0)
+            Rn = 13.747, skyFraction = 1.0, PPFD = 1500.0, d = 0.03)
 
 net_radiation!(leaf,meteo)
 leaf.status.Rn

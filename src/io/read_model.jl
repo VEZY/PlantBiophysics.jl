@@ -197,7 +197,8 @@ function instantiate(model,param,correspondance,param_type)
 end
 
 function instantiate(model::Union{Type{Fvcb},Type{FvcbIter}},param)
-    correspondance = Dict(:Tᵣ => "tempCRef", :VcMaxRef => "vcMaxRef", :JMaxRef => "jMaxRef",:RdRef => "rdRef", :θ => "theta")
+    correspondance = Dict(:Tᵣ => "tempCRef", :VcMaxRef => "vcMaxRef", :JMaxRef => "jMaxRef",
+                        :RdRef => "rdRef", :θ => "theta")
     # Create a Dict holding the parameter type for each parameter
     param_type = Dict([string(i) => Float64 for i in fieldnames(model)]...)
     instantiate(model,param,correspondance,param_type)
@@ -206,7 +207,7 @@ end
 function instantiate(model::Type{Monteith},param)
     correspondance = Dict(:ash => "aₛₕ", :asv => "aₛᵥ", :epsilon => "ε",:lambda => "ΔT")
     # Create a Dict holding the parameter type for each parameter
-    param_type = Dict("aₛₕ" => Int, "aₛᵥ" => Int, "d" => Float64, "ε" => Float64,
+    param_type = Dict("aₛₕ" => Int, "aₛᵥ" => Int, "ε" => Float64,
                         "maxiter" => Int, "ΔT" => Float64)
     instantiate(model,param,correspondance,param_type)
 end
@@ -230,10 +231,10 @@ function instantiate(model::Type{Translucent},param)
                             Dict("PAR" => Float64,"NIR" => Float64))
         else
             missing_optic = ["PAR","NIR"][[!isPAR,!isNIR]]
-            @error "Missing Optical properties found in `$model` model for `$missing_optic`."
+            error("Missing Optical properties found in `$model` model for `$missing_optic`.")
         end
     else
-        @error "Optical properties not found in $model model. Please check file."
+        error("Optical properties not found in $model model. Please check file.")
     end
 
     correspondance = Dict()

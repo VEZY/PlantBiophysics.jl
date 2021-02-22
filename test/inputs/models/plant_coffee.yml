@@ -25,7 +25,6 @@ Type:
             model: Monteith # see structure in PlantBiophysics.jl
             ash: 2    # number of faces of the object that exchange sensible heat fluxes
             asv: 1    # number of faces of the object that exchange latent heat fluxes
-            d: 0.03   # object default characteristic dimension (overwritten if geometry is given)
             epsilon: 0.955  # object emissivity
             maxiter: 10 # maximum iterations for energy balance computation
             lambda: 0.01   # maximum difference in object temperature between 2 iterations to consider convergence
