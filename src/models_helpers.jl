@@ -41,17 +41,19 @@ function variables(::AbstractModel)
 end
 
 """
-    init_variables(vars...)
+    init_status!(object::Dict{String,AbstractComponent};vars...)
+    init_status!(component::AbstractComponent;vars...)
 
-Intialise model variables based on their instances.
+Intialise model variables for components with user input.
 
 # Examples
 
 ```julia
-init_variables(Monteith(), Medlyn(0.03,12.0))
+model = read_model("a-model-file.yml")
+init_status!(model, Tₗ = 25.0, PPFD = 1000.0, Cₛ = 400.0, Dₗ = 1.2)
 ```
 """
-function init_status!(object::Dict{String,PlantBiophysics.AbstractComponent};vars...)
+function init_status!(object::Dict{String,AbstractComponent};vars...)
     new_vals = (;vars...)
 
     for (component_name,component) in object
@@ -62,6 +64,17 @@ function init_status!(object::Dict{String,PlantBiophysics.AbstractComponent};var
             end
             setproperty!(component.status,j,new_vals[j])
         end
+    end
+end
+
+function init_status!(component::AbstractComponent;vars...)
+    new_vals = (;vars...)
+    for j in keys(new_vals)
+        if !in(j,keys(component.status))
+            @info "Key $j not found as a variable for any provided models"
+            continue
+        end
+        setproperty!(component.status,j,new_vals[j])
     end
 end
 

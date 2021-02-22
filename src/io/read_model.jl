@@ -28,7 +28,7 @@ function read_model(file)
         # i = "Leaf"
         # j = model["Type"][i]
 
-        processes = Dict{Symbol,Union{Missing,AbstractModel}}()
+        processes = OrderedDict{Symbol,Union{Missing,AbstractModel}}()
         for (k,l) in j
             # k = "Interception"
             # l = j[k]
@@ -58,7 +58,9 @@ function read_model(file)
             end
         end
 
-        processes = (;sort(processes)...)
+        sort!(processes)
+        processes = (;processes...)
+
         # Get the component type based on the models used (*e.g.*, if photosynthetic, use `Leaf`):
         componenttype = get_component_type(processes...)
 

@@ -16,3 +16,16 @@ Gs = Medlyn(g0,g1) # Instance of a Medlyn type with g0 = 0.03 and g1 = 0.1
     @test leaf.stomatal_conductance.g0 ≈ g0
     @test leaf.stomatal_conductance.g1 ≈ g1
 end;
+
+
+@testset "Initialisations" begin
+    leaf = Leaf(photosynthesis = A, stomatal_conductance = Gs)
+    @test leaf.status.Tₗ == 0.0
+
+    init_status!(leaf, Tₗ = 25.0)
+    @test leaf.status.Tₗ == 25.0
+
+    model = read_model("inputs/models/plant_coffee.yml")
+    init_status!(model, Tₗ = 25.0)
+    @test model["Leaf"].status.Tₗ == 25.0
+end;
