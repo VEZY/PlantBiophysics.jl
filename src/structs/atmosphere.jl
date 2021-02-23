@@ -128,7 +128,7 @@ Monteith, John L., et Mike H. Unsworth. 2013. « Chapter 13 - Steady-State Heat
 Water Surfaces, Soil, and Vegetation ». In Principles of Environmental Physics (Fourth Edition),
 edited by John L. Monteith et Mike H. Unsworth, 217‑47. Boston: Academic Press.
 
-Schymanski, Stanislaus J., et Dani Or. 2017. « Leaf-Scale Experiments Reveal an Important
+Schymanski, Stanislaus J., et Dani Or. 2017. Leaf-Scale Experiments Reveal an Important
 Omission in the Penman–Monteith Equation ». Hydrology and Earth System Sciences 21 (2): 685‑706.
 https://doi.org/10.5194/hess-21-685-2017.
 """

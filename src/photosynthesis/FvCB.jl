@@ -84,7 +84,7 @@ function variables(::Fvcb)
 end
 
 """
-    assimilation!(leaf::Leaf{I,E,<:Fvcb,<:AbstractGsModel,S},constants = Constants())
+    assimilation!(leaf::LeafModels{I,E,<:Fvcb,<:AbstractGsModel,S},constants = Constants())
 
 Photosynthesis using the Farquhar–von Caemmerer–Berry (FvCB) model for C3 photosynthesis
  (Farquhar et al., 1980; von Caemmerer and Farquhar, 1981).
@@ -105,7 +105,7 @@ Modify the first argument in place for A, Gₛ and Cᵢ:
 
 # Arguments
 
-- `leaf::Leaf{.,.,<:Fvcb,<:AbstractGsModel,.}`: A [`Leaf`](@ref) struct holding the parameters for
+- `leaf::LeafModels{.,.,<:Fvcb,<:AbstractGsModel,.}`: A [`LeafModels`](@ref) struct holding the parameters for
 the model with initialisations for:
     - `Tₗ` (°C): leaf temperature
     - `PPFD` (μmol m-2 s-1): absorbed Photosynthetic Photon Flux Density
@@ -127,7 +127,7 @@ balance of the leaf with the photosynthesis to get those variables. See
 ```julia
 meteo = Atmosphere(T = 20.0, Wind = 1.0, P = 101.3, Rh = 0.65)
 
-leaf = Leaf(photosynthesis = Fvcb(),
+leaf = LeafModels(photosynthesis = Fvcb(),
             stomatal_conductance = Medlyn(0.03, 12.0),
             Tₗ = 25.0, PPFD = 1000.0, Cₛ = 400.0, Dₗ = meteo.VPD)
 # NB: we need  to initalise Tₗ, PPFD and Cₛ
@@ -155,7 +155,7 @@ Leuning, R., F. M. Kelliher, DGG de Pury, et E.D. Schulze. 1995. « Leaf nitrog
 photosynthesis, conductance and transpiration: scaling from leaves to canopies ». Plant,
 Cell & Environment 18 (10): 1183‑1200.
 """
-function assimilation!(leaf::Leaf{I,E,<:Fvcb,<:AbstractGsModel,S}, meteo,
+function assimilation!(leaf::LeafModels{I,E,<:Fvcb,<:AbstractGsModel,S}, meteo,
     constants = Constants()) where {I,E,S}
 
     # Tranform Celsius temperatures in Kelvin:

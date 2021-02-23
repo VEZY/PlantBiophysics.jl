@@ -130,7 +130,7 @@ export variables
 
 # Components (structures that hold models)
 export AbstractComponentModel
-export Leaf
+export LeafModels
 export Metamer
 
 end

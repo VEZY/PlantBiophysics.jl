@@ -144,7 +144,7 @@ atmosphere_emissivity(Tₐ, vapor_pressure(Tₐ,VPD))
 
 # References
 
-Leuning, R., F. M. Kelliher, DGG de Pury, et E.-D. SCHULZE. 1995. « Leaf nitrogen,
+Leuning, R., F. M. Kelliher, DGG de Pury, et E.-D. SCHULZE. 1995. Leaf nitrogen,
 photosynthesis, conductance and transpiration: scaling from leaves to canopies ». Plant,
 Cell & Environment 18 (10): 1183‑1200.
 """

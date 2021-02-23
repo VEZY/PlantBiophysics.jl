@@ -25,7 +25,7 @@ function variables(::Medlyn)
 end
 
 """
-    gs_closure(leaf::Leaf{I,E,A,<:Medlyn,S},meteo)
+    gs_closure(leaf::LeafModels{I,E,A,<:Medlyn,S},meteo)
 
 Stomatal closure for CO₂ according to Medlyn et al. (2011). Carefull, this is just a part of
 the computation of the stomatal conductance.
@@ -39,7 +39,7 @@ The result of this function is then used as:
 
 # Arguments
 
-- `leaf::Leaf{.,.,<:Fvcb,<:Medlyn,.}`: A [`Leaf`](@ref) struct holding the parameters for
+- `leaf::LeafModels{.,.,<:Fvcb,<:Medlyn,.}`: A [`LeafModels`](@ref) struct holding the parameters for
 the model.
 - `meteo`: meteorology structure, see [`Atmosphere`](@ref). Is not used in this model.
 
@@ -48,7 +48,7 @@ the model.
 ```julia
 meteo = Atmosphere(T = 20.0, Wind = 1.0, P = 101.3, Rh = 0.65)
 
-leaf = Leaf(stomatal_conductance = Medlyn(0.03, 12.0),
+leaf = LeafModels(stomatal_conductance = Medlyn(0.03, 12.0),
             Cₛ = 380.0, Dₗ = meteo.VPD)
 
 gs_mod = gs_closure(leaf, meteo)
@@ -58,7 +58,7 @@ Gs = leaf.stomatal_conductance.g0 + gs_mod * A
 
 # Or more directly using `gs()`:
 
-leaf = Leaf(stomatal_conductance = Medlyn(0.03, 12.0),
+leaf = LeafModels(stomatal_conductance = Medlyn(0.03, 12.0),
             A = A, Cₛ = 380.0, Dₗ = meteo.VPD)
 gs(leaf,meteo)
 ```
@@ -70,6 +70,6 @@ Craig V. M. Barton, Kristine Y. Crous, Paolo De Angelis, Michael Freeman, et Lis
 2011. « Reconciling the optimal and empirical approaches to modelling stomatal conductance ».
 Global Change Biology 17 (6): 2134‑44. https://doi.org/10.1111/j.1365-2486.2010.02375.x.
 """
-function gs_closure(leaf::Leaf{I,E,A,<:Medlyn,S},meteo) where {I,E,A,S}
+function gs_closure(leaf::LeafModels{I,E,A,<:Medlyn,S},meteo) where {I,E,A,S}
     (1.0 + leaf.stomatal_conductance.g1 / sqrt(leaf.status.Dₗ)) / leaf.status.Cₛ
 end

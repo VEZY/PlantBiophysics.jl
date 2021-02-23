@@ -1,12 +1,12 @@
 
 """
-    Leaf(interception, energy, photosynthesis, stomatal_conductance, status)
-    Leaf(;interception = missing, energy = missing, photosynthesis = missing,
+    LeafModels(interception, energy, photosynthesis, stomatal_conductance, status)
+    LeafModels(;interception = missing, energy = missing, photosynthesis = missing,
         stomatal_conductance = missing,status...)
 
-Leaf component, which is a subtype of `AbstractComponentModel` implementing a component with
+LeafModels component, which is a subtype of `AbstractComponentModel` implementing a component with
 a photosynthetic activity. It could be a leaf, or a leaflet, or whatever kind of component
-that is photosynthetic. The name `Leaf` was chosen not because it is generic, but because it
+that is photosynthetic. The name `LeafModels` was chosen not because it is generic, but because it
 is short, simple and self-explanatory.
 
 # Arguments
@@ -53,19 +53,19 @@ The status field depends on the input models. You can get the variables needed b
 # balance, The Farquhar et al. (1980) model for photosynthesis, and a constant stomatal
 # conductance for CO₂ of 0.0011 with no residual conductance. The status of
 # the leaf is not set yet, all are initialised at `0.0`:
-Leaf(energy = Monteith(),
+LeafModels(energy = Monteith(),
      photosynthesis = Fvcb(),
      stomatal_conductance = ConstantGs(0.0, 0.0011))
 
 # If we need to initialise some variables at different values, we can call the leaf as:
 
-Leaf(photosynthesis = Fvcb(),Cᵢ = 380.0)
+LeafModels(photosynthesis = Fvcb(),Cᵢ = 380.0)
 
 # Or again:
-Leaf(photosynthesis = Fvcb(), energy = Monteith(), Cᵢ = 380.0, Tₗ = 20.0)
+LeafModels(photosynthesis = Fvcb(), energy = Monteith(), Cᵢ = 380.0, Tₗ = 20.0)
 ```
 """
-struct Leaf{I <: Union{Missing,AbstractInterceptionModel},
+struct LeafModels{I <: Union{Missing,AbstractInterceptionModel},
             E <: Union{Missing,AbstractEnergyModel},
             A <: Union{Missing,AbstractAModel},
             Gs <: Union{Missing,AbstractGsModel},
@@ -77,11 +77,11 @@ struct Leaf{I <: Union{Missing,AbstractInterceptionModel},
     status::S
 end
 
-function Leaf(;interception = missing, energy = missing,
+function LeafModels(;interception = missing, energy = missing,
                 photosynthesis = missing, stomatal_conductance = missing,status...)
     status = init_variables_manual(interception, energy, photosynthesis,
         stomatal_conductance;status...)
-    Leaf(interception,energy,photosynthesis,stomatal_conductance,status)
+    LeafModels(interception,energy,photosynthesis,stomatal_conductance,status)
 end
 
 """

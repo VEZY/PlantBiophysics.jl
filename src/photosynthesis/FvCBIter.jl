@@ -37,7 +37,7 @@ function variables(::FvcbIter)
 end
 
 """
-    assimilation!(leaf::Leaf{I,E,<:FvcbIter,<:AbstractGsModel,S}, meteo, constants = Constants())
+    assimilation!(leaf::LeafModels{I,E,<:FvcbIter,<:AbstractGsModel,S}, meteo, constants = Constants())
 
 Photosynthesis using the Farquhar–von Caemmerer–Berry (FvCB) model for C3 photosynthesis
  (Farquhar et al., 1980; von Caemmerer and Farquhar, 1981).
@@ -57,7 +57,7 @@ Modify the first argument in place for A, Gₛ and Cᵢ:
 
 # Arguments
 
-- `leaf::Leaf{.,.,<:FvcbIter,<:AbstractGsModel,.}`: A [`Leaf`](@ref) struct holding the parameters for
+- `leaf::LeafModels{.,.,<:FvcbIter,<:AbstractGsModel,.}`: A [`LeafModels`](@ref) struct holding the parameters for
 the model with initialisations for:
     - `Tₗ` (°C): leaf temperature
     - `PPFD` (μmol m-2 s-1): absorbed Photosynthetic Photon Flux Density
@@ -79,7 +79,7 @@ balance of the leaf with the photosynthesis to get those variables. See
 ```julia
 meteo = Atmosphere(T = 20.0, Wind = 1.0, P = 101.3, Rh = 0.65)
 
-leaf = Leaf(photosynthesis = FvcbIter(),
+leaf = LeafModels(photosynthesis = FvcbIter(),
             stomatal_conductance = Medlyn(0.03, 12.0),
             Tₗ = 25.0, PPFD = 1000.0, Gbc = 0.67, Dₗ = meteo.VPD)
 # NB: we need  to initalise Tₗ, PPFD and Gbc.
@@ -98,11 +98,11 @@ https://doi.org/10.1093/treephys/14.7-8-9.1069.
 Farquhar, G. D., S. von von Caemmerer, et J. A. Berry. 1980. « A biochemical model of
 photosynthetic CO2 assimilation in leaves of C3 species ». Planta 149 (1): 78‑90.
 
-Leuning, R., F. M. Kelliher, DGG de Pury, et E.D. Schulze. 1995. « Leaf nitrogen,
+Leuning, R., F. M. Kelliher, DGG de Pury, et E.D. Schulze. 1995. Leaf nitrogen,
 photosynthesis, conductance and transpiration: scaling from leaves to canopies ». Plant,
 Cell & Environment 18 (10): 1183‑1200.
 """
-function assimilation!(leaf::Leaf{I,E,<:FvcbIter,<:AbstractGsModel,S}, meteo,
+function assimilation!(leaf::LeafModels{I,E,<:FvcbIter,<:AbstractGsModel,S}, meteo,
     constants = Constants()) where {I,E,S}
 
     # Start with a probable value for Cₛ and Cᵢ:

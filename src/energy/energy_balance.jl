@@ -30,7 +30,7 @@ meteo = Atmosphere(T = 20.0, Wind = 1.0, P = 101.3, Rh = 0.65)
 
 # Using the model of Monteith and Unsworth (2013) for energy, Farquhar et al. (1980) for
 # photosynthesis, and Medlyn et al. (2011) for stomatal conductance:
-leaf = Leaf(energy = Monteith(),
+leaf = LeafModels(energy = Monteith(),
             photosynthesis = Fvcb(),
             stomatal_conductance = Medlyn(0.03, 12.0),
             Rn = 13.747, skyFraction = 1.0, PPFD = 1500.0, d = 0.03)

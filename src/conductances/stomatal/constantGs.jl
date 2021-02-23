@@ -22,7 +22,7 @@ Constant stomatal closure
 
 `meteo` is just declared here for compatibility with other formats of calls.
 """
-function gs_closure(leaf::Leaf{I,E,A,Gs,S},meteo=missing) where {I,E,A,Gs<:ConstantGs,S}
+function gs_closure(leaf::LeafModels{I,E,A,Gs,S},meteo=missing) where {I,E,A,Gs<:ConstantGs,S}
     leaf.stomatal_conductance.gs - leaf.stomatal_conductance.g0
 end
 
@@ -35,18 +35,18 @@ Constant stomatal conductance for CO₂ (mol m-2 s-1).
 `meteo` or `gs_mod` are just declared here for compatibility with the call from
 photosynthesis (need a constant way of calling the functions).
 """
-function gs(leaf::Leaf{I,E,A,Gs,S},gs_mod) where {I,E,A,Gs<:ConstantGs,S}
+function gs(leaf::LeafModels{I,E,A,Gs,S},gs_mod) where {I,E,A,Gs<:ConstantGs,S}
     leaf.stomatal_conductance.gs
 end
 
-function gs(leaf::Leaf{I,E,A,Gs,S},meteo::M) where {I,E,A,Gs<:ConstantGs,S,M<:Atmosphere}
+function gs(leaf::LeafModels{I,E,A,Gs,S},meteo::M) where {I,E,A,Gs<:ConstantGs,S,M<:Atmosphere}
     leaf.stomatal_conductance.gs
 end
 
-function gs!(leaf::Leaf{I,E,A,Gs,S},gs_mod) where {I,E,A,Gs<:ConstantGs,S}
+function gs!(leaf::LeafModels{I,E,A,Gs,S},gs_mod) where {I,E,A,Gs<:ConstantGs,S}
     leaf.status.Gₛ = leaf.stomatal_conductance.gs
 end
 
-function gs!(leaf::Leaf{I,E,A,Gs,S},meteo::M) where {I,E,A,Gs<:ConstantGs,S,M<:Atmosphere}
+function gs!(leaf::LeafModels{I,E,A,Gs,S},meteo::M) where {I,E,A,Gs<:ConstantGs,S,M<:Atmosphere}
     leaf.status.Gₛ = leaf.stomatal_conductance.gs
 end

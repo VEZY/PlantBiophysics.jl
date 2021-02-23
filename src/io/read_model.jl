@@ -25,7 +25,7 @@ function read_model(file)
     components = Dict{String,AbstractComponentModel}()
 
     for (i,j) in model["Type"]
-        # i = "Leaf"
+        # i = "LeafModels"
         # j = model["Type"][i]
 
         processes = OrderedDict{Symbol,Union{Missing,AbstractModel}}()
@@ -61,7 +61,7 @@ function read_model(file)
         sort!(processes)
         processes = (;processes...)
 
-        # Get the component type based on the models used (*e.g.*, if photosynthetic, use `Leaf`):
+        # Get the component type based on the models used (*e.g.*, if photosynthetic, use `LeafModels`):
         componenttype = get_component_type(processes...)
 
         push!(components, i => componenttype(;processes...))
@@ -74,29 +74,29 @@ end
     get_component_type(processes)
 
 Return the component type (the actual struct) given the processes passed as a named Tuple.
-It is considered a `Leaf` if it presents models for `photosynthesis` and
+It is considered a `LeafModels` if it presents models for `photosynthesis` and
 `stomatal_conductance`, and optionally for `interception` and `energy`.
 """
 function get_component_type(::E,::I,::A,::Gs) where {E<:AbstractEnergyModel,
     I<:AbstractInterceptionModel,A<:AbstractAModel,Gs<:AbstractGsModel}
 
-    return Leaf
+    return LeafModels
 end
 
 function get_component_type(::E,::A,::Gs) where {E<:AbstractEnergyModel,
     I<:AbstractInterceptionModel,A<:AbstractAModel,Gs<:AbstractGsModel}
 
-    return Leaf
+    return LeafModels
 end
 
 function get_component_type(::I,::A,::Gs) where {I<:AbstractInterceptionModel,A<:AbstractAModel,Gs<:AbstractGsModel}
 
-    return Leaf
+    return LeafModels
 end
 
 function get_component_type(::A,::Gs) where {A<:AbstractAModel,Gs<:AbstractGsModel}
 
-    return Leaf
+    return LeafModels
 end
 
 """

@@ -10,7 +10,7 @@ Gs = Medlyn(0.03,12.0) # Instance of a Medlyn type with g0 = 0.03 and g1 = 0.1
 meteo = Atmosphere(T = 28.0, Wind = 0.8333, P = 101.325, Rh = 0.47)
 
 # Defining the leaf struct:
-leaf = Leaf(photosynthesis = Fvcb(),
+leaf = LeafModels(photosynthesis = Fvcb(),
             stomatal_conductance = Gs, # Instance of a Medlyn type
             A = A, Cₛ = Cₛ, Dₗ = meteo.VPD)
 

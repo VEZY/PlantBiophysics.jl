@@ -30,8 +30,8 @@ function variables(::Monteith)
 end
 
 """
-    net_radiation!(leaf::Leaf{I,<:Monteith,A,Gs,S},meteo::Atmosphere,constants = Constants())
-    net_radiation(leaf::Leaf{I,<:Monteith,A,Gs,S},meteo::Atmosphere,constants = Constants())
+    net_radiation!(leaf::LeafModels{I,<:Monteith,A,Gs,S},meteo::Atmosphere,constants = Constants())
+    net_radiation(leaf::LeafModels{I,<:Monteith,A,Gs,S},meteo::Atmosphere,constants = Constants())
 
 Leaf energy balance according to Monteith and Unsworth (2013), and corrigendum from
 Schymanski et al. (2017). The computation is close to the one from the MAESPA model (Duursma
@@ -40,7 +40,7 @@ the energy balance using the mass flux (~ Rn - λE).
 
 # Arguments
 
-- `leaf::Leaf{.,<:Monteith,.,.,.}`: A [`Leaf`](@ref) struct holding the parameters for
+- `leaf::LeafModels{.,<:Monteith,.,.,.}`: A [`LeafModels`](@ref) struct holding the parameters for
 the model with initialisations for:
     - `Rn` (W m-2): net global radiation (PAR + NIR + TIR). Often computed from a light interception model
     - `skyFraction` (0-2): view factor between the object and the sky for both faces (see details).
@@ -61,7 +61,7 @@ the same temperature than the leaf, or less than 1 if it is partly shaded.
 meteo = Atmosphere(T = 22.0, Wind = 0.8333, P = 101.325, Rh = 0.4490995)
 
 # Using a constant value for Gs:
-leaf = Leaf(energy = Monteith(),
+leaf = LeafModels(energy = Monteith(),
             photosynthesis = Fvcb(),
             stomatal_conductance = ConstantGs(0.0, 0.0011),
             Rn = 13.747, skyFraction = 1.0, d = 0.03)
@@ -70,7 +70,7 @@ leaf.status.Rn
 julia> 12.902547446281233
 
 # Using the model from Medlyn et al. (2011) for Gs:
-leaf = Leaf(energy = Monteith(),
+leaf = LeafModels(energy = Monteith(),
             photosynthesis = Fvcb(),
             stomatal_conductance = Medlyn(0.03, 12.0),
             Rn = 13.747, skyFraction = 1.0, PPFD = 1500.0, d = 0.03)
@@ -105,7 +105,7 @@ Maxime Soma, et al. 2018. « Measuring and modelling energy partitioning in can
 complexity using MAESPA model ». Agricultural and Forest Meteorology 253‑254 (printemps): 203‑17.
 https://doi.org/10.1016/j.agrformet.2018.02.005.
 """
-function net_radiation!(leaf::Leaf{I,<:Monteith,A,Gs,S},meteo::Atmosphere,constants = Constants()) where {I,A,Gs,S}
+function net_radiation!(leaf::LeafModels{I,<:Monteith,A,Gs,S},meteo::Atmosphere,constants = Constants()) where {I,A,Gs,S}
 
     # Initialisations
     leaf.status.Tₗ = meteo.T - 0.2

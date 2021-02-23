@@ -17,7 +17,7 @@ function variables(::ConstantA)
 end
 
 """
-    assimilation!(leaf::Leaf{I,E,<:ConstantA,<:AbstractGsModel,S},constants = Constants())
+    assimilation!(leaf::LeafModels{I,E,<:ConstantA,<:AbstractGsModel,S},constants = Constants())
 
 Constant photosynthesis.
 
@@ -31,7 +31,7 @@ Modify the leaf status in place for A, Gₛ and Cᵢ:
 
 # Arguments
 
-- `leaf::Leaf{.,.,<:ConstantA,<:AbstractGsModel,.}`: A [`Leaf`](@ref) struct holding the parameters for
+- `leaf::LeafModels{.,.,<:ConstantA,<:AbstractGsModel,.}`: A [`LeafModels`](@ref) struct holding the parameters for
 the model with initialisations for:
     - `Cₛ` (mol m-2 s-1): surface CO₂ concentration.
     - `Dₗ` (mol m-2 s-1): vapour pressure difference between the surface and the air saturation
@@ -50,7 +50,7 @@ details.
 
 ```julia
 meteo = Atmosphere(T = 20.0, Wind = 1.0, P = 101.3, Rh = 0.65)
-leaf = Leaf(photosynthesis = ConstantA(),
+leaf = LeafModels(photosynthesis = ConstantA(),
             stomatal_conductance = Medlyn(0.03, 12.0),
             Cₛ = 400.0)
 
@@ -59,7 +59,7 @@ assimilation!(leaf,meteo,Constants())
 leaf.status.A
 ```
 """
-function assimilation!(leaf::Leaf{I,E,<:ConstantA,<:AbstractGsModel,S}, meteo,
+function assimilation!(leaf::LeafModels{I,E,<:ConstantA,<:AbstractGsModel,S}, meteo,
     constants = Constants()) where {I,E,S}
 
     # Net assimilation (μmol m-2 s-1)

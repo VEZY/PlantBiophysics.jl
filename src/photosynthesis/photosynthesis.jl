@@ -19,7 +19,7 @@ fields of `leaf`. For exemple to use the implementation of the Farquhar–von Ca
 meteo = Atmosphere(T = 20.0, Wind = 1.0, P = 101.3, Rh = 0.65)
 
 # Using Fvcb model:
-leaf = Leaf(photosynthesis = Fvcb(),
+leaf = LeafModels(photosynthesis = Fvcb(),
             stomatal_conductance = Medlyn(0.03, 12.0),
             Tₗ = 25.0, PPFD = 1000.0, Cₛ = 400.0, Dₗ = meteo.VPD)
 

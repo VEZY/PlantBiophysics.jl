@@ -28,6 +28,8 @@ In this package, each process can be simulated using a function:
 
 The call to the function is the same whatever the actual models used to simulate the process. This is some magic allowed by Julia!
 
+### Component model
+
 The first argument to those functions is what we call a component model ([`AbstractComponentModel`](@ref)). A component model is a data structure that lists the processes simulated for a component as fields, and the models and its associated parameter values.
 
 The model is then chosen by using a particular type of model for a process field of a component model. The type of the model helps Julia know which method it should use for simulating the process. But this is complicated technical gibberish for something quite simple. Let's use an example instead!
@@ -54,8 +56,6 @@ We can instantiate a [`Leaf`](@ref) without requesting a model for all fields. I
 
 You can see that some variables were given as keyword arguments (`Tₗ = 25.0`, `PPFD = 1000.0`, `Cₛ = 400.0`, `Dₗ = 0.82`). This is a convenience to set up initialization values for some variables required in models. For example here `PPFD` and `Tₗ` are needed for the `Fvcb` model, `Dₗ` is needed for `Medlyn`, and `Cₛ` for both.
 
-## Models and structures
-
 ### Climate forcing
 
 To make a simulation, we first need the climatic/meteorological conditions measured close to the object or component. The package provide its own data structure to declare those conditions, while pre-computing some variables. This data structure is a type called [`Atmosphere`](@ref).
@@ -81,6 +81,11 @@ meteo.eₛ
 ```
 
 See the documentation of the function if you need more information about the variables.
+
+### Example simulation
+
+Put a simulation of e.g. energy_balance here.
+## Models and structures
 
 ### Stomatal conductance
 
