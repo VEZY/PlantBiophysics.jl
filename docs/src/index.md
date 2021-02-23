@@ -16,7 +16,7 @@ CurrentModule = PlantBiophysics
 
 ## Installation
 
-To install the package, enter the julia package manager mode by pressing `]` in the REPL, and then execute the following command:
+To install the package, enter the julia package manager mode by pressing `]` in the REPL, and execute the following command:
 
 ```julia
 add https://github.com/VEZY/PlantBiophysics.jl
@@ -30,8 +30,7 @@ using PlantBiophysics
 
 ## Examples
 
-Here is an example usage with a simulation of the energy balance and assimilation of a leaf
-with some default values.
+Here is an example usage with a simulation of the energy balance and assimilation of a leaf with some default values.
 
 First you have to define the meteorological conditions using `Atmosphere()` as follows:
 
@@ -40,7 +39,7 @@ First you have to define the meteorological conditions using `Atmosphere()` as f
 meteo = Atmosphere(T = 22.0, Wind = 0.8333, P = 101.325, Rh = 0.4490995)
 ```
 
-Then defines which model to use for each process, and their parameter values:
+Then define which model to use for each process, and their parameter values:
 
 ```julia
 # Using the model from Medlyn et al. (2011) for Gs and the model of Monteith and Unsworth (2013) for the energy balance:

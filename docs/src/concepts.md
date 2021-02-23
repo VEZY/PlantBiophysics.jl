@@ -1,6 +1,10 @@
-# Concepts
+# Concepts and design
 
 A particularity of this package is its capability to compose with other code. Users can add their own computations for processes easily, and still benefit freely from all the other ones. This is made possible thanks to Julia's multiple dispatch. You'll find more information in this section.
+
+## Objects
+
+Scene, object, component, list of models, mtg.
 
 ## Processes
 

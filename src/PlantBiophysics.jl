@@ -36,6 +36,7 @@ include("photosynthesis/FvCBIter.jl")
 include("photosynthesis/temperature-dependence.jl")
 
 # Stomatal conductance related files:
+include("conductances/stomatal/stomatal_conductance.jl")
 include("conductances/stomatal/constantGs.jl")
 include("conductances/stomatal/medlyn.jl")
 
@@ -105,7 +106,6 @@ export ConstantA
 export Fvcb # Parameters for the Farquhar et al. (1980) model
 export FvcbIter # To update...
 export Constants
-export assimilation!
 export photosynthesis!
 export photosynthesis
 
@@ -114,7 +114,7 @@ export AbstractGsModel
 export gbh_to_gbw
 export gbₕ_free
 export gbₕ_forced
-export gs
+export gs, gs!
 export Medlyn
 export ConstantGs
 

@@ -30,16 +30,17 @@ energy_balance(leaf,meteo)
 ```
 
 For more examples, please read the documentation.
+
 ## Roadmap
 
 - [x] Add FvCB model
 - [x] Add FvCB iterative model
 - [x] Add stomatal + boundary layer conductance models
 - [x] Add energy balance model, coupled with photosynthesis amd stomatal conductance models
-- [ ] Make the functions work on the output from `read_model`.
+- [x] Make the functions work on the output from `read_model`.
 - [ ] Make the functions compatible with an MTG, e.g. apply photosynthesis to an MTG, and use the right method for each node. NB: I think the models should be a field of the node.
 - [ ] Make the functions compatible with several meteorological time-steps
-- [ ] Evaluate using Schymanski et al. (2017) data + leaf measurements models.
+- [ ] Evaluate using Schymanski et al. (2017) data + leaf measurements models (in progress)
 - [ ] Add more documentation + tutorial:
   - [ ] add doc about the design (components, models, model values, multiple dispatch)
   - [ ] add doc about input files
@@ -63,6 +64,12 @@ The Fvcb model is implemented in two ways:
 - as in MAESPA, where the model needs Cₛ as input. And Cₛ is computed in the energy balance model and helps to close the whole balance with leaf temperature. If needed, Cₛ can be given as Cₐ.
 - as in Archimed, where the model needs Gbc, but not Cₛ (and Cₐ instead) because the model iterates over the assimilation until it finds a stable Cᵢ. This implementation
 can be less efficient because of the iterations.
+
+## Contributing
+
+Contributions are welcome! If you develop a model for a process, please make a pull request so the community can enjoy it!
+
+See contributor's guide badge for more informations: [![ColPrac: Contributor's Guide on Collaborative Practices for Community Packages](https://img.shields.io/badge/ColPrac-Contributor's%20Guide-blueviolet)](https://github.com/SciML/ColPrac).
 
 ## Similar projects
 
@@ -90,6 +97,11 @@ Leuning, R., F. M. Kelliher, DGG de Pury, et E.-D. SCHULZE. 1995. « Leaf nitro
 photosynthesis, conductance and transpiration: scaling from leaves to canopies ». Plant,
 Cell & Environment 18 (10): 1183‑1200.
 
-Medlyn, B. E., D. Loustau, et S. Delzon. 2002. « Temperature response of parameters of a biochemically based model of photosynthesis. I. Seasonal changes in mature maritime pine (Pinus pinaster Ait.) ». Plant, Cell & Environment 25 (9): 1155‑65.
-
 Medlyn, B. E., E. Dreyer, D. Ellsworth, M. Forstreuter, P. C. Harley, M. U. F. Kirschbaum, X. Le Roux, et al. 2002. « Temperature response of parameters of a biochemically based model of photosynthesis. II. A review of experimental data ». Plant, Cell & Environment 25 (9): 1167‑79. https://doi.org/10.1046/j.1365-3040.2002.00891.x.
+
+Monteith, John L., et Mike H. Unsworth. 2013. « Chapter 13 - Steady-State Heat Balance: (i) Water Surfaces, Soil, and Vegetation ». In Principles of Environmental Physics (Fourth Edition), edited by John L. Monteith et Mike H. Unsworth, 217‑47. Boston: Academic Press.
+
+Schymanski, Stanislaus J., et Dani Or. 2017. « Leaf-Scale Experiments Reveal an Important
+Omission in the Penman–Monteith Equation ». Hydrology and Earth System Sciences 21 (2): 685‑706. https://doi.org/10.5194/hess-21-685-2017.
+
+Vezy, Rémi, Mathias Christina, Olivier Roupsard, Yann Nouvellon, Remko Duursma, Belinda Medlyn, Maxime Soma, et al. 2018. « Measuring and modelling energy partitioning in canopies of varying complexity using MAESPA model ». Agricultural and Forest Meteorology 253‑254 (printemps): 203‑17. https://doi.org/10.1016/j.agrformet.2018.02.005.
