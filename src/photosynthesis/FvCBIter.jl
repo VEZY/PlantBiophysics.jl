@@ -32,8 +32,12 @@ Base.@kwdef struct FvcbIter{T} <: AbstractAModel
     ΔT_A::T = 1.0
 end
 
-function variables(::FvcbIter)
-    (:A,:Gₛ,:Cᵢ,:Tₗ,:PPFD,:Cₛ,:Gbc)
+function inputs(::FvcbIter)
+    (:PPFD,:Tₗ,:Cₛ,:Gbc)
+end
+
+function outputs(::FvcbIter)
+    (:A,:Gₛ,:Cᵢ,:Cₛ)
 end
 
 """

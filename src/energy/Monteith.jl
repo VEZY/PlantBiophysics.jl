@@ -25,8 +25,12 @@ Base.@kwdef struct Monteith{T,S} <: AbstractEnergyModel
     ΔT::T = 0.01
 end
 
-function variables(::Monteith)
-    (:Tₗ,:Rn,:skyFraction,:PPFD,:Cₛ,:ψₗ,:H,:λE,:A,:Gₛ,:Cᵢ,:Gbₕ,:Dₗ,:Rₗₗ,:Gbc,:d)
+function inputs(::Monteith)
+    (:Rn,:skyFraction,:d)
+end
+
+function outputs(::Monteith)
+    (:Tₗ,:Rn,:Rₗₗ,:H,:λE,:Cₛ,:Cᵢ,:A,:Gₛ,:Gbₕ,:Dₗ,:Gbc)
 end
 
 """

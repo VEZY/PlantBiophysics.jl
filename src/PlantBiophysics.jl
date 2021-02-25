@@ -62,6 +62,10 @@ export Constants
 # Status
 export init_status!
 
+# Get models informations
+export variables
+export inputs, outputs
+
 # Atmosphere
 export e
 export e_sat
@@ -126,7 +130,6 @@ export init_variables_manual, init_variables, Fvcb_net_assimiliation
 export get_componenttype, get_process, get_model, instantiate, get_component_type
 
 export AbstractModel
-export variables
 
 # Components (structures that hold models)
 export AbstractComponentModel

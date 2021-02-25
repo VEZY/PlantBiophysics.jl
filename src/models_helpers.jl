@@ -1,8 +1,30 @@
 """
+    inputs(::AbstractModel)
+
+Get the inputs of a model.
+
+Here returns an empty tuple by default for `AbstractModel`s (no inputs).
+"""
+function inputs(::AbstractModel)
+    ()
+end
+
+"""
+    outputs(::AbstractModel)
+
+Get the outputs of a model.
+
+Returns an empty tuple by default for `AbstractModel`s (no outputs).
+"""
+function outputs(::AbstractModel)
+    ()
+end
+
+"""
     variables(::Type)
     variables(::Type, vars...)
 
-Returns a tuple with the name of the output variables of a model, or a union of the output
+Returns a tuple with the name of the variables needed by a model, or a union of those
 variables for several models.
 
 # Note
@@ -16,27 +38,32 @@ variables(Monteith())
 
 variables(Monteith(), Medlyn(0.03,12.0))
 ```
+
+# See also
+
+[`inputs`](@ref) and [`outputs`](@ref) to get only the inputs or outputs of a model.
+
 """
 function variables(v::T, vars...) where T <: Union{Missing,AbstractModel}
-    # union(variables(v), variables(vars...))
-    length((vars...,)) > 0 ? union(variables(v), variables(vars...)) : variables(v)
+    length((vars...,)) > 0 ? union(variables(v), variables(vars...)) : union(inputs(v),outputs(v))
 end
 
 """
-    variables(::Missing)
+    inputs(::Missing)
 
-Returns an empty tuple because missing models do not return any variables.
+Returns an empty tuple because missing models do not need any input variables.
 """
-function variables(v::Missing)
+function inputs(v::Missing)
     ()
 end
 
 """
-    variables(::AbstractModel)
+    inputs(::Missing)
 
-Returns an empty tuple by default.
+Returns an empty tuple because missing models do not compute any variables.
 """
-function variables(::AbstractModel)
+
+function outputs(v::Missing)
     ()
 end
 

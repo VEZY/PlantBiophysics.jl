@@ -25,7 +25,7 @@ function read_model(file)
     components = Dict{String,AbstractComponentModel}()
 
     for (i,j) in model["Type"]
-        # i = "LeafModels"
+        # i = "Leaf"
         # j = model["Type"][i]
 
         processes = OrderedDict{Symbol,Union{Missing,AbstractModel}}()

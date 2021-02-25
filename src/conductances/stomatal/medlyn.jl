@@ -20,8 +20,12 @@ Base.@kwdef struct Medlyn{T} <: AbstractGsModel
  g1::T
 end
 
-function variables(::Medlyn)
-    (:Dₗ,:Cₛ,:A,:Gₛ)
+function inputs(::Medlyn)
+    (:Dₗ,:Cₛ,:A)
+end
+
+function outputs(::Medlyn)
+    (:Gₛ,)
 end
 
 """

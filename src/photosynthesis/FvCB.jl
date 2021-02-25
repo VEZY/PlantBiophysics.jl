@@ -79,8 +79,12 @@ Base.@kwdef struct Fvcb{T} <: AbstractAModel
     θ::T = 0.90
 end
 
-function variables(::Fvcb)
-    (:A,:Gₛ,:Cᵢ,:Tₗ,:PPFD,:Cₛ)
+function inputs(::Fvcb)
+    (:PPFD,:Tₗ,:Cₛ)
+end
+
+function outputs(::Fvcb)
+    (:A,:Gₛ,:Cᵢ)
 end
 
 """

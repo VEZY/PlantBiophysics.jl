@@ -12,8 +12,12 @@ Base.@kwdef struct ConstantA{T} <: AbstractAModel
     A::T = 25.0
 end
 
-function variables(::ConstantA)
-    (:A,:Gₛ,:Cᵢ,:Cₛ)
+function inputs(::ConstantA)
+    (:Cₛ)
+end
+
+function outputs(::ConstantA)
+    (:A,:Gₛ)
 end
 
 """

@@ -1,4 +1,5 @@
 # Getting started
+
 ## Introduction
 
 The package is designed to ease the computations of biophysical processes in plants and other objects. It is part of the [Archimed platform](https://archimed-platform.github.io/), so it shares the same ontology (same concepts and terms).
@@ -10,11 +11,11 @@ This package is designed to simulate four different processes:
 - energy balance
 - light interception (no models at the moment, but coming soon!)
 
-These processes can be simulated using different models included in the package, or provided by the user. Each process is defined by a generic function, and an abstract struct (see [Concepts and design](@ref)).
+These processes can be simulated using different models included in the package, or provided by the user. Each process has its associated generic function and abstract struct (see [Concepts and design](@ref)).
 
-The structs are used for two purposes: to hold the parameter values of a model, and to dispatch to the right method when calling the functions. They are generally named after the model they implement.
+Then, the models are chosen by using a concrete structure that serves two purposes: holding the parameter values of the model, and dispatch to the right method when calling the generic function. They are generally named after the model they implement.
 
-If you don't plan to implement your own model, you just have to learn about the different structures you can use, and which functions you can use. This is what we describe in this section.
+If you don't plan to implement your own model, you just have to learn about the generic functions and the different models implemented to simulate the processes. This is what we describe in this section.
 
 If you want to implement your own models, please read the [Concepts and design](@ref) section first.
 
@@ -26,13 +27,21 @@ In this package, each process can be simulated using a function:
 - [`photosynthesis`](@ref) for the photosynthesis
 - [`energy_balance`](@ref) for the energy balance
 
-The call to the function is the same whatever the actual models used to simulate the process. This is some magic allowed by Julia!
+The call to the function is the same whatever the model you chose for simulating the process. This is some magic allowed by Julia! A call to a function is as follows:
+
+```julia
+gs(component,meteo)
+photosynthesis(component,meteo)
+energy_balance(component,meteo)
+```
+
+We describe the two arguments below.
 
 ### Component model
 
-The first argument to those functions is what we call a component model ([`AbstractComponentModel`](@ref)). A component model is a data structure that lists the processes simulated for a component as fields, and the models and its associated parameter values.
+The first argument to the function is what we call a component model ([`AbstractComponentModel`](@ref)). A component model is a data structure that lists in its fields the processes simulated for a component, and the chosen model and its associated parameter values.
 
-The model is then chosen by using a particular type of model for a process field of a component model. The type of the model helps Julia know which method it should use for simulating the process. But this is complicated technical gibberish for something quite simple. Let's use an example instead!
+The model is chosen by using a particular type of model for a process field of a component model. The type of the model helps Julia know which method it should use for simulating the process. But this is complicated technical gibberish for something quite simple. Let's use an example instead!
 
 The most sounding example of a component model is [`Leaf`](@ref). It is designed to hold all processes simulated for a photosynthetic organ, or at least for a leaf.
 
@@ -44,7 +53,16 @@ fieldnames(Leaf)
 
 The first four are for defining models used to simulate the associated processes, and the fifth (`status`) helps keeping track of simulated variables (they can be modified after a simulation).
 
-Let's instantiate a [`Leaf`](@ref) with some models. If we want to simulate the photosynthesis with the model of Farquhar et al. (1980), we would use `Fvcb()`, and the stomatal conductance with the model of Medlyn et al. (2011) we woul use `Medlyn`, such as follows:
+Let's instantiate a [`Leaf`](@ref) with some models. If we want to simulate the photosynthesis with the model of Farquhar et al. (1980) and the stomatal conductance with the model of Medlyn et al. (2011), we would use `Fvcb()` and `Medlyn` respectively, as follows:
+
+```@example
+Leaf(photosynthesis = Fvcb(),
+    stomatal_conductance = Medlyn(0.03, 12.0))
+```
+
+We can instantiate a [`Leaf`](@ref) without choosing a model for all processes. In our example the `interception` and `energy` are not provided, so they will have the value `missing` by default in our leaf, meaning they cannot be simulated.
+
+Now if we simulate the photosynthesis, we need to know what are the values of some input variables. This is done as follows:
 
 ```@example
 Leaf(photosynthesis = Fvcb(),
@@ -52,9 +70,7 @@ Leaf(photosynthesis = Fvcb(),
     Tₗ = 25.0, PPFD = 1000.0, Cₛ = 400.0, Dₗ = 0.82)
 ```
 
-We can instantiate a [`Leaf`](@ref) without requesting a model for all fields. In our example the `interception`, `energy` are not provided, so they will have the value `missing` by default in our leaf.
-
-You can see that some variables were given as keyword arguments (`Tₗ = 25.0`, `PPFD = 1000.0`, `Cₛ = 400.0`, `Dₗ = 0.82`). This is a convenience to set up initialization values for some variables required in models. For example here `PPFD` and `Tₗ` are needed for the `Fvcb` model, `Dₗ` is needed for `Medlyn`, and `Cₛ` for both.
+You can see that some variables were given as keyword arguments (`Tₗ = 25.0`, `PPFD = 1000.0`, `Cₛ = 400.0`, `Dₗ = 0.82`). This is a convenience to set up initialization values for some variables required by models. For example here `PPFD` and `Tₗ` are needed for the `Fvcb` model, `Dₗ` is needed for `Medlyn`, and `Cₛ` for both.
 
 ### Climate forcing
 

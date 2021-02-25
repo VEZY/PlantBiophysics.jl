@@ -11,7 +11,12 @@ struct ConstantGs{T} <: AbstractGsModel
  gs::T
 end
 
-function variables(::ConstantGs)
+
+function inputs(::ConstantGs)
+    (:Gₛ)
+end
+
+function outputs(::ConstantGs)
     (:Gₛ)
 end
 
