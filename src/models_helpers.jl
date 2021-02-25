@@ -48,6 +48,15 @@ function variables(v::T, vars...) where T <: Union{Missing,AbstractModel}
     length((vars...,)) > 0 ? union(variables(v), variables(vars...)) : union(inputs(v),outputs(v))
 end
 
+
+function inputs(v::T, vars...) where T <: Union{Missing,AbstractModel}
+    length((vars...,)) > 0 ? union(inputs(v), inputs(vars...)) : inputs(v)
+end
+
+function outputs(v::T, vars...) where T <: Union{Missing,AbstractModel}
+    length((vars...,)) > 0 ? union(outputs(v), outputs(vars...)) : outputs(v)
+end
+
 """
     inputs(::Missing)
 
@@ -62,10 +71,19 @@ end
 
 Returns an empty tuple because missing models do not compute any variables.
 """
-
 function outputs(v::Missing)
     ()
 end
+
+"""
+    to_initialise(v::T, vars...)
+
+Return the variables that must be initialized providing a set of models.
+"""
+function to_initialise(v::T, vars...) where T <: Union{Missing,AbstractModel}
+    setdiff(inputs(v, vars...),outputs(v, vars...))
+end
+
 
 """
     init_status!(object::Dict{String,AbstractComponentModel};vars...)

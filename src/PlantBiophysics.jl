@@ -65,6 +65,7 @@ export init_status!
 # Get models informations
 export variables
 export inputs, outputs
+export to_initialise
 
 # Atmosphere
 export e

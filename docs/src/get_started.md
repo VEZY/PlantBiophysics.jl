@@ -62,7 +62,7 @@ Leaf(photosynthesis = Fvcb(),
 
 We can instantiate a [`Leaf`](@ref) without choosing a model for all processes. In our example the `interception` and `energy` are not provided, so they will have the value `missing` by default in our leaf, meaning they cannot be simulated.
 
-Now if we simulate the photosynthesis, we need to know what are the values of some input variables. This is done as follows:
+Now if we simulate the photosynthesis, we need to provide the values for input variables. This is done as follows:
 
 ```@example
 Leaf(photosynthesis = Fvcb(),
@@ -71,6 +71,12 @@ Leaf(photosynthesis = Fvcb(),
 ```
 
 You can see that some variables were given as keyword arguments (`Tₗ = 25.0`, `PPFD = 1000.0`, `Cₛ = 400.0`, `Dₗ = 0.82`). This is a convenience to set up initialization values for some variables required by models. For example here `PPFD` and `Tₗ` are needed for the `Fvcb` model, `Dₗ` is needed for `Medlyn`, and `Cₛ` for both.
+
+To know which variables you need to initialize for a simulation, use the `to_initialise()` function on one or several model instances. For example in our case we use the `Fvcb` and `Medlyn` models, so we would do:
+
+```@example
+to_initialise(Fvcb(),Medlyn(0.03, 12.0))
+```
 
 ### Climate forcing
 
@@ -101,6 +107,7 @@ See the documentation of the function if you need more information about the var
 ### Example simulation
 
 Put a simulation of e.g. energy_balance here.
+
 ## Models and structures
 
 ### Stomatal conductance
