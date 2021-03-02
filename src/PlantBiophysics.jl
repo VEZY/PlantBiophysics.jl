@@ -65,7 +65,7 @@ export init_status!
 # Get models informations
 export variables
 export inputs, outputs
-export to_initialise
+export to_initialise, is_initialised
 
 # Atmosphere
 export e
@@ -113,6 +113,7 @@ export FvcbIter # To update...
 export Constants
 export photosynthesis!
 export photosynthesis
+export assimilation!
 
 # Conductances
 export AbstractGsModel

@@ -10,7 +10,7 @@ stomatal conductance according to the models set for `leaf`, or for each compone
 
 The models used are defined by the types of the `photosynthesis` and `stomatal_conductance`
 fields of `leaf`. For exemple to use the implementation of the Farquhar–von Caemmerer–Berry
-(FvCB) model (see [`assimilation!`](@ref)), the `leaf.photosynthesis` field should be of type
+(FvCB) model (see [`photosynthesis`](@ref)), the `leaf.photosynthesis` field should be of type
 [`Fvcb`](@ref).
 
 # Examples
@@ -39,11 +39,13 @@ model["Leaf"].status.A
 """
 function photosynthesis(leaf::AbstractComponentModel,meteo,constants = Constants())
     leaf_tmp = deepcopy(leaf)
-    assimilation!(leaf_tmp, meteo, constants)
+    photosynthesis!(leaf_tmp, meteo, constants)
     leaf_tmp.status
 end
 
 function photosynthesis!(leaf::AbstractComponentModel,meteo,constants = Constants())
+    is_init = is_initialised(leaf,leaf.photosynthesis,leaf.stomatal_conductance)
+    !is_init && error("Some variables must be initialized before simulation")
     assimilation!(leaf, meteo, constants)
 end
 

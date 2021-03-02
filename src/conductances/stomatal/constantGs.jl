@@ -13,11 +13,11 @@ end
 
 
 function inputs(::ConstantGs)
-    (:Gₛ)
+    (:Gₛ,)
 end
 
 function outputs(::ConstantGs)
-    (:Gₛ)
+    (:Gₛ,)
 end
 
 """

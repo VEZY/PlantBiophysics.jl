@@ -51,12 +51,12 @@ end
 ### Figure 6 a of the article:
 
 # Import the inputs for simulation:
-results1_6a = DataFrame(CSV.File("data/schymanski_et_al_2017/results1_6a.csv"))
+results1_6a = DataFrame(CSV.File("src/data/schymanski_et_al_2017/results1_6a.csv"))
 results1_6a.rh = rh_from_e.(results1_6a.P_wa ./ 1000.0, results1_6a.T_a .+ cst.K₀)
 sort!(results1_6a, [:v_w])
 
 # Reading the parameters:
-params = read_dict("data/schymanski_et_al_2017/vdict_6a.txt")
+params = read_dict("src/data/schymanski_et_al_2017/vdict_6a.txt")
 
 # Running the simulation:
 run_simulation!(results1_6a,params,aₛᵥ)

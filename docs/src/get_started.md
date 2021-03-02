@@ -43,29 +43,29 @@ The first argument to the function is what we call a component model ([`Abstract
 
 The model is chosen by using a particular type of model for a process field of a component model. The type of the model helps Julia know which method it should use for simulating the process. But this is complicated technical gibberish for something quite simple. Let's use an example instead!
 
-The most sounding example of a component model is [`Leaf`](@ref). It is designed to hold all processes simulated for a photosynthetic organ, or at least for a leaf.
+The most sounding example of a component model is [`LeafModels`](@ref). It is designed to hold all processes simulated for a photosynthetic organ, or at least for a leaf.
 
-A [`Leaf`](@ref) has five fields:
+A [`LeafModels`](@ref) has five fields:
 
 ```@example
-fieldnames(Leaf)
+fieldnames(LeafModels)
 ```
 
 The first four are for defining models used to simulate the associated processes, and the fifth (`status`) helps keeping track of simulated variables (they can be modified after a simulation).
 
-Let's instantiate a [`Leaf`](@ref) with some models. If we want to simulate the photosynthesis with the model of Farquhar et al. (1980) and the stomatal conductance with the model of Medlyn et al. (2011), we would use `Fvcb()` and `Medlyn` respectively, as follows:
+Let's instantiate a [`LeafModels`](@ref) with some models. If we want to simulate the photosynthesis with the model of Farquhar et al. (1980) and the stomatal conductance with the model of Medlyn et al. (2011), we would use `Fvcb()` and `Medlyn` respectively, as follows:
 
 ```@example
-Leaf(photosynthesis = Fvcb(),
+LeafModels(photosynthesis = Fvcb(),
     stomatal_conductance = Medlyn(0.03, 12.0))
 ```
 
-We can instantiate a [`Leaf`](@ref) without choosing a model for all processes. In our example the `interception` and `energy` are not provided, so they will have the value `missing` by default in our leaf, meaning they cannot be simulated.
+We can instantiate a [`LeafModels`](@ref) without choosing a model for all processes. In our example the `interception` and `energy` are not provided, so they will have the value `missing` by default in our leaf, meaning they cannot be simulated.
 
 Now if we simulate the photosynthesis, we need to provide the values for input variables. This is done as follows:
 
 ```@example
-Leaf(photosynthesis = Fvcb(),
+LeafModels(photosynthesis = Fvcb(),
     stomatal_conductance = Medlyn(0.03, 12.0),
     Tₗ = 25.0, PPFD = 1000.0, Cₛ = 400.0, Dₗ = 0.82)
 ```
@@ -119,7 +119,7 @@ The stomatal conductance (`Gₛ`) can be simulated using the [`gs`](@ref) functi
 
 ### Photosynthesis
 
-The photosynthesis can be simulated using the [`photosynthesis!`](@ref) function. Several models are available to simulate it:
+The photosynthesis can be simulated using the [`photosynthesis`](@ref) function. Several models are available to simulate it:
 
 - [`Fvcb`](@ref): an implementation of the Farquhar–von Caemmerer–Berry (FvCB) model for C3 photosynthesis (Farquhar et al., 1980; von Caemmerer and Farquhar, 1981) using the analytical resolution
 - [`FvcbIter`](@ref): the same model but implemented using an iterative computation over Cᵢ
@@ -132,7 +132,7 @@ For example, you can simulate a constant assimilation of a leaf using the follow
 ```@example
 meteo = Atmosphere(T = 20.0, Wind = 1.0, P = 101.3, Rh = 0.65)
 
-leaf = Leaf(photosynthesis = ConstantA(25.0),
+leaf = LeafModels(photosynthesis = ConstantA(25.0),
             stomatal_conductance = ConstantGs(0.03,0.001),
             Tₗ = 25.0, PPFD = 1000.0, Gbc = 0.67, Dₗ = meteo.VPD)
 

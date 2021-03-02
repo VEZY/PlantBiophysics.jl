@@ -13,7 +13,7 @@ Base.@kwdef struct ConstantA{T} <: AbstractAModel
 end
 
 function inputs(::ConstantA)
-    (:Cₛ)
+    (:Cₛ,)
 end
 
 function outputs(::ConstantA)

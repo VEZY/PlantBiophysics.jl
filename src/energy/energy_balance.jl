@@ -76,18 +76,21 @@ https://doi.org/10.1016/j.agrformet.2018.02.005.
 """
 function energy_balance(object::AbstractComponentModel,meteo::Atmosphere,constants = Constants())
     object_tmp = deepcopy(object)
-    net_radiation!(object_tmp,meteo,constants)
+    energy_balance!(object_tmp,meteo,constants)
     return object_tmp.status
 end
 
 function energy_balance!(object::AbstractComponentModel,meteo::Atmosphere,constants = Constants())
+    is_init = is_initialised(object)
+    !is_init && error("Some variables must be initialized before simulation")
+
     net_radiation!(object,meteo,constants)
     return nothing
 end
 
 function energy_balance!(object::Dict{String,PlantBiophysics.AbstractComponentModel},meteo::Atmosphere,constants = Constants())
     for i in keys(object)
-        net_radiation!(object[i],meteo,constants)
+        energy_balance!(object[i],meteo,constants)
     end
     return nothing
 end

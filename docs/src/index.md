@@ -43,7 +43,7 @@ Then define which model to use for each process, and their parameter values:
 
 ```julia
 # Using the model from Medlyn et al. (2011) for Gs and the model of Monteith and Unsworth (2013) for the energy balance:
-leaf = Leaf(energy = Monteith(),
+leaf = LeafModels(energy = Monteith(),
             photosynthesis = Fvcb(),
             stomatal_conductance = Medlyn(0.03, 12.0),
             Rn = 13.747, skyFraction = 1.0, PPFD = 1500.0, d = 0.03)
@@ -91,7 +91,7 @@ example application to [CO2] × drought interactions ». Geoscientific Model De
 Farquhar, G. D., S. von von Caemmerer, et J. A. Berry. 1980. « A biochemical model of
 photosynthetic CO2 assimilation in leaves of C3 species ». Planta 149 (1): 78‑90.
 
-Leuning, R., F. M. Kelliher, DGG de Pury, et E.-D. SCHULZE. 1995. « Leaf nitrogen,
+Leuning, R., F. M. Kelliher, DGG de Pury, et E.-D. SCHULZE. 1995. « LeafModels nitrogen,
 photosynthesis, conductance and transpiration: scaling from leaves to canopies ». Plant,
 Cell & Environment 18 (10): 1183‑1200.
 

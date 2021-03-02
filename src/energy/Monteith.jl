@@ -30,7 +30,7 @@ function inputs(::Monteith)
 end
 
 function outputs(::Monteith)
-    (:Tₗ,:Rn,:Rₗₗ,:H,:λE,:Cₛ,:Cᵢ,:A,:Gₛ,:Gbₕ,:Dₗ,:Gbc)
+    (:Tₗ,:Rₗₗ,:H,:λE,:Cₛ,:Cᵢ,:A,:Gₛ,:Gbₕ,:Dₗ,:Gbc)
 end
 
 """

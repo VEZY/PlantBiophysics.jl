@@ -76,12 +76,36 @@ function outputs(v::Missing)
 end
 
 """
-    to_initialise(v::T, vars...)
+    to_initialise(v::T, vars...) where T <: Union{Missing,AbstractModel}
+    to_initialise(m::T)  where T <: AbstractComponentModel
 
 Return the variables that must be initialized providing a set of models.
+
+# Note
+
+There is no way to know before-hand which process will be simulated by the user, so if you
+have a component with a model for each process, the variables to initialise are always the
+smallest subset of all, meaning it is considered the variables needed for models can be
+output from other models.
+
+# Examples
+
+```julia
+to_initialise(Fvcb(),Medlyn(0.03,12.0))
+
+# Or using a component directly:
+leaf = LeafModels(photosynthesis = Fvcb(), stomatal_conductance = Medlyn(0.03,12.0))
+to_initialise(leaf)
+```
 """
 function to_initialise(v::T, vars...) where T <: Union{Missing,AbstractModel}
     setdiff(inputs(v, vars...),outputs(v, vars...))
+end
+
+function to_initialise(m::T) where T <: AbstractComponentModel
+    # Get al fields
+    models = [getfield(m,x) for x in setdiff(fieldnames(typeof(m)),(:status,))]
+    to_initialise(models...)
 end
 
 
@@ -136,9 +160,56 @@ init_variables(Monteith(), Medlyn(0.03,12.0))
 """
 function init_variables(models...)
     var_names = variables(models...)
-    MutableNamedTuple(; zip(var_names,fill(zero(Float64),length(var_names)))...)
+    MutableNamedTuple(; zip(var_names,fill(Float64(-999.99),length(var_names)))...)
 end
 
+"""
+    is_initialised(m::T) where T <: AbstractComponentModel
+    is_initialised(m::T, models...) where T <: AbstractComponentModel
+
+Check if the variables that must be initialised are, and return `true` if so, and `false` and
+an information message if not.
+
+# Note
+
+There is no way to know before-hand which process will be simulated by the user, so if you
+have a component with a model for each process, the variables to initialise are always the
+smallest subset of all, meaning it is considered the user will simulate the variables needed
+for other models.
+
+# Examples
+
+```julia
+leaf = LeafModels(photosynthesis = Fvcb(), stomatal_conductance = Medlyn(0.03,12.0))
+is_initialised(leaf)
+
+# Searching for just a sub-set of models:
+is_initialised(leaf,leaf.photosynthesis)
+# NB: this is usefull when the leaf is parameterised for all processes but only one is
+# simulated, so its inputs must be initialised
+```
+"""
+function is_initialised(m::T) where T <: AbstractComponentModel
+    var_names = to_initialise(m)
+    is_not_init = [getproperty(m.status,i) == -999.99 for i in var_names]
+    if any(is_not_init)
+        @info "Some variables must be initialised before simulation: $(var_names[is_not_init])"
+        return false
+    else
+        return true
+    end
+end
+
+function is_initialised(m::T, models...) where T <: AbstractComponentModel
+    var_names = to_initialise(models...)
+    is_not_init = [getproperty(m.status,i) == -999.99 for i in var_names]
+    if any(is_not_init)
+        @info "Some variables must be initialised before simulation: $(var_names[is_not_init])"
+        return false
+    else
+        return true
+    end
+end
 
 """
     init_variables_manual(models...;vars...)

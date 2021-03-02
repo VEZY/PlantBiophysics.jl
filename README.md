@@ -20,7 +20,7 @@ meteo = Atmosphere(T = 22.0, Wind = 0.8333, P = 101.325, Rh = 0.4490995)
 
 # Using the model from Medlyn et al. (2011) for Gs and the model of Monteith and Unsworth (2013) for the
 # energy balance:
-leaf = Leaf(geometry = Geom1D(0.03),
+leaf = LeafModels(geometry = Geom1D(0.03),
             energy = Monteith(),
             photosynthesis = Fvcb(),
             stomatal_conductance = Medlyn(0.03, 12.0),
@@ -93,7 +93,7 @@ example application to [CO2] × drought interactions ». Geoscientific Model De
 Farquhar, G. D., S. von von Caemmerer, et J. A. Berry. 1980. « A biochemical model of
 photosynthetic CO2 assimilation in leaves of C3 species ». Planta 149 (1): 78‑90.
 
-Leuning, R., F. M. Kelliher, DGG de Pury, et E.-D. SCHULZE. 1995. « Leaf nitrogen,
+Leuning, R., F. M. Kelliher, DGG de Pury, et E.-D. SCHULZE. 1995. « LeafModels nitrogen,
 photosynthesis, conductance and transpiration: scaling from leaves to canopies ». Plant,
 Cell & Environment 18 (10): 1183‑1200.
 
@@ -101,7 +101,7 @@ Medlyn, B. E., E. Dreyer, D. Ellsworth, M. Forstreuter, P. C. Harley, M. U. F. K
 
 Monteith, John L., et Mike H. Unsworth. 2013. « Chapter 13 - Steady-State Heat Balance: (i) Water Surfaces, Soil, and Vegetation ». In Principles of Environmental Physics (Fourth Edition), edited by John L. Monteith et Mike H. Unsworth, 217‑47. Boston: Academic Press.
 
-Schymanski, Stanislaus J., et Dani Or. 2017. « Leaf-Scale Experiments Reveal an Important
+Schymanski, Stanislaus J., et Dani Or. 2017. « LeafModels-Scale Experiments Reveal an Important
 Omission in the Penman–Monteith Equation ». Hydrology and Earth System Sciences 21 (2): 685‑706. https://doi.org/10.5194/hess-21-685-2017.
 
 Vezy, Rémi, Mathias Christina, Olivier Roupsard, Yann Nouvellon, Remko Duursma, Belinda Medlyn, Maxime Soma, et al. 2018. « Measuring and modelling energy partitioning in canopies of varying complexity using MAESPA model ». Agricultural and Forest Meteorology 253‑254 (printemps): 203‑17. https://doi.org/10.1016/j.agrformet.2018.02.005.
