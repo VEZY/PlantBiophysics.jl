@@ -39,9 +39,9 @@ We describe the two arguments below.
 
 ### Component model
 
-The first argument to the function is what we call a component model ([`AbstractComponentModel`](@ref)). A component model is a data structure that lists in its fields the processes simulated for a component, and the chosen model and its associated parameter values.
+The first argument to the function is what we call a component model ([`AbstractComponentModel`](@ref)). A component model is a data structure that lists in its fields the processes simulated for a component, and the associated model and parameter values.
 
-The model is chosen by using a particular type of model for a process field of a component model. The type of the model helps Julia know which method it should use for simulating the process. But this is complicated technical gibberish for something quite simple. Let's use an example instead!
+The model is chosen by using a particular type of model for a field of the component model. The type (in the programmatic sense) of the model helps Julia know which method it should use for simulating the process. But this is complicated technical gibberish for something quite simple. Let's use an example instead!
 
 The most sounding example of a component model is [`LeafModels`](@ref). It is designed to hold all processes simulated for a photosynthetic organ, or at least for a leaf.
 
@@ -51,18 +51,17 @@ A [`LeafModels`](@ref) has five fields:
 fieldnames(LeafModels)
 ```
 
-The first four are for defining models used to simulate the associated processes, and the fifth (`status`) helps keeping track of simulated variables (they can be modified after a simulation).
+The first four are for defining models used to simulate the associated processes, and the fifth (`status`) helps keeping track of the state of simulated variables, because they can be modified by a simulation.
 
 Let's instantiate a [`LeafModels`](@ref) with some models. If we want to simulate the photosynthesis with the model of Farquhar et al. (1980) and the stomatal conductance with the model of Medlyn et al. (2011), we would use `Fvcb()` and `Medlyn` respectively, as follows:
 
 ```@example
-LeafModels(photosynthesis = Fvcb(),
-    stomatal_conductance = Medlyn(0.03, 12.0))
+LeafModels(photosynthesis = Fvcb(), stomatal_conductance = Medlyn(0.03, 12.0))
 ```
 
-We can instantiate a [`LeafModels`](@ref) without choosing a model for all processes. In our example the `interception` and `energy` are not provided, so they will have the value `missing` by default in our leaf, meaning they cannot be simulated.
+We can instantiate a [`LeafModels`](@ref) without choosing a model for all processes. In our example above we don't provide any model for the `interception` and `energy` processes, so they will have the default value `missing` in our leaf, meaning they cannot be simulated.
 
-Now if we simulate the photosynthesis, we need to provide the values for input variables. This is done as follows:
+Some models require some variables as input values. For example if we want to simulate the leaf photosynthesis using the `Fvcb` model, we need the leaf temperature, the PPFD (Photosynthetic Photon Flux Density) and the CO₂ concentration at the leaf surface. The values for these variables are given as follows:
 
 ```@example
 LeafModels(photosynthesis = Fvcb(),
@@ -70,19 +69,48 @@ LeafModels(photosynthesis = Fvcb(),
     Tₗ = 25.0, PPFD = 1000.0, Cₛ = 400.0, Dₗ = 0.82)
 ```
 
-You can see that some variables were given as keyword arguments (`Tₗ = 25.0`, `PPFD = 1000.0`, `Cₛ = 400.0`, `Dₗ = 0.82`). This is a convenience to set up initialization values for some variables required by models. For example here `PPFD` and `Tₗ` are needed for the `Fvcb` model, `Dₗ` is needed for `Medlyn`, and `Cₛ` for both.
+They are given as keyword arguments (`Tₗ = 25.0`, `PPFD = 1000.0`, `Cₛ = 400.0`, `Dₗ = 0.82`). This is a convenience to set up initialization values for some variables required by models. We already know that `PPFD`, `Cₛ` and `Tₗ` are needed for the `Fvcb` model. And `Dₗ` is needed for the `Medlyn` model ( and `Cₛ` too).
 
-To know which variables you need to initialize for a simulation, use the `to_initialise()` function on one or several model instances. For example in our case we use the `Fvcb` and `Medlyn` models, so we would do:
+To know which variables you need to initialize for a simulation, use the [`to_initialise`](@ref) function on one or several model instances, or directly on a component model (*e.g.* [`LeafModels`](@ref)). For example in our case we use the `Fvcb` and `Medlyn` models, so we would do:
 
 ```@example
 to_initialise(Fvcb(),Medlyn(0.03, 12.0))
 ```
 
+Or directly on a component model after instantiation:
+
+```@example leaf
+leaf = LeafModels(photosynthesis = Fvcb(), stomatal_conductance = Medlyn(0.03, 12.0))
+to_initialise(leaf)
+```
+
+You can also use [`is_initialised`](@ref) to know if a component is sufficiently initialized:
+
+```@example leaf
+is_initialised(leaf)
+```
+
+And then you can initialize the component model status using [`init_status!`](@ref):
+
+```@example leaf
+init_status!(leaf, Tₗ = 25.0, PPFD = 1000.0, Cₛ = 400.0, Dₗ = 1.2)
+```
+
+And check again if it worked:
+
+```@example leaf
+is_initialised(leaf)
+```
+
+Yes, it did!
+
+Both [`to_initialise`](@ref) and [`is_initialised`](@ref) search for common input variables among all models used. Then, they compare with the outputs of the models, and if one variable is needed as input but provided as output of another model, the variable is not considered for initialization because it is thought that the user will simulate these variables.
+
 ### Climate forcing
 
-To make a simulation, we first need the climatic/meteorological conditions measured close to the object or component. The package provide its own data structure to declare those conditions, while pre-computing some variables. This data structure is a type called [`Atmosphere`](@ref).
+To make a simulation, we most often need the climatic/meteorological conditions measured close to the object or component. The package provide its own data structure to declare those conditions, and to pre-compute other required variables. This data structure is a type called [`Atmosphere`](@ref).
 
-The mandatory variables to provide are: `T` (air temperature in °C), `Rh` (relative humidity, 0-1), `Wind` (the windspeed in m s-1) and `P` (the air pressure in kPa).
+The mandatory variables to provide are: `T` (air temperature in °C), `Rh` (relative humidity, 0-1), `Wind` (the wind speed in m s-1) and `P` (the air pressure in kPa).
 
 We can declare such conditions using [`Atmosphere`](@ref) such as:
 
@@ -90,7 +118,7 @@ We can declare such conditions using [`Atmosphere`](@ref) such as:
 meteo = Atmosphere(T = 20.0, Wind = 1.0, P = 101.3, Rh = 0.65)
 ```
 
-The [`Atmosphere`](@ref) also computes other variables based on the provided conditions, such as the vapor pressure deficit (VPD) or the air density (ρ). You can also provide them as inputs if necessary. For example if you need another way of computing the VPD, you can provide it as follows:
+The [`Atmosphere`](@ref) also computes other variables based on the provided conditions, such as the vapor pressure deficit (VPD) or the air density (ρ). You can also provide those variables as inputs if necessary. For example if you need another way of computing the VPD, you can provide it as follows:
 
 ```@example
 Atmosphere(T = 20.0, Wind = 1.0, P = 101.3, Rh = 0.65, VPD = 0.82)
@@ -104,7 +132,9 @@ meteo.eₛ
 
 See the documentation of the function if you need more information about the variables.
 
-### Example simulation
+### Models
+
+As presented above, each process is simulated using a particular model. The models can work independently of others, or in conjunction with other models. For example a stomatal conductance model is often associated with a photosynthesis model.
 
 Put a simulation of e.g. energy_balance here.
 
