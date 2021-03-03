@@ -1,4 +1,4 @@
-# Photosynthesis
+# [Photosynthesis](@id photosynthesis_page)
 
 List all models available for photosynthesis, how to use them, what are the parameters...
 

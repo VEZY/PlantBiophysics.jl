@@ -17,7 +17,7 @@ function inputs(::ConstantA)
 end
 
 function outputs(::ConstantA)
-    (:A,:Gₛ)
+    (:A,:Gₛ,:Cᵢ)
 end
 
 """

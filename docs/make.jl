@@ -21,11 +21,15 @@ makedocs(;
         "Home" => "index.md",
         "Getting started" => "get_started.md",
         "Models" => Any[
-            "Concepts" => "concepts.md",
             "Photosynthesis" => "photosynthesis.md",
             "Stomatal conductance" => "gs.md",
             "Energy balance" => "energy_balance.md",
-            "Light interception" => "light.md"],
+            "Light interception" => "light.md"
+            ],
+        "Details" => Any[
+            "Package design" => "concepts.md",
+            "Implement a model" => "implement_a_model.md",
+        ],
         "Functions" => "functions.md"
     ],
 )
