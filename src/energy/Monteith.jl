@@ -172,10 +172,6 @@ function net_radiation!(leaf::LeafModels{I,<:Monteith,A,Gs,S},meteo::Atmosphere,
         # γˢₑ = γ_star(meteo.γ, energy.aₛₕ, 1, Rbᵥ, 1.0e-9, Rbₕ) # Rsᵥ is inf. low
         # Ev = latent_heat(Rn_in, meteo.VPD, γˢₑ, Rbₕ, meteo.Δ, meteo.ρ, energy.aₛₕ, constants.Cₚ)
 
-        # Transpiration (mol[H₂O] m-2 s-1):
-        ET = leaf.status.λE / meteo.λ * constants.Mₕ₂ₒ
-        # ET / constants.Mₕ₂ₒ to get mm s-1 <=> kg m-2 s-1 <=> l m-2 s-1
-
         # Vapour pressure difference between the surface and the saturation vapour pressure:
         # Dₗ = ET * meteo.P / ((Rbᵥ + Rsᵥ) * leaf.energy.aₛₕ / leaf.energy.aₛᵥ)
         # ! Check this computation (moved below)
@@ -196,11 +192,11 @@ function net_radiation!(leaf::LeafModels{I,<:Monteith,A,Gs,S},meteo::Atmosphere,
     leaf.status.Rn = Rn_in # update Rn in the end.
     leaf.status.H = sensible_heat(leaf.status.Rn, meteo.VPD, γˢ, Rbₕ, meteo.Δ, meteo.ρ,
                                     leaf.energy.aₛₕ, constants.Cₚ)
-
+    # Transpiration (mol[H₂O] m-2 s-1):
+    ET = leaf.status.λE / meteo.λ * constants.Mₕ₂ₒ
+    # ET / constants.Mₕ₂ₒ to get mm s-1 <=> kg m-2 s-1 <=> l m-2 s-1
 
     nothing
-    # return (Rn = Rn, Rₗₗ = Rₗₗ, Tₗ = Tₗ, H = H, λE = λE, A = An, Gₛ = Gₛ, Cᵢ = Cᵢ, Rbₕ = Rbₕ,
-    #         Rbᵥ = Rbᵥ, iter = iter)
 end
 
 """

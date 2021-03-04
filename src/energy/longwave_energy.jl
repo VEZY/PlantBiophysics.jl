@@ -115,7 +115,7 @@ Rₗₗ * leaf_area
 Cengel, Y, et Transfer Mass Heat. 2003. A practical approach. New York, NY, USA: McGraw-Hill.
 """
 function net_longwave_radiation(T₁,T₂,ε₁,ε₂,F₁,K₀,σ)
-    (black_body(T₂,K₀,σ) - black_body(T₁,K₀,σ)) / (1.0 / ε₁ + 1.0/ε₂ - 1.0) * F₁
+    (black_body(T₂,K₀,σ) - black_body(T₁,K₀,σ)) / (1.0 / ε₁ + 1.0 / ε₂ - 1.0) * F₁
 end
 
 function net_longwave_radiation(T₁,T₂,ε₁,ε₂,F₁)
