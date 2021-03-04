@@ -37,5 +37,5 @@ makedocs(;
 
 
 deploydocs(;
-    repo="github.com/VEZY/PlantBiophysics.jl",
+    repo="github.com/VEZY/PlantBiophysics.jl.git",
 )
