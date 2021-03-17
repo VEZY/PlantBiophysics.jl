@@ -46,7 +46,7 @@ the energy balance using the mass flux (~ Rn - λE).
 
 - `leaf::LeafModels{.,<:Monteith,.,.,.}`: A [`LeafModels`](@ref) struct holding the parameters for
 the model with initialisations for:
-    - `Rn` (W m-2): net global radiation (PAR + NIR + TIR). Often computed from a light interception model
+    - `Rn` (W m-2): net shortwave radiation (PAR + NIR). Often computed from a light interception model
     - `skyFraction` (0-2): view factor between the object and the sky for both faces (see details).
     - `d` (m): characteristic dimension, *e.g.* leaf width (see eq. 10.9 from Monteith and Unsworth, 2013).
 - `meteo`: meteorology structure, see [`Atmosphere`](@ref)
@@ -184,7 +184,7 @@ function net_radiation!(leaf::LeafModels{I,<:Monteith,A,Gs,S},meteo::Atmosphere,
         leaf.status.Tₗ = Tₗ_new
 
         # Vapour pressure difference between the surface and the saturation vapour pressure:
-        Dₗ = e_sat(leaf.status.Tₗ) - e_sat( meteo.T) *  meteo.Rh
+        leaf.status.Dₗ = e_sat(leaf.status.Tₗ) - e_sat( meteo.T) *  meteo.Rh
 
         iter += 1
     end
@@ -193,7 +193,7 @@ function net_radiation!(leaf::LeafModels{I,<:Monteith,A,Gs,S},meteo::Atmosphere,
     leaf.status.H = sensible_heat(leaf.status.Rn, meteo.VPD, γˢ, Rbₕ, meteo.Δ, meteo.ρ,
                                     leaf.energy.aₛₕ, constants.Cₚ)
     # Transpiration (mol[H₂O] m-2 s-1):
-    ET = leaf.status.λE / meteo.λ * constants.Mₕ₂ₒ
+    # ET = leaf.status.λE / meteo.λ * constants.Mₕ₂ₒ
     # ET / constants.Mₕ₂ₒ to get mm s-1 <=> kg m-2 s-1 <=> l m-2 s-1
 
     nothing
