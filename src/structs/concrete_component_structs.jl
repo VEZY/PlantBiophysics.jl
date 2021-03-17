@@ -26,7 +26,7 @@ The status field depends on the input models. You can get the variables needed b
 
 ## Light interception model  (see [`AbstractInterceptionModel`](@ref))
 
-- `Rn` (W m-2): net global radiation (PAR + NIR + TIR). Often computed from a light interception model
+- `Rₛ` (W m-2): net shortwave radiation (PAR + NIR). Often computed from a light interception model
 - `PPFD` (μmol m-2 s-1): absorbed Photosynthetic Photon Flux Density
 - `skyFraction` (0-2): view factor between the object and the sky for both faces.
 

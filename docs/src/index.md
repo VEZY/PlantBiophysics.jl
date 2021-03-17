@@ -46,7 +46,7 @@ Then define which model to use for each process, and their parameter values:
 leaf = LeafModels(energy = Monteith(),
             photosynthesis = Fvcb(),
             stomatal_conductance = Medlyn(0.03, 12.0),
-            Rn = 13.747, skyFraction = 1.0, PPFD = 1500.0, d = 0.03)
+            Rₛ = 13.747, skyFraction = 1.0, PPFD = 1500.0, d = 0.03)
 ```
 
 Then, run the simulation of the energy balance and assimilation:
@@ -58,7 +58,7 @@ energy_balance!(leaf,meteo)
 Now the variables that were simulated by the models were updated in the leaf status. To access the values, do as follow:
 
 ```julia
-leaf.status.Rn
+leaf.status.Rₛ
 leaf.status.Rₗₗ
 leaf.status.A
 leaf.status.Gₛ

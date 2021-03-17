@@ -24,7 +24,7 @@ leaf = LeafModels(geometry = Geom1D(0.03),
             energy = Monteith(),
             photosynthesis = Fvcb(),
             stomatal_conductance = Medlyn(0.03, 12.0),
-            Rn = 13.747, skyFraction = 1.0, PPFD = 1500.0)
+            Rₛ = 13.747, skyFraction = 1.0, PPFD = 1500.0)
 
 energy_balance(leaf,meteo)
 ```
@@ -41,6 +41,7 @@ For more examples, please read the documentation.
 - [ ] Make the functions compatible with an MTG, e.g. apply photosynthesis to an MTG, and use the right method for each node. NB: I think the models should be a field of the node.
 - [ ] Make the functions compatible with several meteorological time-steps
 - [ ] Evaluate using Schymanski et al. (2017) data + leaf measurements models (in progress)
+- [ ] Check Schymanski input: is Rs = Rnleaf ok? Because Rs is Rn - Rll.
 - [ ] Add more documentation + tutorial:
   - [ ] add doc about the design (components, models, model values, multiple dispatch)
   - [ ] add doc about input files
