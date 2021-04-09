@@ -9,7 +9,8 @@ Default method to compute the stomatal conductance for CO₂ (mol m-2 s-1), it t
 `leaf.stomatal_conductance.g0 + gs_closure(leaf,meteo) * leaf.status.A`
 
 where gs_closure(leaf,meteo) computes the stomatal closure, and must be
-implemented for the type of `leaf.stomatal_conductance`.
+implemented for the type of `leaf.stomatal_conductance`. The stomatal conductance is not
+allowed to go below `leaf.stomatal_conductance.gs_min`.
 
 # Arguments
 
@@ -34,17 +35,21 @@ gs(leaf,meteo)
 ```
 """
 function gs(leaf::LeafModels{I,E,A,Gs,S},gs_mod) where {I,E,A,Gs<:AbstractGsModel,S}
-    leaf.stomatal_conductance.g0 + gs_mod * leaf.status.A
+    max(leaf.stomatal_conductance.gs_min,
+        leaf.stomatal_conductance.g0 + gs_mod * leaf.status.A)
 end
 
 function gs(leaf::LeafModels{I,E,A,Gs,S},meteo::M) where {I,E,A,Gs<:AbstractGsModel,S,M<:Atmosphere}
-    leaf.stomatal_conductance.g0 + gs_closure(leaf,meteo) * leaf.status.A
+    max(leaf.stomatal_conductance.gs_min,
+        leaf.stomatal_conductance.g0 + gs_closure(leaf,meteo) * leaf.status.A)
 end
 
 function gs!(leaf::LeafModels{I,E,A,Gs,S},gs_mod) where {I,E,A,Gs<:AbstractGsModel,S}
-    leaf.status.Gₛ = leaf.stomatal_conductance.g0 + gs_mod * leaf.status.A
+    leaf.status.Gₛ = max(leaf.stomatal_conductance.gs_min,
+        leaf.stomatal_conductance.g0 + gs_mod * leaf.status.A)
 end
 
 function gs!(leaf::LeafModels{I,E,A,Gs,S},meteo::M) where {I,E,A,Gs<:AbstractGsModel,S,M<:Atmosphere}
-    leaf.status.Gₛ = leaf.stomatal_conductance.g0 + gs_closure(leaf,meteo) * leaf.status.A
+    leaf.status.Gₛ = max(leaf.stomatal_conductance.gs_min,
+        leaf.stomatal_conductance.g0 + gs_closure(leaf,meteo) * leaf.status.A)
 end

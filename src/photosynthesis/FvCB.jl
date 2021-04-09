@@ -216,7 +216,8 @@ function assimilation!(leaf::LeafModels{I,E,<:Fvcb,<:AbstractGsModel,S}, meteo,
     leaf.status.A = min(Wᵥ,Wⱼ) - Rd
 
     # Stomatal conductance (mol[CO₂] m-2 s-1)
-    leaf.status.Gₛ = gs(leaf,gs_mod)
+    leaf.status.Gₛ = max(leaf.stomatal_conductance.gs_min,gs(leaf,gs_mod))
+    # replace by ifelse directly ? Should be faster as `max()` add some tests.\
 
     # Intercellular CO₂ concentration (Cᵢ, μmol mol)
     leaf.status.Cᵢ = min(leaf.status.Cₛ, leaf.status.Cₛ - leaf.status.A / leaf.status.Gₛ)

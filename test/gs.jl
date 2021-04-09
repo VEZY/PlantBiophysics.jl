@@ -4,7 +4,7 @@ constants = Constants()
 # Defining the variables we need:
 A = 20.0 # assimilation (umol m-2 s-1)
 Cₛ = 300.0 # Stomatal CO₂ concentration (ppm)
-Gs = Medlyn(0.03,12.0) # Instance of a Medlyn type with g0 = 0.03 and g1 = 0.1
+Gs = Medlyn(0.03,12.0,0.0) # Instance of a Medlyn type with g0 = 0.03 and g1 = 0.1
 
 # Defining the meteorology:
 meteo = Atmosphere(T = 28.0, Wind = 0.8333, P = 101.325, Rh = 0.47)

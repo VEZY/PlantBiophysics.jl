@@ -2,15 +2,24 @@
 """
 Constant stomatal conductance for CO₂ struct.
 
+# Arguments
+
+- `g0`: intercept.
+- `gs`: stomatal conductance.
+- `gs_min = 0.001`: residual conductance. We consider the residual conductance being different
+ from `g0` because in practice `g0` can be negative when fitting real-world data.
+
 Then used as follows:
-Gs = ConstantGs(0.03,0.1)
+Gs = ConstantGs(0.0,0.1)
 Gₛ = Gs.g0 + Gs.gs * A
 """
 struct ConstantGs{T} <: AbstractGsModel
- g0::T
- gs::T
+    g0::T
+    gs::T
+    gs_min::T
 end
 
+ConstantGs(g0,gs) = ConstantGs(g0,gs,oftype(gs,0.001))
 
 function inputs(::ConstantGs)
     (:Gₛ,)
