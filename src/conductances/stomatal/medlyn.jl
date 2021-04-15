@@ -69,9 +69,18 @@ The result of this function is then used as:
 the model.
 - `meteo`: meteorology structure, see [`Atmosphere`](@ref). Is not used in this model.
 
+# Details
+
+Use `variables()` on Medlyn to get the variables that must be instantiated in the `LeafModels` struct.
+
+
 # Notes
 
-`Dₗ` is forced to be >= 1e-9 because it is used in a squared root. It is prefectly acceptable to
+- `Cₛ` is used instead of `Cₐ` because Gₛ is between the surface and the intercellular space. The conductance
+between the atmosphere and the surface is accounted for using the boundary layer conductance
+(`Gbc` in [`Monteith`](@ref)). Medlyn et al. (2011) uses `Cₐ` in their paper because they relate their models
+to the measurements made at leaf level, with a well-mixed chamber where`Cₛ ≈ Cₐ`.
+- `Dₗ` is forced to be >= 1e-9 because it is used in a squared root. It is prefectly acceptable to
 get a negative Dₗ when leaves are re-hydrating from air. Cloud forests are the perfect example.
 See *e.g.*: Guzmán‐Delgado, P, Laca, E, Zwieniecki, MA. Unravelling foliar water uptake pathways:
 The contribution of stomata and the cuticle. Plant Cell Environ. 2021; 1– 13.
