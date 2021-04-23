@@ -33,7 +33,7 @@ Base.@kwdef struct FvcbIter{T} <: AbstractAModel
 end
 
 function inputs(::FvcbIter)
-    (:PPFD,:Tₗ,:Cₛ,:Gbc)
+    (:PPFD,:Tₗ,:Gbc)
 end
 
 function outputs(::FvcbIter)
