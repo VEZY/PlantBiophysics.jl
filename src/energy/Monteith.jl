@@ -59,6 +59,13 @@ controlled chamber), 1 if the leaf is *e.g.* up on the canopy where the upper si
 leaf sees the sky, and the side bellow sees soil + other leaves that are all considered at
 the same temperature than the leaf, or less than 1 if it is partly shaded.
 
+# Notes
+
+If you want the algorithm to print a message whenever it does not reach convergence, use the
+debugging mode by executing this in the REPL: `ENV["JULIA_DEBUG"] = PlantBiophysics`.
+
+More information [here](https://docs.julialang.org/en/v1/stdlib/Logging/#Environment-variables).
+
 # Examples
 
 ```julia
@@ -179,13 +186,20 @@ function net_radiation!(leaf::LeafModels{I,<:Monteith,A,Gs,S},meteo::Atmosphere,
         leaf.status.Tₗ = Tₗ_new
 
         # Vapour pressure difference between the surface and the saturation vapour pressure:
-        leaf.status.Dₗ = e_sat(leaf.status.Tₗ) - e_sat( meteo.T) *  meteo.Rh
+        leaf.status.Dₗ = e_sat(leaf.status.Tₗ) - e_sat(meteo.T) *  meteo.Rh
 
         iter += 1
     end
 
     leaf.status.H = sensible_heat(leaf.status.Rn, meteo.VPD, γˢ, Rbₕ, meteo.Δ, meteo.ρ,
                                     leaf.energy.aₛₕ, constants.Cₚ)
+
+    @debug begin
+        if iter == leaf.energy.maxiter
+            "`net_radiation!` algorithm did not converge. Please check the value."
+        end
+    end
+
     # Transpiration (mol[H₂O] m-2 s-1):
     # ET = leaf.status.λE / meteo.λ * constants.Mₕ₂ₒ
     # ET / constants.Mₕ₂ₒ to get mm s-1 <=> kg m-2 s-1 <=> l m-2 s-1
