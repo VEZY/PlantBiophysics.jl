@@ -34,10 +34,14 @@ Craig V. M. Barton, Kristine Y. Crous, Paolo De Angelis, Michael Freeman, et Lis
 Global Change Biology 17 (6): 2134‑44. https://doi.org/10.1111/j.1365-2486.2010.02375.x.
 
 """
-Base.@kwdef struct Medlyn{T} <: AbstractGsModel
+struct Medlyn{T} <: AbstractGsModel
     g0::T
     g1::T
-    gs_min::T = oftype(g0,0.001)
+    gs_min::T
+end
+
+function Medlyn(g0,gs,gs_min)
+    Medlyn(promote(g0,gs,gs_min))
 end
 
 Medlyn(g0,g1) = Medlyn(g0,g1,oftype(g0,0.001))
@@ -49,6 +53,9 @@ end
 function outputs(::Medlyn)
     (:Gₛ,)
 end
+
+Base.eltype(x::Medlyn) = typeof(x).parameters[1]
+
 
 """
     gs_closure(leaf::LeafModels{I,E,A,<:Medlyn,S},meteo)

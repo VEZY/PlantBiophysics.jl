@@ -19,6 +19,10 @@ struct ConstantGs{T} <: AbstractGsModel
     gs_min::T
 end
 
+function ConstantGs(g0,gs,gs_min)
+    ConstantGs(promote(g0,gs,gs_min)...)
+end
+
 ConstantGs(g0,gs) = ConstantGs(g0,gs,oftype(gs,0.001))
 
 function inputs(::ConstantGs)
@@ -28,6 +32,9 @@ end
 function outputs(::ConstantGs)
     (:Gₛ,)
 end
+
+Base.eltype(x::ConstantGs) = typeof(x).parameters[1]
+
 
 """
 Constant stomatal closure

@@ -13,23 +13,37 @@ This structure has several more parameters:
 percent of change, *i.e.* 1% means that two successive assimilations with less than 1%
 difference in value are considered the same value.
 """
-Base.@kwdef struct FvcbIter{T} <: AbstractAModel
-    Tᵣ::T = 25.0
-    VcMaxRef::T = 200.0
-    JMaxRef::T = 250.0
-    RdRef::T = 0.6
-    Eₐᵣ::T = 46390.0
-    O₂::T = 210.0
-    Eₐⱼ::T = 29680.0
-    Hdⱼ::T = 200000.0
-    Δₛⱼ::T = 631.88
-    Eₐᵥ::T = 58550.0
-    Hdᵥ::T = 200000.0
-    Δₛᵥ::T = 629.26
-    α::T = 0.425
-    θ::T = 0.90
-    iter_A_max::Int = 20
-    ΔT_A::T = 1.0
+struct FvcbIter{T} <: AbstractAModel
+    Tᵣ::T
+    VcMaxRef::T
+    JMaxRef::T
+    RdRef::T
+    Eₐᵣ::T
+    O₂::T
+    Eₐⱼ::T
+    Hdⱼ::T
+    Δₛⱼ::T
+    Eₐᵥ::T
+    Hdᵥ::T
+    Δₛᵥ::T
+    α::T
+    θ::T
+    iter_A_max::Int
+    ΔT_A::T
+end
+
+function FvcbIter(;Tᵣ = 25.0, VcMaxRef = 200.0, JMaxRef = 250.0, RdRef = 0.6, Eₐᵣ = 46390.0,
+    O₂= 210.0, Eₐⱼ = 29680.0, Hdⱼ = 200000.0, Δₛⱼ = 631.88, Eₐᵥ = 58550.0, Hdᵥ = 200000.0,
+    Δₛᵥ = 629.26, α = 0.425, θ = 0.90, iter_A_max = 20, ΔT_A = 1.0)
+
+    # Add type promotion in case we want to use e.g. Measurements for one parameter only and
+    # we don't want to set each parameter to ± 0 by hand.
+    param_float = promote(Tᵣ, VcMaxRef, JMaxRef, RdRef, Eₐᵣ, O₂, Eₐⱼ, Hdⱼ, Δₛⱼ, Eₐᵥ, Hdᵥ, Δₛᵥ, α, θ, ΔT_A)
+    FvcbIter(
+        param_float[1:end-1]...,
+        iter_A_max,
+        param_float[end]
+    )
 end
 
 function inputs(::FvcbIter)
@@ -39,6 +53,8 @@ end
 function outputs(::FvcbIter)
     (:A,:Gₛ,:Cᵢ,:Cₛ)
 end
+
+Base.eltype(x::FvcbIter) = typeof(x).parameters[1]
 
 """
     assimilation!(leaf::LeafModels{I,E,<:FvcbIter,<:AbstractGsModel,S}, meteo, constants = Constants())

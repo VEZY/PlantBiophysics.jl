@@ -17,12 +17,18 @@ consider convergence
 energy_model = Monteith() # a leaf in an illuminated chamber
 ```
 """
-Base.@kwdef struct Monteith{T,S} <: AbstractEnergyModel
-    aₛₕ::S = 2
-    aₛᵥ::S = 1
-    ε::T = 0.955
-    maxiter::S = 10
-    ΔT::T = 0.01
+struct Monteith{T,S} <: AbstractEnergyModel
+    aₛₕ::S
+    aₛᵥ::S
+    ε::T
+    maxiter::S
+    ΔT::T
+end
+
+function Monteith(;aₛₕ = 2, aₛᵥ = 1, ε = 0.955, maxiter = 10, ΔT = 0.01)
+    param_int = promote(aₛₕ,aₛᵥ,maxiter)
+    param_float = promote(ε,ΔT)
+    Monteith(param_int[1],param_int[2], param_float[1], param_int[3], param_float[2])
 end
 
 function inputs(::Monteith)
@@ -32,6 +38,8 @@ end
 function outputs(::Monteith)
     (:Tₗ,:Rn,:Rₗₗ,:H,:λE,:Cₛ,:Cᵢ,:A,:Gₛ,:Gbₕ,:Dₗ,:Gbc)
 end
+
+Base.eltype(x::Monteith) = typeof(x).parameters[1]
 
 """
     net_radiation!(leaf::LeafModels{I,<:Monteith,A,Gs,S},meteo::Atmosphere,constants = Constants())

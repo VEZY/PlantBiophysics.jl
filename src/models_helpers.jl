@@ -1,28 +1,46 @@
 """
-    inputs(::AbstractModel)
+    inputs(model::AbstractModel)
+    inputs(...)
 
-Get the inputs of a model.
+Get the inputs of one or several models.
 
-Here returns an empty tuple by default for `AbstractModel`s (no inputs).
+Returns an empty tuple by default for `AbstractModel`s (no inputs) or `Missing` models.
 """
-function inputs(::AbstractModel)
+function inputs(model::AbstractModel)
     ()
 end
 
-"""
-    outputs(::AbstractModel)
-
-Get the outputs of a model.
-
-Returns an empty tuple by default for `AbstractModel`s (no outputs).
-"""
-function outputs(::AbstractModel)
+function inputs(model::Missing)
     ()
 end
 
+function inputs(v::T, vars...) where T <: Union{Missing,AbstractModel}
+    length((vars...,)) > 0 ? union(inputs(v), inputs(vars...)) : inputs(v)
+end
+
 """
-    variables(::Type)
-    variables(::Type, vars...)
+    outputs(model::AbstractModel)
+    outputs(...)
+
+Get the outputs of one or several models.
+
+Returns an empty tuple by default for `AbstractModel`s (no outputs) or `Missing` models.
+"""
+function outputs(model::AbstractModel)
+    ()
+end
+
+function outputs(model::Missing)
+    ()
+end
+
+function outputs(v::T, vars...) where T <: Union{Missing,AbstractModel}
+    length((vars...,)) > 0 ? union(outputs(v), outputs(vars...)) : outputs(v)
+end
+
+"""
+    variables(model)
+    variables(model, models...)
 
 Returns a tuple with the name of the variables needed by a model, or a union of those
 variables for several models.
@@ -41,38 +59,66 @@ variables(Monteith(), Medlyn(0.03,12.0))
 
 # See also
 
-[`inputs`](@ref) and [`outputs`](@ref) to get only the inputs or outputs of a model.
-
+[`inputs`](@ref), [`outputs`](@ref) and [`variables_typed`](@ref)
 """
-function variables(v::T, vars...) where T <: Union{Missing,AbstractModel}
-    length((vars...,)) > 0 ? union(variables(v), variables(vars...)) : union(inputs(v),outputs(v))
-end
-
-
-function inputs(v::T, vars...) where T <: Union{Missing,AbstractModel}
-    length((vars...,)) > 0 ? union(inputs(v), inputs(vars...)) : inputs(v)
-end
-
-function outputs(v::T, vars...) where T <: Union{Missing,AbstractModel}
-    length((vars...,)) > 0 ? union(outputs(v), outputs(vars...)) : outputs(v)
+function variables(m::T, ms...) where T <: Union{Missing,AbstractModel}
+    length((ms...,)) > 0 ? union(variables(m), variables(ms...)) : union(inputs(m),outputs(m))
 end
 
 """
-    inputs(::Missing)
+    variables_typed(model)
+    variables_typed(model, models...)
 
-Returns an empty tuple because missing models do not need any input variables.
+Returns a named tuple with the name and the types of the variables needed by a model, or a
+union of those for several models.
+
+# Examples
+
+```julia
+variables_typed(Monteith())
+
+variables_typed(Monteith(), Medlyn(0.03,12.0))
+```
+
+# See also
+
+[`inputs`](@ref), [`outputs`](@ref) and [`variables`](@ref)
+
 """
-function inputs(v::Missing)
-    ()
+function variables_typed(x)
+    var_names = variables(x)
+    var_type = eltype(x)
+    (; zip(var_names, fill(var_type,length(var_names)))...)
 end
 
-"""
-    inputs(::Missing)
+function variables_typed(ms...)
+    var_types = variables_typed.(ms)
 
-Returns an empty tuple because missing models do not compute any variables.
-"""
-function outputs(v::Missing)
-    ()
+    common_variables = intersect(keys.(var_types)...)
+    vars_union = union(keys.(var_types)...)
+
+
+    var_types_promoted = []
+    for i in vars_union
+        if i in common_variables
+            types_common_vars = []
+
+            for t in var_types
+                if isdefined(t,i)
+                    push!(types_common_vars,t[i])
+                end
+            end
+            push!(var_types_promoted, i => promote_type(types_common_vars...))
+        else
+            for t in var_types
+                if isdefined(t,i)
+                    push!(var_types_promoted, i => t[i])
+                end
+            end
+        end
+    end
+
+    return (;var_types_promoted...)
 end
 
 """
@@ -148,9 +194,10 @@ function init_status!(component::AbstractComponentModel;vars...)
 end
 
 """
-    init_variables(vars...)
+    init_variables(models...;types = (Float64,))
 
-Intialise model variables based on their instances.
+Intialise model variables based on their instances. the `types` keyword argument is used to
+force a type in the promotion.
 
 # Examples
 
@@ -158,10 +205,28 @@ Intialise model variables based on their instances.
 init_variables(Monteith(), Medlyn(0.03,12.0))
 ```
 """
-function init_variables(models...)
-    var_names = variables(models...)
-    MutableNamedTuple(; zip(var_names,fill(Float64(-999.99),length(var_names)))...)
+function init_variables(models...; types = (Float64,))
+    var_types = promote_type(([i === Any ? Float64 : i for i in eltype.(models)])...,types...)
+
+    vars = variables(models...)
+    vars_MNT = MutableNamedTuple(; zip(vars,[var_types(-999.99) for i in vars])...)
+
+    return vars_MNT
 end
+
+
+# function init_variables(models...;all = true)
+#     if all
+#         var_types = promote_type(([i === Any ? Float64 : i for i in eltype.(models)])...)
+#         vars = variables(models...)
+#         vars_MNT = MutableNamedTuple(; zip(vars,[var_types(-999.99) for i in vars])...)
+#     else
+#         var_types = variables_typed(models...)
+#         vars_MNT = MutableNamedTuple(; zip(keys(var_types),[i === Any ? Float64(-999.99) : i(-999.99) for i in var_types])...)
+#     end
+
+#     return vars_MNT
+# end
 
 """
     is_initialised(m::T) where T <: AbstractComponentModel
@@ -223,8 +288,10 @@ init_variables_manual(Monteith(); Tₗ = 20.0)
 ```
 """
 function init_variables_manual(models...;vars...)
-    init_vars = init_variables(models...)
+
     new_vals = (;vars...)
+    added_types = (fieldtypes(typeof(new_vals).parameters[2])...,)
+    init_vars = init_variables(models...;types = added_types)
     for i in keys(new_vals)
         !in(i,keys(init_vars)) && error("Key $i not found as a variable of any provided models")
         setproperty!(init_vars,i,new_vals[i])

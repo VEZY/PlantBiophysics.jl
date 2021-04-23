@@ -8,6 +8,19 @@
 
 A Julia package to simulate biophysical processes for plants such as photosynthesis, conductances for heat, water vapor and CO₂, latent, sensible energy fluxes, net radiation and temperature.
 
+The benefits of using this package are:
+
+- Blazing fast
+- Easy to use
+- Great composability
+- Easy to extend (add your model for any process, and it just works with the others)
+- Easy to read, the code implement the equations as they are written in the scientific articles (using Unicode)
+- Included in the Archimed platform. Will be used by other packages to simulate single leaves, voxels, canopies...
+- Soon:
+  - Units
+  - Error propagation
+  - Sensitivity analyses
+
 ## Examples
 
 Here is an example usage with a simulation of the energy balance and assimilation of a leaf:

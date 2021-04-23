@@ -20,6 +20,8 @@ function outputs(::ConstantA)
     (:A,:Gₛ,:Cᵢ)
 end
 
+Base.eltype(x::ConstantA) = typeof(x).parameters[1]
+
 """
     assimilation!(leaf::LeafModels{I,E,<:ConstantA,<:AbstractGsModel,S},constants = Constants())
 

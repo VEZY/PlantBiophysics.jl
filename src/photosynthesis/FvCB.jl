@@ -62,21 +62,28 @@ A = Fvcb()
 A.Eₐᵥ
 ```
 """
-Base.@kwdef struct Fvcb{T} <: AbstractAModel
-    Tᵣ::T = 25.0
-    VcMaxRef::T = 200.0
-    JMaxRef::T = 250.0
-    RdRef::T = 0.6
-    Eₐᵣ::T = 46390.0
-    O₂::T = 210.0
-    Eₐⱼ::T = 29680.0
-    Hdⱼ::T = 200000.0
-    Δₛⱼ::T = 631.88
-    Eₐᵥ::T = 58550.0
-    Hdᵥ::T = 200000.0
-    Δₛᵥ::T = 629.26
-    α::T = 0.425
-    θ::T = 0.90
+struct Fvcb{T} <: AbstractAModel
+    Tᵣ::T
+    VcMaxRef::T
+    JMaxRef::T
+    RdRef::T
+    Eₐᵣ::T
+    O₂::T
+    Eₐⱼ::T
+    Hdⱼ::T
+    Δₛⱼ::T
+    Eₐᵥ::T
+    Hdᵥ::T
+    Δₛᵥ::T
+    α::T
+    θ::T
+end
+
+function Fvcb(;Tᵣ = 25.0, VcMaxRef = 200.0, JMaxRef = 250.0, RdRef = 0.6, Eₐᵣ = 46390.0,
+    O₂= 210.0, Eₐⱼ = 29680.0, Hdⱼ = 200000.0, Δₛⱼ = 631.88, Eₐᵥ = 58550.0, Hdᵥ = 200000.0,
+    Δₛᵥ = 629.26, α = 0.425, θ = 0.90)
+
+    Fvcb(promote(Tᵣ, VcMaxRef, JMaxRef, RdRef, Eₐᵣ, O₂, Eₐⱼ, Hdⱼ, Δₛⱼ, Eₐᵥ, Hdᵥ, Δₛᵥ, α, θ)...)
 end
 
 function inputs(::Fvcb)
@@ -86,6 +93,8 @@ end
 function outputs(::Fvcb)
     (:A,:Gₛ,:Cᵢ)
 end
+
+Base.eltype(x::Fvcb) = typeof(x).parameters[1]
 
 """
     assimilation!(leaf::LeafModels{I,E,<:Fvcb,<:AbstractGsModel,S},constants = Constants())

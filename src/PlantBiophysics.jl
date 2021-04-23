@@ -63,7 +63,7 @@ export Constants
 export init_status!
 
 # Get models informations
-export variables
+export variables, variables_typed
 export inputs, outputs
 export to_initialise, is_initialised
 
