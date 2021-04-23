@@ -45,4 +45,5 @@ Base.@kwdef struct Constants{T}
     Gsc_to_Gsw::T = 1.57
     Gbc_to_Gbₕ::T = 1.32
     Mₕ₂ₒ::T = 18.0e-3
+    J_to_umol::T = 4.57
 end
