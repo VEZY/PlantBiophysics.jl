@@ -46,6 +46,8 @@ end
 
 Medlyn(g0,g1) = Medlyn(g0,g1,oftype(g0,0.001))
 
+Medlyn(;g0,g1) = Medlyn(g0,g1,oftype(g0,0.001))
+
 function inputs(::Medlyn)
     (:Dₗ,:Cₛ,:A)
 end
