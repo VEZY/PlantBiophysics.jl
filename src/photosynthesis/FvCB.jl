@@ -122,8 +122,8 @@ Modify the first argument in place for A, Gₛ and Cᵢ:
 the model with initialisations for:
     - `Tₗ` (°C): leaf temperature
     - `PPFD` (μmol m-2 s-1): absorbed Photosynthetic Photon Flux Density
-    - `Cₛ` (mol m-2 s-1): surface CO₂ concentration.
-    - `Dₗ` (mol m-2 s-1): vapour pressure difference between the surface and the air saturation
+    - `Cₛ` (ppm): surface CO₂ concentration.
+    - `Dₗ` (kPa): vapour pressure difference between the surface and the air saturation
     vapour pressure in case you're using the stomatal conductance model of [`Medlyn`](@ref).
 - `meteo`: meteorology structure, see [`Atmosphere`](@ref)
 - `constants = Constants()`: physical constants. See [`Constants`](@ref) for more details
