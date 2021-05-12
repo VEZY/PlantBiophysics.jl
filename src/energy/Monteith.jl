@@ -36,7 +36,7 @@ function inputs(::Monteith)
 end
 
 function outputs(::Monteith)
-    (:Tₗ,:Rn,:Rₗₗ,:H,:λE,:Cₛ,:Cᵢ,:A,:Gₛ,:Gbₕ,:Dₗ,:Gbc)
+    (:Tₗ,:Rn,:Rₗₗ,:H,:λE,:Cₛ,:Cᵢ,:A,:Gₛ,:Gbₕ,:Dₗ,:Gbc,:iter)
 end
 
 Base.eltype(x::Monteith) = typeof(x).parameters[1]
@@ -133,7 +133,9 @@ function net_radiation!(leaf::LeafModels{I,<:Monteith,A,Gs,S},meteo::Atmosphere,
     leaf.status.Dₗ = meteo.VPD
     γˢ = Rbₕ = Δ = zero(meteo.T)
     leaf.status.Rn = leaf.status.Rₛ
-    iter = 1
+    iter = 0
+    # ?NB: We use iter = 0 and not 1 because to get the right number of iterations at the end
+    # of the for loop, becaue we use iter += 1 at the end (so it increments once again)
 
     # Iterative resolution of the energy balance
     for i in 1:leaf.energy.maxiter
@@ -201,6 +203,8 @@ function net_radiation!(leaf::LeafModels{I,<:Monteith,A,Gs,S},meteo::Atmosphere,
 
     leaf.status.H = sensible_heat(leaf.status.Rn, meteo.VPD, γˢ, Rbₕ, meteo.Δ, meteo.ρ,
                                     leaf.energy.aₛₕ, constants.Cₚ)
+
+    leaf.status.iter = iter
 
     @debug begin
         if iter == leaf.energy.maxiter
