@@ -133,7 +133,7 @@ Environment 30 (9): 1035‑40. https://doi.org/10.1111/j.1365-3040.2007.01710.x.
 
 """
 function Γ_star(Tₖ,Tᵣₖ,R = Constants().R)
-    arrhenius(42.75,37830.0,Tₖ,Tᵣₖ,R)
+    arrhenius(oftype(Tₖ,42.75),oftype(Tₖ,37830.0),Tₖ,Tᵣₖ,R)
 end
 
 """
@@ -157,7 +157,7 @@ get_km(28,25,210.0)
 ```
 """
 function get_km(Tₖ,Tᵣₖ,O₂,R = Constants().R)
-    KC = arrhenius(404.9,79430.0,Tₖ,Tᵣₖ,R)
-    KO = arrhenius(278.4,36380.0,Tₖ,Tᵣₖ,R)
+    KC = arrhenius(oftype(Tₖ,404.9),oftype(Tₖ,79430.0),Tₖ,Tᵣₖ,R)
+    KO = arrhenius(oftype(Tₖ,278.4),oftype(Tₖ,36380.0),Tₖ,Tᵣₖ,R)
     return KC * (1.0 + O₂/KO)
 end
