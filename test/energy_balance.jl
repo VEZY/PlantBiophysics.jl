@@ -87,3 +87,6 @@ e
 # plot(res.PPFD,res.A)
 # ylabel!("A")
 # xlabel!("PPFD")
+
+
+# Add tests for several components and/or several meteo time-steps (Weather)
