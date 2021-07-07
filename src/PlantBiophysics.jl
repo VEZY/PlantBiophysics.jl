@@ -1,7 +1,7 @@
 module PlantBiophysics
 
 # For model parameters (efficient and still mutable!)
-using Base:nonnothingtype
+using NamedTuple
 using MutableNamedTuples
 
 # For reading YAML:
