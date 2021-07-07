@@ -26,17 +26,17 @@ struct Monteith{T,S} <: AbstractEnergyModel
 end
 
 function Monteith(;aₛₕ = 2, aₛᵥ = 1, ε = 0.955, maxiter = 10, ΔT = 0.01)
-    param_int = promote(aₛₕ,aₛᵥ,maxiter)
-    param_float = promote(ε,ΔT)
-    Monteith(param_int[1],param_int[2], param_float[1], param_int[3], param_float[2])
+    param_int = promote(aₛₕ, aₛᵥ, maxiter)
+    param_float = promote(ε, ΔT)
+    Monteith(param_int[1], param_int[2], param_float[1], param_int[3], param_float[2])
 end
 
 function inputs(::Monteith)
-    (:Rₛ,:skyFraction,:d)
+    (:Rₛ, :skyFraction, :d)
 end
 
 function outputs(::Monteith)
-    (:Tₗ,:Rn,:Rₗₗ,:H,:λE,:Cₛ,:Cᵢ,:A,:Gₛ,:Gbₕ,:Dₗ,:Gbc,:iter)
+    (:Tₗ, :Rn, :Rₗₗ, :H, :λE, :Cₛ, :Cᵢ, :A, :Gₛ, :Gbₕ, :Dₗ, :Gbc, :iter)
 end
 
 Base.eltype(x::Monteith) = typeof(x).parameters[1]
@@ -124,7 +124,7 @@ Maxime Soma, et al. 2018. « Measuring and modelling energy partitioning in can
 complexity using MAESPA model ». Agricultural and Forest Meteorology 253‑254 (printemps): 203‑17.
 https://doi.org/10.1016/j.agrformet.2018.02.005.
 """
-function net_radiation!(leaf::LeafModels{I,<:Monteith,A,Gs,S},meteo::Atmosphere,constants = Constants()) where {I,A,Gs,S}
+function net_radiation!(leaf::LeafModels{I,<:Monteith,A,Gs,S}, meteo::Atmosphere, constants = Constants()) where {I,A,Gs,S}
 
     # Initialisations
     leaf.status.Tₗ = meteo.T - 0.2
@@ -144,7 +144,7 @@ function net_radiation!(leaf::LeafModels{I,<:Monteith,A,Gs,S},meteo::Atmosphere,
         assimilation!(leaf, meteo, constants)
 
         # Stomatal resistance to water vapor
-        Rsᵥ = 1.0 / (gsc_to_gsw(mol_to_ms(leaf.status.Gₛ,meteo.T,meteo.P,constants.R,constants.K₀),
+        Rsᵥ = 1.0 / (gsc_to_gsw(mol_to_ms(leaf.status.Gₛ, meteo.T, meteo.P, constants.R, constants.K₀),
                                 constants.Gsc_to_Gsw))
 
         # Re-computing the net radiation according to simulated leaf temperature:
@@ -154,8 +154,7 @@ function net_radiation!(leaf::LeafModels{I,<:Monteith,A,Gs,S},meteo::Atmosphere,
             - we consider both sides of the leaf at the same time (1 -> leaf sees sky on one face)
             - we consider all objects in the scene have the same temperature as the leaf
             of interest except the atmosphere. So the leaf exchange thermal energy only with
-            the atmosphere.
-        =#
+            the atmosphere. =#
         # leaf.status.Rₗₗ = (grey_body(meteo.T,1.0) - grey_body(leaf.status.Tₗ, 1.0))*leaf.status.skyFraction
 
         leaf.status.Rn = leaf.status.Rₛ + leaf.status.Rₗₗ
@@ -172,7 +171,7 @@ function net_radiation!(leaf::LeafModels{I,<:Monteith,A,Gs,S},meteo::Atmosphere,
         Rbᵥ = 1 / gbh_to_gbw(leaf.status.Gbₕ)
 
         # Leaf boundary resistance for CO₂ (mol[CO₂] m-2 s-1):
-        leaf.status.Gbc = ms_to_mol(leaf.status.Gbₕ,meteo.T,meteo.P,constants.R,constants.K₀) /
+        leaf.status.Gbc = ms_to_mol(leaf.status.Gbₕ, meteo.T, meteo.P, constants.R, constants.K₀) /
             constants.Gbc_to_Gbₕ
 
         # Update Cₛ using boundary layer conductance to CO₂ and assimilation:

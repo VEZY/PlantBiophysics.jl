@@ -1,7 +1,9 @@
+using Base:Float64
 using PlantBiophysics
 using OrderedCollections
 using MutableNamedTuples
 using Test
+using DataFrames
 
 @testset "File IO" begin
     include("IO.jl")

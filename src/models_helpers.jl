@@ -196,7 +196,7 @@ end
 """
     init_variables(models...;types = (Float64,))
 
-Intialise model variables based on their instances. the `types` keyword argument is used to
+Intialise model variables based on their instances. The `types` keyword argument is used to
 force a type in the promotion.
 
 # Examples
