@@ -1,4 +1,94 @@
 """
+Atmosphere structure to hold all values related to the meteorology / atmoshpere.
+
+# Arguments
+
+- `T` (°C): air temperature
+- `Wind` (m s-1): wind speed
+- `P` (kPa): air pressure
+- `Rh = rh_from_vpd(VPD,eₛ)` (0-1): relative humidity
+- `Cₐ` (ppm): air CO₂ concentration
+- `e = vapor_pressure(T,Rh)` (kPa): vapor pressure
+- `eₛ = e_sat(T)` (kPa): saturated vapor pressure
+- `VPD = eₛ - e` (kPa): vapor pressure deficit
+- `ρ = air_density(T, P, constants.Rd, constants.K₀)` (kg m-3): air density
+- `λ = latent_heat_vaporization(T, constants.λ₀)` (J kg-1): latent heat of vaporization
+- `γ = psychrometer_constant(P, λ, constants.Cₚ, constants.ε)` (kPa K−1): psychrometer "constant"
+- `ε = atmosphere_emissivity(T,e,constants.K₀)` (0-1): atmosphere emissivity
+- `Δ = e_sat_slope(meteo.T)` (0-1): slope of the saturation vapor pressure at air temperature
+
+# Notes
+
+The structure can be built using only `T`, `Rh`, `Wind` and `P`. All other variables are oprional
+and can be automatically computed using the functions given in `Arguments`.
+
+# Examples
+
+```julia
+Atmosphere(T = 20.0, Wind = 1.0, P = 101.3, Rh = 0.65)
+```
+"""
+Base.@kwdef struct Atmosphere{A}
+    T::A
+    Wind::A
+    P::A
+    Rh::A
+    Cₐ::A = 400.0
+    e::A = vapor_pressure(T,Rh)
+    eₛ::A = e_sat(T)
+    VPD::A = eₛ - e
+    ρ::A = air_density(T, P) # in kg m-3
+    λ::A = latent_heat_vaporization(T)
+    γ::A = psychrometer_constant(P, λ) # in kPa K−1
+    ε::A = atmosphere_emissivity(T,e)
+    Δ::A = e_sat_slope(T)
+end
+
+"""
+
+```julia
+w = Weather(
+    [
+        Atmosphere(T = 20.0, Wind = 1.0, P = 101.3, Rh = 0.65),
+        Atmosphere(T = 23.0, Wind = 1.5, P = 101.3, Rh = 0.60),
+        Atmosphere(T = 25.0, Wind = 3.0, P = 101.3, Rh = 0.55)
+    ],
+    "Test site"
+    )
+```
+"""
+struct Weather{D <: AbstractArray,S <: AbstractString}
+    data::D
+    site::S
+end
+
+
+function Weather(df::DataFrame)
+    @assert findfirst(x -> x == "site", names(df)) "The input `DataFrame` should have a column called site"
+    Weather(df[!, DataFrames.Not(:site)],unique(df.site))
+end
+
+function Base.show(io::IO, n::Weather)
+    print(io,"Wheather data from `$(n.site)`:\n")
+    print(DataFrame(n))
+    return nothing
+end
+
+"""
+    DataFrame(data::Weather)
+
+Transform a Weather type into a DataFrame.
+
+See also [`Weather`](@Ref) to make the reverse.
+"""
+function DataFrame(data::Weather)
+    df = DataFrame(data.data)
+    # df.site .= data.site
+    df[!,:site] .= data.site
+    return df
+end
+
+"""
     vapor_pressure(Tₐ, rh)
 Vapor pressure (kPa) at given temperature (°C) and relative hunidity (0-1).
 """

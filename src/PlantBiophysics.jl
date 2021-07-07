@@ -1,11 +1,16 @@
 module PlantBiophysics
 
 # For model parameters (efficient and still mutable!)
+using Base:nonnothingtype
 using MutableNamedTuples
 
 # For reading YAML:
 using YAML
 using OrderedCollections
+
+import DataFrames.DataFrame # For convenience transformations
+import DataFrames.Not
+import Base.show
 
 # Generic structures:
 include("structs/Abstract_model_structs.jl")
@@ -68,11 +73,12 @@ export inputs, outputs
 export to_initialise, is_initialised
 
 # Atmosphere
-export e
+export vapor_pressure
 export e_sat
 export e_sat_slope
 export air_density
 export Atmosphere
+export Weather
 
 # Conversions
 export rh_from_vpd
@@ -129,13 +135,15 @@ export Translucent
 export Ignore
 export get_km, Γ_star, arrhenius, get_J, gs_closure, get_Cᵢⱼ,get_Cᵢᵥ,get_Dₕ
 export init_variables_manual, init_variables, Fvcb_net_assimiliation
-export get_componenttype, get_process, get_model, instantiate, get_component_type
+export get_component_type, get_process, get_model, instantiate, get_component_type
 
 export AbstractModel
 
 # Components (structures that hold models)
 export AbstractComponentModel
 export LeafModels
-export Metamer
+
+# Convenience functions
+export DataFrame
 
 end

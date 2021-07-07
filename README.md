@@ -26,6 +26,7 @@ The benefits of using this package are:
 Here is an example usage with a simulation of the energy balance and assimilation of a leaf:
 
 ```julia
+# ]add PlantBiophysics https://github.com/VEZY/PlantBiophysics.jl
 using PlantBiophysics
 
 # Declaring the meteorology for the simulated time-step:
@@ -71,6 +72,7 @@ For more examples, please read the documentation.
     - add a keyword method for the type and use `init_variables_manual`
     - modify `get_component_type()`
     - add methods to functions eventually (unless they are already compatible)
+- [ ] Use [PrettyTables.jl](https://ronisbr.github.io/PrettyTables.jl/stable/#PrettyTables.jl) for printing the Weather and simulation outputs
 
 ### Notes
 

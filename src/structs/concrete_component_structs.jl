@@ -65,11 +65,7 @@ LeafModels(photosynthesis = Fvcb(),Cᵢ = 380.0)
 LeafModels(photosynthesis = Fvcb(), energy = Monteith(), Cᵢ = 380.0, Tₗ = 20.0)
 ```
 """
-struct LeafModels{I <: Union{Missing,AbstractInterceptionModel},
-            E <: Union{Missing,AbstractEnergyModel},
-            A <: Union{Missing,AbstractAModel},
-            Gs <: Union{Missing,AbstractGsModel},
-            S <: MutableNamedTuple} <: AbstractComponentModel
+struct LeafModels{I <: Union{Missing,AbstractInterceptionModel},E <: Union{Missing,AbstractEnergyModel},A <: Union{Missing,AbstractAModel},Gs <: Union{Missing,AbstractGsModel},S <: MutableNamedTuple} <: AbstractComponentModel
     interception::I
     energy::E
     photosynthesis::A
@@ -81,7 +77,7 @@ function LeafModels(;interception = missing, energy = missing,
                 photosynthesis = missing, stomatal_conductance = missing,status...)
     status = init_variables_manual(interception, energy, photosynthesis,
         stomatal_conductance;status...)
-    LeafModels(interception,energy,photosynthesis,stomatal_conductance,status)
+    LeafModels(interception, energy, photosynthesis, stomatal_conductance, status)
 end
 
 """
@@ -106,9 +102,7 @@ the component. Values are set to `0.0` if not provided as VarArgs (see examples)
 Component(energy = Monteith())
 ```
 """
-struct Component{I <: Union{Missing,AbstractInterceptionModel},
-                 E <: Union{Missing,AbstractEnergyModel},
-                 S <: MutableNamedTuple} <: AbstractComponentModel
+struct Component{I <: Union{Missing,AbstractInterceptionModel},E <: Union{Missing,AbstractEnergyModel},S <: MutableNamedTuple} <: AbstractComponentModel
     interception::I
     energy::E
     status::S
@@ -116,52 +110,5 @@ end
 
 function Component(;interception = missing, energy = missing,status...)
     status = init_variables_manual(interception, energy;status...)
-    Component(interception,energy,status)
-end
-
-
-"""
-Atmosphere structure to hold all values related to the meteorology / atmoshpere.
-
-# Arguments
-
-- `T` (°C): air temperature
-- `Wind` (m s-1): wind speed
-- `P` (kPa): air pressure
-- `Rh = rh_from_vpd(VPD,eₛ)` (0-1): relative humidity
-- `Cₐ` (ppm): air CO₂ concentration
-- `e = vapor_pressure(T,Rh)` (kPa): vapor pressure
-- `eₛ = e_sat(T)` (kPa): saturated vapor pressure
-- `VPD = eₛ - e` (kPa): vapor pressure deficit
-- `ρ = air_density(T, P, constants.Rd, constants.K₀)` (kg m-3): air density
-- `λ = latent_heat_vaporization(T, constants.λ₀)` (J kg-1): latent heat of vaporization
-- `γ = psychrometer_constant(P, λ, constants.Cₚ, constants.ε)` (kPa K−1): psychrometer "constant"
-- `ε = atmosphere_emissivity(T,e,constants.K₀)` (0-1): atmosphere emissivity
-- `Δ = e_sat_slope(meteo.T)` (0-1): slope of the saturation vapor pressure at air temperature
-
-# Notes
-
-The structure can be built using only `T`, `Rh`, `Wind` and `P`. All other variables are oprional
-and can be automatically computed using the functions given in `Arguments`.
-
-# Examples
-
-```julia
-Atmosphere(T = 20.0, Wind = 1.0, P = 101.3, Rh = 0.65)
-```
-"""
-Base.@kwdef struct Atmosphere{A}
-    T::A
-    Wind::A
-    P::A
-    Rh::A
-    Cₐ::A = 400.0
-    e::A = vapor_pressure(T,Rh)
-    eₛ::A = e_sat(T)
-    VPD::A = eₛ - e
-    ρ::A = air_density(T, P) # in kg m-3
-    λ::A = latent_heat_vaporization(T)
-    γ::A = psychrometer_constant(P, λ) # in kPa K−1
-    ε::A = atmosphere_emissivity(T,e)
-    Δ::A = e_sat_slope(T)
+    Component(interception, energy, status)
 end
