@@ -81,6 +81,15 @@ function LeafModels(;interception = missing, energy = missing,
 end
 
 """
+    Base.copy(l::T)
+
+Copy a [`LeafModels`](@ref)
+"""
+function Base.copy(l::T) where T <: LeafModels
+    LeafModels(l.interception, l.energy, l.photosynthesis, l.stomatal_conductance, MutableNamedTuple(; zip(keys(l.status), values(l.status))...))
+end
+
+"""
     Component(interception, energy, status)
     Component(;interception = missing, energy = missing, status...)
 

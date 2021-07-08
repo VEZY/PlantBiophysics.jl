@@ -107,7 +107,8 @@ Computation is made following Farquhar & Wong (1984), Leuning et al. (1995), and
 MAESPA model (Duursma et al., 2012).
 The resolution is analytical as first presented in Baldocchi (1994), and needs Cₛ as input.
 Triose phosphate utilization (TPU) limitation is taken into account as proposed in Lombardozzi (2018) (i.e. 
-Aₚ = 3*TPURef, making the assumption that glycolate recycling is set to 0).
+Aₚ = 3*TPURef, making the assumption that glycolate recycling is set to 0). TPURef is by default at 9999., meaning that if you
+don't have the TPU value, TPU limitation won't have impact.
 
 If you prefer to use Gbc, you can use the iterative implementation of the Fvcb model
 [`FvcbIter`](@ref)
