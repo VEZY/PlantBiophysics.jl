@@ -67,7 +67,7 @@ end;
         @test leaf.status[i] ≈ ref[i]
     end
 end;
-e
+
 
 
 # meteo = Atmosphere(T = 20.0, Wind = 1.0, P = 101.3, Rh = 0.65)
