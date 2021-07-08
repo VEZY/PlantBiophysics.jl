@@ -9,6 +9,7 @@ The definition:
 - `VcMaxRef`: maximum rate of Rubisco activity (``μmol\\ m^{-2}\\ s^{-1}``)
 - `JMaxRef`: potential rate of electron transport (``μmol\\ m^{-2}\\ s^{-1}``)
 - `RdRef`: mitochondrial respiration in the light at reference temperature (``μmol\\ m^{-2}\\ s^{-1}``)
+- `TPURef`: triose phosphate utilization-limited photosynthesis rate (``μmol\\ m^{-2}\\ s^{-1}``)
 - `Eₐᵣ`: activation energy (``J\\ mol^{-1}``), or the exponential rate of rise for Rd.
 - `O₂`: intercellular dioxygen concentration (``ppm``)
 - `Eₐⱼ`: activation energy (``J\\ mol^{-1}``), or the exponential rate of rise for JMax.
@@ -67,6 +68,7 @@ struct Fvcb{T} <: AbstractAModel
     VcMaxRef::T
     JMaxRef::T
     RdRef::T
+    TPURef::T
     Eₐᵣ::T
     O₂::T
     Eₐⱼ::T
@@ -79,11 +81,11 @@ struct Fvcb{T} <: AbstractAModel
     θ::T
 end
 
-function Fvcb(;Tᵣ = 25.0, VcMaxRef = 200.0, JMaxRef = 250.0, RdRef = 0.6, Eₐᵣ = 46390.0,
+function Fvcb(;Tᵣ = 25.0, VcMaxRef = 200.0, JMaxRef = 250.0, RdRef = 0.6, TPURef = 9999., Eₐᵣ = 46390.0,
     O₂= 210.0, Eₐⱼ = 29680.0, Hdⱼ = 200000.0, Δₛⱼ = 631.88, Eₐᵥ = 58550.0, Hdᵥ = 200000.0,
     Δₛᵥ = 629.26, α = 0.425, θ = 0.90)
 
-    Fvcb(promote(Tᵣ, VcMaxRef, JMaxRef, RdRef, Eₐᵣ, O₂, Eₐⱼ, Hdⱼ, Δₛⱼ, Eₐᵥ, Hdᵥ, Δₛᵥ, α, θ)...)
+    Fvcb(promote(Tᵣ, VcMaxRef, JMaxRef, RdRef, TPURef, Eₐᵣ, O₂, Eₐⱼ, Hdⱼ, Δₛⱼ, Eₐᵥ, Hdᵥ, Δₛᵥ, α, θ)...)
 end
 
 function inputs(::Fvcb)
@@ -104,6 +106,9 @@ Photosynthesis using the Farquhar–von Caemmerer–Berry (FvCB) model for C3 ph
 Computation is made following Farquhar & Wong (1984), Leuning et al. (1995), and the
 MAESPA model (Duursma et al., 2012).
 The resolution is analytical as first presented in Baldocchi (1994), and needs Cₛ as input.
+Triose phosphate utilization (TPU) limitation is taken into account as proposed in Lombardozzi (2018) (i.e. 
+Aₚ = 3*TPURef, making the assumption that glycolate recycling is set to 0). TPURef is by default at 9999., meaning that if you
+don't have the TPU value, TPU limitation won't have impact.
 
 If you prefer to use Gbc, you can use the iterative implementation of the Fvcb model
 [`FvcbIter`](@ref)
@@ -167,6 +172,10 @@ photosynthetic CO2 assimilation in leaves of C3 species ». Planta 149 (1): 78�
 Leuning, R., F. M. Kelliher, DGG de Pury, et E.D. Schulze. 1995. « Leaf nitrogen,
 photosynthesis, conductance and transpiration: scaling from leaves to canopies ». Plant,
 Cell & Environment 18 (10): 1183‑1200.
+
+Lombardozzi, L. D. et al. 2018.« Triose phosphate limitation in photosynthesis models
+reduces leaf photosynthesis and global terrestrial carbon storage ». Environmental Research 
+Letters 13.7: 1748-9326. https://doi.org/10.1088/1748-9326/aacf68.
 """
 function assimilation!(leaf::LeafModels{I,E,<:Fvcb,<:AbstractGsModel,S}, meteo,
     constants = Constants()) where {I,E,S}
@@ -222,8 +231,8 @@ function assimilation!(leaf::LeafModels{I,E,<:Fvcb,<:AbstractGsModel,S}, meteo,
     end
 
     # Net assimilation (μmol m-2 s-1)
-    leaf.status.A = min(Wᵥ,Wⱼ) - Rd
-
+    leaf.status.A = min(Wᵥ,Wⱼ,3*leaf.photosynthesis.TPURef) - Rd
+    
     # Stomatal conductance (mol[CO₂] m-2 s-1)
     leaf.status.Gₛ = gs(leaf,gs_mod)
     # replace by ifelse directly ? Should be faster as `max()` add some tests.\
