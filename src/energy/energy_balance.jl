@@ -49,6 +49,9 @@ model = read_model("a-model-file.yml")
 # Initialising the mandatory variables:
 init_status!(model, Rₛ = 13.747, skyFraction = 1.0, PPFD = 1500.0, Tₗ = 25.0, d = 0.03)
 
+# NB: To know which variables has to be initialised according to the models used, you can use
+# `to_initialise(leaf)`
+
 # Running a simulation for all component types in the same scene:
 energy_balance!(model, meteo)
 
@@ -87,7 +90,7 @@ end
 
 # Same as above but non-mutating
 function energy_balance(object::AbstractComponentModel, meteo::Atmosphere, constants = Constants())
-    object_tmp = deepcopy(object)
+    object_tmp = copy(object)
     energy_balance!(object_tmp, meteo, constants)
     return object_tmp.status
 end
@@ -110,7 +113,7 @@ function energy_balance(
     ) where {O <: Union{AbstractArray{<:AbstractComponentModel},AbstractDict{N,<:AbstractComponentModel} where N},M <: Union{Atmosphere,Weather}}
 
     # Copy the objects only once before the computation for performance reasons:
-    object_tmp = deepcopy(object)
+    object_tmp = copy(object)
 
     # Computation:
     energy_balance!(object_tmp, meteo, constants)
@@ -147,7 +150,7 @@ function energy_balance(
     ) where {O <: Union{AbstractArray{<:AbstractComponentModel},AbstractDict{N,<:AbstractComponentModel} where N},M <: Union{Atmosphere,Weather}}
 
     # Copy the objects only once before the computation for performance reasons:
-    object_tmp = deepcopy(object)
+    object_tmp = copy(object)
 
     # Computation:
     energy_balance!(object_tmp, meteo, constants)
@@ -215,7 +218,7 @@ function energy_balance(
     constants = Constants()
     ) where T <: Union{AbstractDict{N,<:AbstractComponentModel} where N}
 
-    object_tmp = deepcopy(object)
+    object_tmp = copy(object)
 
     return energy_balance!(object_tmp, meteo, constants)
 end

@@ -37,14 +37,14 @@ model["Leaf"].status.A
 
 ```
 """
-function photosynthesis(leaf::AbstractComponentModel,meteo,constants = Constants())
-    leaf_tmp = deepcopy(leaf)
+function photosynthesis(leaf::AbstractComponentModel, meteo, constants = Constants())
+    leaf_tmp = copy(leaf)
     photosynthesis!(leaf_tmp, meteo, constants)
     leaf_tmp.status
 end
 
-function photosynthesis!(leaf::AbstractComponentModel,meteo,constants = Constants())
-    is_init = is_initialised(leaf,leaf.photosynthesis,leaf.stomatal_conductance)
+function photosynthesis!(leaf::AbstractComponentModel, meteo, constants = Constants())
+    is_init = is_initialised(leaf, leaf.photosynthesis, leaf.stomatal_conductance)
     !is_init && error("Some variables must be initialized before simulation")
     assimilation!(leaf, meteo, constants)
 end
@@ -54,7 +54,7 @@ function photosynthesis!(object::Dict{String,PlantBiophysics.AbstractComponentMo
     meteo::Atmosphere,constants = Constants())
 
     for i in keys(object)
-        photosynthesis!(object[i],meteo,constants)
+        photosynthesis!(object[i], meteo, constants)
     end
-    return nothing
+return nothing
 end
