@@ -1,7 +1,6 @@
 module PlantBiophysics
 
 # For model parameters (efficient and still mutable!)
-using NamedTuple
 using MutableNamedTuples
 
 # For reading YAML:
