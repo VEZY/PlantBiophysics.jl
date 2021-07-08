@@ -6,15 +6,14 @@
 [![Code Style: Blue](https://img.shields.io/badge/code%20style-blue-4495d1.svg)](https://github.com/invenia/BlueStyle)
 [![ColPrac: Contributor's Guide on Collaborative Practices for Community Packages](https://img.shields.io/badge/ColPrac-Contributor's%20Guide-blueviolet)](https://github.com/SciML/ColPrac)
 
-A Julia package to simulate biophysical processes for plants such as photosynthesis, conductances for heat, water vapor and CO₂, latent, sensible energy fluxes, net radiation and temperature.
+A pure Julia package to simulate biophysical processes for plants such as photosynthesis, conductances for heat, water vapor and CO₂, latent, sensible energy fluxes, net radiation and temperature.
 
 The benefits of using this package are:
 
-- Blazing fast
+- Blazing fast (μs for the whole energy balance + photosynthesis + conductances)
 - Easy to use
-- Great composability
-- Easy to extend (add your model for any process, and it just works with the others)
-- Easy to read, the code implement the equations as they are written in the scientific articles (using Unicode)
+- Great composability. Makes it easy to extend (add your model for any process, and it just works with the others)
+- Easy to read, the code implement the equations as they are written in the scientific articles (thanks Julia Unicode!)
 - Included in the Archimed platform. Will be used by other packages to simulate single leaves, voxels, canopies...
 - Soon:
   - Units
@@ -26,6 +25,7 @@ The benefits of using this package are:
 Here is an example usage with a simulation of the energy balance and assimilation of a leaf:
 
 ```julia
+# ]add PlantBiophysics https://github.com/VEZY/PlantBiophysics.jl
 using PlantBiophysics
 
 # Declaring the meteorology for the simulated time-step:
@@ -54,6 +54,12 @@ For more examples, please read the documentation.
 - [ ] Add a new conductance model using the version from Duursma, Remko A, Christopher J Blackman, Rosana Lop, et K Martin-StPaul. 2018. « On the Minimum Leaf Conductance: Its Role in Models of Plant Water Use, and Ecological and Environmental Controls ». New Phytologist, 13.
 - [ ] Make the functions compatible with an MTG, e.g. apply photosynthesis to an MTG, and use the right method for each node. NB: I think the models should be a field of the node.
 - [ ] Make the functions compatible with several meteorological time-steps
+  - [x] Add a new struct for that: Weather
+  - [x] Do it for energy_balance
+  - [ ] photosynthesis
+  - [ ] stomatal conductance
+  - [ ] Add tests for each
+  - [ ] Update the doc!
 - [ ] Evaluate using Schymanski et al. (2017) data + leaf measurements models (in progress)
 - [ ] Check Schymanski input: is Rs = Rnleaf ok? Because Rs is Rn - Rll.
 - [ ] Add more documentation + tutorial:
@@ -71,6 +77,7 @@ For more examples, please read the documentation.
     - add a keyword method for the type and use `init_variables_manual`
     - modify `get_component_type()`
     - add methods to functions eventually (unless they are already compatible)
+- [ ] Use [PrettyTables.jl](https://ronisbr.github.io/PrettyTables.jl/stable/#PrettyTables.jl) for printing the Weather and simulation outputs
 
 ### Notes
 

@@ -1,5 +1,6 @@
 """
-    energy_balance(object::AbstractComponentModel,meteo::Atmosphere,constants = Constants())
+    energy_balance(object::T,meteo::Atmosphere,constants = Constants())
+    energy_balance(object::Array{AbstractComponentModel},meteo::Atmosphere,constants = Constants())
     energy_balance!(object::AbstractComponentModel,meteo::Atmosphere,constants = Constants())
 
 Computes the energy balance of a component based on the type of the model it was parameterized
@@ -12,8 +13,10 @@ At the moment, two models are implemented in the package:
 
 # Arguments
 
-- `object::AbstractComponentModel`: a [`Component`](@ref) struct.
-- `meteo`: meteorology structure, see [`Atmosphere`](@ref)
+- `object::Union{AbstractComponentModel,Array{AbstractComponentModel},
+Dict{String,AbstractComponentModel}}`: a [`Component`](@ref) struct, or a Dict/Array of.
+- `meteo::Union{Atmosphere,Weather}`: meteorology structure, see [`Atmosphere`](@ref) or
+[`Weather`](@ref)
 - `constants = Constants()`: physical constants. See [`Constants`](@ref) for more details
 
 # Note
@@ -74,23 +77,145 @@ Maxime Soma, et al. 2018. « Measuring and modelling energy partitioning in can
 complexity using MAESPA model ». Agricultural and Forest Meteorology 253‑254 (printemps): 203‑17.
 https://doi.org/10.1016/j.agrformet.2018.02.005.
 """
-function energy_balance(object::AbstractComponentModel,meteo::Atmosphere,constants = Constants())
-    object_tmp = deepcopy(object)
-    energy_balance!(object_tmp,meteo,constants)
-    return object_tmp.status
-end
-
-function energy_balance!(object::AbstractComponentModel,meteo::Atmosphere,constants = Constants())
+function energy_balance!(object::AbstractComponentModel, meteo::Atmosphere, constants = Constants())
     is_init = is_initialised(object)
     !is_init && error("Some variables must be initialized before simulation")
 
-    net_radiation!(object,meteo,constants)
+    net_radiation!(object, meteo, constants)
     return nothing
 end
 
-function energy_balance!(object::Dict{String,PlantBiophysics.AbstractComponentModel},meteo::Atmosphere,constants = Constants())
-    for i in keys(object)
-        energy_balance!(object[i],meteo,constants)
+# Same as above but non-mutating
+function energy_balance(object::AbstractComponentModel, meteo::Atmosphere, constants = Constants())
+    object_tmp = deepcopy(object)
+    energy_balance!(object_tmp, meteo, constants)
+    return object_tmp.status
+end
+
+# energy_balance over several objects (e.g. all leaves of a plant) in an Array
+function energy_balance!(object::O, meteo::Atmosphere, constants = Constants()) where O <: AbstractArray{<:AbstractComponentModel}
+
+    for i in values(object)
+        energy_balance!(i, meteo, constants)
     end
+
     return nothing
+end
+
+# same as the above but non-mutating
+function energy_balance(
+    object::O,
+    meteo::M,
+    constants = Constants()
+    ) where {O <: Union{AbstractArray{<:AbstractComponentModel},AbstractDict{N,<:AbstractComponentModel} where N},M <: Union{Atmosphere,Weather}}
+
+    # Copy the objects only once before the computation for performance reasons:
+    object_tmp = deepcopy(object)
+
+    # Computation:
+    energy_balance!(object_tmp, meteo, constants)
+
+    # --- Extracting the outputs: ---
+
+    # Pre-allocating the outputs:
+    output = [i.status for i in object_tmp]
+
+    for (i, obj) in enumerate(object_tmp)
+        output[i] = obj.status
+    end
+
+    output = DataFrame([NamedTuple(i) for i in output])
+
+    return output
+end
+
+# energy_balance over several objects (e.g. all leaves of a plant) in a kind of Dict.
+function energy_balance!(object::O, meteo::Atmosphere, constants = Constants()) where O <: AbstractDict{N,<:AbstractComponentModel} where N
+
+    for (k, v) in object
+        energy_balance!(v, meteo, constants)
+    end
+
+    return nothing
+end
+
+# same as the above but non-mutating. In this case we add a column with the component name 😃
+function energy_balance(
+    object::O,
+    meteo::M,
+    constants = Constants()
+    ) where {O <: Union{AbstractArray{<:AbstractComponentModel},AbstractDict{N,<:AbstractComponentModel} where N},M <: Union{Atmosphere,Weather}}
+
+    # Copy the objects only once before the computation for performance reasons:
+    object_tmp = deepcopy(object)
+
+    # Computation:
+    energy_balance!(object_tmp, meteo, constants)
+
+    # --- Extracting the outputs: ---
+
+    # Pre-allocating the outputs:
+    output = Dict([k => v.status for (k, v) in object_tmp])
+        
+    for (k, v) in object_tmp
+        output[k] = v.status
+    end
+
+    output = DataFrame([(NamedTuple(v)..., component = k) for (k, v) in output])
+
+    return output
+end
+
+# energy_balance over several meteo time steps (called Weather) and possibly several components.
+# Only allowed for components given as a subtype of AbstractDict to track components names in the
+# outputs
+function energy_balance!(
+    object::T,
+    meteo::Weather,
+    constants = Constants()
+    ) where T <: Union{AbstractDict{N,<:AbstractComponentModel} where N}
+
+    # Pre-allocating the time-step outputs:
+    timestep_tmp = Dict([k => v.status for (k, v) in object])
+
+    # Pre-allocating the general DataFrame with the first time-step results:
+    energy_balance!(object, meteo.data[1], constants)
+
+    for (k, v) in object
+        timestep_tmp[k] = v.status
+    end
+
+    output_timestep = DataFrame([(NamedTuple(v)..., component = k) for (k, v) in timestep_tmp])
+
+    # Actually pre-allocating the DF:
+    output = repeat(output_timestep, length(meteo.data))
+    output.time_step = repeat(1:length(meteo.data), inner = size(output_timestep, 1))
+
+    # Computing for all following time-steps:
+    for (i, meteo_i) in enumerate(meteo.data[2:end])
+        energy_balance!(object, meteo_i, constants)
+
+        for (k, v) in object
+            timestep_tmp[k] = v.status
+        end
+
+        output_timestep = DataFrame([(NamedTuple(v)..., component = k) for (k, v) in timestep_tmp])
+
+        # Update the values of the global output:
+        output[output.time_step .== i,Not(:time_step)] = output_timestep
+    end
+
+    return output
+end
+
+# energy_balance over several meteo time steps (same as above) but non-mutating
+function energy_balance(
+    object::T,
+    meteo::Weather,
+    constants = Constants()
+    ) where T <: Union{AbstractDict{N,<:AbstractComponentModel} where N}
+
+    object_tmp = deepcopy(object)
+
+    return energy_balance!(object_tmp, meteo, constants)
 end
