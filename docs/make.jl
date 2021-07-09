@@ -29,6 +29,7 @@ makedocs(;
         "Details" => Any[
             "Package design" => "concepts.md",
             "Implement a model" => "implement_a_model.md",
+            "Uncertainty propagation" => "uncertainty_propagation.md",
         ],
         "Functions" => "functions.md"
     ],
