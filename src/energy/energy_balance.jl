@@ -130,33 +130,6 @@ function energy_balance!(object::O, meteo::Atmosphere, constants = Constants()) 
     return nothing
 end
 
-# same as the above but non-mutating
-function energy_balance(
-    object::O,
-    meteo::Atmosphere,
-    constants = Constants()
-    ) where O <: Union{AbstractArray{<:AbstractComponentModel}}
-
-    # Copy the objects only once before the computation for performance reasons:
-    object_tmp = copy(object)
-
-    # Computation:
-    energy_balance!(object_tmp, meteo, constants)
-
-    # --- Extracting the outputs: ---
-
-    # Pre-allocating the outputs:
-    output = [i.status for i in object_tmp]
-
-    for (i, obj) in enumerate(object_tmp)
-        output[i] = obj.status
-    end
-
-    output = DataFrame([NamedTuple(i) for i in output])
-
-    return output
-end
-
 # energy_balance over several objects (e.g. all leaves of a plant) in a kind of Dict.
 function energy_balance!(object::O, meteo::Atmosphere, constants = Constants()) where {O <: AbstractDict{N,<:AbstractComponentModel} where N}
 
@@ -167,12 +140,12 @@ function energy_balance!(object::O, meteo::Atmosphere, constants = Constants()) 
     return nothing
 end
 
-# same as the above but non-mutating. In this case we add a column with the component name 😃
+# same as the above but non-mutating
 function energy_balance(
     object::O,
     meteo::Atmosphere,
     constants = Constants()
-    ) where {O <: AbstractDict{N,<:AbstractComponentModel} where N}
+    ) where O <: Union{AbstractArray{<:AbstractComponentModel},AbstractDict{N,<:AbstractComponentModel} where N}
 
     # Copy the objects only once before the computation for performance reasons:
     object_tmp = copy(object)
@@ -180,54 +153,26 @@ function energy_balance(
     # Computation:
     energy_balance!(object_tmp, meteo, constants)
 
-    # --- Extracting the outputs: ---
-
-    # Pre-allocating the outputs:
-    output = Dict([k => v.status for (k, v) in object_tmp])
-        
-    for (k, v) in object_tmp
-        output[k] = v.status
-    end
-
-    output = DataFrame([(NamedTuple(v)..., component = k) for (k, v) in output])
-
-    return output
+    return DataFrame(object_tmp)
 end
 
-# energy_balance over several meteo time steps (called Weather) and possibly several components.
-# Only allowed for components given as a subtype of AbstractDict to track components names in the
-# outputs
+# energy_balance over several meteo time steps (called Weather) and possibly several components:
 function energy_balance!(
     object::T,
     meteo::Weather,
     constants = Constants()
-    ) where {T <: AbstractDict{N,<:AbstractComponentModel} where N}
-
-    # Pre-allocating the time-step outputs:
-    timestep_tmp = Dict([k => v.status for (k, v) in object])
+    ) where T <: Union{AbstractArray{<:AbstractComponentModel},AbstractDict{N,<:AbstractComponentModel} where N}
 
     # Pre-allocating the general DataFrame with the first time-step results:
     energy_balance!(object, meteo.data[1], constants)
-
-    for (k, v) in object
-        timestep_tmp[k] = v.status
-    end
-
-    output_timestep = DataFrame([(NamedTuple(v)..., component = k) for (k, v) in timestep_tmp])
-
-    # Actually pre-allocating the DF:
+    output_timestep = DataFrame(object)
     output = repeat(output_timestep, length(meteo.data))
     output.time_step = repeat(1:length(meteo.data), inner = size(output_timestep, 1))
 
     # Computing for all following time-steps:
     for (i, meteo_i) in enumerate(meteo.data[2:end])
         energy_balance!(object, meteo_i, constants)
-
-        for (k, v) in object
-            timestep_tmp[k] = v.status
-        end
-
-        output_timestep = DataFrame([(NamedTuple(v)..., component = k) for (k, v) in timestep_tmp])
+        output_timestep = DataFrame(object)
 
         # Update the values of the global output:
         output[output.time_step .== i,Not(:time_step)] = output_timestep
@@ -236,9 +181,9 @@ function energy_balance!(
     return output
 end
 
-# If we call weather with one component only, put it in a Dict and call the function above
+# If we call weather with one component only, put it in an Array and call the function above
 function energy_balance!(object::AbstractComponentModel, meteo::Weather, constants = Constants())
-    energy_balance!(Dict(:component => object), meteo, constants)[!,Not(:component)]
+    energy_balance!([object], meteo, constants)[!,Not(:component)]
 end
 
 # energy_balance over several meteo time steps (same as above) but non-mutating

@@ -298,3 +298,40 @@ function init_variables_manual(models...;vars...)
     end
     init_vars
 end
+
+
+"""
+    get_status(component)
+    get_status(components::AbstractArray{<:AbstractComponentModel})
+    get_status(components::AbstractDict{T,<:AbstractComponentModel})
+
+Get a component status, *i.e.* the state of the input (and output) variables.
+
+See also [`is_initialised`](@ref) and [`to_initialise`](@ref)
+"""
+function get_status(component)
+    component.status
+end
+
+function get_status(components::T) where T <: AbstractArray{<:AbstractComponentModel}
+    [i.status for i in components]
+end
+
+function get_status(components::T) where {T <: AbstractDict{N,<:AbstractComponentModel} where N}
+    Dict([k => v.status for (k, v) in components])
+end
+
+"""
+    DataFrame(components <: AbstractArray{<:AbstractComponentModel})
+    DataFrame(components <: AbstractDict{N,<:AbstractComponentModel})
+
+Transform an array of components (or dict-alike) into a DataFrame of their status (and name
+for Dicts).
+"""
+function DataFrame(components::T) where T <: AbstractArray{<:AbstractComponentModel}
+    DataFrame([NamedTuple(i) for i in components])
+end
+
+function DataFrame(components::T) where {T <: AbstractDict{N,<:AbstractComponentModel} where N}
+    DataFrame([(NamedTuple(v)..., component = k) for (k, v) in get_status(components)])
+end
