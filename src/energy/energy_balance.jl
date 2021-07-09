@@ -44,21 +44,28 @@ energy_balance(leaf,meteo)
 
 # ---Using several components---
 
-energy_balance([leaf,leaf],meteo)
+leaf2 = copy(leaf)
+leaf2.status.PPFD = 800.0
 
-# Or using a Dict to name the components in the outputs:
-energy_balance(Dict(:leaf1 => leaf, :leaf2 => leaf),meteo)
+energy_balance([leaf,leaf2],meteo)
+
+# You can use a Dict if you'd like to keep track of the leaf in the returned DataFrame:
+energy_balance(Dict(:leaf1 => leaf, :leaf2 => leaf2), meteo)
 
 # ---Using several meteo time-steps---
 
-energy_balance(Dict(:leaf => leaf),Weather([meteo,meteo], "Test site"))
+w = Weather([Atmosphere(T = 20.0, Wind = 1.0, P = 101.3, Rh = 0.65),
+            Atmosphere(T = 25.0, Wind = 1.5, P = 101.3, Rh = 0.55)], "Test site")
 
-# Or using a Dict to name the components in the outputs:
-energy_balance(Dict(:leaf1 => leaf, :leaf2 => leaf),meteo)
+energy_balance(leaf, w)
+
+# ---Using several meteo time-steps and several components---
+
+energy_balance(Dict(:leaf1 => leaf, :leaf2 => leaf2), w)
 
 # ---Using a model file---
 
-model = read_model("a-model-file.yml")
+model = read_model(joinpath(dirname(dirname(pathof(PlantBiophysics))),"test","inputs","models","plant_coffee.yml"))
 
 # An example model file is available here:
 # "https://raw.githubusercontent.com/VEZY/PlantBiophysics/main/test/inputs/models/plant_coffee.yml"
@@ -67,7 +74,8 @@ model = read_model("a-model-file.yml")
 init_status!(model, Rₛ = 13.747, skyFraction = 1.0, PPFD = 1500.0, Tₗ = 25.0, d = 0.03)
 
 # NB: To know which variables has to be initialised according to the models used, you can use
-# `to_initialise(leaf)`
+# `to_initialise(Component)`, *e.g.*:
+to_initialise(model["Leaf"])
 
 # Running a simulation for all component types in the same scene:
 energy_balance!(model, meteo)
@@ -228,12 +236,17 @@ function energy_balance!(
     return output
 end
 
+# If we call weather with one component only, put it in a Dict and call the function above
+function energy_balance!(object::AbstractComponentModel, meteo::Weather, constants = Constants())
+    energy_balance!(Dict(:component => object), meteo, constants)[!,Not(:component)]
+end
+
 # energy_balance over several meteo time steps (same as above) but non-mutating
 function energy_balance(
     object::T,
     meteo::Weather,
     constants = Constants()
-    ) where {T <: AbstractDict{N,<:AbstractComponentModel} where N}
+    ) where T <: Union{AbstractComponentModel,AbstractDict{N,<:AbstractComponentModel} where N}
 
     object_tmp = copy(object)
 
