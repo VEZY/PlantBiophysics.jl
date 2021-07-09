@@ -29,6 +29,8 @@ use [`init_status!`](@ref) (see examples).
 # Examples
 
 ```julia
+# ---Simple example---
+
 meteo = Atmosphere(T = 20.0, Wind = 1.0, P = 101.3, Rh = 0.65)
 
 # Using the model of Monteith and Unsworth (2013) for energy, Farquhar et al. (1980) for
@@ -40,7 +42,22 @@ leaf = LeafModels(energy = Monteith(),
 
 energy_balance(leaf,meteo)
 
-# Using a model file:
+# ---Using several components---
+
+energy_balance([leaf,leaf],meteo)
+
+# Or using a Dict to name the components in the outputs:
+energy_balance(Dict(:leaf1 => leaf, :leaf2 => leaf),meteo)
+
+# ---Using several meteo time-steps---
+
+energy_balance(Dict(:leaf => leaf),Weather([meteo,meteo], "Test site"))
+
+# Or using a Dict to name the components in the outputs:
+energy_balance(Dict(:leaf1 => leaf, :leaf2 => leaf),meteo)
+
+# ---Using a model file---
+
 model = read_model("a-model-file.yml")
 
 # An example model file is available here:
@@ -108,9 +125,9 @@ end
 # same as the above but non-mutating
 function energy_balance(
     object::O,
-    meteo::M,
+    meteo::Atmosphere,
     constants = Constants()
-    ) where {O <: Union{AbstractArray{<:AbstractComponentModel},AbstractDict{N,<:AbstractComponentModel} where N},M <: Union{Atmosphere,Weather}}
+    ) where O <: Union{AbstractArray{<:AbstractComponentModel}}
 
     # Copy the objects only once before the computation for performance reasons:
     object_tmp = copy(object)
@@ -133,7 +150,7 @@ function energy_balance(
 end
 
 # energy_balance over several objects (e.g. all leaves of a plant) in a kind of Dict.
-function energy_balance!(object::O, meteo::Atmosphere, constants = Constants()) where O <: AbstractDict{N,<:AbstractComponentModel} where N
+function energy_balance!(object::O, meteo::Atmosphere, constants = Constants()) where {O <: AbstractDict{N,<:AbstractComponentModel} where N}
 
     for (k, v) in object
         energy_balance!(v, meteo, constants)
@@ -145,9 +162,9 @@ end
 # same as the above but non-mutating. In this case we add a column with the component name 😃
 function energy_balance(
     object::O,
-    meteo::M,
+    meteo::Atmosphere,
     constants = Constants()
-    ) where {O <: Union{AbstractArray{<:AbstractComponentModel},AbstractDict{N,<:AbstractComponentModel} where N},M <: Union{Atmosphere,Weather}}
+    ) where {O <: AbstractDict{N,<:AbstractComponentModel} where N}
 
     # Copy the objects only once before the computation for performance reasons:
     object_tmp = copy(object)
@@ -176,7 +193,7 @@ function energy_balance!(
     object::T,
     meteo::Weather,
     constants = Constants()
-    ) where T <: Union{AbstractDict{N,<:AbstractComponentModel} where N}
+    ) where {T <: AbstractDict{N,<:AbstractComponentModel} where N}
 
     # Pre-allocating the time-step outputs:
     timestep_tmp = Dict([k => v.status for (k, v) in object])
@@ -216,7 +233,7 @@ function energy_balance(
     object::T,
     meteo::Weather,
     constants = Constants()
-    ) where T <: Union{AbstractDict{N,<:AbstractComponentModel} where N}
+    ) where {T <: AbstractDict{N,<:AbstractComponentModel} where N}
 
     object_tmp = copy(object)
 

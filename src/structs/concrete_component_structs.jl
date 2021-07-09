@@ -86,7 +86,30 @@ end
 Copy a [`LeafModels`](@ref)
 """
 function Base.copy(l::T) where T <: LeafModels
-    LeafModels(l.interception, l.energy, l.photosynthesis, l.stomatal_conductance, MutableNamedTuple(; zip(keys(l.status), values(l.status))...))
+    LeafModels(
+        l.interception,
+        l.energy,
+        l.photosynthesis,
+        l.stomatal_conductance,
+        MutableNamedTuple(; zip(keys(l.status), values(l.status))...))
+end
+
+"""
+    Base.copy(l::AbstractArray{<:LeafModels})
+
+Copy an array-alike of [`LeafModels`](@ref)
+"""
+function Base.copy(l::T) where T <: AbstractArray{<:LeafModels}
+    return [copy(i) for i in l]
+end
+
+"""
+    Base.copy(l::AbstractDict{N,<:LeafModels} where N)
+
+Copy a Dict-alike of  [`LeafModels`](@ref)
+"""
+function Base.copy(l::T) where {T <: AbstractDict{N,<:AbstractComponentModel} where N}
+    return  Dict([k => v for (k, v) in l])
 end
 
 """
