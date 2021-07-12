@@ -108,7 +108,8 @@ MAESPA model (Duursma et al., 2012).
 The resolution is analytical as first presented in Baldocchi (1994), and needs Cₛ as input.
 Triose phosphate utilization (TPU) limitation is taken into account as proposed in Lombardozzi (2018) (i.e. 
 Aₚ = 3*TPURef, making the assumption that glycolate recycling is set to 0). TPURef is by default at 9999., meaning that if you
-don't have the TPU value, TPU limitation won't have impact.
+do not have the TPU value, TPU limitation won't have impact. Note that if you do not have the TPU value and you want to approximate it,
+it can be done using the simple equation `TPURef = 0.167*TPURef` as presented in Lombardozzi (2018).
 
 If you prefer to use Gbc, you can use the iterative implementation of the Fvcb model
 [`FvcbIter`](@ref)
@@ -232,7 +233,7 @@ function assimilation!(leaf::LeafModels{I,E,<:Fvcb,<:AbstractGsModel,S}, meteo,
 
     # Net assimilation (μmol m-2 s-1)
     leaf.status.A = min(Wᵥ,Wⱼ,3*leaf.photosynthesis.TPURef) - Rd
-    
+
     # Stomatal conductance (mol[CO₂] m-2 s-1)
     leaf.status.Gₛ = gs(leaf,gs_mod)
     # replace by ifelse directly ? Should be faster as `max()` add some tests.\
@@ -290,7 +291,7 @@ Von Caemmerer, Susanna. 2000. Biochemical models of leaf photosynthesis. Csiro p
 ```jldoctest; setup = :(using PlantBiophysics)
 # Using default values for the model:
 julia> A = Fvcb()
-Fvcb{Float64}(25.0, 200.0, 250.0, 0.6, 46390.0, 210.0, 29680.0, 200000.0, 631.88, 58550.0, 200000.0, 629.26, 0.425, 0.9)
+Fvcb{Float64}(25.0, 200.0, 250.0, 0.6, 9999.0, 46390.0, 210.0, 29680.0, 200000.0, 631.88, 58550.0, 200000.0, 629.26, 0.425, 0.9)
 
 julia> PlantBiophysics.get_J(1500, A.JMaxRef, A.α, A.θ)
 236.11111111111111
