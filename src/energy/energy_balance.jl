@@ -105,6 +105,8 @@ Maxime Soma, et al. 2018. « Measuring and modelling energy partitioning in can
 complexity using MAESPA model ». Agricultural and Forest Meteorology 253‑254 (printemps): 203‑17.
 https://doi.org/10.1016/j.agrformet.2018.02.005.
 """
+energy_balance!, energy_balance
+
 function energy_balance!(object::AbstractComponentModel, meteo::Atmosphere, constants = Constants())
     is_init = is_initialised(object)
     !is_init && error("Some variables must be initialized before simulation")
