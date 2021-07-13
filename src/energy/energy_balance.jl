@@ -185,7 +185,7 @@ end
 
 # If we call weather with one component only, put it in an Array and call the function above
 function energy_balance!(object::AbstractComponentModel, meteo::Weather, constants = Constants())
-    energy_balance!([object], meteo, constants)[!,Not(:component)]
+    energy_balance!([object], meteo, constants)
 end
 
 # energy_balance over several meteo time steps (same as above) but non-mutating

@@ -329,7 +329,7 @@ Transform an array of components (or dict-alike) into a DataFrame of their statu
 for Dicts).
 """
 function DataFrame(components::T) where T <: AbstractArray{<:AbstractComponentModel}
-    DataFrame([NamedTuple(i) for i in components])
+    DataFrame([NamedTuple(i) for i in get_status(components)])
 end
 
 function DataFrame(components::T) where {T <: AbstractDict{N,<:AbstractComponentModel} where N}

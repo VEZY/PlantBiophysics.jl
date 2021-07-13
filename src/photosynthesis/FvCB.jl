@@ -106,7 +106,7 @@ Photosynthesis using the Farquhar–von Caemmerer–Berry (FvCB) model for C3 ph
 Computation is made following Farquhar & Wong (1984), Leuning et al. (1995), and the
 MAESPA model (Duursma et al., 2012).
 The resolution is analytical as first presented in Baldocchi (1994), and needs Cₛ as input.
-Triose phosphate utilization (TPU) limitation is taken into account as proposed in Lombardozzi (2018) (i.e. 
+Triose phosphate utilization (TPU) limitation is taken into account as proposed in Lombardozzi (2018) (i.e.
 Aₚ = 3*TPURef, making the assumption that glycolate recycling is set to 0). TPURef is by default at 9999., meaning that if you
 do not have the TPU value, TPU limitation won't have impact. Note that if you do not have the TPU value and you want to approximate it,
 it can be done using the simple equation `TPURef = 0.167*TPURef` as presented in Lombardozzi (2018).
@@ -175,7 +175,7 @@ photosynthesis, conductance and transpiration: scaling from leaves to canopies 
 Cell & Environment 18 (10): 1183‑1200.
 
 Lombardozzi, L. D. et al. 2018.« Triose phosphate limitation in photosynthesis models
-reduces leaf photosynthesis and global terrestrial carbon storage ». Environmental Research 
+reduces leaf photosynthesis and global terrestrial carbon storage ». Environmental Research
 Letters 13.7: 1748-9326. https://doi.org/10.1088/1748-9326/aacf68.
 """
 function assimilation!(leaf::LeafModels{I,E,<:Fvcb,<:AbstractGsModel,S}, meteo,
