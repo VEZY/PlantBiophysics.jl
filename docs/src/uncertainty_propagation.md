@@ -13,6 +13,8 @@ Using the `μ ± σ` notation, you can create a Gaussian distribution (of mean �
 ```@example 1
 using PlantBiophysics
 using MonteCarloMeasurements
+using Plots
+unsafe_comparisons(true)
 
 meteo = Atmosphere(T = 22.0 ± 0.1, Wind = 0.8333 ± 0.1, P = 101.325 ± 1., Rh = 0.4490995 ± 0.02, Cₐ = 400. ± 1.)
 leaf = LeafModels(energy = Monteith(),
@@ -30,7 +32,7 @@ plot(p1,p2,p3,p4,dpi=300,titleloc=:right)
 savefig("distributions-example-gaussian.svg"); nothing #hide
 ```
 
-![](distributions-example_gaussian.svg)
+![](distributions-example-gaussian.svg)
 
 It is also possible to use other types of distributions. For an uniform distribution, you can use `a .. b` (so the uniform distribution will be in the interval `[a,b]`).  For others distributions, you can use the package [Distributions.jl](https://github.com/JuliaStats/Distributions.jl) and implement Binomial, Gamma, etc. distributions with `MonteCarloMeasurements.jl` as `a ⊠ Gamma(1)` (i.e. `a` plus a Gamma distribution of parameter 1) or `a ⊠ Exponential(1)` (i.e. an Exponential distribution of parameter 1 with `a` as factor).
 
@@ -41,7 +43,7 @@ using MonteCarloMeasurements
 # ⊠ \boxplus
 # ⊠ \boxtimes
 
-meteo = Atmosphere(T = 22.0 ⊠ Gamma(2), Wind = 0.8333 ± 0.1, P = 101.325 ± 1., Rh = 0.4490995 ± 0.02, Cₐ = 400. ± 1.)
+meteo = Atmosphere(T = 15.0 .. 18.0, Wind = 0.8333 ± 0.1, P = 101.325 ± 1., Rh = 0.4490995 ± 0.02, Cₐ = 400. ± 1.)
 leaf = LeafModels(energy = Monteith(),
             photosynthesis = Fvcb(),
             stomatal_conductance = Medlyn(0.03, 12.0),
@@ -57,7 +59,7 @@ plot(p1,p2,p3,p4,dpi=300,titleloc=:right)
 savefig("distributions-example-various.svg"); nothing #hide
 ```
 
-![](distributions-example_various.svg)
+![](distributions-example-various.svg)
 
 
 ## Plotting
