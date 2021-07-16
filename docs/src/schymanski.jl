@@ -17,32 +17,32 @@ function read_dict(file)
     lines = readlines(file)
     params = Dict{String,Float64}()
     for i in 1:length(lines)
-        param = lstrip.(rstrip.(split(lines[i],"=")))
-        push!(params, param[1] => parse(Float64,param[2]))
+        param = lstrip.(rstrip.(split(lines[i], "=")))
+        push!(params, param[1] => parse(Float64, param[2]))
     end
     params
 end
 
-function run_simulation!(data,params,aₛᵥ)
+function run_simulation!(data, params, aₛᵥ)
     data[!, :Tₗ] .= data[!, :λE] .= data[!, :H] .= data[!, :rbh] .= 0.0
     data[!, :Rn] .= 0.0
 
-    for i in 1:size(data,1)
+    for i in 1:size(data, 1)
         meteo = Atmosphere(T = Float64(data.T_a[i]) - params["T0"],
                             Wind = Float64(data.v_w[i]),
                             P = data.P_a[i] / 1000,
                             Rh = data.rh[i])
         leaf = LeafModels(energy = Monteith(aₛᵥ = aₛᵥ, maxiter = maxiter),
                     photosynthesis = ConstantA(A),
-                    stomatal_conductance = ConstantGs(0.0, gsw_to_gsc(ms_to_mol(data.g_sw[i],data.T_a[i] - params["T0"],data.P_a[i]/1000))),
+                    stomatal_conductance = ConstantGs(0.0, gsw_to_gsc(ms_to_mol(data.g_sw[i], data.T_a[i] - params["T0"], data.P_a[i] / 1000))),
                     Rₛ = data.Rn_leaf[i], skyFraction = 2.0, d = data.L_l[i])
-        out = energy_balance(leaf,meteo,cst)
+        out = energy_balance(leaf, meteo, cst)
 
         data.Tₗ[i] = out.Tₗ
         data.λE[i] = out.λE
         data.H[i] = out.H
         data.Rn[i] = out.Rn
-        data.rbh[i] = 1/out.Gbₕ
+        data.rbh[i] = 1 / out.Gbₕ
     end
     data
 end
@@ -61,8 +61,8 @@ params = read_dict("data/schymanski_et_al_2017/vdict_6a.txt")
 # Running the simulation:
 run_simulation!(results1_6a,params,aₛᵥ)
 
-scatter(results1_6a.v_w, results1_6a.Elmeas, ylim = (-400,400),
-        ylab = "Energy flux from leaf (W m-2)",legend=:inline,
+scatter(results1_6a.v_w, results1_6a.Elmeas, ylim = (-400, 400),
+        ylab = "Energy flux from leaf (W m-2)",legend = :inline,
         xlab = "Wind speed (m s-1)", label = "LE meas", color = "blue")
 scatter!(results1_6a.v_w, results1_6a.Hlmeas,label = "H meas", color = "red")
 scatter!(results1_6a.v_w, results1_6a.Rn_leaf,label = "Rn meas", color = "green")
