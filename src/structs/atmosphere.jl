@@ -57,15 +57,22 @@ w = Weather(
     )
 ```
 """
-struct Weather{D <: AbstractArray,S <: AbstractString}
+struct Weather{D <: AbstractArray, S <: MutableNamedTuple}
     data::D
-    site::S
+    metadata::S
 end
 
+function Weather(df::DataFrame, mt::S) where S <: MutableNamedTuple
+    Weather([Atmosphere(; i...) for i in eachrow(df)],mt)
+end
+
+function Weather(df::DataFrame, dict::S) where S <: AbstractDict
+    # There must be a better way for transforming a Dict into a MutableNamedTuple...
+    Weather(df,MutableNamedTuple(; NamedTuple{Tuple(Symbol.(keys(dict)))}(values(dict))...))
+end
 
 function Weather(df::DataFrame)
-    @assert findfirst(x -> x == "site", names(df)) "The input `DataFrame` should have a column called site"
-    Weather(df[!, DataFrames.Not(:site)],unique(df.site))
+    Weather(df,MutableNamedTuple())
 end
 
 function Base.show(io::IO, n::Weather)
