@@ -82,18 +82,18 @@ struct Fvcb{T} <: AbstractAModel
 end
 
 function Fvcb(;Tᵣ = 25.0, VcMaxRef = 200.0, JMaxRef = 250.0, RdRef = 0.6, TPURef = 9999., Eₐᵣ = 46390.0,
-    O₂= 210.0, Eₐⱼ = 29680.0, Hdⱼ = 200000.0, Δₛⱼ = 631.88, Eₐᵥ = 58550.0, Hdᵥ = 200000.0,
+    O₂ = 210.0, Eₐⱼ = 29680.0, Hdⱼ = 200000.0, Δₛⱼ = 631.88, Eₐᵥ = 58550.0, Hdᵥ = 200000.0,
     Δₛᵥ = 629.26, α = 0.425, θ = 0.90)
 
     Fvcb(promote(Tᵣ, VcMaxRef, JMaxRef, RdRef, TPURef, Eₐᵣ, O₂, Eₐⱼ, Hdⱼ, Δₛⱼ, Eₐᵥ, Hdᵥ, Δₛᵥ, α, θ)...)
 end
 
 function inputs(::Fvcb)
-    (:PPFD,:Tₗ,:Cₛ)
+    (:PPFD, :Tₗ, :Cₛ)
 end
 
 function outputs(::Fvcb)
-    (:A,:Gₛ,:Cᵢ)
+(:A, :Gₛ, :Cᵢ)
 end
 
 Base.eltype(x::Fvcb) = typeof(x).parameters[1]
@@ -102,14 +102,34 @@ Base.eltype(x::Fvcb) = typeof(x).parameters[1]
     assimilation!(leaf::LeafModels{I,E,<:Fvcb,<:AbstractGsModel,S},constants = Constants())
 
 Photosynthesis using the Farquhar–von Caemmerer–Berry (FvCB) model for C3 photosynthesis
- (Farquhar et al., 1980; von Caemmerer and Farquhar, 1981).
-Computation is made following Farquhar & Wong (1984), Leuning et al. (1995), and the
-MAESPA model (Duursma et al., 2012).
+ (Farquhar et al., 1980; von Caemmerer and Farquhar, 1981) that models the assimilation as the
+most limiting factor between three processes:
+
+- RuBisCo-limited photosynthesis, when the kinetics of the RuBisCo enzyme for fixing
+CO₂ is at its maximum (RuBisCo = Ribulose-1,5-bisphosphate carboxylase-oxygenase). It happens
+mostly when the CO₂ concentration in the stomata is too low. The main parameter is VcMaxRef,
+the maximum rate of RuBisCo activity at reference temperature. See [`get_Cᵢᵥ`](@ref) for the
+computation.
+
+- RuBP-limited photosynthesis, when the rate of RuBP (ribulose-1,5-bisphosphate) regeneration
+associated with electron transport rates on the thylakoid membrane (RuBP) is limiting. It
+happens mostly when light is limiting, or when CO₂ concentration is rather high. It is
+parameterized using `JMaxRef`, the potential rate of electron transport. See [`get_Cᵢⱼ`](@ref)
+for the computation.
+- TPU-limited photosynthesis, when the rate at which inorganic phosphate is released for
+regenerating ATP from ADP during the utilization of triose phosphate (TPU) is limiting. It
+happens at very high assimilation rate, when neither light or CO₂ are limiting factors. The
+parameter is `TPURef`.
+
+The computation in this function is made following Farquhar & Wong (1984), Leuning et al.
+(1995), and the MAESPA model (Duursma et al., 2012).
+
 The resolution is analytical as first presented in Baldocchi (1994), and needs Cₛ as input.
-Triose phosphate utilization (TPU) limitation is taken into account as proposed in Lombardozzi (2018) (i.e.
-Aₚ = 3*TPURef, making the assumption that glycolate recycling is set to 0). TPURef is by default at 9999., meaning that if you
-do not have the TPU value, TPU limitation won't have impact. Note that if you do not have the TPU value and you want to approximate it,
-it can be done using the simple equation `TPURef = 0.167*TPURef` as presented in Lombardozzi (2018).
+Triose phosphate utilization (TPU) limitation is taken into account as proposed in
+Lombardozzi (2018) (*i.e.* `Aₚ = 3 * TPURef`, making the assumption that glycolate recycling
+is set to `0`). `TPURef` is set at `9999.0` by default, meaning there is no limitation of
+photosynthesis by TPU. Note that `TPURef` can be (badly) approximated using the simple
+equation `TPURef = 0.167 * VcMaxRef` as presented in Lombardozzi (2018).
 
 If you prefer to use Gbc, you can use the iterative implementation of the Fvcb model
 [`FvcbIter`](@ref)
@@ -178,7 +198,7 @@ Lombardozzi, L. D. et al. 2018.« Triose phosphate limitation in photosynthesis 
 reduces leaf photosynthesis and global terrestrial carbon storage ». Environmental Research
 Letters 13.7: 1748-9326. https://doi.org/10.1088/1748-9326/aacf68.
 """
-function assimilation!(leaf::LeafModels{I,E,<:Fvcb,<:AbstractGsModel,S}, meteo,
+    function assimilation!(leaf::LeafModels{I,E,<:Fvcb,<:AbstractGsModel,S}, meteo,
     constants = Constants()) where {I,E,S}
 
     # Tranform Celsius temperatures in Kelvin:
@@ -186,8 +206,8 @@ function assimilation!(leaf::LeafModels{I,E,<:Fvcb,<:AbstractGsModel,S}, meteo,
     Tᵣₖ = leaf.photosynthesis.Tᵣ - constants.K₀
 
     # Temperature dependence of the parameters:
-    Γˢ = Γ_star(Tₖ,Tᵣₖ,constants.R) # Gamma star (CO2 compensation point) in μmol mol-1
-    Km = get_km(Tₖ,Tᵣₖ,leaf.photosynthesis.O₂,constants.R) # effective Michaelis–Menten coefficient for CO2
+    Γˢ = Γ_star(Tₖ, Tᵣₖ, constants.R) # Gamma star (CO2 compensation point) in μmol mol-1
+    Km = get_km(Tₖ, Tᵣₖ, leaf.photosynthesis.O₂, constants.R) # effective Michaelis–Menten coefficient for CO2
 
     # Maximum electron transport rate at the given leaf temperature (μmol m-2 s-1):
     JMax = arrhenius(leaf.photosynthesis.JMaxRef,leaf.photosynthesis.Eₐⱼ,Tₖ,Tᵣₖ,
@@ -196,7 +216,7 @@ function assimilation!(leaf::LeafModels{I,E,<:Fvcb,<:AbstractGsModel,S}, meteo,
     VcMax = arrhenius(leaf.photosynthesis.VcMaxRef,leaf.photosynthesis.Eₐᵥ,Tₖ,Tᵣₖ,
                         leaf.photosynthesis.Hdᵥ,leaf.photosynthesis.Δₛᵥ,constants.R)
     # Rate of mitochondrial respiration at the given leaf temperature (μmol m-2 s-1):
-    Rd = arrhenius(leaf.photosynthesis.RdRef,leaf.photosynthesis.Eₐᵣ,Tₖ,Tᵣₖ,constants.R)
+    Rd = arrhenius(leaf.photosynthesis.RdRef, leaf.photosynthesis.Eₐᵣ, Tₖ, Tᵣₖ, constants.R)
     # Rd is also described as the CO2 release in the light by processes other than the PCO
     # cycle, and termed "day" respiration, or "light respiration" (Harley et al., 1986).
 
@@ -206,15 +226,15 @@ function assimilation!(leaf::LeafModels{I,E,<:Fvcb,<:AbstractGsModel,S}, meteo,
     Vⱼ = J / 4
 
     # Stomatal conductance (mol[CO₂] m-2 s-1), dispatched on type of first argument (Gs_mod):
-    gs_mod = gs_closure(leaf,meteo)
+    gs_mod = gs_closure(leaf, meteo)
 
-    Cᵢⱼ = get_Cᵢⱼ(Vⱼ,Γˢ,leaf.status.Cₛ,Rd,leaf.stomatal_conductance.g0,gs_mod)
+    Cᵢⱼ = get_Cᵢⱼ(Vⱼ, Γˢ, leaf.status.Cₛ, Rd, leaf.stomatal_conductance.g0, gs_mod)
 
     # Electron-transport-limited rate of CO2 assimilation (RuBP regeneration-limited):
     Wⱼ = Vⱼ * (Cᵢⱼ - Γˢ) / (Cᵢⱼ + 2.0 * Γˢ) # also called Aⱼ
     # See Von Caemmerer, Susanna. 2000. Biochemical models of leaf photosynthesis.
     # Csiro publishing, eq. 2.23.
-    # NB: here the equation is modified because we use Vⱼ instead of J, but it is the same.
+        # NB: here the equation is modified because we use Vⱼ instead of J, but it is the same.
 
     # If Rd is larger than Wⱼ, no assimilation:
     if Wⱼ - Rd < 1.0e-6
@@ -222,7 +242,7 @@ function assimilation!(leaf::LeafModels{I,E,<:Fvcb,<:AbstractGsModel,S}, meteo,
         Wⱼ = Vⱼ * (Cᵢⱼ - Γˢ) / (Cᵢⱼ + 2.0 * Γˢ)
     end
 
-    Cᵢᵥ = get_Cᵢᵥ(VcMax,Γˢ,leaf.status.Cₛ,Rd,leaf.stomatal_conductance.g0,gs_mod,Km)
+    Cᵢᵥ = get_Cᵢᵥ(VcMax, Γˢ, leaf.status.Cₛ, Rd, leaf.stomatal_conductance.g0, gs_mod, Km)
 
     # Rubisco-carboxylation-limited rate of CO₂ assimilation (RuBP activity-limited):
     if Cᵢᵥ <= 0.0 || Cᵢᵥ > leaf.status.Cₛ
@@ -232,13 +252,13 @@ function assimilation!(leaf::LeafModels{I,E,<:Fvcb,<:AbstractGsModel,S}, meteo,
     end
 
     # Net assimilation (μmol m-2 s-1)
-    leaf.status.A = min(Wᵥ,Wⱼ,3*leaf.photosynthesis.TPURef) - Rd
+    leaf.status.A = min(Wᵥ, Wⱼ, 3 * leaf.photosynthesis.TPURef) - Rd
 
     # Stomatal conductance (mol[CO₂] m-2 s-1)
-    leaf.status.Gₛ = gs(leaf,gs_mod)
+    leaf.status.Gₛ = gs(leaf, gs_mod)
     # replace by ifelse directly ? Should be faster as `max()` add some tests.\
 
-    # Intercellular CO₂ concentration (Cᵢ, μmol mol)
+# Intercellular CO₂ concentration (Cᵢ, μmol mol)
     leaf.status.Cᵢ = min(leaf.status.Cₛ, leaf.status.Cₛ - leaf.status.A / leaf.status.Gₛ)
     nothing
 end
@@ -298,7 +318,7 @@ julia> PlantBiophysics.get_J(1500, A.JMaxRef, A.α, A.θ)
 ```
 """
 function get_J(PPFD, JMax, α, θ)
-  (α * PPFD + JMax - sqrt((α * PPFD + JMax)^2 - 4 * α * θ * PPFD * JMax)) / (2 * θ)
+(α * PPFD + JMax - sqrt((α * PPFD + JMax)^2 - 4 * α * θ * PPFD * JMax)) / (2 * θ)
 end
 
 """
@@ -324,22 +344,22 @@ example application to [CO2] × drought interactions ». Geoscientific Model De
 
 Wang and Leuning, 1998
 """
-function get_Cᵢⱼ(Vⱼ,Γˢ,Cₛ,Rd,g0,gs_mod)
+function get_Cᵢⱼ(Vⱼ, Γˢ, Cₛ, Rd, g0, gs_mod)
     a = g0 + gs_mod * (Vⱼ - Rd)
     b = (1.0 - Cₛ * gs_mod) * (Vⱼ - Rd) + g0 * (2.0 * Γˢ - Cₛ) -
         gs_mod * (Vⱼ * Γˢ + 2.0 * Γˢ * Rd)
     c = -(1.0 - Cₛ * gs_mod) * Γˢ * (Vⱼ + 2.0 * Rd) -
         g0 * 2.0 * Γˢ * Cₛ
 
-    return max_root(a,b,c)
+    return max_root(a, b, c)
 end
 
 """
-Analytic resolution of Cᵢ when the Rubisco activity is limiting (``μmol\\ mol^{-1}``)
+Analytic resolution of Cᵢ when the RuBisCo activity is limiting (``μmol\\ mol^{-1}``)
 
 # Arguments
 
-- `VcMAX`: maximum rate of Rubisco activity(``μmol\\ m^{-2}\\ s^{-1}``)
+- `VcMAX`: maximum rate of RuBisCo activity(``μmol\\ m^{-2}\\ s^{-1}``)
 - `Γˢ`: CO2 compensation point ``Γ^⋆`` (``μmol\\ mol^{-1}``)
 - `Cₛ`: stomatal CO₂ concentration (``μmol\\ mol^{-1}``)
 - `Rd`: day respiration (``μmol\\ m^{-2}\\ s^{-1}``)
@@ -348,20 +368,20 @@ Analytic resolution of Cᵢ when the Rubisco activity is limiting (``μmol\\ mol
 e.g. [`Medlyn`](@ref).
 - `Km`: effective Michaelis–Menten coefficient for CO2 (``μ mol\\ mol^{-1}``)
 """
-function get_Cᵢᵥ(VcMAX,Γˢ,Cₛ,Rd,g0,gs_mod,Km)
+function get_Cᵢᵥ(VcMAX, Γˢ, Cₛ, Rd, g0, gs_mod, Km)
     a = g0 + gs_mod * (VcMAX - Rd)
     b = (1.0 - Cₛ * gs_mod) * (VcMAX - Rd) + g0 * (Km - Cₛ) - gs_mod * (VcMAX * Γˢ + Km * Rd)
     c = -(1.0 - Cₛ * gs_mod) * (VcMAX * Γˢ + Km * Rd) - g0 * Km * Cₛ
 
-    return max_root(a,b,c)
+    return max_root(a, b, c)
 end
 
 """
 Maximum value between two roots of a quadratic equation.
 """
-function max_root(a,b,c)
+function max_root(a, b, c)
     Δ = b^2.0 - 4.0 * a * c
     x1 = (-b + sqrt(Δ)) / (2.0 * a)
     x2 = (-b - sqrt(Δ)) / (2.0 * a)
-    return max(x1,x2)
+    return max(x1, x2)
 end
