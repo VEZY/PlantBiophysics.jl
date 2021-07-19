@@ -69,7 +69,7 @@ struct Atmosphere{A,D1,D2} <: AbstractAtmosphere
 end
 
 function Atmosphere(;
-    date = DateTime.now(), duration = 1.0, T, Wind, P = 101.325, Rh,
+    date = Dates.now(), duration = 1.0, T, Wind, P = 101.325, Rh,
     Cₐ = 400.0, e = vapor_pressure(T, Rh), eₛ = e_sat(T), VPD = eₛ - e,
     ρ = air_density(T, P), λ = latent_heat_vaporization(T),
     γ = psychrometer_constant(P, λ), ε = atmosphere_emissivity(T, e),

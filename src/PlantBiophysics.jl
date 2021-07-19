@@ -60,12 +60,12 @@ include("energy/Monteith.jl")
 
 # File IO
 include("io/read_model.jl")
-include("io/read_meteo.jl")
+include("io/read_weather.jl")
 
 # File IO:
 export read_model
 export is_model
-export read_meteo
+export read_weather
 
 # Physical constants
 export Constants
