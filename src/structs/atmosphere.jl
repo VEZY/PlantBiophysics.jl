@@ -1,11 +1,21 @@
 """
-Atmosphere structure to hold all values related to the meteorology / atmoshpere.
+Abstract atmospheric conditions type. The suptypes of AbstractAtmosphere should describe the
+atmospheric conditions for one time-step only, see *e.g.* [`Atmosphere`](@ref)
+"""
+abstract type AbstractAtmosphere end
+
+
+"""
+Atmosphere structure to hold all values related to the meteorology / atmosphere.
 
 # Arguments
 
+- `date = Dates.now()`: the date of the record.
+- `duration = 1.0` (seconds): the duration of the time-step.
 - `T` (°C): air temperature
 - `Wind` (m s-1): wind speed
-- `P` (kPa): air pressure
+- `P = 101.325` (kPa): air pressure. The default value is at 1 atm, *i.e.* the mean sea-level
+atmospheric pressure on Earth.
 - `Rh = rh_from_vpd(VPD,eₛ)` (0-1): relative humidity
 - `Cₐ` (ppm): air CO₂ concentration
 - `e = vapor_pressure(T,Rh)` (kPa): vapor pressure
@@ -16,10 +26,16 @@ Atmosphere structure to hold all values related to the meteorology / atmoshpere.
 - `γ = psychrometer_constant(P, λ, constants.Cₚ, constants.ε)` (kPa K−1): psychrometer "constant"
 - `ε = atmosphere_emissivity(T,e,constants.K₀)` (0-1): atmosphere emissivity
 - `Δ = e_sat_slope(meteo.T)` (0-1): slope of the saturation vapor pressure at air temperature
+- `clearness::A = 9999.9` (0-1): Sky clearness
+- `Ri_SW_f::A = 9999.9` (W m-2): Incoming short wave radiation flux
+- `Ri_PAR_f::A = 9999.9` (W m-2): Incoming PAR radiation flux
+- `Ri_NIR_f::A = 9999.9` (W m-2): Incoming NIR radiation flux
+- `Ri_TIR_f::A = 9999.9` (W m-2): Incoming TIR radiation flux
+- `Ri_custom_f::A = 9999.9` (W m-2): Incoming radiation flux for a custom waveband
 
 # Notes
 
-The structure can be built using only `T`, `Rh`, `Wind` and `P`. All other variables are oprional
+The structure can be built using only `T`, `Rh`, `Wind` and `P`. All other variables are optional
 and can be automatically computed using the functions given in `Arguments`.
 
 # Examples
@@ -28,20 +44,45 @@ and can be automatically computed using the functions given in `Arguments`.
 Atmosphere(T = 20.0, Wind = 1.0, P = 101.3, Rh = 0.65)
 ```
 """
-Base.@kwdef struct Atmosphere{A}
+struct Atmosphere{A,D1,D2} <: AbstractAtmosphere
+    date::D1
+    duration::D2
     T::A
     Wind::A
     P::A
     Rh::A
-    Cₐ::A = 400.0
-    e::A = vapor_pressure(T,Rh)
-    eₛ::A = e_sat(T)
-    VPD::A = eₛ - e
-    ρ::A = air_density(T, P) # in kg m-3
-    λ::A = latent_heat_vaporization(T)
-    γ::A = psychrometer_constant(P, λ) # in kPa K−1
-    ε::A = atmosphere_emissivity(T,e)
-    Δ::A = e_sat_slope(T)
+    Cₐ::A
+    e::A
+    eₛ::A
+    VPD::A
+    ρ::A
+    λ::A
+    γ::A
+    ε::A
+    Δ::A
+    clearness::A
+    Ri_SW_f::A
+    Ri_PAR_f::A
+    Ri_NIR_f::A
+    Ri_TIR_f::A
+    Ri_custom_f::A
+end
+
+function Atmosphere(;
+    date = DateTime.now(), duration = 1.0, T, Wind, P = 101.325, Rh,
+    Cₐ = 400.0, e = vapor_pressure(T, Rh), eₛ = e_sat(T), VPD = eₛ - e,
+    ρ = air_density(T, P), λ = latent_heat_vaporization(T),
+    γ = psychrometer_constant(P, λ), ε = atmosphere_emissivity(T, e),
+    Δ = e_sat_slope(T), clearness = 9999.9, Ri_SW_f = 9999.9, Ri_PAR_f = 9999.9,
+    Ri_NIR_f = 9999.9, Ri_TIR_f = 9999.9, Ri_custom_f = 9999.9)
+
+    param_A =
+    promote(
+        T, Wind, P, Rh, Cₐ, e, eₛ, VPD, ρ, λ,γ, ε,Δ, clearness, Ri_SW_f, Ri_PAR_f,
+        Ri_NIR_f, Ri_TIR_f, Ri_custom_f
+    )
+
+    Atmosphere(date, duration, param_A...)
 end
 
 """
@@ -57,7 +98,7 @@ w = Weather(
     )
 ```
 """
-struct Weather{D <: AbstractArray, S <: MutableNamedTuple}
+struct Weather{D <: AbstractArray{<:AbstractAtmosphere}, S <: MutableNamedTuple}
     data::D
     metadata::S
 end
@@ -76,7 +117,11 @@ function Weather(df::DataFrame)
 end
 
 function Base.show(io::IO, n::Weather)
-    print(io,"Wheather data from `$(n.site)`:\n")
+    printstyled(io,"Wheather data.\n", bold = true, color = :green)
+    printstyled(io,"Metadata: `$(NamedTuple(n.metadata))`.\n", color = :cyan)
+    printstyled(io,"Data:\n", color = :green)
+    # :normal, :default, :bold, :black, :blink, :blue, :cyan, :green, :hidden, :light_black, :light_blue, :light_cyan, :light_green, :light_magenta, :light_red, :light_yellow, :magenta, :nothing, :red,
+#   :reverse, :underline, :white, or :yellow
     print(DataFrame(n))
     return nothing
 end
@@ -89,14 +134,12 @@ Transform a Weather type into a DataFrame.
 See also [`Weather`](@Ref) to make the reverse.
 """
 function DataFrame(data::Weather)
-    df = DataFrame(data.data)
-    # df.site .= data.site
-    df[!,:site] .= data.site
-    return df
+    return DataFrame(data.data)
 end
 
 """
     vapor_pressure(Tₐ, rh)
+
 Vapor pressure (kPa) at given temperature (°C) and relative hunidity (0-1).
 """
 function vapor_pressure(Tₐ, rh)

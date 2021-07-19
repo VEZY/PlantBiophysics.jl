@@ -2,7 +2,7 @@
     photosynthesis(leaf::AbstractComponentModel,meteo,constants = Constants())
     photosynthesis!(leaf::AbstractComponentModel,meteo,constants = Constants())
     photosynthesis!(object::Dict{String,PlantBiophysics.AbstractComponentModel},
-        meteo::Atmosphere,constants = Constants())
+        meteo::AbstractAtmosphere,constants = Constants())
 
 Generic photosynthesis model for photosynthetic organs. Computes the assimilation and
 stomatal conductance according to the models set for `leaf`, or for each component in
@@ -51,7 +51,7 @@ end
 
 
 function photosynthesis!(object::Dict{String,PlantBiophysics.AbstractComponentModel},
-    meteo::Atmosphere,constants = Constants())
+    meteo::AbstractAtmosphere,constants = Constants())
 
     for i in keys(object)
         photosynthesis!(object[i], meteo, constants)

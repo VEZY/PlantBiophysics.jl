@@ -1,8 +1,8 @@
 """
     gs(leaf::LeafModels{I,E,A,<:AbstractGsModel,S},gs_mod)
-    gs(leaf::LeafModels{I,E,A,<:AbstractGsModel,S},meteo<:Atmosphere)
+    gs(leaf::LeafModels{I,E,A,<:AbstractGsModel,S},meteo<:AbstractAtmosphere)
     gs!(leaf::LeafModels{I,E,A,<:AbstractGsModel,S},gs_mod)
-    gs!(leaf::LeafModels{I,E,A,<:AbstractGsModel,S},meteo<:Atmosphere)
+    gs!(leaf::LeafModels{I,E,A,<:AbstractGsModel,S},meteo<:AbstractAtmosphere)
 
 Default method to compute the stomatal conductance for CO₂ (mol m-2 s-1), it takes the form:
 
@@ -18,7 +18,7 @@ allowed to go below `leaf.stomatal_conductance.gs_min`.
 [`LeafModels`](@ref), and [`Medlyn`](@ref) or [`ConstantGs`](@ref) for the conductance models.
 - `gs_mod`: the output from a [`gs_closure`](@ref) implementation (the conductance models
 generally only implement this function)
-- `meteo<:Atmosphere`: meteo data, see [`Atmosphere`](@ref)
+- `meteo<:AbstractAtmosphere`: meteo data, see [`Atmosphere`](@ref)
 
 # Examples
 
@@ -34,22 +34,22 @@ leaf = LeafModels(stomatal_conductance = Medlyn(0.03,12.0), # Instance of a Medl
 gs(leaf,meteo)
 ```
 """
-function gs(leaf::LeafModels{I,E,A,Gs,S},gs_mod) where {I,E,A,Gs<:AbstractGsModel,S}
+function gs(leaf::LeafModels{I,E,A,Gs,S}, gs_mod) where {I,E,A,Gs <: AbstractGsModel,S}
     max(leaf.stomatal_conductance.gs_min,
         leaf.stomatal_conductance.g0 + gs_mod * leaf.status.A)
 end
 
-function gs(leaf::LeafModels{I,E,A,Gs,S},meteo::M) where {I,E,A,Gs<:AbstractGsModel,S,M<:Atmosphere}
+function gs(leaf::LeafModels{I,E,A,Gs,S}, meteo::M) where {I,E,A,Gs <: AbstractGsModel,S,M <: Atmosphere}
     max(leaf.stomatal_conductance.gs_min,
-        leaf.stomatal_conductance.g0 + gs_closure(leaf,meteo) * leaf.status.A)
+        leaf.stomatal_conductance.g0 + gs_closure(leaf, meteo) * leaf.status.A)
 end
 
-function gs!(leaf::LeafModels{I,E,A,Gs,S},gs_mod) where {I,E,A,Gs<:AbstractGsModel,S}
+function gs!(leaf::LeafModels{I,E,A,Gs,S}, gs_mod) where {I,E,A,Gs <: AbstractGsModel,S}
     leaf.status.Gₛ = max(leaf.stomatal_conductance.gs_min,
         leaf.stomatal_conductance.g0 + gs_mod * leaf.status.A)
 end
 
-function gs!(leaf::LeafModels{I,E,A,Gs,S},meteo::M) where {I,E,A,Gs<:AbstractGsModel,S,M<:Atmosphere}
+function gs!(leaf::LeafModels{I,E,A,Gs,S}, meteo::M) where {I,E,A,Gs <: AbstractGsModel,S,M <: Atmosphere}
     leaf.status.Gₛ = max(leaf.stomatal_conductance.gs_min,
-        leaf.stomatal_conductance.g0 + gs_closure(leaf,meteo) * leaf.status.A)
+        leaf.stomatal_conductance.g0 + gs_closure(leaf, meteo) * leaf.status.A)
 end

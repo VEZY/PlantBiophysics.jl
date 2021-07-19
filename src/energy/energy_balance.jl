@@ -1,7 +1,7 @@
 """
-    energy_balance(object::T,meteo::Atmosphere,constants = Constants())
-    energy_balance(object::Array{AbstractComponentModel},meteo::Atmosphere,constants = Constants())
-    energy_balance!(object::AbstractComponentModel,meteo::Atmosphere,constants = Constants())
+    energy_balance(object::T,meteo<:AbstractAtmosphere,constants = Constants())
+    energy_balance(object::Array{AbstractComponentModel},meteo<:AbstractAtmosphere,constants = Constants())
+    energy_balance!(object::AbstractComponentModel,meteo<:AbstractAtmosphere,constants = Constants())
 
 Computes the energy balance of a component based on the type of the model it was parameterized
 with in `object.energy`.
@@ -15,7 +15,7 @@ At the moment, two models are implemented in the package:
 
 - `object::Union{AbstractComponentModel,Array{AbstractComponentModel},
 Dict{String,AbstractComponentModel}}`: a [`Component`](@ref) struct, or a Dict/Array of.
-- `meteo::Union{Atmosphere,Weather}`: meteorology structure, see [`Atmosphere`](@ref) or
+- `meteo::Union{AbstractAtmosphere,Weather}`: meteorology structure, see [`Atmosphere`](@ref) or
 [`Weather`](@ref)
 - `constants = Constants()`: physical constants. See [`Constants`](@ref) for more details
 
@@ -107,7 +107,7 @@ https://doi.org/10.1016/j.agrformet.2018.02.005.
 """
 energy_balance!, energy_balance
 
-function energy_balance!(object::AbstractComponentModel, meteo::Atmosphere, constants = Constants())
+function energy_balance!(object::AbstractComponentModel, meteo::AbstractAtmosphere, constants = Constants())
     is_init = is_initialised(object)
     !is_init && error("Some variables must be initialized before simulation")
 
@@ -116,14 +116,14 @@ function energy_balance!(object::AbstractComponentModel, meteo::Atmosphere, cons
 end
 
 # Same as above but non-mutating
-function energy_balance(object::AbstractComponentModel, meteo::Atmosphere, constants = Constants())
+function energy_balance(object::AbstractComponentModel, meteo::AbstractAtmosphere, constants = Constants())
     object_tmp = copy(object)
     energy_balance!(object_tmp, meteo, constants)
     return object_tmp.status
 end
 
 # energy_balance over several objects (e.g. all leaves of a plant) in an Array
-function energy_balance!(object::O, meteo::Atmosphere, constants = Constants()) where O <: AbstractArray{<:AbstractComponentModel}
+function energy_balance!(object::O, meteo::AbstractAtmosphere, constants = Constants()) where O <: AbstractArray{<:AbstractComponentModel}
 
     for i in values(object)
         energy_balance!(i, meteo, constants)
@@ -133,7 +133,7 @@ function energy_balance!(object::O, meteo::Atmosphere, constants = Constants()) 
 end
 
 # energy_balance over several objects (e.g. all leaves of a plant) in a kind of Dict.
-function energy_balance!(object::O, meteo::Atmosphere, constants = Constants()) where {O <: AbstractDict{N,<:AbstractComponentModel} where N}
+function energy_balance!(object::O, meteo::AbstractAtmosphere, constants = Constants()) where {O <: AbstractDict{N,<:AbstractComponentModel} where N}
 
     for (k, v) in object
         energy_balance!(v, meteo, constants)
@@ -145,7 +145,7 @@ end
 # same as the above but non-mutating
 function energy_balance(
     object::O,
-    meteo::Atmosphere,
+    meteo::AbstractAtmosphere,
     constants = Constants()
     ) where O <: Union{AbstractArray{<:AbstractComponentModel},AbstractDict{N,<:AbstractComponentModel} where N}
 
