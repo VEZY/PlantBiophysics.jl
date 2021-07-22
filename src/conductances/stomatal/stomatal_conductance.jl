@@ -39,7 +39,7 @@ function gs(leaf::LeafModels{I,E,A,Gs,S}, gs_mod) where {I,E,A,Gs <: AbstractGsM
         leaf.stomatal_conductance.g0 + gs_mod * leaf.status.A)
 end
 
-function gs(leaf::LeafModels{I,E,A,Gs,S}, meteo::M) where {I,E,A,Gs <: AbstractGsModel,S,M <: Atmosphere}
+function gs(leaf::LeafModels{I,E,A,Gs,S}, meteo::M) where {I,E,A,Gs <: AbstractGsModel,S,M <: AbstractAtmosphere}
     max(leaf.stomatal_conductance.gs_min,
         leaf.stomatal_conductance.g0 + gs_closure(leaf, meteo) * leaf.status.A)
 end
@@ -49,7 +49,7 @@ function gs!(leaf::LeafModels{I,E,A,Gs,S}, gs_mod) where {I,E,A,Gs <: AbstractGs
         leaf.stomatal_conductance.g0 + gs_mod * leaf.status.A)
 end
 
-function gs!(leaf::LeafModels{I,E,A,Gs,S}, meteo::M) where {I,E,A,Gs <: AbstractGsModel,S,M <: Atmosphere}
+function gs!(leaf::LeafModels{I,E,A,Gs,S}, meteo::M) where {I,E,A,Gs <: AbstractGsModel,S,M <: AbstractAtmosphere}
     leaf.status.Gₛ = max(leaf.stomatal_conductance.gs_min,
         leaf.stomatal_conductance.g0 + gs_closure(leaf, meteo) * leaf.status.A)
 end

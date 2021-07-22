@@ -258,7 +258,7 @@ Letters 13.7: 1748-9326. https://doi.org/10.1088/1748-9326/aacf68.
     leaf.status.Gₛ = gs(leaf, gs_mod)
     # replace by ifelse directly ? Should be faster as `max()` add some tests.\
 
-# Intercellular CO₂ concentration (Cᵢ, μmol mol)
+    # Intercellular CO₂ concentration (Cᵢ, μmol mol)
     leaf.status.Cᵢ = min(leaf.status.Cₛ, leaf.status.Cₛ - leaf.status.A / leaf.status.Gₛ)
     nothing
 end
@@ -318,7 +318,7 @@ julia> PlantBiophysics.get_J(1500, A.JMaxRef, A.α, A.θ)
 ```
 """
 function get_J(PPFD, JMax, α, θ)
-(α * PPFD + JMax - sqrt((α * PPFD + JMax)^2 - 4 * α * θ * PPFD * JMax)) / (2 * θ)
+    (α * PPFD + JMax - sqrt((α * PPFD + JMax)^2 - 4 * α * θ * PPFD * JMax)) / (2 * θ)
 end
 
 """
