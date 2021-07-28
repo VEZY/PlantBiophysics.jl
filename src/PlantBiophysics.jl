@@ -14,7 +14,9 @@ import DataFrames.DataFrame # For convenience transformations
 import DataFrames.Not
 import DataFrames.rename!
 import DataFrames.select!
+import DataFrames.dropmissing!
 import Base.show
+import Impute.locf # For filling missing values in comments in Walz to identify curves
 
 # Generic structures:
 include("structs/Abstract_model_structs.jl")
@@ -61,11 +63,13 @@ include("energy/Monteith.jl")
 # File IO
 include("io/read_model.jl")
 include("io/read_weather.jl")
+include("io/read_walz.jl")
 
 # File IO:
 export read_model
 export is_model
 export read_weather
+export read_walz
 
 # Physical constants
 export Constants
