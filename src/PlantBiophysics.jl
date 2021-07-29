@@ -17,6 +17,7 @@ import DataFrames.select!
 import DataFrames.dropmissing!
 import Base.show
 import Impute.locf # For filling missing values in comments in Walz to identify curves
+import LsqFit:curve_fit
 
 # Generic structures:
 include("structs/Abstract_model_structs.jl")
@@ -64,6 +65,9 @@ include("energy/Monteith.jl")
 include("io/read_model.jl")
 include("io/read_weather.jl")
 include("io/read_walz.jl")
+
+# Parameters optimization
+include("fitting/fit.jl")
 
 # File IO:
 export read_model
@@ -152,6 +156,9 @@ export AbstractModel
 # Components (structures that hold models)
 export AbstractComponentModel
 export LeafModels
+
+# Parameters optimization
+export fit
 
 # Convenience functions
 export DataFrame
