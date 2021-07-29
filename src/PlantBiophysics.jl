@@ -18,6 +18,7 @@ import DataFrames.dropmissing!
 import Base.show
 import Impute.locf # For filling missing values in comments in Walz to identify curves
 import LsqFit:curve_fit
+using RecipesBase
 
 # Generic structures:
 include("structs/Abstract_model_structs.jl")

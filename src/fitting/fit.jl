@@ -1,4 +1,17 @@
+
 """
+    fit(::Type{<:AbstractModel}, df; kwargs)
+
+Optimize the parameters of a model using measurements in `df` and the initialisation values in
+`kwargs`. Note that the columns in `df` should match exactly the names and units used in the
+model. See particular implementations for more details.
+"""
+function fit end
+
+"""
+    fit(::Type{Fvcb}, df; Tᵣ = 25.0, VcMaxRef = 200.0, JMaxRef = 250.0, RdRef = 0.6)
+
+Optimize the parameters of the [`Fvcb`](@ref) model. Also works for [`FvcbIter`](@ref).
 
 # Examples
 
@@ -31,11 +44,11 @@ for i in 1:size(df,1)
 
     meteo = Atmosphere(T = df[i,:T], Wind = 10.0, P = df[i,:P], Rh = df[i,:Rh], Cₐ = df[i,:Cₐ])
     photosynthesis!(leaf, meteo)
-    A[i] = leaf.status.A
+A[i] = leaf.status.A
 end
 
-scatter(df[:,:Cᵢ], df[:,:A], label = "Measured", xlabel = "Cᵢ", ylabel = "A")
-plot!(df[:,:Cᵢ], A, label = "Simulated", xlabel = "Cᵢ", ylabel = "A")
+test = PlantBiophysics.ACi(VcMaxRef, JMaxRef, RdRef, df[:,:A], A, df[:,:Cᵢ])
+plot(test)
 ```
 """
 function fit(::Type{Fvcb}, df; Tᵣ = 25.0, VcMaxRef = 200.0, JMaxRef = 250.0, RdRef = 0.6)
@@ -43,7 +56,7 @@ function fit(::Type{Fvcb}, df; Tᵣ = 25.0, VcMaxRef = 200.0, JMaxRef = 250.0, R
     df_in = copy(df)
 
     if !hasproperty(df_in, :Wind)
-    df_in[!, :Wind] .= 10.0
+        df_in[!, :Wind] .= 10.0
     end
 
     function model(x, p)
@@ -62,9 +75,7 @@ function fit(::Type{Fvcb}, df; Tᵣ = 25.0, VcMaxRef = 200.0, JMaxRef = 250.0, R
 
             photosynthesis!(leaf, meteo)
             A[i] = leaf.status.A
-    end
-
-
+        end
     return A
     end
 
@@ -76,5 +87,37 @@ function fit(::Type{Fvcb}, df; Tᵣ = 25.0, VcMaxRef = 200.0, JMaxRef = 250.0, R
 
     res = curve_fit(model, array_x, A, p0)
 
-    (VcMaxRef = res.param[1], JMaxRef = res.param[2], RdRef = res.param[3])
+    res = (VcMaxRef = res.param[1], JMaxRef = res.param[2], RdRef = res.param[3])
+    printstyled(res, color = :green)
+    res
+end
+
+mutable struct ACi
+    VcMaxRef
+    JMaxRef
+    RdRef
+    A_meas
+    A_sim
+    Cᵢ
+end
+
+@recipe function f(h::ACi)
+    x = h.Cᵢ
+    y = h.A_meas
+    y2 = h.A_sim
+    # Main plot (measurement):
+    xguide --> "Cᵢ (ppm)"
+    yguide --> "A (μmol m⁻² s⁻¹)"
+
+    @series begin
+        seriestype := :scatter
+        label := "Measured"
+        x, y
+    end
+
+    @series begin
+        label := "Simulated"
+        seriestype := :line
+        x, y2
+    end
 end
