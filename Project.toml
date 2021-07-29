@@ -16,6 +16,7 @@ YAML = "ddb6d928-2868-570f-bddf-ab3f9cf99eb6"
 [compat]
 CSV = "0.8"
 DataFrames = "1"
+Impute = "0.6"
 MutableNamedTuples = "0.1"
 OrderedCollections = "1.3"
 YAML = "0.4"
