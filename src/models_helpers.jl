@@ -1,4 +1,20 @@
 """
+    defaults(Type{<:AbstractModel})
+
+Get the default values of a model.
+
+# Examples
+
+```julia
+defaults(Fvcb)
+```
+"""
+function defaults(x::T) where T <: Type{<:AbstractModel}
+    p = x()
+    (;(v=>getfield(p, v) for v in fieldnames(typeof(p)))...)
+end
+
+"""
     inputs(model::AbstractModel)
     inputs(...)
 
