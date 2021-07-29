@@ -351,7 +351,7 @@ function get_Cᵢⱼ(Vⱼ, Γˢ, Cₛ, Rd, g0, gs_mod)
     c = -(1.0 - Cₛ * gs_mod) * Γˢ * (Vⱼ + 2.0 * Rd) -
         g0 * 2.0 * Γˢ * Cₛ
 
-    return max_root(a, b, c)
+    return positive_root(a, b, c)
 end
 
 """
@@ -373,7 +373,7 @@ function get_Cᵢᵥ(VcMAX, Γˢ, Cₛ, Rd, g0, gs_mod, Km)
     b = (1.0 - Cₛ * gs_mod) * (VcMAX - Rd) + g0 * (Km - Cₛ) - gs_mod * (VcMAX * Γˢ + Km * Rd)
     c = -(1.0 - Cₛ * gs_mod) * (VcMAX * Γˢ + Km * Rd) - g0 * Km * Cₛ
 
-    return max_root(a, b, c)
+    return positive_root(a, b, c)
 end
 
 """
@@ -384,4 +384,21 @@ function max_root(a, b, c)
     x1 = (-b + sqrt(Δ)) / (2.0 * a)
     x2 = (-b - sqrt(Δ)) / (2.0 * a)
     return max(x1, x2)
+end
+
+
+"""
+Positive root of a quadratic equation.
+"""
+function positive_root(a, b, c)
+    Δ = b^2.0 - 4.0 * a * c
+    return (-b + sqrt(Δ)) / (2.0 * a)
+end
+
+"""
+Negative root of a quadratic equation.
+"""
+function negative_root(a, b, c)
+    Δ = b^2.0 - 4.0 * a * c
+    return (-b - sqrt(Δ)) / (2.0 * a)
 end
