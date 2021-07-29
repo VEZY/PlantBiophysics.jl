@@ -1,10 +1,9 @@
 """
-    energy_balance(object::T,meteo<:AbstractAtmosphere,constants = Constants())
-    energy_balance(object::Array{AbstractComponentModel},meteo<:AbstractAtmosphere,constants = Constants())
-    energy_balance!(object::AbstractComponentModel,meteo<:AbstractAtmosphere,constants = Constants())
+    energy_balance(object, meteo, constants = Constants())
+    energy_balance!(object, meteo, constants = Constants())
 
-Computes the energy balance of a component based on the type of the model it was parameterized
-with in `object.energy`.
+Computes the energy balance of one or several components based on the type of the model it was
+parameterized with in `object.energy`, and on one or several meteorology time-steps.
 
 At the moment, two models are implemented in the package:
 
@@ -13,8 +12,7 @@ At the moment, two models are implemented in the package:
 
 # Arguments
 
-- `object::Union{AbstractComponentModel,Array{AbstractComponentModel},
-Dict{String,AbstractComponentModel}}`: a [`Component`](@ref) struct, or a Dict/Array of.
+- `object`: a [`Component`](@ref) struct ([`AbstractComponentModel`](@ref)), or a Dict/Array of.
 - `meteo::Union{AbstractAtmosphere,Weather}`: meteorology structure, see [`Atmosphere`](@ref) or
 [`Weather`](@ref)
 - `constants = Constants()`: physical constants. See [`Constants`](@ref) for more details
@@ -55,7 +53,7 @@ energy_balance(Dict(:leaf1 => leaf, :leaf2 => leaf2), meteo)
 # ---Using several meteo time-steps---
 
 w = Weather([Atmosphere(T = 20.0, Wind = 1.0, P = 101.3, Rh = 0.65),
-            Atmosphere(T = 25.0, Wind = 1.5, P = 101.3, Rh = 0.55)], "Test site")
+             Atmosphere(T = 25.0, Wind = 1.5, P = 101.3, Rh = 0.55)], (site = "Test site))
 
 energy_balance(leaf, w)
 

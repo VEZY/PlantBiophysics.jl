@@ -102,7 +102,16 @@ struct Weather{D <: AbstractArray{<:AbstractAtmosphere}, S <: MutableNamedTuple}
     metadata::S
 end
 
+function Weather(df::T) where T <: AbstractArray{<:AbstractAtmosphere}
+    Weather(df,MutableNamedTuple())
+end
+
 function Weather(df::DataFrame, mt::S) where S <: MutableNamedTuple
+    Weather([Atmosphere(; i...) for i in eachrow(df)],mt)
+end
+
+function Weather(df::DataFrame, mt::S) where S <: NamedTuple
+    mt = MutableNamedTuple(;mt...)
     Weather([Atmosphere(; i...) for i in eachrow(df)],mt)
 end
 
@@ -124,6 +133,8 @@ function Base.show(io::IO, n::Weather)
     print(DataFrame(n))
     return nothing
 end
+
+Base.getindex(w::Weather, i::Integer) = w.data[i]
 
 """
     DataFrame(data::Weather)
