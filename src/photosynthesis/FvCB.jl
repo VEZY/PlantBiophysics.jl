@@ -326,7 +326,7 @@ Von Caemmerer, Susanna. 2000. Biochemical models of leaf photosynthesis. Csiro p
 ```jldoctest; setup = :(using PlantBiophysics)
 # Using default values for the model:
 julia> A = Fvcb()
-Fvcb{Float64}(25.0, 200.0, 250.0, 0.6, 9999.0, 46390.0, 210.0, 29680.0, 200000.0, 631.88, 58550.0, 200000.0, 629.26, 0.425, 0.9)
+Fvcb{Float64}(25.0, 200.0, 250.0, 0.6, 9999.0, 46390.0, 210.0, 29680.0, 200000.0, 631.88, 58550.0, 200000.0, 629.26, 0.24, 0.7)
 
 julia> PlantBiophysics.get_J(1500, A.JMaxRef, A.α, A.θ)
 236.11111111111111
