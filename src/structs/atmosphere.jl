@@ -125,7 +125,7 @@ function Weather(df::DataFrame)
 end
 
 function Base.show(io::IO, n::Weather)
-    printstyled(io,"Wheather data.\n", bold = true, color = :green)
+    printstyled(io,"Weather data.\n", bold = true, color = :green)
     printstyled(io,"Metadata: `$(NamedTuple(n.metadata))`.\n", color = :cyan)
     printstyled(io,"Data:\n", color = :green)
     # :normal, :default, :bold, :black, :blink, :blue, :cyan, :green, :hidden, :light_black, :light_blue, :light_cyan, :light_green, :light_magenta, :light_red, :light_yellow, :magenta, :nothing, :red,
