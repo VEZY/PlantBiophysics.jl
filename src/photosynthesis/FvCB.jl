@@ -27,6 +27,10 @@ The default values of the temperature correction parameters are taken from
 [plantecophys](https://remkoduursma.github.io/plantecophys/). If there is no negative effect
 of high temperatures on the reaction (Jmax or VcMax), then Δₛ can be set to 0.0.
 
+θ is taken at 0.7 according to (Von Caemmerer, 2000) but it can be modified to 0.9 as in (Su et al., 2009). The larger it is, the lower the smoothing.
+
+α is taken at 0.24 as in the R package `plantecophys` (Duursma, 2015).
+
 # Note
 
 Medlyn et al. (2002) found relatively low influence ("a slight effect") of α and θ. They also
@@ -51,6 +55,17 @@ Medlyn, B. E., E. Dreyer, D. Ellsworth, M. Forstreuter, P. C. Harley, M. U. F. K
 X. Le Roux, et al. 2002. « Temperature response of parameters of a biochemically based model
 of photosynthesis. II. A review of experimental data ». Plant, Cell & Environment 25 (9): 1167‑79.
 https://doi.org/10.1046/j.1365-3040.2002.00891.x.
+
+Su, Y., Zhu, G., Miao, Z., Feng, Q. and Chang, Z. 2009. « Estimation of parameters of a biochemically based 
+model of photosynthesis using a genetic algorithm ». Plant, Cell & Environment, 32: 1710-1723. 
+https://doi.org/10.1111/j.1365-3040.2009.02036.x.
+
+Von Caemmerer, Susanna. 2000. Biochemical models of leaf photosynthesis. Csiro publishing.
+
+Duursma, R. A. 2015. « Plantecophys - An R Package for Analysing and Modelling Leaf Gas 
+Exchange Data ». PLoS ONE 10(11): e0143346. 
+https://doi:10.1371/journal.pone.0143346.
+
 
 # Examples
 
@@ -83,7 +98,7 @@ end
 
 function Fvcb(;Tᵣ = 25.0, VcMaxRef = 200.0, JMaxRef = 250.0, RdRef = 0.6, TPURef = 9999., Eₐᵣ = 46390.0,
     O₂ = 210.0, Eₐⱼ = 29680.0, Hdⱼ = 200000.0, Δₛⱼ = 631.88, Eₐᵥ = 58550.0, Hdᵥ = 200000.0,
-    Δₛᵥ = 629.26, α = 0.425, θ = 0.90)
+    Δₛᵥ = 629.26, α = 0.24, θ = 0.7)
 
     Fvcb(promote(Tᵣ, VcMaxRef, JMaxRef, RdRef, TPURef, Eₐᵣ, O₂, Eₐⱼ, Hdⱼ, Δₛⱼ, Eₐᵥ, Hdᵥ, Δₛᵥ, α, θ)...)
 end
@@ -198,7 +213,7 @@ Lombardozzi, L. D. et al. 2018.« Triose phosphate limitation in photosynthesis 
 reduces leaf photosynthesis and global terrestrial carbon storage ». Environmental Research
 Letters 13.7: 1748-9326. https://doi.org/10.1088/1748-9326/aacf68.
 """
-    function assimilation!(leaf::LeafModels{I,E,<:Fvcb,<:AbstractGsModel,S}, meteo,
+function assimilation!(leaf::LeafModels{I,E,<:Fvcb,<:AbstractGsModel,S}, meteo,
     constants = Constants()) where {I,E,S}
 
     # Tranform Celsius temperatures in Kelvin:
