@@ -5,19 +5,19 @@ using DataFrames
 using CSV
 using Plots
 
-DocMeta.setdocmeta!(PlantBiophysics, :DocTestSetup, :(using PlantBiophysics,Plots,DataFrames,CSV); recursive=true)
+DocMeta.setdocmeta!(PlantBiophysics, :DocTestSetup, :(using PlantBiophysics,Plots,DataFrames,CSV); recursive = true)
 
 makedocs(;
-    modules=[PlantBiophysics],
-    authors="remi.vezy <VEZY@users.noreply.github.com> and contributors",
-    repo="https://github.com/VEZY/PlantBiophysics.jl/blob/{commit}{path}#L{line}",
-    sitename="PlantBiophysics.jl",
-    format=Documenter.HTML(;
-        prettyurls=get(ENV, "CI", "false") == "true",
-        canonical="https://VEZY.github.io/PlantBiophysics.jl",
-        assets=String[],
+    modules = [PlantBiophysics],
+    authors = "remi.vezy <VEZY@users.noreply.github.com> and contributors",
+    repo = "https://github.com/VEZY/PlantBiophysics.jl/blob/{commit}{path}#L{line}",
+    sitename = "PlantBiophysics.jl",
+    format = Documenter.HTML(;
+        prettyurls = get(ENV, "CI", "false") == "true",
+        canonical = "https://VEZY.github.io/PlantBiophysics.jl",
+        assets = String[],
     ),
-    pages=[
+    pages = [
         "Home" => "index.md",
         "Getting started" => "get_started.md",
         "Models" => Any[
@@ -31,12 +31,12 @@ makedocs(;
             "Implement a model" => "implement_a_model.md",
             "Uncertainty propagation" => "uncertainty_propagation.md",
         ],
-        "Functions" => "functions.md"
+        "API" => "functions.md"
     ],
 )
 
 
 
 deploydocs(;
-    repo="github.com/VEZY/PlantBiophysics.jl.git",
+    repo = "github.com/VEZY/PlantBiophysics.jl.git",
 )
