@@ -114,13 +114,6 @@ function LeafModels(;interception = missing, energy = missing,
 end
 
 """
-    DataFrame(l<:LeafModels)
-
-Fetch the data from a [`LeafModels`](@ref) status into a DataFrame.
-"""
-DataFrame(l::T) where T <: LeafModels = DataFrame([NamedTuple(i) for i in l.status])
-
-"""
     Base.copy(l::T)
 
 Copy a [`LeafModels`](@ref)

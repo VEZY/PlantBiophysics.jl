@@ -1,7 +1,7 @@
 
 """
 Farquhar–von Caemmerer–Berry (FvCB) model for C3 photosynthesis (Farquhar et al., 1980;
-von Caemmerer and Farquhar, 1981).
+von Caemmerer and Farquhar, 1981) coupled with a conductance model.
 
 The definition:
 
@@ -39,6 +39,8 @@ and are generally assumed constant among species".
 
 # See also
 
+- [`FvcbRaw`](@ref) for non-coupled model, directly from Farquhar et al. (1980)
+- [`FvcbIter`](@ref) for the coupled assimilation / conductance model with an iterative resolution
 - [`get_J`](@ref)
 - [`photosynthesis`](@ref)
 
@@ -56,14 +58,14 @@ X. Le Roux, et al. 2002. « Temperature response of parameters of a biochemical
 of photosynthesis. II. A review of experimental data ». Plant, Cell & Environment 25 (9): 1167‑79.
 https://doi.org/10.1046/j.1365-3040.2002.00891.x.
 
-Su, Y., Zhu, G., Miao, Z., Feng, Q. and Chang, Z. 2009. « Estimation of parameters of a biochemically based 
-model of photosynthesis using a genetic algorithm ». Plant, Cell & Environment, 32: 1710-1723. 
+Su, Y., Zhu, G., Miao, Z., Feng, Q. and Chang, Z. 2009. « Estimation of parameters of a biochemically based
+model of photosynthesis using a genetic algorithm ». Plant, Cell & Environment, 32: 1710-1723.
 https://doi.org/10.1111/j.1365-3040.2009.02036.x.
 
 Von Caemmerer, Susanna. 2000. Biochemical models of leaf photosynthesis. Csiro publishing.
 
-Duursma, R. A. 2015. « Plantecophys - An R Package for Analysing and Modelling Leaf Gas 
-Exchange Data ». PLoS ONE 10(11): e0143346. 
+Duursma, R. A. 2015. « Plantecophys - An R Package for Analysing and Modelling Leaf Gas
+Exchange Data ». PLoS ONE 10(11): e0143346.
 https://doi:10.1371/journal.pone.0143346.
 
 
@@ -116,9 +118,9 @@ Base.eltype(x::Fvcb) = typeof(x).parameters[1]
 """
     assimilation!(leaf::LeafModels{I,E,<:Fvcb,<:AbstractGsModel,S},constants = Constants())
 
-Photosynthesis using the Farquhar–von Caemmerer–Berry (FvCB) model for C3 photosynthesis
- (Farquhar et al., 1980; von Caemmerer and Farquhar, 1981) that models the assimilation as the
-most limiting factor between three processes:
+Coupled photosynthesis and conductance model using the Farquhar–von Caemmerer–Berry (FvCB) model
+for C3 photosynthesis (Farquhar et al., 1980; von Caemmerer and Farquhar, 1981) that models
+the assimilation as the most limiting factor between three processes:
 
 - RuBisCo-limited photosynthesis, when the kinetics of the RuBisCo enzyme for fixing
 CO₂ is at its maximum (RuBisCo = Ribulose-1,5-bisphosphate carboxylase-oxygenase). It happens
@@ -148,6 +150,9 @@ equation `TPURef = 0.167 * VcMaxRef` as presented in Lombardozzi (2018).
 
 If you prefer to use Gbc, you can use the iterative implementation of the Fvcb model
 [`FvcbIter`](@ref)
+
+If you want a version that is de-coupled from the stomatal conductance use [`FvcbRaw`](@ref),
+but you'll need Cᵢ as input of the model.
 
 # Returns
 
@@ -277,15 +282,6 @@ function assimilation!(leaf::LeafModels{I,E,<:Fvcb,<:AbstractGsModel,S}, meteo,
     leaf.status.Cᵢ = min(leaf.status.Cₛ, leaf.status.Cₛ - leaf.status.A / leaf.status.Gₛ)
     nothing
 end
-
-# With keyword arguments (better for users)
-# function assimilation(A_mod::Fvcb, Gs_mod::AbstractGsModel; Tₗ, PPFD, Cₛ, Rh = missing,
-#                         VPD = missing, ψₗ = missing)
-
-#     environment = MutableNamedTuple(Tₗ = Tₗ, PPFD = PPFD, Rh = Rh, Cₛ= Cₛ, VPD = VPD, ψₗ = ψₗ)
-
-#     assimilation(A_mod,Gs_mod,environment,Constants())
-# end
 
 
 """

@@ -340,13 +340,20 @@ end
     DataFrame(components <: AbstractArray{<:AbstractComponentModel})
     DataFrame(components <: AbstractDict{N,<:AbstractComponentModel})
 
-Transform an array of components (or dict-alike) into a DataFrame of their status (and name
-for Dicts).
+Fetch the data from a [`AbstractComponentModel`](@ref) (or an Array/Dict of) status into
+a DataFrame.
 """
-function DataFrame(components::T) where T <: AbstractArray{<:AbstractComponentModel}
+function DataFrame(components::T) where T <: Union{AbstractComponentModel,AbstractArray{<:AbstractComponentModel}}
     DataFrame([NamedTuple(i) for i in get_status(components)])
 end
 
 function DataFrame(components::T) where {T <: AbstractDict{N,<:AbstractComponentModel} where N}
     DataFrame([(NamedTuple(v)..., component = k) for (k, v) in get_status(components)])
 end
+
+# """
+#     DataFrame(l<:AbstractComponentModel)
+
+# Fetch the data from a [`AbstractComponentModel`](@ref) status into a DataFrame.
+# """
+# DataFrame(l::T) where T <: LeafModels = DataFrame([NamedTuple(i) for i in l.status])

@@ -149,3 +149,25 @@ function photosynthesis(
 
     return photosynthesis!(object_tmp, meteo, constants)
 end
+
+
+
+function assimilation!(leaf::LeafModels{I,E,A,Gs,<:Vector{MutableNamedTuples.MutableNamedTuple}}, meteo = nothing,
+    constants = Constants()) where {I,E,A,Gs}
+
+    for i in leaf.status
+        leaf_tmp = LeafModels(
+            leaf.interception,
+            leaf.energy,
+            leaf.photosynthesis,
+            leaf.stomatal_conductance,
+            i)
+        assimilation!(leaf_tmp, meteo, constants)
+        for key in keys(i)
+            new_val = getproperty(leaf_tmp.status, key)
+            if getproperty(i, key) != getproperty(leaf_tmp.status, key)
+                setproperty!(i, key, new_val)
+            end
+        end
+    end
+end
