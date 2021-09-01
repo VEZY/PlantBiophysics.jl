@@ -141,7 +141,7 @@ Base.getindex(w::Weather, i::Integer) = w.data[i]
 
 Transform a Weather type into a DataFrame.
 
-See also [`Weather`](@Ref) to make the reverse.
+See also [`Weather`](@ref) to make the reverse.
 """
 function DataFrame(data::Weather)
     return DataFrame(data.data)

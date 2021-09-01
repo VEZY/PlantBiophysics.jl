@@ -304,7 +304,6 @@ init_variables_manual(Monteith(); Tₗ = 20.0)
 ```
 """
 function init_variables_manual(models...;vars...)
-
     new_vals = (;vars...)
     added_types = (fieldtypes(typeof(new_vals).parameters[2])...,)
     init_vars = init_variables(models...;types = added_types)
