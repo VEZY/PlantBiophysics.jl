@@ -19,6 +19,7 @@ import Base.show
 import Impute.locf # For filling missing values in comments in Walz to identify curves
 import LsqFit:curve_fit
 using RecipesBase
+import Statistics:mean
 
 # Generic structures:
 include("structs/Abstract_model_structs.jl")
@@ -69,6 +70,9 @@ include("io/read_walz.jl")
 
 # Parameters optimization
 include("fitting/fit.jl")
+
+# Model evaluation
+include("evaluation/statistics.jl")
 
 # File IO:
 export read_model

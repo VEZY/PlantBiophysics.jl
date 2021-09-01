@@ -12,6 +12,7 @@ LsqFit = "2fda8390-95c7-5789-9bda-21331edee243"
 MutableNamedTuples = "af6c499f-54b4-48cc-bbd2-094bba7533c7"
 OrderedCollections = "bac558e1-5e72-5ebc-8fee-abe8a469f55d"
 RecipesBase = "3cdcf5f2-1ef4-517c-9805-6587b60abb01"
+Statistics = "10745b16-79ce-11e8-11f9-7d13ad32a3b2"
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
 YAML = "ddb6d928-2868-570f-bddf-ab3f9cf99eb6"
 
