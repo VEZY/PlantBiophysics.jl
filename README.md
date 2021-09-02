@@ -56,7 +56,7 @@ For more examples, please read the documentation.
 - [ ] Make the functions compatible with several meteorological time-steps
   - [x] Add a new struct for that: Weather
   - [x] Do it for energy_balance
-  - [ ] photosynthesis
+  - [x] photosynthesis
   - [ ] stomatal conductance
   - [ ] Add tests for each
   - [ ] Update the doc!

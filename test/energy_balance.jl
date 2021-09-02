@@ -60,7 +60,8 @@ end;
         Dₗ = 0.5021715623565368,
         Gbc = 0.6721531380291846,
         iter = 2.0,
-        PPFD = 1500.0)
+        PPFD = 1500.0
+    )
 
     meteo = Atmosphere(T = 20.0, Wind = 1.0, P = 101.3, Rh = 0.65)
     leaf = LeafModels(energy = Monteith(),
@@ -71,7 +72,7 @@ end;
     non_mutating = energy_balance(leaf, meteo)
 
     for i in keys(ref)
-        @test non_mutating[i] ≈ ref[i]
+        @test non_mutating.status[i] ≈ ref[i]
     end
 
     # Mutating the leaf:
