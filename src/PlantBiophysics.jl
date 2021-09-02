@@ -13,12 +13,14 @@ using Dates
 import DataFrames.DataFrame # For convenience transformations
 import DataFrames.Not
 import DataFrames.rename!
-import DataFrames.select!
+import DataFrames:select!,select
 import DataFrames.dropmissing!
 import Base.show
+import Base.getindex
 import Impute.locf # For filling missing values in comments in Walz to identify curves
 import LsqFit:curve_fit
 using RecipesBase
+import Statistics:mean
 
 # Generic structures:
 include("structs/Abstract_model_structs.jl")
@@ -46,6 +48,7 @@ include("photosynthesis/photosynthesis.jl")
 include("photosynthesis/constantA.jl")
 include("photosynthesis/FvCB.jl")
 include("photosynthesis/FvCBIter.jl")
+include("photosynthesis/FvCBRaw.jl")
 include("photosynthesis/temperature-dependence.jl")
 
 # Stomatal conductance related files:
@@ -69,6 +72,10 @@ include("io/read_walz.jl")
 
 # Parameters optimization
 include("fitting/fit.jl")
+include("fitting/fit_FvCB.jl")
+
+# Model evaluation
+include("evaluation/statistics.jl")
 
 # File IO:
 export read_model
@@ -129,8 +136,9 @@ export AbstractInterceptionModel
 # Photosynthesis
 export AbstractAModel
 export ConstantA
-export Fvcb # Parameters for the Farquhar et al. (1980) model
+export Fvcb # Parameters for the coupled Farquhar et al. (1980) model
 export FvcbIter # To update...
+export FvcbRaw # Parameters for the original Farquhar et al. (1980) model
 export Constants
 export photosynthesis!
 export photosynthesis
@@ -162,6 +170,9 @@ export LeafModels
 export fit
 
 # Convenience functions
-export DataFrame
+export DataFrame, copy, getindex
+
+# Model evaluation
+export EF, RMSE, dr
 
 end

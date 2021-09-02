@@ -11,7 +11,7 @@ defaults(Fvcb)
 """
 function defaults(x::T) where T <: Type{<:AbstractModel}
     p = x()
-    (;(v=>getfield(p, v) for v in fieldnames(typeof(p)))...)
+    (;(v => getfield(p, v) for v in fieldnames(typeof(p)))...)
 end
 
 """
@@ -36,7 +36,7 @@ end
 
 """
     outputs(model::AbstractModel)
-    outputs(...)
+outputs(...)
 
 Get the outputs of one or several models.
 
@@ -78,7 +78,7 @@ variables(Monteith(), Medlyn(0.03,12.0))
 [`inputs`](@ref), [`outputs`](@ref) and [`variables_typed`](@ref)
 """
 function variables(m::T, ms...) where T <: Union{Missing,AbstractModel}
-    length((ms...,)) > 0 ? union(variables(m), variables(ms...)) : union(inputs(m),outputs(m))
+    length((ms...,)) > 0 ? union(variables(m), variables(ms...)) : union(inputs(m), outputs(m))
 end
 
 """
@@ -104,7 +104,7 @@ variables_typed(Monteith(), Medlyn(0.03,12.0))
 function variables_typed(x)
     var_names = variables(x)
     var_type = eltype(x)
-    (; zip(var_names, fill(var_type,length(var_names)))...)
+(; zip(var_names, fill(var_type, length(var_names)))...)
 end
 
 function variables_typed(ms...)
@@ -120,14 +120,14 @@ function variables_typed(ms...)
             types_common_vars = []
 
             for t in var_types
-                if isdefined(t,i)
-                    push!(types_common_vars,t[i])
+                if isdefined(t, i)
+            push!(types_common_vars, t[i])
                 end
             end
             push!(var_types_promoted, i => promote_type(types_common_vars...))
         else
             for t in var_types
-                if isdefined(t,i)
+                if isdefined(t, i)
                     push!(var_types_promoted, i => t[i])
                 end
             end
@@ -161,12 +161,12 @@ to_initialise(leaf)
 ```
 """
 function to_initialise(v::T, vars...) where T <: Union{Missing,AbstractModel}
-    setdiff(inputs(v, vars...),outputs(v, vars...))
+    setdiff(inputs(v, vars...), outputs(v, vars...))
 end
 
 function to_initialise(m::T) where T <: AbstractComponentModel
     # Get al fields
-    models = [getfield(m,x) for x in setdiff(fieldnames(typeof(m)),(:status,))]
+    models = [getfield(m, x) for x in setdiff(fieldnames(typeof(m)), (:status,))]
     to_initialise(models...)
 end
 
@@ -187,13 +187,13 @@ init_status!(model, Tₗ = 25.0, PPFD = 1000.0, Cₛ = 400.0, Dₗ = 1.2)
 function init_status!(object::Dict{String,AbstractComponentModel};vars...)
     new_vals = (;vars...)
 
-    for (component_name,component) in object
+    for (component_name, component) in object
         for j in keys(new_vals)
-            if !in(j,keys(component.status))
+            if !in(j, keys(component.status))
                 @info "Key $j not found as a variable for any provided models in $component_name"
                 continue
             end
-            setproperty!(component.status,j,new_vals[j])
+            setproperty!(component.status, j, new_vals[j])
         end
     end
 end
@@ -201,11 +201,11 @@ end
 function init_status!(component::AbstractComponentModel;vars...)
     new_vals = (;vars...)
     for j in keys(new_vals)
-        if !in(j,keys(component.status))
+        if !in(j, keys(component.status))
             @info "Key $j not found as a variable for any provided models"
             continue
         end
-        setproperty!(component.status,j,new_vals[j])
+        setproperty!(component.status, j, new_vals[j])
     end
 end
 
@@ -222,10 +222,10 @@ init_variables(Monteith(), Medlyn(0.03,12.0))
 ```
 """
 function init_variables(models...; types = (Float64,))
-    var_types = promote_type(([i === Any ? Float64 : i for i in eltype.(models)])...,types...)
+    var_types = promote_type(([i === Any ? Float64 : i for i in eltype.(models)])..., types...)
 
     vars = variables(models...)
-    vars_MNT = MutableNamedTuple(; zip(vars,[var_types(-999.99) for i in vars])...)
+    vars_MNT = MutableNamedTuple(; zip(vars, [var_types(-999.99) for i in vars])...)
 
     return vars_MNT
 end
@@ -270,27 +270,40 @@ is_initialised(leaf,leaf.photosynthesis)
 # simulated, so its inputs must be initialised
 ```
 """
-function is_initialised(m::T) where T <: AbstractComponentModel
+function is_initialised(m::T; info = true) where T <: AbstractComponentModel
     var_names = to_initialise(m)
-    is_not_init = [getproperty(m.status,i) == -999.99 for i in var_names]
+    is_not_init = [getproperty(m.status, i) == -999.99 for i in var_names]
     if any(is_not_init)
-        @info "Some variables must be initialised before simulation: $(var_names[is_not_init])"
+        info && @info "Some variables must be initialised before simulation: $(var_names[is_not_init]) (see `to_initialise()`)"
         return false
     else
         return true
     end
 end
 
-function is_initialised(m::T, models...) where T <: AbstractComponentModel
+function is_initialised(m::T, models...;info = true) where T <: AbstractComponentModel
     var_names = to_initialise(models...)
-    is_not_init = [getproperty(m.status,i) == -999.99 for i in var_names]
+    is_not_init = [getproperty(m.status, i) == -999.99 for i in var_names]
     if any(is_not_init)
-        @info "Some variables must be initialised before simulation: $(var_names[is_not_init])"
+        info && @info "Some variables must be initialised before simulation: $(var_names[is_not_init]) (see `to_initialise()`)"
         return false
     else
         return true
     end
 end
+
+# Special treatment for components with a status with multiple time-steps:
+function is_initialised(m::LeafModels{I,E,A,Gs,<:Vector{MutableNamedTuples.MutableNamedTuple}}, models...;info = true)  where {I,E,A,Gs}
+    var_names = to_initialise(models...)
+    is_not_init = [getproperty(j, i) == -999.99 for i in var_names, j in m.status]
+        if any(is_not_init)
+        info && @info "Some variables must be initialised before simulation: $(var_names[is_not_init]) (see `to_initialise()`)"
+        return false
+    else
+        return true
+    end
+end
+
 
 """
     init_variables_manual(models...;vars...)
@@ -304,13 +317,12 @@ init_variables_manual(Monteith(); Tₗ = 20.0)
 ```
 """
 function init_variables_manual(models...;vars...)
-
     new_vals = (;vars...)
     added_types = (fieldtypes(typeof(new_vals).parameters[2])...,)
     init_vars = init_variables(models...;types = added_types)
     for i in keys(new_vals)
-        !in(i,keys(init_vars)) && error("Key $i not found as a variable of any provided models")
-        setproperty!(init_vars,i,new_vals[i])
+        !in(i, keys(init_vars)) && error("Key $i not found as a variable of any provided models")
+        setproperty!(init_vars, i, new_vals[i])
     end
     init_vars
 end
@@ -335,19 +347,4 @@ end
 
 function get_status(components::T) where {T <: AbstractDict{N,<:AbstractComponentModel} where N}
     Dict([k => v.status for (k, v) in components])
-end
-
-"""
-    DataFrame(components <: AbstractArray{<:AbstractComponentModel})
-    DataFrame(components <: AbstractDict{N,<:AbstractComponentModel})
-
-Transform an array of components (or dict-alike) into a DataFrame of their status (and name
-for Dicts).
-"""
-function DataFrame(components::T) where T <: AbstractArray{<:AbstractComponentModel}
-    DataFrame([NamedTuple(i) for i in get_status(components)])
-end
-
-function DataFrame(components::T) where {T <: AbstractDict{N,<:AbstractComponentModel} where N}
-    DataFrame([(NamedTuple(v)..., component = k) for (k, v) in get_status(components)])
 end

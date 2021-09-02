@@ -1,7 +1,7 @@
 
 """
 Farquhar–von Caemmerer–Berry (FvCB) model for C3 photosynthesis (Farquhar et al., 1980;
-von Caemmerer and Farquhar, 1981).
+von Caemmerer and Farquhar, 1981) coupled with a conductance model.
 
 The definition:
 
@@ -27,6 +27,10 @@ The default values of the temperature correction parameters are taken from
 [plantecophys](https://remkoduursma.github.io/plantecophys/). If there is no negative effect
 of high temperatures on the reaction (Jmax or VcMax), then Δₛ can be set to 0.0.
 
+θ is taken at 0.7 according to (Von Caemmerer, 2000) but it can be modified to 0.9 as in (Su et al., 2009). The larger it is, the lower the smoothing.
+
+α is taken at 0.24 as in the R package `plantecophys` (Duursma, 2015).
+
 # Note
 
 Medlyn et al. (2002) found relatively low influence ("a slight effect") of α and θ. They also
@@ -35,6 +39,8 @@ and are generally assumed constant among species".
 
 # See also
 
+- [`FvcbRaw`](@ref) for non-coupled model, directly from Farquhar et al. (1980)
+- [`FvcbIter`](@ref) for the coupled assimilation / conductance model with an iterative resolution
 - [`get_J`](@ref)
 - [`photosynthesis`](@ref)
 
@@ -51,6 +57,17 @@ Medlyn, B. E., E. Dreyer, D. Ellsworth, M. Forstreuter, P. C. Harley, M. U. F. K
 X. Le Roux, et al. 2002. « Temperature response of parameters of a biochemically based model
 of photosynthesis. II. A review of experimental data ». Plant, Cell & Environment 25 (9): 1167‑79.
 https://doi.org/10.1046/j.1365-3040.2002.00891.x.
+
+Su, Y., Zhu, G., Miao, Z., Feng, Q. and Chang, Z. 2009. « Estimation of parameters of a biochemically based
+model of photosynthesis using a genetic algorithm ». Plant, Cell & Environment, 32: 1710-1723.
+https://doi.org/10.1111/j.1365-3040.2009.02036.x.
+
+Von Caemmerer, Susanna. 2000. Biochemical models of leaf photosynthesis. Csiro publishing.
+
+Duursma, R. A. 2015. « Plantecophys - An R Package for Analysing and Modelling Leaf Gas
+Exchange Data ». PLoS ONE 10(11): e0143346.
+https://doi:10.1371/journal.pone.0143346.
+
 
 # Examples
 
@@ -83,7 +100,7 @@ end
 
 function Fvcb(;Tᵣ = 25.0, VcMaxRef = 200.0, JMaxRef = 250.0, RdRef = 0.6, TPURef = 9999., Eₐᵣ = 46390.0,
     O₂ = 210.0, Eₐⱼ = 29680.0, Hdⱼ = 200000.0, Δₛⱼ = 631.88, Eₐᵥ = 58550.0, Hdᵥ = 200000.0,
-    Δₛᵥ = 629.26, α = 0.425, θ = 0.90)
+    Δₛᵥ = 629.26, α = 0.24, θ = 0.7)
 
     Fvcb(promote(Tᵣ, VcMaxRef, JMaxRef, RdRef, TPURef, Eₐᵣ, O₂, Eₐⱼ, Hdⱼ, Δₛⱼ, Eₐᵥ, Hdᵥ, Δₛᵥ, α, θ)...)
 end
@@ -101,9 +118,9 @@ Base.eltype(x::Fvcb) = typeof(x).parameters[1]
 """
     assimilation!(leaf::LeafModels{I,E,<:Fvcb,<:AbstractGsModel,S},constants = Constants())
 
-Photosynthesis using the Farquhar–von Caemmerer–Berry (FvCB) model for C3 photosynthesis
- (Farquhar et al., 1980; von Caemmerer and Farquhar, 1981) that models the assimilation as the
-most limiting factor between three processes:
+Coupled photosynthesis and conductance model using the Farquhar–von Caemmerer–Berry (FvCB) model
+for C3 photosynthesis (Farquhar et al., 1980; von Caemmerer and Farquhar, 1981) that models
+the assimilation as the most limiting factor between three processes:
 
 - RuBisCo-limited photosynthesis, when the kinetics of the RuBisCo enzyme for fixing
 CO₂ is at its maximum (RuBisCo = Ribulose-1,5-bisphosphate carboxylase-oxygenase). It happens
@@ -133,6 +150,9 @@ equation `TPURef = 0.167 * VcMaxRef` as presented in Lombardozzi (2018).
 
 If you prefer to use Gbc, you can use the iterative implementation of the Fvcb model
 [`FvcbIter`](@ref)
+
+If you want a version that is de-coupled from the stomatal conductance use [`FvcbRaw`](@ref),
+but you'll need Cᵢ as input of the model.
 
 # Returns
 
@@ -198,7 +218,7 @@ Lombardozzi, L. D. et al. 2018.« Triose phosphate limitation in photosynthesis 
 reduces leaf photosynthesis and global terrestrial carbon storage ». Environmental Research
 Letters 13.7: 1748-9326. https://doi.org/10.1088/1748-9326/aacf68.
 """
-    function assimilation!(leaf::LeafModels{I,E,<:Fvcb,<:AbstractGsModel,S}, meteo,
+function assimilation!(leaf::LeafModels{I,E,<:Fvcb,<:AbstractGsModel,S}, meteo,
     constants = Constants()) where {I,E,S}
 
     # Tranform Celsius temperatures in Kelvin:
@@ -263,15 +283,6 @@ Letters 13.7: 1748-9326. https://doi.org/10.1088/1748-9326/aacf68.
     nothing
 end
 
-# With keyword arguments (better for users)
-# function assimilation(A_mod::Fvcb, Gs_mod::AbstractGsModel; Tₗ, PPFD, Cₛ, Rh = missing,
-#                         VPD = missing, ψₗ = missing)
-
-#     environment = MutableNamedTuple(Tₗ = Tₗ, PPFD = PPFD, Rh = Rh, Cₛ= Cₛ, VPD = VPD, ψₗ = ψₗ)
-
-#     assimilation(A_mod,Gs_mod,environment,Constants())
-# end
-
 
 """
 Rate of electron transport J (``μmol\\ m^{-2}\\ s^{-1}``), computed using the smaller root
@@ -311,10 +322,10 @@ Von Caemmerer, Susanna. 2000. Biochemical models of leaf photosynthesis. Csiro p
 ```jldoctest; setup = :(using PlantBiophysics)
 # Using default values for the model:
 julia> A = Fvcb()
-Fvcb{Float64}(25.0, 200.0, 250.0, 0.6, 9999.0, 46390.0, 210.0, 29680.0, 200000.0, 631.88, 58550.0, 200000.0, 629.26, 0.425, 0.9)
+Fvcb{Float64}(25.0, 200.0, 250.0, 0.6, 9999.0, 46390.0, 210.0, 29680.0, 200000.0, 631.88, 58550.0, 200000.0, 629.26, 0.24, 0.7)
 
 julia> PlantBiophysics.get_J(1500, A.JMaxRef, A.α, A.θ)
-236.11111111111111
+188.17537926909347
 ```
 """
 function get_J(PPFD, JMax, α, θ)
