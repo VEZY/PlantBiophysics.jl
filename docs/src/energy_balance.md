@@ -1,6 +1,5 @@
 # Energy balance
 
-
 ```@setup schymanskifig6a
 include("schymanski.jl")
 ```

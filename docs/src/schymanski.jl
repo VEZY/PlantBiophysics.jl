@@ -36,13 +36,13 @@ function run_simulation!(data, params, aₛᵥ)
                     photosynthesis = ConstantA(A),
                     stomatal_conductance = ConstantGs(0.0, gsw_to_gsc(ms_to_mol(data.g_sw[i], data.T_a[i] - params["T0"], data.P_a[i] / 1000))),
                     Rₛ = data.Rn_leaf[i], skyFraction = 2.0, d = data.L_l[i])
-        out = energy_balance(leaf, meteo, cst)
+        energy_balance!(leaf, meteo, cst)
 
-        data.Tₗ[i] = out.Tₗ
-        data.λE[i] = out.λE
-        data.H[i] = out.H
-        data.Rn[i] = out.Rn
-        data.rbh[i] = 1 / out.Gbₕ
+        data.Tₗ[i] = leaf.status.Tₗ
+        data.λE[i] = leaf.status.λE
+        data.H[i] = leaf.status.H
+        data.Rn[i] = leaf.status.Rn
+        data.rbh[i] = 1 / leaf.status.Gbₕ
     end
     data
 end
@@ -51,7 +51,7 @@ end
 ### Figure 6 a of the article:
 
 # Import the inputs for simulation:
-results1_6a = DataFrame(CSV.File("data/schymanski_et_al_2017/results1_6a.csv"))
+results1_6a = CSV.read("data/schymanski_et_al_2017/results1_6a.csv", DataFrame)
 results1_6a.rh = rh_from_e.(results1_6a.P_wa ./ 1000.0, results1_6a.T_a .+ cst.K₀)
 sort!(results1_6a, [:v_w])
 

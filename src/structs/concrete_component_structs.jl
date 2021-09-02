@@ -78,6 +78,7 @@ function LeafModels(;interception = missing, energy = missing,
     status_vals = collect(values(status))
 
     length_status = [length(i) for i in status_vals]
+
     if any(length_status .> 1)
         # One of the variable is given as an array, meaning this is actually several time-steps
         # In this case we make an array of leaves

@@ -12,7 +12,7 @@ CurrentModule = PlantBiophysics
 
 ## Overview
 
-`PlantBiophysics.jl` is a Julia package to simulate biophysical processes for plants such as photosynthesis, conductances for heat, water vapor and CO₂, latent, sensible energy fluxes, net radiation and temperature.
+`PlantBiophysics.jl` is a Julia package to simulate biophysical processes of plants such as photosynthesis, conductances for heat, water vapor and CO₂, latent, sensible energy fluxes, net radiation and temperature.
 
 ## Installation
 

@@ -7,7 +7,7 @@ leaf = LeafModels(photosynthesis = Fvcb(), stomatal_conductance = Medlyn(0.03, 1
 
 ## TL;DR
 
-Simulate the leaf energy balance, photosynthesis and stomatal conductance at once using the following code:
+Simulate the leaf energy balance, photosynthesis and stomatal conductance altogether using the following code:
 
 ```@example usepkg
 meteo = Atmosphere(T = 22.0, Wind = 0.8333, P = 101.325, Rh = 0.4490995)
