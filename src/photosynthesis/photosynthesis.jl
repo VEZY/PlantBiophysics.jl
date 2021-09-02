@@ -140,29 +140,25 @@ function photosynthesis(
 end
 
 # The function that finally calls assimilation!:
-function photosynthesis!(leaf::AbstractComponentModel, meteo::Union{AbstractAtmosphere,Nothing} = nothing, constants = Constants())
+function photosynthesis!(leaf::AbstractComponentModel, meteo::AbstractAtmosphere, constants = Constants())
     is_init = is_initialised(leaf, leaf.photosynthesis, leaf.stomatal_conductance)
     !is_init && error("Some variables must be initialized before simulation (see info message for more details)")
     return assimilation!(leaf, meteo, constants)
 end
 
-# The same function (calls assimilation!) but for LeafModels with several time-steps in their status:
-function photosynthesis!(leaf::LeafModels{I,E,A,Gs,<:Vector{MutableNamedTuples.MutableNamedTuple}}, meteo::Union{AbstractAtmosphere,Nothing} = nothing,
-    constants = Constants()) where {I,E,A,Gs}
+# The same function (calls assimilation!) but for LeafModels without meteo, so we have to check
+# first if the leaf as several time-steps or not. NB: we could do it each time in the function
+# just above but I prefer make a new method for performance reasons.
+function photosynthesis!(leaf::AbstractComponentModel, meteo::Nothing = nothing, constants = Constants()) where {I,E,A,Gs}
+    is_init = is_initialised(leaf, leaf.photosynthesis, leaf.stomatal_conductance)
+    !is_init && error("Some variables must be initialized before simulation (see info message for more details)")
 
-    for i in leaf.status
-        leaf_tmp = LeafModels(
-            leaf.interception,
-            leaf.energy,
-            leaf.photosynthesis,
-            leaf.stomatal_conductance,
-            i)
-        assimilation!(leaf_tmp, meteo, constants)
-        for key in keys(i)
-            new_val = getproperty(leaf_tmp.status, key)
-            if getproperty(i, key) != getproperty(leaf_tmp.status, key)
-                setproperty!(i, key, new_val)
-            end
+    if typeof(leaf.status) == MutableNamedTuples.MutableNamedTuple
+        assimilation!(leaf, meteo, constants)
+    else
+        # We have several time-steps here
+        for i in 1:length(leaf.status)
+            assimilation!(leaf[i], meteo, constants)
         end
 
     end

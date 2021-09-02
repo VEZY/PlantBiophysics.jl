@@ -6,13 +6,14 @@ Optimize the parameters of the [`Fvcb`](@ref) model. Also works for [`FvcbIter`]
 # Examples
 
 ```julia
-using Plots
-using DataFrames
+using PlantBiophysics, Plots, DataFrames
 
 file = joinpath(dirname(dirname(pathof(PlantBiophysics))),"test","inputs","data","P1F20129.csv")
 df = read_walz(file)
 # Removing the Rh and light curves for the fitting because temperature varies
 filter!(x -> x.curve != "Rh Curve" && x.curve != "ligth Curve", df)
+
+# Fit the parameter values:
 VcMaxRef, JMaxRef, RdRef, TPURef = fit(Fvcb, df; Tᵣ = 25.0)
 # Note that Tᵣ was set to 25 °C in our response curve. You should adapt its value to what you
 # had during the response curves
@@ -33,8 +34,8 @@ photosynthesis!(leaf)
 df_sim = DataFrame(leaf)
 
 # Visualising the results:
-ACi_struct = PlantBiophysics.ACi(VcMaxRef, JMaxRef, RdRef, df.A, df_sim.A, df.Cᵢ, df_sim.Cᵢ)
-plot(ACi_struct)
+ACi_struct = PlantBiophysics.ACi(VcMaxRef, JMaxRef, RdRef, df.A, df_sim.A, df[:,:Cᵢ], df_sim.Cᵢ)
+plot(ACi_struct,leg=:bottomright)
 
 # Note that we can also simulate the results using the full photosynthesis model too (Fvcb):
 # Adding the windspeed to simulate the boundary-layer conductance (we put a high value):
@@ -52,7 +53,7 @@ photosynthesis!(leaf, w)
 df_sim2 = DataFrame(leaf)
 
 # And finally we plot the results:
-ACi_struct_full = PlantBiophysics.ACi(VcMaxRef, JMaxRef, RdRef, df.A, df_sim2.A, df.Cᵢ, df_sim2.Cᵢ)
+ACi_struct_full = PlantBiophysics.ACi(VcMaxRef, JMaxRef, RdRef, df.A, df_sim2.A, df[:,:Cᵢ], df_sim2.Cᵢ)
 plot(ACi_struct_full,leg=:bottomright)
 # Note that the results differ a bit because there are more variables that are re-simulated (e.g. Cᵢ)
 ```
@@ -90,7 +91,7 @@ mutable struct ACi
     Cᵢ_sim
 end
 
-ACi(VcMaxRef,JMaxRef,RdRef,A_meas,A_sim,Cᵢ_meas) = ACi(VcMaxRef, JMaxRef, RdRef, A_meas, A_sim, Cᵢ_meas, Cᵢ_meas)
+ACi(VcMaxRef,JMaxRef,RdRef,A_meas,A_sim,Cᵢ_meas) = ACi(VcMaxRef, JMaxRef, RdRef, A_meas, A_sim, Cᵢ_meas, copy(Cᵢ_meas))
 
     @recipe function f(h::ACi)
     x = h.Cᵢ_meas
