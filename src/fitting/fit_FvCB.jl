@@ -7,6 +7,7 @@ Optimize the parameters of the [`Fvcb`](@ref) model. Also works for [`FvcbIter`]
 
 ```julia
 using Plots
+using DataFrames
 
 file = joinpath(dirname(dirname(pathof(PlantBiophysics))),"test","inputs","data","P1F20129.csv")
 df = read_walz(file)
@@ -28,7 +29,7 @@ leaf =
         photosynthesis = FvcbRaw(VcMaxRef = VcMaxRef, JMaxRef = JMaxRef, RdRef = RdRef, TPURef = TPURef),
         Tₗ = df.Tleaf, PPFD = df.PPFD, Cᵢ = df.Cᵢ
     )
-assimilation!(leaf)
+photosynthesis!(leaf)
 df_sim = DataFrame(leaf)
 
 # Visualising the results:
@@ -67,7 +68,7 @@ function fit(::T, df; Tᵣ = nothing, VcMaxRef = 0., JMaxRef = 0., RdRef = 0., T
                 photosynthesis = FvcbRaw(VcMaxRef = p[1], JMaxRef = p[2], RdRef = p[3], TPURef = p[4]),
                 Tₗ = x[:,1], PPFD = x[:,2], Cᵢ = x[:,3]
             )
-        assimilation!(leaf)
+        photosynthesis!(leaf)
         DataFrame(leaf).A
     end
 

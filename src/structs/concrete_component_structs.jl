@@ -114,9 +114,10 @@ function LeafModels(;interception = missing, energy = missing,
 end
 
 """
-    Base.copy(l::T)
+    Base.copy(l::LeafModels)
+    Base.copy(l::LeafModels, status)
 
-Copy a [`LeafModels`](@ref)
+Copy a [`LeafModels`](@ref), eventually with new values for the status.
 """
 function Base.copy(l::T) where T <: LeafModels
     LeafModels(
@@ -125,6 +126,16 @@ function Base.copy(l::T) where T <: LeafModels
         l.photosynthesis,
         l.stomatal_conductance,
         deepcopy(l.status)
+    )
+end
+
+function Base.copy(l::T, status) where T <: LeafModels
+    LeafModels(
+        l.interception,
+        l.energy,
+        l.photosynthesis,
+        l.stomatal_conductance,
+        status
     )
 end
 
@@ -145,6 +156,59 @@ Copy a Dict-alike of [`LeafModels`](@ref)
 function Base.copy(l::T) where {T <: AbstractDict{N,<:AbstractComponentModel} where N}
     return  Dict([k => v for (k, v) in l])
 end
+
+
+"""
+    getindex(component::LeafModels,i)
+
+Get a LeafModels component at time-step `i`.
+"""
+function getindex(component::LeafModels,i) where {I,E,A,Gs}
+    LeafModels(
+            component.interception,
+            component.energy,
+            component.photosynthesis,
+            component.stomatal_conductance,
+            component.status[i]
+    )
+end
+
+# Same but with a status with only one time-step (will return the same each-time)
+function getindex(component::LeafModels{I,E,A,Gs,<:MutableNamedTuples.MutableNamedTuple},i) where {I,E,A,Gs}
+    component
+end
+
+"""
+    DataFrame(components <: AbstractArray{<:AbstractComponentModel})
+    DataFrame(components <: AbstractDict{N,<:AbstractComponentModel})
+
+Fetch the data from a [`AbstractComponentModel`](@ref) (or an Array/Dict of) status into
+a DataFrame.
+"""
+function DataFrame(components::T) where T <: Union{AbstractComponentModel,AbstractArray{<:AbstractComponentModel}}
+    reduce(vcat, [DataFrame(i) for i in components])
+end
+
+function DataFrame(components::T) where {T <: AbstractDict{N,<:AbstractComponentModel} where N}
+    df = DataFrame[]
+    for (k, v) in components
+        df_c = DataFrame(v)
+        df_c[!, :component] .= k
+        push!(df, df_c)
+    end
+    reduce(vcat, df)
+end
+
+# NB: could use dispatch on concrete types but would enforce specific implementation for each...
+function DataFrame(components::T) where T <: AbstractComponentModel
+    status = get_status(components)
+    if typeof(status) == Vector{MutableNamedTuples.MutableNamedTuple}
+        DataFrame([(NamedTuple(j)..., timestep = i) for (i, j) in enumerate(status)])
+    else
+        DataFrame([NamedTuple(status)])
+    end
+end
+
 
 """
     Component(interception, energy, status)

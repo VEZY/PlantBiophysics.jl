@@ -16,6 +16,7 @@ import DataFrames.rename!
 import DataFrames:select!,select
 import DataFrames.dropmissing!
 import Base.show
+import Base.getindex
 import Impute.locf # For filling missing values in comments in Walz to identify curves
 import LsqFit:curve_fit
 using RecipesBase
@@ -169,7 +170,7 @@ export LeafModels
 export fit
 
 # Convenience functions
-export DataFrame, copy
+export DataFrame, copy, getindex
 
 # Model evaluation
 export EF, RMSE, dr

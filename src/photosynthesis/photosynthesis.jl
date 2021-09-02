@@ -66,12 +66,6 @@ function photosynthesis(leaf::AbstractComponentModel, meteo::AbstractAtmosphere,
     leaf_tmp.status
 end
 
-function photosynthesis!(leaf::AbstractComponentModel, meteo::AbstractAtmosphere, constants = Constants())
-    is_init = is_initialised(leaf, leaf.photosynthesis, leaf.stomatal_conductance)
-    !is_init && error("Some variables must be initialized before simulation")
-    return assimilation!(leaf, meteo, constants)
-end
-
 # photosynthesis over several objects (e.g. all leaves of a plant) in an Array
 function photosynthesis!(object::O, meteo::AbstractAtmosphere, constants = Constants()) where O <: AbstractArray{<:AbstractComponentModel}
 
@@ -87,6 +81,7 @@ function photosynthesis!(object::O, meteo::AbstractAtmosphere, constants = Const
     for (k, v) in object
         photosynthesis!(v, meteo, constants)
     end
+
 return nothing
 end
 
@@ -107,7 +102,6 @@ function photosynthesis(
     return DataFrame(object_tmp)
 end
 
-
 # photosynthesis over several meteo time steps (called Weather) and possibly several components:
 function photosynthesis!(
     object::T,
@@ -115,22 +109,16 @@ function photosynthesis!(
     constants = Constants()
     ) where T <: Union{AbstractArray{<:AbstractComponentModel},AbstractDict{N,<:AbstractComponentModel} where N}
 
-    # Pre-allocating the general DataFrame with the first time-step results:
-    photosynthesis!(object, meteo.data[1], constants)
-    output_timestep = DataFrame(object)
-    output = repeat(output_timestep, length(meteo.data))
-    output.time_step = repeat(1:length(meteo.data), inner = size(output_timestep, 1))
+    # Check if the meteo data and the status have the same length (or length 1)
+    check_status_wheather(object, meteo)
 
-    # Computing for all following time-steps:
-    for (i, meteo_i) in enumerate(meteo.data[2:end])
-        photosynthesis!(object, meteo_i, constants)
-        output_timestep = DataFrame(object)
-
-        # Update the values of the global output:
-        output[output.time_step .== i,Not(:time_step)] = output_timestep
+    # Computing for each time-steps:
+    for (i, meteo_i) in enumerate(meteo.data)
+        # Each object in a time-step:
+        for obj in object
+            photosynthesis!(obj[i], meteo_i, constants)
+        end
     end
-
-    return output
 end
 
 # If we call weather with one component only, put it in an Array and call the function above
@@ -150,9 +138,15 @@ function photosynthesis(
     return photosynthesis!(object_tmp, meteo, constants)
 end
 
+# The function that finally calls assimilation!:
+function photosynthesis!(leaf::AbstractComponentModel, meteo::Union{AbstractAtmosphere,Nothing} = nothing, constants = Constants())
+    is_init = is_initialised(leaf, leaf.photosynthesis, leaf.stomatal_conductance)
+    !is_init && error("Some variables must be initialized before simulation (see info message for more details)")
+    return assimilation!(leaf, meteo, constants)
+end
 
-
-function assimilation!(leaf::LeafModels{I,E,A,Gs,<:Vector{MutableNamedTuples.MutableNamedTuple}}, meteo = nothing,
+# The same function (calls assimilation!) but for LeafModels with several time-steps in their status:
+function photosynthesis!(leaf::LeafModels{I,E,A,Gs,<:Vector{MutableNamedTuples.MutableNamedTuple}}, meteo::Union{AbstractAtmosphere,Nothing} = nothing,
     constants = Constants()) where {I,E,A,Gs}
 
     for i in leaf.status
@@ -169,5 +163,45 @@ function assimilation!(leaf::LeafModels{I,E,A,Gs,<:Vector{MutableNamedTuples.Mut
                 setproperty!(i, key, new_val)
             end
         end
+
+    end
+
+end
+
+
+
+"""
+    check_status_meteo(component,weather)
+
+Checks if a component status and the wheather have the same length, or
+if they can be recycled (length 1)
+"""
+function check_status_wheather(
+        component::LeafModels{I,E,A,Gs,<:Vector{MutableNamedTuples.MutableNamedTuple}},
+        weather::Weather
+    ) where {I,E,A,Gs}
+   length(component.status) != length(weather.data) &&
+    @error "component status should have the same number of time-steps than weather"
+end
+
+# here we only have one time-step in the status, so we use it for all time-steps
+function check_status_wheather(
+        component::LeafModels{I,E,A,Gs,<:MutableNamedTuples.MutableNamedTuple},
+        weather::Weather
+    )  where {I,E,A,Gs}
+    nothing
+end
+
+# for several components as an array
+function check_status_wheather(component::T, weather::Weather) where T <: AbstractArray{<:AbstractComponentModel}
+    for i in component
+        check_status_wheather(i, weather)
+    end
+end
+
+# for several components as a Dict
+function check_status_wheather(component::T, weather::Weather) where T <: AbstractDict{N,<:AbstractComponentModel} where N
+    for (key, val) in component
+        check_status_wheather(val, weather)
     end
 end
