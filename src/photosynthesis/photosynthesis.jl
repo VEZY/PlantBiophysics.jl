@@ -134,8 +134,9 @@ function photosynthesis(
     ) where T <: Union{AbstractComponentModel,AbstractDict{N,<:AbstractComponentModel} where N}
 
     object_tmp = copy(object)
+    photosynthesis!(object_tmp, meteo, constants)
 
-    return photosynthesis!(object_tmp, meteo, constants)
+    return object_tmp
 end
 
 # The function that finally calls assimilation!:

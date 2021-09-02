@@ -106,6 +106,10 @@ function Weather(df::T) where T <: AbstractArray{<:AbstractAtmosphere}
     Weather(df,MutableNamedTuple())
 end
 
+function Weather(df::T, mt::S) where {T <: AbstractArray{<:AbstractAtmosphere}, S <:NamedTuple}
+    Weather(df,MutableNamedTuple(), MutableNamedTuple(;mt...))
+end
+
 function Weather(df::DataFrame, mt::S) where S <: MutableNamedTuple
     Weather([Atmosphere(; i...) for i in eachrow(df)],mt)
 end

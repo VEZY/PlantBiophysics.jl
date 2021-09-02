@@ -53,7 +53,8 @@ energy_balance(Dict(:leaf1 => leaf, :leaf2 => leaf2), meteo)
 # ---Using several meteo time-steps---
 
 w = Weather([Atmosphere(T = 20.0, Wind = 1.0, P = 101.3, Rh = 0.65),
-             Atmosphere(T = 25.0, Wind = 1.5, P = 101.3, Rh = 0.55)], (site = "Test site))
+             Atmosphere(T = 25.0, Wind = 1.5, P = 101.3, Rh = 0.55)],
+             (site = "Test site",))
 
 energy_balance(leaf, w)
 
@@ -117,7 +118,8 @@ end
 function energy_balance(object::AbstractComponentModel, meteo::AbstractAtmosphere, constants = Constants())
     object_tmp = copy(object)
     energy_balance!(object_tmp, meteo, constants)
-    return object_tmp.status
+
+    return object_tmp
 end
 
 # energy_balance over several objects (e.g. all leaves of a plant) in an Array
@@ -153,7 +155,7 @@ function energy_balance(
     # Computation:
     energy_balance!(object_tmp, meteo, constants)
 
-    return DataFrame(object_tmp)
+    return object_tmp
 end
 
 # energy_balance over several meteo time steps (called Weather) and possibly several components:
@@ -163,22 +165,17 @@ function energy_balance!(
     constants = Constants()
     ) where T <: Union{AbstractArray{<:AbstractComponentModel},AbstractDict{N,<:AbstractComponentModel} where N}
 
-    # Pre-allocating the general DataFrame with the first time-step results:
-    energy_balance!(object, meteo.data[1], constants)
-    output_timestep = DataFrame(object)
-    output = repeat(output_timestep, length(meteo.data))
-    output.time_step = repeat(1:length(meteo.data), inner = size(output_timestep, 1))
+    # Check if the meteo data and the status have the same length (or length 1)
+    check_status_wheather(object, meteo)
 
-    # Computing for all following time-steps:
-    for (i, meteo_i) in enumerate(meteo.data[2:end])
-        energy_balance!(object, meteo_i, constants)
-        output_timestep = DataFrame(object)
-
-        # Update the values of the global output:
-        output[output.time_step .== i,Not(:time_step)] = output_timestep
+    # Computing for each time-steps:
+    for (i, meteo_i) in enumerate(meteo.data)
+        # Each object in a time-step:
+        for obj in object
+            energy_balance!(obj[i], meteo_i, constants)
+        end
     end
 
-    return output
 end
 
 # If we call weather with one component only, put it in an Array and call the function above
@@ -195,5 +192,7 @@ function energy_balance(
 
     object_tmp = copy(object)
 
-    return energy_balance!(object_tmp, meteo, constants)
+    energy_balance!(object_tmp, meteo, constants)
+
+    return object_tmp
 end
