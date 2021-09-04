@@ -16,8 +16,6 @@ using MonteCarloMeasurements
 using Plots
 unsafe_comparisons(true)
 
-Base.length(x::Particles) = 1 # This is just to force the Particles to behave like a number
-
 meteo = Atmosphere(T = 22.0 ± 0.1, Wind = 0.8333 ± 0.1, P = 101.325 ± 1., Rh = 0.4490995 ± 0.02, Cₐ = 400. ± 1.)
 leaf = LeafModels(
         energy = Monteith(),
@@ -44,8 +42,6 @@ It is also possible to use other types of distributions. For an uniform distribu
 ```@example 1
 using PlantBiophysics
 using MonteCarloMeasurements
-
-Base.length(x::Particles) = 1 # This is just to force
 
 # ⊠ \boxplus
 # ⊠ \boxtimes
