@@ -2,6 +2,9 @@
 
 `PlantBiophysics.jl` is designed to ease the computations of biophysical processes in plants and other objects. It is part of the [Archimed platform](https://archimed-platform.github.io/), so it shares the same ontology (same concepts and terms).
 
+```@setup usepkg
+using PlantBiophysics
+```
 ## Processes
 
 A process in this package defines a biological or a physical phenomena. `PlantBiophysics.jl` is designed to simulate four different processes:
@@ -170,7 +173,7 @@ file = joinpath(dirname(dirname(pathof(PlantBiophysics))),"test","inputs","meteo
 df = CSV.read(file, DataFrame; header=5, datarow = 6)
 # Select and rename the variables:
 select!(df, :date, :VPD, :temperature => :T, :relativeHumidity => :Rh, :wind => :Wind, :atmosphereCO2_ppm => :Cₐ)
-df[!,:duration] = 1800 # Add the time-step duration, 30min
+df[!,:duration] .= 1800 # Add the time-step duration, 30min
 
 # Make the weather, and add some metadata:
 Weather(df, (site = "Aquiares", file = file))

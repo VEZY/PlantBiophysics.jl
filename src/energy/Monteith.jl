@@ -43,7 +43,6 @@ Base.eltype(x::Monteith) = typeof(x).parameters[1]
 
 """
     net_radiation!(leaf::LeafModels{I,<:Monteith,A,Gs,S},meteo::AbstractAtmosphere,constants = Constants())
-    net_radiation(leaf::LeafModels{I,<:Monteith,A,Gs,S},meteo::AbstractAtmosphere,constants = Constants())
 
 Leaf energy balance according to Monteith and Unsworth (2013), and corrigendum from
 Schymanski et al. (2017). The computation is close to the one from the MAESPA model (Duursma

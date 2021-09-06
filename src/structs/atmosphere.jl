@@ -129,7 +129,7 @@ file = joinpath(dirname(dirname(pathof(PlantBiophysics))),"test","inputs","meteo
 df = CSV.read(file, DataFrame; header=5, datarow = 6)
 # Select and rename the variables:
 select!(df, :date, :VPD, :temperature => :T, :relativeHumidity => :Rh, :wind => :Wind, :atmosphereCO2_ppm => :Cₐ)
-df[!,:duration] = 1800 # Add the time-step duration, 30min
+df[!,:duration] .= 1800 # Add the time-step duration, 30min
 
 # Make the weather, and add some metadata:
 Weather(df, (site = "Aquiares", file = file))
@@ -145,7 +145,7 @@ function Weather(df::T) where T <: AbstractArray{<:AbstractAtmosphere}
 end
 
 function Weather(df::T, mt::S) where {T <: AbstractArray{<:AbstractAtmosphere},S <: NamedTuple}
-    Weather(df, MutableNamedTuple(), MutableNamedTuple(;mt...))
+    Weather(df, MutableNamedTuple(;mt...))
 end
 
 function Weather(df::DataFrame, mt::S) where S <: MutableNamedTuple

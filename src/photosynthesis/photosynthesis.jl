@@ -60,6 +60,8 @@ model["Leaf"].status.A
 
 ```
 """
+photosynthesis, photosynthesis!
+
 function photosynthesis(leaf::AbstractComponentModel, meteo::AbstractAtmosphere, constants = Constants())
     leaf_tmp = copy(leaf)
     photosynthesis!(leaf_tmp, meteo, constants)

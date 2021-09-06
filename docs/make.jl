@@ -20,10 +20,11 @@ makedocs(;
     pages = [
         "Home" => "index.md",
         "Getting started" => [
-            "TL;DR" => "get_started.md",
-            "First simulation" => "first_simulation.md",
-            "Several time steps" => "several_simulation.md",
-            "Several objects" => "several_objects_simulation.md",
+            "TL;DR" => "./getting_started/get_started.md",
+            "First simulation" => "./getting_started/first_simulation.md",
+            "Several time steps" => "./getting_started/several_simulation.md",
+            "Several objects" => "./getting_started/several_objects_simulation.md",
+            "Overall concepts" => "./getting_started/package_design.md",
             ],
         "Models" => Any[
             "Photosynthesis" => "photosynthesis.md",

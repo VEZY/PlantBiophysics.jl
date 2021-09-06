@@ -2,7 +2,6 @@
 
 ```@setup usepkg
 using PlantBiophysics
-leaf = LeafModels(photosynthesis = Fvcb(), stomatal_conductance = Medlyn(0.03, 12.0))
 ```
 
 ## Running the simulation
@@ -40,7 +39,7 @@ Each model has its own structure used to provide the parameter values. For examp
 
 Then we pass different values to instantiate the input variables needed for the models: `Rₛ = 13.747, skyFraction = 1.0, PPFD = 1500.0, d = 0.03`. The variables needed to be instantiated depends on each model used, but also on their combination because some models will compute the inputs of others. One way to know which variables should be instantiated is to use [`to_initialise`](@ref):
 
-```@example
+```@example usepkg
 to_initialise(
     LeafModels(
         energy = Monteith(),
@@ -52,7 +51,7 @@ to_initialise(
 
 When we know which parameters have to be initialized, we can get the list of the parameters for each model by looking at its field names:
 
-```@example
+```@example usepkg
 fieldnames(Fvcb)
 ```
 
@@ -60,7 +59,7 @@ Or look into the documentation of the structure (e.g. `?Fvcb`) or the implementa
 
 ## energy_balance!
 
-The simulation of the energy balance is done using [`energy_balance!`](@ref). Then Julia will choose the right implementations for each model using multiple dispatch. In our case it will use the `Monteith` implementation for [`net_radiation!`](@ref), `Fvcb!` for [`assimilation!`](@ref) and `Medlyn` for [`gs_closure`](@ref). The photosynthesis and the stomatal conductance models are called directly from the energy balance function.
+The simulation of the energy balance is done using [`energy_balance!`](@ref). Then Julia will choose the right implementations for each model using multiple dispatch. In our case it will use the `Monteith` implementation for [`PlantBiophysics.net_radiation!`](@ref), `Fvcb!` for [`PlantBiophysics.assimilation!`](@ref) and `Medlyn` for [`PlantBiophysics.gs_closure`](@ref). The photosynthesis and the stomatal conductance models are called directly from the energy balance function.
 
 ## Results
 

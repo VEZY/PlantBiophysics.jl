@@ -66,6 +66,12 @@ leaf.status.Cₛ
 leaf.status.Cᵢ
 ```
 
+Or to get them all at once:
+
+```julia
+DataFrame(leaf)
+```
+
 And that's it!
 
 You can see more examples in the following pages.
