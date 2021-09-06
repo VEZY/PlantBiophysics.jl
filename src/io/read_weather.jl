@@ -19,7 +19,7 @@ the user should provide the `var_names` argument to help mapping the two.
 using Dates
 
 file = joinpath(dirname(dirname(pathof(PlantBiophysics))),"test","inputs","meteo.csv")
-var_names = Dict(:temperature => :T, :relativeHumidity => :Rh, :relativeHumidity => :Rh, :wind => :Wind, :atmosphereCO2_ppm => :Cₐ)
+var_names = Dict(:temperature => :T, :relativeHumidity => :Rh, :wind => :Wind, :atmosphereCO2_ppm => :Cₐ)
 
 meteo = read_weather(file, var_names = var_names, date_format = DateFormat("yyyy/mm/dd"))
 ```
@@ -69,6 +69,7 @@ function read_weather(file, ::Type{DataFrame})
     end
 
     metadata = YAML.load(yaml_data)
+    push!(metadata, "file" => file)
 
     met_data = CSV.read(file, DataFrame; comment = "#")
 
