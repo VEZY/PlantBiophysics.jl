@@ -1,37 +1,21 @@
-# Getting started
+# Package design
 
-```@setup usepkg
-using PlantBiophysics
-leaf = LeafModels(photosynthesis = Fvcb(), stomatal_conductance = Medlyn(0.03, 12.0))
-```
+`PlantBiophysics.jl` is designed to ease the computations of biophysical processes in plants and other objects. It is part of the [Archimed platform](https://archimed-platform.github.io/), so it shares the same ontology (same concepts and terms).
 
-## TL;DR
+## Processes
 
-Simulate the leaf energy balance, photosynthesis and stomatal conductance altogether using the following code:
-
-```@example usepkg
-meteo = Atmosphere(T = 22.0, Wind = 0.8333, P = 101.325, Rh = 0.4490995)
-
-leaf = LeafModels(energy = Monteith(),
-            photosynthesis = Fvcb(),
-            stomatal_conductance = Medlyn(0.03, 12.0),
-            Rₛ = 13.747, skyFraction = 1.0, PPFD = 1500.0, d = 0.03)
-
-energy_balance(leaf,meteo)
-```
-
-## Introduction
-
-The package is designed to ease the computations of biophysical processes in plants and other objects. It is part of the [Archimed platform](https://archimed-platform.github.io/), so it shares the same ontology (same concepts and terms).
-
-This package is designed to simulate four different processes:
+A process in this package defines a biological or a physical phenomena. `PlantBiophysics.jl` is designed to simulate four different processes:
 
 - photosynthesis
 - stomatal conductance
 - energy balance
 - light interception (no models at the moment, but coming soon!)
 
-These processes can be simulated using different models included in the package, or provided by the user. Each process has its associated generic function and abstract struct (see [Concepts and design](@ref)).
+## Models
+
+### What is a model?
+
+A process is simulated using a model. There can be several models available for a given process, *i.e.* several ways to simulate the same process. Some models are included in the package, others can be provided by the user. In CS terms, each process has its associated generic function and abstract structure (see [Concepts and design](@ref)).
 
 Then, the models are chosen by using a concrete structure that serves two purposes: holding the parameter values of the model, and dispatch to the right method when calling the generic function. They are generally named after the model they implement.
 
@@ -39,20 +23,20 @@ If you don't plan to implement your own model, you just have to learn about the 
 
 If you want to implement your own models, please read the [Concepts and design](@ref) section first, and then [Model implementation](@ref model_implementation_page).
 
-## Using a model
+### Using a model
 
 In this package, each process can be simulated using a function:
 
 - [`gs`](@ref) for the stomatal conductance
-- [`photosynthesis`](@ref) for the photosynthesis
-- [`energy_balance`](@ref) for the energy balance
+- [`photosynthesis!`](@ref) for the photosynthesis
+- [`energy_balance!`](@ref) for the energy balance
 
-The call to the function is the same whatever the model you chose for simulating the process. This is some magic allowed by Julia! A call to a function is as follows:
+The call to the function is the same whatever the model you choose for simulating the process. This is some magic allowed by Julia! A call to a function is as follows:
 
 ```julia
 gs(component,meteo)
-photosynthesis(component,meteo)
-energy_balance(component,meteo)
+photosynthesis!(component,meteo)
+energy_balance!(component,meteo)
 ```
 
 We describe the two arguments below.
@@ -73,25 +57,25 @@ fieldnames(LeafModels)
 
 The first four are for defining models used to simulate the associated processes, and the fifth (`status`) helps keeping track of the state of simulated variables, because they can be modified by a simulation.
 
-Let's instantiate a [`LeafModels`](@ref) with some models. If we want to simulate the photosynthesis with the model of Farquhar et al. (1980) and the stomatal conductance with the model of Medlyn et al. (2011), we would use `Fvcb()` and `Medlyn` respectively, as follows:
+Let's instantiate a [`LeafModels`](@ref) with some models. If we want to simulate the photosynthesis with the model of Farquhar et al. (1980) and the stomatal conductance with the model of Medlyn et al. (2011), we would use `Fvcb()` and `Medlyn()` respectively, as follows:
 
 ```@example usepkg
 LeafModels(photosynthesis = Fvcb(), stomatal_conductance = Medlyn(0.03, 12.0))
 ```
 
-We can instantiate a [`LeafModels`](@ref) without choosing a model for all processes. In our example above we don't provide any model for the `interception` and `energy` processes, so they will have the default value `missing` in our leaf, meaning they cannot be simulated.
+We can instantiate a [`LeafModels`](@ref) without choosing a model for all processes. In our example above we don't provide any model for the `interception` and `energy` processes, so they will have the default value `missing` in our leaf, meaning they are not simulated.
 
-Some models require some variables as input values. For example if we want to simulate the leaf photosynthesis using the `Fvcb` model, we need the leaf temperature, the PPFD (Photosynthetic Photon Flux Density) and the CO₂ concentration at the leaf surface. The values for these variables are given as follows:
+Some models require some variables as input values. For example if we want to simulate the leaf photosynthesis using the `Fvcb` model, we need the leaf temperature, the PPFD (Photosynthetic Photon Flux Density) and the CO₂ concentration at the leaf surface. The values for these variables are given as named arguments such as `Tₗ = 25.0, PPFD = 1000.0, Cₛ = 400.0, Dₗ = 0.82`, making the call as follows:
 
 ```@example usepkg
-LeafModels(photosynthesis = Fvcb(),
+LeafModels(
+    photosynthesis = Fvcb(),
     stomatal_conductance = Medlyn(0.03, 12.0),
-    Tₗ = 25.0, PPFD = 1000.0, Cₛ = 400.0, Dₗ = 0.82)
+    Tₗ = 25.0, PPFD = 1000.0, Cₛ = 400.0, Dₗ = 0.82
+)
 ```
 
-They are given as keyword arguments (`Tₗ = 25.0`, `PPFD = 1000.0`, `Cₛ = 400.0`, `Dₗ = 0.82`). This is a convenience to set up initialization values for some variables required by models. We already know that `PPFD`, `Cₛ` and `Tₗ` are needed for the `Fvcb` model. And `Dₗ` is needed for the `Medlyn` model ( and `Cₛ` too).
-
-To know which variables you need to initialize for a simulation, use the [`to_initialise`](@ref) function on one or several model instances, or directly on a component model (*e.g.* [`LeafModels`](@ref)). For example in our case we use the `Fvcb` and `Medlyn` models, so we would do:
+To know which variables you need to initialize for a simulation, use [`to_initialise`](@ref) on one or several model instances, or directly on a component model (*e.g.* [`LeafModels`](@ref)). For example in our case we use the `Fvcb` and `Medlyn` models, so we would do:
 
 ```@example usepkg
 to_initialise(Fvcb(),Medlyn(0.03, 12.0))
@@ -100,17 +84,21 @@ to_initialise(Fvcb(),Medlyn(0.03, 12.0))
 Or directly on a component model after instantiation:
 
 ```@example usepkg
-leaf = LeafModels(photosynthesis = Fvcb(), stomatal_conductance = Medlyn(0.03, 12.0))
+leaf = LeafModels(
+    photosynthesis = Fvcb(),
+    stomatal_conductance = Medlyn(0.03, 12.0)
+)
+
 to_initialise(leaf)
 ```
 
-You can also use [`is_initialised`](@ref) to know if a component is sufficiently initialized:
+You can also use [`is_initialised`](@ref) to know if a component is correctly initialised:
 
 ```@example usepkg
 is_initialised(leaf)
 ```
 
-And then you can initialize the component model status using [`init_status!`](@ref):
+And then you can initialise the component model status using [`init_status!`](@ref):
 
 ```@example usepkg
 init_status!(leaf, Tₗ = 25.0, PPFD = 1000.0, Cₛ = 400.0, Dₗ = 1.2)
@@ -124,7 +112,7 @@ is_initialised(leaf)
 
 Yes, it did!
 
-Both [`to_initialise`](@ref) and [`is_initialised`](@ref) search for common input variables among all models used. Then, they compare with the outputs of the models, and if one variable is needed as input but provided as output of another model, the variable is not considered for initialization because it is thought that the user will simulate these variables.
+Both [`to_initialise`](@ref) and [`is_initialised`](@ref) search for shared input variables among all models used. Then, they compare with the models outputs, and if one variable is needed as input but provided as output of another model, the variable is not considered for initialization because it can and should be simulated.
 
 ### Climate forcing
 
@@ -154,6 +142,51 @@ meteo.eₛ
 
 See the documentation of the function if you need more information about the variables.
 
+If you want to simulate several time-steps with varying conditions, you can do so by using [`Weather`](@ref) instead of [`Atmosphere`](@ref).
+
+[`Weather`](@ref) is just an array of [`Atmosphere`](@ref) along with some optional metadata. For example for three time-steps, we would declared it like so:
+
+```@example usepkg
+w = Weather(
+    [
+        Atmosphere(T = 20.0, Wind = 1.0, P = 101.3, Rh = 0.65),
+        Atmosphere(T = 23.0, Wind = 1.5, P = 101.3, Rh = 0.60),
+        Atmosphere(T = 25.0, Wind = 3.0, P = 101.3, Rh = 0.55)
+    ],
+    (site = "Montpellier",
+    other_info = "another crucial metadata")
+)
+```
+
+As you see the first argument is an array of [`Atmosphere`](@ref), and the second is a named tuple of optional metadata such as the site or whatever you think is important.
+
+A [`Weather`](@ref) can also be declared from a DataFrame, provided each row is an observation from a time-step, and each column is a variable needed for [`Atmosphere`](@ref) (see the help of [`Atmosphere`](@ref) for more details on the possible variables and their units).
+
+Here's an example of using a DataFrame as input:
+
+```@example usepkg
+using CSV, DataFrames
+file = joinpath(dirname(dirname(pathof(PlantBiophysics))),"test","inputs","meteo.csv")
+df = CSV.read(file, DataFrame; header=5, datarow = 6)
+# Select and rename the variables:
+select!(df, :date, :VPD, :temperature => :T, :relativeHumidity => :Rh, :wind => :Wind, :atmosphereCO2_ppm => :Cₐ)
+df[!,:duration] = 1800 # Add the time-step duration, 30min
+
+# Make the weather, and add some metadata:
+Weather(df, (site = "Aquiares", file = file))
+```
+
+One can also directly import the Weather from an Archimed-formatted meteorology file (a csv file enriched with some metadata):
+
+```@example usepkg
+using Dates
+
+file = joinpath(dirname(dirname(pathof(PlantBiophysics))),"test","inputs","meteo.csv")
+var_names = Dict(:temperature => :T, :relativeHumidity => :Rh, :wind => :Wind, :atmosphereCO2_ppm => :Cₐ)
+
+meteo = read_weather(file, var_names = var_names, date_format = DateFormat("yyyy/mm/dd"))
+```
+
 ## List of models
 
 As presented above, each process is simulated using a particular model. A model can work either independently or in conjunction with other models. For example a stomatal conductance model is often associated with a photosynthesis model. *i.e.*, it is called from the photosynthesis model.
@@ -175,6 +208,7 @@ The photosynthesis can be simulated using the [`photosynthesis`](@ref) function.
 
 - [`Fvcb`](@ref): an implementation of the Farquhar–von Caemmerer–Berry (FvCB) model for C3 photosynthesis (Farquhar et al., 1980; von Caemmerer and Farquhar, 1981) using the analytical resolution
 - [`FvcbIter`](@ref): the same model but implemented using an iterative computation over Cᵢ
+- [`FvcbRaw`](@ref): the same model but without the coupling with the stomatal conductance, *i.e.* as presented in the original paper. This version needs Cᵢ as input.
 - [`ConstantA`](@ref): a model to set the photosynthesis to a constant value (mainly for testing)
 
 You can choose which model you use by passing a component with an assimilation model set to one of the `structs` above. We will show some examples in the end of this paragraph.
@@ -184,9 +218,11 @@ For example, you can simulate a constant assimilation of a leaf using the follow
 ```@example usepkg
 meteo = Atmosphere(T = 20.0, Wind = 1.0, P = 101.3, Rh = 0.65)
 
-leaf = LeafModels(photosynthesis = ConstantA(25.0),
-                stomatal_conductance = ConstantGs(0.03,0.1),
-                Cₛ = 380.0)
+leaf = LeafModels(
+    photosynthesis = ConstantA(25.0),
+    stomatal_conductance = ConstantGs(0.03,0.1),
+    Cₛ = 380.0
+)
 
 photosynthesis(leaf,meteo)
 ```
@@ -195,4 +231,4 @@ photosynthesis(leaf,meteo)
 
 The simulation of the energy balance of a component is the most integrative process of the package because it is (potentially) coupled with the conductance and assimilation models if any.
 
-To simulate the energy balance of a component, we use the [`energy_balance`](@ref) function. Only one model is implemented yet, the one presented in Monteith and Unsworth (2013). The structure is called [`Monteith`](@ref), and is only used for photosynthetic organs. Further implementations will come in the future.
+To simulate the energy balance of a component, we use the [`energy_balance!`](@ref) function. Only one model is implemented yet, the one presented in Monteith and Unsworth (2013). The structure is called [`Monteith`](@ref), and is only used for photosynthetic organs. Further implementations will come in the future.

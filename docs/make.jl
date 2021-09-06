@@ -19,7 +19,12 @@ makedocs(;
     ),
     pages = [
         "Home" => "index.md",
-        "Getting started" => "get_started.md",
+        "Getting started" => [
+            "TL;DR" => "get_started.md",
+            "First simulation" => "first_simulation.md",
+            "Several time steps" => "several_simulation.md",
+            "Several objects" => "several_objects_simulation.md",
+            ],
         "Models" => Any[
             "Photosynthesis" => "photosynthesis.md",
             "Stomatal conductance" => "gs.md",
