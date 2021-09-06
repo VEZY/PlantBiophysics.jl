@@ -187,7 +187,13 @@ Fetch the data from a [`AbstractComponentModel`](@ref) (or an Array/Dict of) sta
 a DataFrame.
 """
 function DataFrame(components::T) where T <: Union{AbstractComponentModel,AbstractArray{<:AbstractComponentModel}}
-    reduce(vcat, [DataFrame(i) for i in components])
+    df = DataFrame[]
+    for (k,v) in enumerate(components)
+        df_c = DataFrame(v)
+        df_c[!, :component] .= k
+        push!(df, df_c)
+    end
+    reduce(vcat, df)
 end
 
 function DataFrame(components::T) where {T <: AbstractDict{N,<:AbstractComponentModel} where N}
