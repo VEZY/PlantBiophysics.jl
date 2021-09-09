@@ -24,7 +24,7 @@ function read_walz(file)
     rename!(
         df,
         :GH2O => :gs, :ca => :Cₐ, :Tcuv => :T, :Pamb => :P, :rh => :Rh,
-        :PARtop => :PPFD, :ci => :Cᵢ, :Comment => :curve
+        :PARtop => :PPFD, :ci => :Cᵢ, :Comment => :curve, :Tleaf => :Tₗ
     )
 
     # Recomputing the variables to fit the units used in the package:

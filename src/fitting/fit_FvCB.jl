@@ -1,7 +1,14 @@
 """
-    fit(::Type{Fvcb}, df; Tᵣ = 25.0, VcMaxRef = 200.0, JMaxRef = 250.0, RdRef = 0.6)
+    fit(::Type{Fvcb}, df; Tᵣ = nothing, VcMaxRef = 0., JMaxRef = 0., RdRef = 0., TPURef = 0.)
 
 Optimize the parameters of the [`Fvcb`](@ref) model. Also works for [`FvcbIter`](@ref).
+
+# Arguments
+
+- df: a DataFrame with columns A, PPFD, Tₗ and Cᵢ, where each row is an observation. The column
+names should match exactly
+- Tᵣ: reference temperature for the optimized parameter values. If not provided, use the average Tₗ.
+- VcMaxRef, JMaxRef, RdRef: initialisation values for the parameter optimisation
 
 # Examples
 
@@ -28,7 +35,7 @@ sort!(df, :Cᵢ)
 leaf =
     LeafModels(
         photosynthesis = FvcbRaw(VcMaxRef = VcMaxRef, JMaxRef = JMaxRef, RdRef = RdRef, TPURef = TPURef),
-        Tₗ = df.Tleaf, PPFD = df.PPFD, Cᵢ = df.Cᵢ
+        Tₗ = df.Tₗ, PPFD = df.PPFD, Cᵢ = df.Cᵢ
     )
 photosynthesis!(leaf)
 df_sim = DataFrame(leaf)
@@ -60,7 +67,7 @@ plot(ACi_struct_full,leg=:bottomright)
 """
 function fit(::T, df; Tᵣ = nothing, VcMaxRef = 0., JMaxRef = 0., RdRef = 0., TPURef = 0.) where T <: Union{Type{Fvcb},Type{FvcbIter},Type{FvcbRaw}}
     if Tᵣ === nothing
-        Tᵣ = mean(df.Tleaf)
+        Tᵣ = mean(df.Tₗ)
     end
 
     function model(x, p)
@@ -75,7 +82,7 @@ function fit(::T, df; Tᵣ = nothing, VcMaxRef = 0., JMaxRef = 0., RdRef = 0., T
 
     # Fitting the A-Cᵢ curve using LsqFit.jl
     # fits = curve_fit(model, df.Cᵢ[ind], df.A[ind], [VcMaxRef, JMaxRef, RdRef, TPURef])
-    fits = curve_fit(model, Array(select(df, :T, :PPFD, :Cᵢ)), df.A, [VcMaxRef, JMaxRef, RdRef, TPURef])
+    fits = curve_fit(model, Array(select(df, :Tₗ, :PPFD, :Cᵢ)), df.A, [VcMaxRef, JMaxRef, RdRef, TPURef])
 
     return (VcMaxRef = fits.param[1], JMaxRef = fits.param[2], RdRef = fits.param[3], TPURef = fits.param[4])
 end
