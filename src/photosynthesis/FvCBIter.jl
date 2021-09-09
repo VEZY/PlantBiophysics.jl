@@ -33,31 +33,31 @@ struct FvcbIter{T} <: AbstractAModel
 end
 
 function FvcbIter(;Tᵣ = 25.0, VcMaxRef = 200.0, JMaxRef = 250.0, RdRef = 0.6, Eₐᵣ = 46390.0,
-    O₂= 210.0, Eₐⱼ = 29680.0, Hdⱼ = 200000.0, Δₛⱼ = 631.88, Eₐᵥ = 58550.0, Hdᵥ = 200000.0,
+    O₂ = 210.0, Eₐⱼ = 29680.0, Hdⱼ = 200000.0, Δₛⱼ = 631.88, Eₐᵥ = 58550.0, Hdᵥ = 200000.0,
     Δₛᵥ = 629.26, α = 0.425, θ = 0.90, iter_A_max = 20, ΔT_A = 1.0)
 
     # Add type promotion in case we want to use e.g. Measurements for one parameter only and
     # we don't want to set each parameter to ± 0 by hand.
     param_float = promote(Tᵣ, VcMaxRef, JMaxRef, RdRef, Eₐᵣ, O₂, Eₐⱼ, Hdⱼ, Δₛⱼ, Eₐᵥ, Hdᵥ, Δₛᵥ, α, θ, ΔT_A)
     FvcbIter(
-        param_float[1:end-1]...,
+        param_float[1:end - 1]...,
         iter_A_max,
         param_float[end]
     )
 end
 
 function inputs(::FvcbIter)
-    (:PPFD,:Tₗ,:Gbc)
+    (:PPFD, :Tₗ, :Gbc)
 end
 
 function outputs(::FvcbIter)
-    (:A,:Gₛ,:Cᵢ,:Cₛ)
+    (:A, :Gₛ, :Cᵢ, :Cₛ)
 end
 
 Base.eltype(x::FvcbIter) = typeof(x).parameters[1]
 
 """
-    assimilation!(leaf::LeafModels{I,E,<:FvcbIter,<:AbstractGsModel,S}, meteo, constants = Constants())
+    photosynthesis!_(leaf::LeafModels{I,E,<:FvcbIter,<:AbstractGsModel,S}, meteo, constants = Constants())
 
 Photosynthesis using the Farquhar–von Caemmerer–Berry (FvCB) model for C3 photosynthesis
  (Farquhar et al., 1980; von Caemmerer and Farquhar, 1981).
@@ -104,7 +104,7 @@ leaf = LeafModels(photosynthesis = FvcbIter(),
             Tₗ = 25.0, PPFD = 1000.0, Gbc = 0.67, Dₗ = meteo.VPD)
 # NB: we need  to initalise Tₗ, PPFD and Gbc.
 
-assimilation!(leaf,meteo,Constants())
+photosynthesis!_(leaf,meteo,Constants())
 leaf.status.A
 leaf.status.Cᵢ
 ```
@@ -122,7 +122,7 @@ Leuning, R., F. M. Kelliher, DGG de Pury, et E.D. Schulze. 1995. Leaf nitrogen,
 photosynthesis, conductance and transpiration: scaling from leaves to canopies ». Plant,
 Cell & Environment 18 (10): 1183‑1200.
 """
-function assimilation!(leaf::LeafModels{I,E,<:FvcbIter,<:AbstractGsModel,S}, meteo,
+function photosynthesis!_(leaf::LeafModels{I,E,<:FvcbIter,<:AbstractGsModel,S}, meteo,
     constants = Constants()) where {I,E,S}
 
     # Start with a probable value for Cₛ and Cᵢ:
@@ -134,8 +134,8 @@ function assimilation!(leaf::LeafModels{I,E,<:FvcbIter,<:AbstractGsModel,S}, met
     Tᵣₖ = leaf.photosynthesis.Tᵣ - constants.K₀
 
     # Temperature dependence of the parameters:
-    Γˢ = Γ_star(Tₖ,Tᵣₖ,constants.R) # Gamma star (CO2 compensation point) in μmol mol-1
-    Km = get_km(Tₖ,Tᵣₖ,leaf.photosynthesis.O₂,constants.R) # effective Michaelis–Menten coefficient for CO2
+    Γˢ = Γ_star(Tₖ, Tᵣₖ, constants.R) # Gamma star (CO2 compensation point) in μmol mol-1
+    Km = get_km(Tₖ, Tᵣₖ, leaf.photosynthesis.O₂, constants.R) # effective Michaelis–Menten coefficient for CO2
 
     # Maximum electron transport rate at the given leaf temperature (μmol m-2 s-1):
     JMax = arrhenius(leaf.photosynthesis.JMaxRef,leaf.photosynthesis.Eₐⱼ,Tₖ,Tᵣₖ,
@@ -144,7 +144,7 @@ function assimilation!(leaf::LeafModels{I,E,<:FvcbIter,<:AbstractGsModel,S}, met
     VcMax = arrhenius(leaf.photosynthesis.VcMaxRef,leaf.photosynthesis.Eₐᵥ,Tₖ,Tᵣₖ,
                         leaf.photosynthesis.Hdᵥ,leaf.photosynthesis.Δₛᵥ,constants.R)
     # Rate of mitochondrial respiration at the given leaf temperature (μmol m-2 s-1):
-    Rd = arrhenius(leaf.photosynthesis.RdRef,leaf.photosynthesis.Eₐᵣ,Tₖ,Tᵣₖ,constants.R)
+    Rd = arrhenius(leaf.photosynthesis.RdRef, leaf.photosynthesis.Eₐᵣ, Tₖ, Tᵣₖ, constants.R)
     # Rd is also described as the CO2 release in the light by processes other than the PCO
     # cycle, and termed "day" respiration, or "light respiration" (Harley et al., 1986).
 
@@ -155,14 +155,14 @@ function assimilation!(leaf::LeafModels{I,E,<:FvcbIter,<:AbstractGsModel,S}, met
 
     # First iteration to initialise the values for A and Gₛ:
     # Net assimilation (μmol m-2 s-1)
-    leaf.status.A = Fvcb_net_assimiliation(leaf.status.Cᵢ,Vⱼ,Γˢ,VcMax,Km,Rd)
+    leaf.status.A = Fvcb_net_assimiliation(leaf.status.Cᵢ, Vⱼ, Γˢ, VcMax, Km, Rd)
 
     iter = true
     iter_inc = 1
 
     while iter
         # Stomatal conductance (mol[CO₂] m-2 s-1)
-        leaf.status.Gₛ = gs(leaf,meteo)
+        leaf.status.Gₛ = gs(leaf, meteo)
         # Surface CO₂ concentration (ppm):
         leaf.status.Cₛ = min(meteo.Cₐ, meteo.Cₐ - leaf.status.A / leaf.status.Gbc)
         # Intercellular CO₂ concentration (ppm):
@@ -173,7 +173,7 @@ function assimilation!(leaf::LeafModels{I,E,<:FvcbIter,<:AbstractGsModel,S}, met
             A_new = -Rd
         else
             # Net assimilation (μmol m-2 s-1):
-            A_new = Fvcb_net_assimiliation(leaf.status.Cᵢ,Vⱼ,Γˢ,VcMax,Km,Rd)
+            A_new = Fvcb_net_assimiliation(leaf.status.Cᵢ, Vⱼ, Γˢ, VcMax, Km, Rd)
         end
 
         if abs(A_new - leaf.status.A) / leaf.status.A <= leaf.photosynthesis.ΔT_A ||
@@ -182,10 +182,10 @@ function assimilation!(leaf::LeafModels{I,E,<:FvcbIter,<:AbstractGsModel,S}, met
             iter = false
         end
 
-        leaf.status.A = A_new
+leaf.status.A = A_new
 
         iter_inc += 1
-    end
+end
 end
 
 """
@@ -194,7 +194,7 @@ end
 Net assimilation following the Farquhar–von Caemmerer–Berry (FvCB) model for C3 photosynthesis
 (Farquhar et al., 1980; von Caemmerer and Farquhar, 1981)
 """
-function Fvcb_net_assimiliation(Cᵢ,Vⱼ,Γˢ,VcMax,Km,Rd)
+function Fvcb_net_assimiliation(Cᵢ, Vⱼ, Γˢ, VcMax, Km, Rd)
     # Electron-transport-limited rate of CO₂ assimilation (RuBP regeneration-limited):
     Wⱼ = Vⱼ * (Cᵢ - Γˢ) / (Cᵢ + 2.0 * Γˢ)
     # See Von Caemmerer, Susanna. 2000. Biochemical models of leaf photosynthesis.
@@ -205,6 +205,6 @@ function Fvcb_net_assimiliation(Cᵢ,Vⱼ,Γˢ,VcMax,Km,Rd)
     Wᵥ = VcMax * (Cᵢ - Γˢ) / (Cᵢ + Km)
 
     # Net assimilation (μmol m-2 s-1):
-    A = min(Wᵥ,Wⱼ) - Rd
+    A = min(Wᵥ, Wⱼ) - Rd
     return A
 end

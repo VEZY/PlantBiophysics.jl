@@ -42,7 +42,7 @@ end
 Base.eltype(x::Monteith) = typeof(x).parameters[1]
 
 """
-    net_radiation!(leaf::LeafModels{I,<:Monteith,A,Gs,S},meteo::AbstractAtmosphere,constants = Constants())
+    energy_balance!_(leaf::LeafModels{I,<:Monteith,A,Gs,S},meteo::AbstractAtmosphere,constants = Constants())
 
 Leaf energy balance according to Monteith and Unsworth (2013), and corrigendum from
 Schymanski et al. (2017). The computation is close to the one from the MAESPA model (Duursma
@@ -83,7 +83,7 @@ leaf = LeafModels(energy = Monteith(),
             photosynthesis = Fvcb(),
             stomatal_conductance = ConstantGs(0.0, 0.0011),
             Rₛ = 13.747, skyFraction = 1.0, d = 0.03)
-PlantBiophysics.net_radiation!(leaf,meteo)
+PlantBiophysics.energy_balance!_(leaf,meteo)
 leaf.status.Rn
 julia> 12.902547446281233
 
@@ -93,7 +93,7 @@ leaf = LeafModels(energy = Monteith(),
             stomatal_conductance = Medlyn(0.03, 12.0),
             Rₛ = 13.747, skyFraction = 1.0, PPFD = 1500.0, d = 0.03)
 
-PlantBiophysics.net_radiation!(leaf,meteo)
+PlantBiophysics.energy_balance!_(leaf,meteo)
 leaf.status.Rn
 leaf.status.Rₗₗ
 leaf.status.A
@@ -123,7 +123,7 @@ Maxime Soma, et al. 2018. « Measuring and modelling energy partitioning in can
 complexity using MAESPA model ». Agricultural and Forest Meteorology 253‑254 (printemps): 203‑17.
 https://doi.org/10.1016/j.agrformet.2018.02.005.
 """
-function net_radiation!(leaf::LeafModels{I,<:Monteith,A,Gs,S}, meteo::AbstractAtmosphere, constants = Constants()) where {I,A,Gs,S}
+function energy_balance!_(leaf::LeafModels{I,<:Monteith,A,Gs,S}, meteo::AbstractAtmosphere, constants = Constants()) where {I,A,Gs,S}
 
     # Initialisations
     leaf.status.Tₗ = meteo.T - 0.2
@@ -140,7 +140,7 @@ function net_radiation!(leaf::LeafModels{I,<:Monteith,A,Gs,S}, meteo::AbstractAt
     for i in 1:leaf.energy.maxiter
 
         # Update A, Gₛ, Cᵢ from leaf.status:
-        assimilation!(leaf, meteo, constants)
+        photosynthesis!_(leaf, meteo, constants)
 
         # Stomatal resistance to water vapor
         Rsᵥ = 1.0 / (gsc_to_gsw(mol_to_ms(leaf.status.Gₛ, meteo.T, meteo.P, constants.R, constants.K₀),
@@ -206,7 +206,7 @@ function net_radiation!(leaf::LeafModels{I,<:Monteith,A,Gs,S}, meteo::AbstractAt
 
     @debug begin
         if iter == leaf.energy.maxiter
-            "`net_radiation!` algorithm did not converge. Please check the value."
+            "`energy_balance!_` algorithm did not converge. Please check the value."
         end
     end
 

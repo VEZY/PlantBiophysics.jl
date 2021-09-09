@@ -17,13 +17,13 @@ function inputs(::ConstantA)
 end
 
 function outputs(::ConstantA)
-    (:A,:Gₛ,:Cᵢ)
+    (:A, :Gₛ, :Cᵢ)
 end
 
 Base.eltype(x::ConstantA) = typeof(x).parameters[1]
 
 """
-    assimilation!(leaf::LeafModels{I,E,<:ConstantA,<:AbstractGsModel,S},constants = Constants())
+    photosynthesis!_(leaf::LeafModels{I,E,<:ConstantA,<:AbstractGsModel,S},constants = Constants())
 
 Constant photosynthesis.
 
@@ -60,19 +60,19 @@ leaf = LeafModels(photosynthesis = ConstantA(),
             stomatal_conductance = Medlyn(0.03, 12.0),
             Cₛ = 400.0)
 
-assimilation!(leaf,meteo,Constants())
+photosynthesis!_(leaf,meteo,Constants())
 
 leaf.status.A
 ```
 """
-function assimilation!(leaf::LeafModels{I,E,<:ConstantA,<:AbstractGsModel,S}, meteo,
+function photosynthesis!_(leaf::LeafModels{I,E,<:ConstantA,<:AbstractGsModel,S}, meteo,
     constants = Constants()) where {I,E,S}
 
     # Net assimilation (μmol m-2 s-1)
     leaf.status.A = leaf.photosynthesis.A
 
     # Stomatal conductance (mol[CO₂] m-2 s-1)
-    leaf.status.Gₛ = gs(leaf,meteo)
+    leaf.status.Gₛ = gs(leaf, meteo)
 
     # Intercellular CO₂ concentration (Cᵢ, μmol mol)
     leaf.status.Cᵢ = min(leaf.status.Cₛ, leaf.status.Cₛ - leaf.status.A / leaf.status.Gₛ)

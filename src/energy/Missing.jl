@@ -1,5 +1,5 @@
 """
-    net_radiation!(leaf::LeafModels{I,<:Missing,A,Gs,S},meteo::AbstractAtmosphere,constants = Constants())
+    energy_balance!_(leaf::LeafModels{I,<:Missing,A,Gs,S},meteo::AbstractAtmosphere,constants = Constants())
 
 Method for when energy balance is missing (do nothing).
 
@@ -10,12 +10,12 @@ Method for when energy balance is missing (do nothing).
 - `constants = Constants()`: physical constants. See [`Constants`](@ref) for more details
 
 """
-function net_radiation!(leaf::LeafModels{I,<:Missing,A,Gs,S}, meteo::AbstractAtmosphere, constants = Constants()) where {I,A,Gs,S}
+function energy_balance!_(leaf::LeafModels{I,<:Missing,A,Gs,S}, meteo::AbstractAtmosphere, constants = Constants()) where {I,A,Gs,S}
     nothing
 end
 
 """
-    net_radiation!(object::Component{I,<:Missing,S},meteo::AbstractAtmosphere,constants = Constants())
+    energy_balance!_(object::Component{I,<:Missing,S},meteo::AbstractAtmosphere,constants = Constants())
 
 Method for when energy balance is missing (do nothing).
 
@@ -26,6 +26,6 @@ Method for when energy balance is missing (do nothing).
 - `constants = Constants()`: physical constants. See [`Constants`](@ref) for more details
 
 """
-function net_radiation!(object::Component{I,<:Missing,S}, meteo::AbstractAtmosphere, constants = Constants()) where {I,A,Gs,S}
+function energy_balance!_(object::Component{I,<:Missing,S}, meteo::AbstractAtmosphere, constants = Constants()) where {I,A,Gs,S}
     nothing
 end

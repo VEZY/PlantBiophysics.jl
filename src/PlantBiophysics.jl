@@ -77,6 +77,9 @@ include("fitting/fit_FvCB.jl")
 # Model evaluation
 include("evaluation/statistics.jl")
 
+# Depreciations
+include("depreciations/models.jl")
+
 # File IO:
 export read_model
 export is_model
@@ -142,7 +145,7 @@ export FvcbRaw # Parameters for the original Farquhar et al. (1980) model
 export Constants
 export photosynthesis!
 export photosynthesis
-export assimilation!
+export photosynthesis!_
 
 # Conductances
 export AbstractGsModel

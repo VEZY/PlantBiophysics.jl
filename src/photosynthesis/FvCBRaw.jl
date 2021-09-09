@@ -68,7 +68,7 @@ end
 Base.eltype(x::FvcbRaw) = typeof(x).parameters[1]
 
 """
-    assimilation!(leaf::LeafModels{I,E,<:FvcbRaw,<:AbstractGsModel,S},constants = Constants())
+    photosynthesis!_(leaf::LeafModels{I,E,<:FvcbRaw,<:AbstractGsModel,S},constants = Constants())
 
 Direct implementation of the photosynthesis model for C3 photosynthesis from Farquhar–von
 Caemmerer–Berry (Farquhar et al., 1980; von Caemmerer and Farquhar, 1981).
@@ -101,7 +101,7 @@ balance of the leaf with the photosynthesis to get those variables. See
 leaf = LeafModels(photosynthesis = FvcbRaw(), Tₗ = 25.0, PPFD = 1000.0, Cᵢ = 400.0)
 # NB: we need Tₗ, PPFD and Cᵢ as inputs (see [`inputs`](@ref))
 
-assimilation!(leaf)
+photosynthesis!_(leaf)
 leaf.status.A
 leaf.status.Cᵢ
 
@@ -109,7 +109,7 @@ leaf.status.Cᵢ
 leaf = LeafModels(photosynthesis = FvcbRaw(), Tₗ = [20., 25.0], PPFD = 1000.0, Cᵢ = [380.,400.0])
 # NB: we need Tₗ, PPFD and Cᵢ as inputs (see [`inputs`](@ref))
 
-assimilation!(leaf)
+photosynthesis!_(leaf)
 DataFrame(leaf) # fetch the leaf status as a DataFrame
 ```
 
@@ -135,7 +135,7 @@ Lombardozzi, L. D. et al. 2018.« Triose phosphate limitation in photosynthesis 
 reduces leaf photosynthesis and global terrestrial carbon storage ». Environmental Research
 Letters 13.7: 1748-9326. https://doi.org/10.1088/1748-9326/aacf68.
 """
-function assimilation!(leaf::LeafModels{I,E,<:FvcbRaw,Gs,<:MutableNamedTuples.MutableNamedTuple}, meteo = nothing,
+function photosynthesis!_(leaf::LeafModels{I,E,<:FvcbRaw,Gs,<:MutableNamedTuples.MutableNamedTuple}, meteo = nothing,
     constants = Constants()) where {I,E,Gs}
 
     Tₖ =  leaf.status.Tₗ - constants.K₀

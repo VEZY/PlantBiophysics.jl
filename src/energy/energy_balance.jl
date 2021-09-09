@@ -110,7 +110,7 @@ function energy_balance!(object::AbstractComponentModel, meteo::AbstractAtmosphe
     is_init = is_initialised(object)
     !is_init && error("Some variables must be initialized before simulation")
 
-    net_radiation!(object, meteo, constants)
+    energy_balance!_(object, meteo, constants)
     return nothing
 end
 

@@ -116,7 +116,7 @@ end
 Base.eltype(x::Fvcb) = typeof(x).parameters[1]
 
 """
-    assimilation!(leaf::LeafModels{I,E,<:Fvcb,<:AbstractGsModel,S},constants = Constants())
+    photosynthesis!_(leaf::LeafModels{I,E,<:Fvcb,<:AbstractGsModel,S},constants = Constants())
 
 Coupled photosynthesis and conductance model using the Farquhar–von Caemmerer–Berry (FvCB) model
 for C3 photosynthesis (Farquhar et al., 1980; von Caemmerer and Farquhar, 1981) that models
@@ -191,7 +191,7 @@ leaf = LeafModels(photosynthesis = Fvcb(),
             Tₗ = 25.0, PPFD = 1000.0, Cₛ = 400.0, Dₗ = meteo.VPD)
 # NB: we need  to initalise Tₗ, PPFD and Cₛ
 
-assimilation!(leaf,meteo,Constants())
+photosynthesis!_(leaf,meteo,Constants())
 leaf.status.A
 leaf.status.Cᵢ
 ```
@@ -218,7 +218,7 @@ Lombardozzi, L. D. et al. 2018.« Triose phosphate limitation in photosynthesis 
 reduces leaf photosynthesis and global terrestrial carbon storage ». Environmental Research
 Letters 13.7: 1748-9326. https://doi.org/10.1088/1748-9326/aacf68.
 """
-function assimilation!(leaf::LeafModels{I,E,<:Fvcb,<:AbstractGsModel,S}, meteo,
+function photosynthesis!_(leaf::LeafModels{I,E,<:Fvcb,<:AbstractGsModel,S}, meteo,
     constants = Constants()) where {I,E,S}
 
     # Tranform Celsius temperatures in Kelvin:
