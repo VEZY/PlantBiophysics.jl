@@ -177,6 +177,7 @@ function Base.show(io::IO, n::Weather)
 end
 
 Base.getindex(w::Weather, i::Integer) = w.data[i]
+Base.getindex(w::Weather, s::Symbol) = [getproperty(i,s) for i in w.data]
 
 """
     DataFrame(data::Weather)

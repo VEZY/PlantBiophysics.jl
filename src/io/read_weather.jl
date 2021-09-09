@@ -1,10 +1,14 @@
 using Base:Symbol
 """
-    read_weather(file)
+    read_weather(file[,args...];
+        date_format = DateFormat("yyyy-mm-ddTHH:MM:SS.s"),
+        hour_format = DateFormat("HH:MM:SS")
+    )
 
 Read a meteo file. The meteo file is a CSV, and optionnaly with metadata in a header formatted
 as a commented YAML. The column names should match exactly the fields of [`Atmosphere`](@ref), or
-the user should provide the `var_names` argument to help mapping the two.
+the user should provide their transformation as arguments (`args`) to help mapping the two. The
+transformations are given as for `DataFrames`.
 
 # Arguments
 
@@ -19,28 +23,37 @@ the user should provide the `var_names` argument to help mapping the two.
 using Dates
 
 file = joinpath(dirname(dirname(pathof(PlantBiophysics))),"test","inputs","meteo.csv")
-var_names = Dict(:temperature => :T, :relativeHumidity => :Rh, :wind => :Wind, :atmosphereCO2_ppm => :Cₐ)
 
-meteo = read_weather(file, var_names = var_names, date_format = DateFormat("yyyy/mm/dd"))
+meteo = read_weather(
+    file,
+    :temperature => :T,
+    :relativeHumidity => (x -> x ./100) => :Rh,
+    :wind => :Wind,
+    :atmosphereCO2_ppm => :Cₐ,
+    date_format = DateFormat("yyyy/mm/dd")
+)
 ```
 """
 function read_weather(
-    file;
-    var_names = Dict(),
+    file,args...;
     date_format = DateFormat("yyyy-mm-ddTHH:MM:SS.s"),
     hour_format = DateFormat("HH:MM:SS")
     )
 
+    arguments = (args...,)
     data, metadata = read_weather(file, DataFrame)
 
     # Clean-up the variable names:
-    length(var_names) > 0 && rename!(data, var_names...)
+    length(arguments) > 0 && select!(data, arguments...)
 
     # If there's a "use" field in the YAML, parse it and rename it:
     if haskey(metadata, "use")
         splitted_use = split(metadata["use"], r"[,\s]")
         metadata["use"] = Symbol.(splitted_use[findall(x -> length(x) > 0, splitted_use)])
-        length(var_names) > 0 && replace!(metadata["use"], var_names...)
+
+        orig_names = [i.first for i in arguments]
+        new_names = [isa(i.second, Pair) ? i.second.second : i.second for i in arguments]
+        length(arguments) > 0 && replace!(metadata["use"], Pair.(orig_names, new_names)...)
     end
     # NB: the "use" field is not used in PlantBiophysics, but it is still correctly parsed.
 
