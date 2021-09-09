@@ -52,7 +52,7 @@ leaf = LeafModels(
         photosynthesis = Fvcb(VcMaxRef = VcMaxRef, JMaxRef = JMaxRef, RdRef = RdRef, Tᵣ = 25.0, TPURef = TPURef),
         # stomatal_conductance = ConstantGs(0.0, df[i,:gs]),
         stomatal_conductance = Medlyn(0.03, 12.),
-        Tₗ = df.T, PPFD = df.PPFD, Cₛ = df.Cₐ, Dₗ = 0.1
+        Tₗ = df.Tₗ, PPFD = df.PPFD, Cₛ = df.Cₐ, Dₗ = 0.1
     )
 
 w = Weather(select(df, :T, :P, :Rh, :Cₐ, :T => (x -> 10) => :Wind))

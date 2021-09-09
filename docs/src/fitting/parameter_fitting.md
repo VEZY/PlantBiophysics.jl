@@ -16,9 +16,9 @@ The generic function takes several parameters:
 
 ## Example with FvCB
 
-A fit method is provided by the package to calibrate the parameters of the FvCB model.
+A fit method is provided by the package to calibrate the parameters of the FvCB model (Farquhar et al., 1980).
 
-For example we provide a method to fit the parameters from the Farquhar et al. (1980) model. Here is an example usage:
+Here is an example usage from the documentation of the method:
 
 ```@example usepkg
 using PlantBiophysics, Plots, DataFrames
@@ -31,6 +31,51 @@ filter!(x -> x.curve != "Rh Curve" && x.curve != "ligth Curve", df)
 VcMaxRef, JMaxRef, RdRef, TPURef = fit(Fvcb, df; Tᵣ = 25.0)
 ```
 
-## Wrap-up
+Now that our parameters are optimized, we can check how close to the data a simulation would get.
 
-We learned to make a simple parameter fitting. For more information, you can head over the [Parameter fitting](@ref) section where we present how to check the parameter fitting.
+First, let's select only the data used for the CO₂ curve:
+
+```@example usepkg
+# Checking the results:
+filter!(x -> x.curve == "CO2 Curve", df);
+```
+
+Now let's re-simulate the assimilation with our optimised parameter values:
+
+```@example usepkg
+leaf =
+    LeafModels(
+        photosynthesis = FvcbRaw(VcMaxRef = VcMaxRef, JMaxRef = JMaxRef, RdRef = RdRef, TPURef = TPURef),
+        Tₗ = df.Tₗ, PPFD = df.PPFD, Cᵢ = df.Cᵢ
+    )
+photosynthesis!(leaf)
+df_sim = DataFrame(leaf);
+```
+
+Finally, we can make an A-Cᵢ plot using our custom `ACi` structure as follows:
+
+```@example usepkg
+aci = PlantBiophysics.ACi(VcMaxRef, JMaxRef, RdRef, df[:,:A], df_sim[:,:A], df[:,:Cᵢ], df_sim[:,:Cᵢ])
+plot(aci, leg=:bottomright)
+```
+
+Our simulation fits very closely the observations, nice!
+
+There are another implementation of the FvCB model in our package. One that couples the photosynthesis with the stomatal conductance. And this one computes Cᵢ too. Let's check if it works with this one too by using dummy parameter values for the conductance model:
+
+```@example usepkg
+leaf = LeafModels(
+        photosynthesis = Fvcb(VcMaxRef = VcMaxRef, JMaxRef = JMaxRef, RdRef = RdRef, Tᵣ = 25.0, TPURef = TPURef),
+        stomatal_conductance = Medlyn(0.03, 12.),
+        Tₗ = df.Tₗ, PPFD = df.PPFD, Cₛ = df.Cₐ, Dₗ = 0.1
+    )
+
+w = Weather(select(df, :T, :P, :Rh, :Cₐ, :T => (x -> 10) => :Wind))
+photosynthesis!(leaf, w)
+df_sim2 = DataFrame(leaf)
+
+aci2 = PlantBiophysics.ACi(VcMaxRef, JMaxRef, RdRef, df[:,:A], df_sim2[:,:A], df[:,:Cᵢ], df_sim2[:,:Cᵢ])
+plot(aci2, leg = :bottomright)
+```
+
+We can see the results differ a bit, but it is because we add a lot more computation here, hence adding some degrees of liberty.
