@@ -30,7 +30,7 @@ using PlantBiophysics
 
 ## Examples
 
-See the [Getting started](@ref) section for simple to more complex examples.
+See the [First simulation](@ref) section for examples.
 
 ## Similar projects
 

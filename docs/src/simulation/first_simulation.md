@@ -1,4 +1,4 @@
-# First simulation
+# Simple simulation
 
 ```@setup usepkg
 using PlantBiophysics

@@ -51,12 +51,12 @@ end
 ### Figure 6 a of the article:
 
 # Import the inputs for simulation:
-results1_6a = CSV.read("data/schymanski_et_al_2017/results1_6a.csv", DataFrame)
+results1_6a = CSV.read("../data/schymanski_et_al_2017/results1_6a.csv", DataFrame)
 results1_6a.rh = rh_from_e.(results1_6a.P_wa ./ 1000.0, results1_6a.T_a .+ cst.K₀)
 sort!(results1_6a, [:v_w])
 
 # Reading the parameters:
-params = read_dict("data/schymanski_et_al_2017/vdict_6a.txt")
+params = read_dict("../data/schymanski_et_al_2017/vdict_6a.txt")
 
 # Running the simulation:
 run_simulation!(results1_6a,params,aₛᵥ)
@@ -70,4 +70,4 @@ scatter!(results1_6a.v_w, results1_6a.Hlmeas + results1_6a.Elmeas,label = "H+LE 
 plot!(results1_6a.v_w, results1_6a.H,label = "H sim", color = "red")
 plot!(results1_6a.v_w, results1_6a.λE,label = "LE sim", color = "blue")
 plot!(results1_6a.v_w, results1_6a.Rn,label = "Rn sim", color = "green")
-savefig("schymanski_et_al_2017_6a.svg")
+savefig("./schymanski_et_al_2017_6a.svg")
