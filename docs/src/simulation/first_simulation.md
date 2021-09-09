@@ -4,9 +4,9 @@
 using PlantBiophysics
 ```
 
-## Running the simulation
+## Running a simple simulation
 
-We just saw in the previous section how to run this first simulation:
+Here is a first simple simulation of the coupled energy balance on a leaf over one meteorological time-step:
 
 ```@example usepkg
 meteo = Atmosphere(T = 22.0, Wind = 0.8333, P = 101.325, Rh = 0.4490995)
@@ -59,7 +59,7 @@ Or look into the documentation of the structure (e.g. `?Fvcb`) or the implementa
 
 ## energy_balance!
 
-The simulation of the energy balance is done using [`energy_balance!`](@ref). Then Julia will choose the right implementations for each model using multiple dispatch. In our case it will use the `Monteith` implementation for [`PlantBiophysics.net_radiation!`](@ref), `Fvcb!` for [`PlantBiophysics.assimilation!`](@ref) and `Medlyn` for [`PlantBiophysics.gs_closure`](@ref). The photosynthesis and the stomatal conductance models are called directly from the energy balance function.
+The simulation of the energy balance is done using [`energy_balance!`](@ref). Then Julia will choose the right implementations for each model using multiple dispatch. In our case it will use the `Monteith` implementation for [`PlantBiophysics.energy_balance!_`](@ref), `Fvcb!` for [`PlantBiophysics.photosynthesis!_`](@ref) and `Medlyn` for [`PlantBiophysics.gs_closure`](@ref). The photosynthesis and the stomatal conductance models are called directly from the energy balance function.
 
 ## Results
 

@@ -16,13 +16,13 @@ CurrentModule = PlantBiophysics
 
 ## Installation
 
-To install the package, enter the julia package manager mode by pressing `]` in the REPL, and execute the following command:
+To install the package, enter the Julia package manager mode by pressing `]` in the REPL, and execute the following command:
 
 ```julia
 add https://github.com/VEZY/PlantBiophysics.jl
 ```
 
-To use the package, execute this command from the julia REPL:
+To use the package, execute this command from the Julia REPL:
 
 ```julia
 using PlantBiophysics
@@ -30,51 +30,7 @@ using PlantBiophysics
 
 ## Examples
 
-Here is an example usage with a simulation of the energy balance and assimilation of a leaf with some default values.
-
-First you have to define the meteorological conditions using `Atmosphere()` as follows:
-
-```julia
-# Declaring the meteorology for the simulated time-step:
-meteo = Atmosphere(T = 22.0, Wind = 0.8333, P = 101.325, Rh = 0.4490995)
-```
-
-Then define which model to use for each process, and their parameter values:
-
-```julia
-# Using the model from Medlyn et al. (2011) for Gs and the model of Monteith and Unsworth (2013) for the energy balance:
-leaf = LeafModels(energy = Monteith(),
-            photosynthesis = Fvcb(),
-            stomatal_conductance = Medlyn(0.03, 12.0),
-            Rₛ = 13.747, skyFraction = 1.0, PPFD = 1500.0, d = 0.03)
-```
-
-Then, run the simulation of the energy balance and assimilation:
-
-```julia
-energy_balance!(leaf,meteo)
-```
-
-Now the variables that were simulated by the models were updated in the leaf status. To access the values, do as follow:
-
-```julia
-leaf.status.Rₛ
-leaf.status.Rₗₗ
-leaf.status.A
-leaf.status.Gₛ
-leaf.status.Cₛ
-leaf.status.Cᵢ
-```
-
-Or to get them all at once:
-
-```julia
-DataFrame(leaf)
-```
-
-And that's it!
-
-You can see more examples in the following pages.
+See the [Getting started](@ref) section for simple to more complex examples.
 
 ## Similar projects
 

@@ -4,7 +4,8 @@ Abstract model type. All models are subtypes of this one, see *e.g.* [`AbstractA
 abstract type AbstractModel end
 
 """
-Abstract structure to hold all models for object components (*e.g.* leaves, metamers...).
+Abstract structure that defines component models, which are structures that lists the processes that can be simulated for a given component.
+For example [`LeafModels`](@ref) is a concrete implementation of an `AbstractComponentModel` for leaves.
 """
 abstract type AbstractComponentModel <: AbstractModel end
 

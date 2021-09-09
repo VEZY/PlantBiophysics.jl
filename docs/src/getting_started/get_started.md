@@ -1,27 +1,38 @@
-# Getting started
+# First simulation
 
 ```@setup usepkg
 using PlantBiophysics
-leaf = LeafModels(photosynthesis = Fvcb(), stomatal_conductance = Medlyn(0.03, 12.0))
+using Dates
 ```
 
-## TL;DR
-
-Here your first simulation for the leaf energy balance, photosynthesis and stomatal conductance altogether with few lines of codes:
+Mare your first simulation for a leaf energy balance, photosynthesis and stomatal conductance altogether with few lines of codes:
 
 ```@example usepkg
-meteo = Atmosphere(T = 22.0, Wind = 0.8333, P = 101.325, Rh = 0.4490995)
+using PlantBiophysics, Dates
+
+meteo = read_weather(
+    joinpath(dirname(dirname(pathof(PlantBiophysics))),"test","inputs","meteo.csv"),
+    :temperature => :T,
+    :relativeHumidity => (x -> x ./100) => :Rh,
+    :wind => :Wind,
+    :atmosphereCO2_ppm => :Cₐ,
+    :Re_SW_f => :Ri_SW_f,
+    date_format = DateFormat("yyyy/mm/dd")
+)
 
 leaf = LeafModels(
         energy = Monteith(),
         photosynthesis = Fvcb(),
         stomatal_conductance = Medlyn(0.03, 12.0),
-        Rₛ = 13.747, skyFraction = 1.0, PPFD = 1500.0, d = 0.03
-    )
+        Rₛ = meteo[:Ri_SW_f] .* 0.8,
+        skyFraction = 1.0,
+        PPFD = meteo[:Ri_SW_f] .* 0.8 .* 0.48 .* 4.57,
+        d = 0.03
+)
 
 energy_balance!(leaf,meteo)
 
 DataFrame(leaf)
 ```
 
-Curious to understand more ? Let's first introduce the package design and then what are the `LeafModels`, `Atmosphere` or models such as `Monteith`.
+Curious to understand more ? Head to the next section to learn more about parameter fitting, or to the [First simulation](@ref) section for more details about how to make simulations.

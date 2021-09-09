@@ -21,21 +21,27 @@ makedocs(;
         "Home" => "index.md",
         "Getting started" => [
             "TL;DR" => "./getting_started/get_started.md",
-            "First simulation" => "./getting_started/first_simulation.md",
-            "Several time steps" => "./getting_started/several_simulation.md",
-            "Several objects" => "./getting_started/several_objects_simulation.md",
-            "Overall concepts" => "./getting_started/package_design.md",
-            ],
-        "Models" => Any[
-            "Photosynthesis" => "photosynthesis.md",
-            "Stomatal conductance" => "gs.md",
-            "Energy balance" => "energy_balance.md",
-            "Light interception" => "light.md"
-            ],
-        "Details" => Any[
-            "Package design" => "concepts.md",
-            "Implement a model" => "implement_a_model.md",
-            "Uncertainty propagation" => "uncertainty_propagation.md",
+            "Parameter fitting" => "./getting_started/first_fit.md",
+        ],
+        "Parameter fitting" => "./fitting/parameter_fitting.md",
+        "Simulation" => [
+            "Simple Simulation" => "./simulation/first_simulation.md",
+            "Several time steps" => "./simulation/several_simulation.md",
+            "Several objects" => "./simulation/several_objects_simulation.md",
+            "Uncertainty propagation" => "./simulation/uncertainty_propagation.md",
+        ],
+        "Concepts" => Any[
+            "Package design" => "./concepts/package_design.md",
+            "Implement a model" => "./concepts/implement_a_model.md",
+        ],
+        "Generic models" => Any[
+            "Photosynthesis" => "./models/photosynthesis.md",
+            "Stomatal conductance" => "./models/gs.md",
+            "Energy balance" => "./models/energy_balance.md",
+            "Light interception" => "./models/light.md",
+        ],
+        "Components and methods" => Any[
+            "LeafModels" => "./components/leafmodels.md",
         ],
         "API" => "functions.md"
     ],
