@@ -33,5 +33,5 @@ var_names = Dict(:temperature => :T, :relativeHumidity => :Rh, :relativeHumidity
     meteo = read_weather(file, var_names = var_names, date_format = DateFormat("yyyy/mm/dd"))
     @test typeof(meteo) <: Weather
     @test typeof(meteo) <: Weather
-    @test NamedTuple(meteo.metadata) == (;name = "Aquiares", latitude = 15.0, altitude = 100.0, use = [:Rh, :clearness])
+    @test NamedTuple(meteo.metadata) == (;name = "Aquiares", latitude = 15.0, altitude = 100.0, use = [:Rh, :clearness], file = file)
 end;
