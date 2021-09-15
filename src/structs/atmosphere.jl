@@ -76,9 +76,33 @@ function Atmosphere(;
     Δ = e_sat_slope(T), clearness = 9999.9, Ri_SW_f = 9999.9, Ri_PAR_f = 9999.9,
     Ri_NIR_f = 9999.9, Ri_TIR_f = 9999.9, Ri_custom_f = 9999.9)
 
+        # Checking some values:
+    if Wind <= 0
+        @warn "Wind should always be > 0, forcing it to 1e-6"
+        Wind = 1e-6
+    end
+
+    if Rh <= 0
+        @warn "Rh should always be > 0, forcing it to 1e-6"
+        Rh = 1e-6
+    end
+
+    if Rh > 1
+        if 1 < Rh < 100
+            @warn "Rh should be 0 < Rh < 1, assuming it is given in % and dividing by 100"
+            Rh /= 100
+        else
+            @error "Rh should be 0 < Rh < 1, and its value is $(Rh)"
+        end
+    end
+
+    if clearness != 9999.9 && (clearness <= 0 || clearness > 1)
+        @error "clearness should always be 0 < clearness < 1"
+    end
+
     param_A =
     promote(
-        T, Wind, P, Rh, Cₐ, e, eₛ, VPD, ρ, λ,γ, ε,Δ, clearness, Ri_SW_f, Ri_PAR_f,
+        T, Wind, P, Rh, Cₐ, e, eₛ, VPD, ρ, λ, γ, ε, Δ, clearness, Ri_SW_f, Ri_PAR_f,
         Ri_NIR_f, Ri_TIR_f, Ri_custom_f
     )
 

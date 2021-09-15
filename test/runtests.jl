@@ -9,6 +9,10 @@ using DataFrames
     include("IO.jl")
 end
 
+@testset "Atmosphere" begin
+    include("atmosphere.jl")
+end
+
 @testset "Structures" begin
     include("structs.jl")
 end
