@@ -123,7 +123,7 @@ function energy_balance(object::AbstractComponentModel, meteo::AbstractAtmospher
 end
 
 # energy_balance over several objects (e.g. all leaves of a plant) in an Array
-function energy_balance!(object::O, meteo::AbstractAtmosphere, constants = Constants()) where O <: AbstractArray{<:AbstractComponentModel}
+function energy_balance!(object::O, meteo::AbstractAtmosphere, constants = Constants()) where {O<:AbstractArray{<:AbstractComponentModel}}
 
     for i in values(object)
         energy_balance!(i, meteo, constants)
@@ -133,7 +133,7 @@ function energy_balance!(object::O, meteo::AbstractAtmosphere, constants = Const
 end
 
 # energy_balance over several objects (e.g. all leaves of a plant) in a kind of Dict.
-function energy_balance!(object::O, meteo::AbstractAtmosphere, constants = Constants()) where {O <: AbstractDict{N,<:AbstractComponentModel} where N}
+function energy_balance!(object::O, meteo::AbstractAtmosphere, constants = Constants()) where {O<:AbstractDict{N,<:AbstractComponentModel} where {N}}
 
     for (k, v) in object
         energy_balance!(v, meteo, constants)
@@ -147,7 +147,7 @@ function energy_balance(
     object::O,
     meteo::AbstractAtmosphere,
     constants = Constants()
-    ) where O <: Union{AbstractArray{<:AbstractComponentModel},AbstractDict{N,<:AbstractComponentModel} where N}
+) where {O<:Union{AbstractArray{<:AbstractComponentModel},AbstractDict{N,<:AbstractComponentModel} where N}}
 
     # Copy the objects only once before the computation for performance reasons:
     object_tmp = copy(object)
@@ -163,7 +163,7 @@ function energy_balance!(
     object::T,
     meteo::Weather,
     constants = Constants()
-    ) where T <: Union{AbstractArray{<:AbstractComponentModel},AbstractDict{N,<:AbstractComponentModel} where N}
+) where {T<:Union{AbstractArray{<:AbstractComponentModel},AbstractDict{N,<:AbstractComponentModel} where N}}
 
     # Check if the meteo data and the status have the same length (or length 1)
     check_status_wheather(object, meteo)
@@ -172,7 +172,7 @@ function energy_balance!(
     for (i, meteo_i) in enumerate(meteo.data)
         # Each object in a time-step:
         for obj in object
-            energy_balance!(obj[i], meteo_i, constants)
+            energy_balance!(obj, meteo_i, constants)
         end
     end
 
@@ -188,7 +188,7 @@ function energy_balance(
     object::T,
     meteo::Weather,
     constants = Constants()
-    ) where T <: Union{AbstractComponentModel,AbstractDict{N,<:AbstractComponentModel} where N}
+) where {T<:Union{AbstractComponentModel,AbstractDict{N,<:AbstractComponentModel} where N}}
 
     object_tmp = copy(object)
 

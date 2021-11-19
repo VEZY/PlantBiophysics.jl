@@ -10,7 +10,7 @@ Why using especially Monte Carlo methods ? Here we have a problem that is highly
 
 Using the `μ ± σ` notation, you can create a Gaussian distribution (of mean μ and standard deviation σ).
 
-```@example 1
+```@example
 using PlantBiophysics
 using MonteCarloMeasurements
 using Plots
@@ -39,9 +39,11 @@ savefig("distributions-example-gaussian.svg"); nothing #hide
 
 It is also possible to use other types of distributions. For an uniform distribution, you can use `a .. b` (so the uniform distribution will be in the interval `[a,b]`).  For others distributions, you can use the package [Distributions.jl](https://github.com/JuliaStats/Distributions.jl) and implement Binomial, Gamma, etc. distributions with `MonteCarloMeasurements.jl` as `a ⊠ Gamma(1)` (i.e. `a` plus a Gamma distribution of parameter 1) or `a ⊠ Exponential(1)` (i.e. an Exponential distribution of parameter 1 with `a` as factor).
 
-```@example 1
+```@example
 using PlantBiophysics
 using MonteCarloMeasurements
+using Plots
+unsafe_comparisons(true)
 
 # ⊠ \boxplus
 # ⊠ \boxtimes
