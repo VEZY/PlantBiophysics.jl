@@ -9,9 +9,9 @@ Get the default values of a model.
 defaults(Fvcb)
 ```
 """
-function defaults(x::T) where T <: Type{<:AbstractModel}
+function defaults(x::T) where {T<:Type{<:AbstractModel}}
     p = x()
-    (;(v => getfield(p, v) for v in fieldnames(typeof(p)))...)
+    (; (v => getfield(p, v) for v in fieldnames(typeof(p)))...)
 end
 
 """
@@ -30,7 +30,7 @@ function inputs(model::Missing)
     ()
 end
 
-function inputs(v::T, vars...) where T <: Union{Missing,AbstractModel}
+function inputs(v::T, vars...) where {T<:Union{Missing,AbstractModel}}
     length((vars...,)) > 0 ? union(inputs(v), inputs(vars...)) : inputs(v)
 end
 
@@ -50,7 +50,7 @@ function outputs(model::Missing)
     ()
 end
 
-function outputs(v::T, vars...) where T <: Union{Missing,AbstractModel}
+function outputs(v::T, vars...) where {T<:Union{Missing,AbstractModel}}
     length((vars...,)) > 0 ? union(outputs(v), outputs(vars...)) : outputs(v)
 end
 
@@ -77,7 +77,7 @@ variables(Monteith(), Medlyn(0.03,12.0))
 
 [`inputs`](@ref), [`outputs`](@ref) and [`variables_typed`](@ref)
 """
-function variables(m::T, ms...) where T <: Union{Missing,AbstractModel}
+function variables(m::T, ms...) where {T<:Union{Missing,AbstractModel}}
     length((ms...,)) > 0 ? union(variables(m), variables(ms...)) : union(inputs(m), outputs(m))
 end
 
@@ -104,7 +104,7 @@ variables_typed(Monteith(), Medlyn(0.03,12.0))
 function variables_typed(x)
     var_names = variables(x)
     var_type = eltype(x)
-(; zip(var_names, fill(var_type, length(var_names)))...)
+    (; zip(var_names, fill(var_type, length(var_names)))...)
 end
 
 function variables_typed(ms...)
@@ -121,7 +121,7 @@ function variables_typed(ms...)
 
             for t in var_types
                 if isdefined(t, i)
-            push!(types_common_vars, t[i])
+                    push!(types_common_vars, t[i])
                 end
             end
             push!(var_types_promoted, i => promote_type(types_common_vars...))
@@ -134,7 +134,7 @@ function variables_typed(ms...)
         end
     end
 
-    return (;var_types_promoted...)
+    return (; var_types_promoted...)
 end
 
 """
@@ -160,11 +160,11 @@ leaf = LeafModels(photosynthesis = Fvcb(), stomatal_conductance = Medlyn(0.03,12
 to_initialise(leaf)
 ```
 """
-function to_initialise(v::T, vars...) where T <: Union{Missing,AbstractModel}
+function to_initialise(v::T, vars...) where {T<:Union{Missing,AbstractModel}}
     setdiff(inputs(v, vars...), outputs(v, vars...))
 end
 
-function to_initialise(m::T) where T <: AbstractComponentModel
+function to_initialise(m::T) where {T<:AbstractComponentModel}
     # Get al fields
     models = [getfield(m, x) for x in setdiff(fieldnames(typeof(m)), (:status,))]
     to_initialise(models...)
@@ -184,8 +184,8 @@ model = read_model("a-model-file.yml")
 init_status!(model, Tₗ = 25.0, PPFD = 1000.0, Cₛ = 400.0, Dₗ = 1.2)
 ```
 """
-function init_status!(object::Dict{String,AbstractComponentModel};vars...)
-    new_vals = (;vars...)
+function init_status!(object::Dict{String,AbstractComponentModel}; vars...)
+    new_vals = (; vars...)
 
     for (component_name, component) in object
         for j in keys(new_vals)
@@ -198,8 +198,8 @@ function init_status!(object::Dict{String,AbstractComponentModel};vars...)
     end
 end
 
-function init_status!(component::AbstractComponentModel;vars...)
-    new_vals = (;vars...)
+function init_status!(component::AbstractComponentModel; vars...)
+    new_vals = (; vars...)
     for j in keys(new_vals)
         if !in(j, keys(component.status))
             @info "Key $j not found as a variable for any provided models"
@@ -270,9 +270,9 @@ is_initialised(leaf,leaf.photosynthesis)
 # simulated, so its inputs must be initialised
 ```
 """
-function is_initialised(m::T; info = true) where T <: AbstractComponentModel
+function is_initialised(m::T; info = true) where {T<:AbstractComponentModel}
     var_names = to_initialise(m)
-    is_not_init = [getproperty(m.status, i) == -999.99 for i in var_names]
+    is_not_init = is_not_init_(m.status, var_names)
     if any(is_not_init)
         info && @info "Some variables must be initialised before simulation: $(var_names[is_not_init]) (see `to_initialise()`)"
         return false
@@ -281,7 +281,7 @@ function is_initialised(m::T; info = true) where T <: AbstractComponentModel
     end
 end
 
-function is_initialised(m::T, models...;info = true) where T <: AbstractComponentModel
+function is_initialised(m::T, models...; info = true) where {T<:AbstractComponentModel}
     var_names = to_initialise(models...)
     is_not_init = [getproperty(m.status, i) == -999.99 for i in var_names]
     if any(is_not_init)
@@ -292,18 +292,14 @@ function is_initialised(m::T, models...;info = true) where T <: AbstractComponen
     end
 end
 
-# Special treatment for components with a status with multiple time-steps:
-function is_initialised(m::LeafModels{I,E,A,Gs,<:Vector{MutableNamedTuples.MutableNamedTuple}}, models...;info = true)  where {I,E,A,Gs}
-    var_names = to_initialise(models...)
-    is_not_init = [getproperty(j, i) == -999.99 for i in var_names, j in m.status]
-        if any(is_not_init)
-        info && @info "Some variables must be initialised before simulation: $(var_names[is_not_init]) (see `to_initialise()`)"
-        return false
-    else
-        return true
-    end
+function is_not_init_(status::T, var_names) where {T<:MutableNamedTuple}
+    [getproperty(status, i) == -999.99 for i in var_names]
 end
 
+# For components with a status with multiple time-steps:
+function is_not_init_(status::T, var_names) where {T<:Vector{MutableNamedTuple}}
+    [getproperty(j, i) == -999.99 for i in var_names, j in status]
+end
 
 """
     init_variables_manual(models...;vars...)
@@ -316,10 +312,10 @@ Return an initialisation of the model variables with given values.
 init_variables_manual(Monteith(); Tₗ = 20.0)
 ```
 """
-function init_variables_manual(models...;vars...)
-    new_vals = (;vars...)
+function init_variables_manual(models...; vars...)
+    new_vals = (; vars...)
     added_types = (fieldtypes(typeof(new_vals).parameters[2])...,)
-    init_vars = init_variables(models...;types = added_types)
+    init_vars = init_variables(models...; types = added_types)
     for i in keys(new_vals)
         !in(i, keys(init_vars)) && error("Key $i not found as a variable of any provided models")
         setproperty!(init_vars, i, new_vals[i])
@@ -341,10 +337,47 @@ function get_status(component)
     component.status
 end
 
-function get_status(components::T) where T <: AbstractArray{<:AbstractComponentModel}
+function get_status(components::T) where {T<:AbstractArray{<:AbstractComponentModel}}
     [i.status for i in components]
 end
 
-function get_status(components::T) where {T <: AbstractDict{N,<:AbstractComponentModel} where N}
+function get_status(components::T) where {T<:AbstractDict{N,<:AbstractComponentModel} where {N}}
     Dict([k => v.status for (k, v) in components])
+end
+
+
+"""
+    check_status_meteo(component,weather)
+
+Checks if a component status and the wheather have the same length, or
+if they can be recycled (length 1)
+"""
+function check_status_wheather(
+    component::LeafModels{I,E,A,Gs,<:Vector{MutableNamedTuples.MutableNamedTuple}},
+    weather::Weather
+) where {I,E,A,Gs}
+    length(component.status) != length(weather.data) &&
+        error("component status should have the same number of time-steps than weather")
+end
+
+# here we only have one time-step in the status, so we use it for all time-steps
+function check_status_wheather(
+    component::LeafModels{I,E,A,Gs,<:MutableNamedTuples.MutableNamedTuple},
+    weather::Weather
+) where {I,E,A,Gs}
+    error("component status should have the same number of time-steps than weather")
+end
+
+# for several components as an array
+function check_status_wheather(component::T, weather::Weather) where {T<:AbstractArray{<:AbstractComponentModel}}
+    for i in component
+        check_status_wheather(i, weather)
+    end
+end
+
+# for several components as a Dict
+function check_status_wheather(component::T, weather::Weather) where {T<:AbstractDict{N,<:AbstractComponentModel}} where {N}
+    for (key, val) in component
+        check_status_wheather(val, weather)
+    end
 end

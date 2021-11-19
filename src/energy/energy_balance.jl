@@ -172,7 +172,7 @@ function energy_balance!(
     for (i, meteo_i) in enumerate(meteo.data)
         # Each object in a time-step:
         for obj in object
-            energy_balance!(obj, meteo_i, constants)
+            energy_balance!(obj[i], meteo_i, constants)
         end
     end
 

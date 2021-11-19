@@ -69,22 +69,22 @@ function photosynthesis(leaf::AbstractComponentModel, meteo::AbstractAtmosphere,
 end
 
 # photosynthesis over several objects (e.g. all leaves of a plant) in an Array
-function photosynthesis!(object::O, meteo::AbstractAtmosphere, constants = Constants()) where O <: AbstractArray{<:AbstractComponentModel}
+function photosynthesis!(object::O, meteo::AbstractAtmosphere, constants = Constants()) where {O<:AbstractArray{<:AbstractComponentModel}}
 
     for i in values(object)
         photosynthesis!(i, meteo, constants)
     end
 
-return nothing
+    return nothing
 end
 
 # photosynthesis over several objects (e.g. all leaves of a plant) in a kind of Dict.
-function photosynthesis!(object::O, meteo::AbstractAtmosphere, constants = Constants()) where {O <: AbstractDict{N,<:AbstractComponentModel} where N}
+function photosynthesis!(object::O, meteo::AbstractAtmosphere, constants = Constants()) where {O<:AbstractDict{N,<:AbstractComponentModel} where {N}}
     for (k, v) in object
         photosynthesis!(v, meteo, constants)
     end
 
-return nothing
+    return nothing
 end
 
 
@@ -93,7 +93,7 @@ function photosynthesis(
     object::O,
     meteo::AbstractAtmosphere,
     constants = Constants()
-    ) where O <: Union{AbstractArray{<:AbstractComponentModel},AbstractDict{N,<:AbstractComponentModel} where N}
+) where {O<:Union{AbstractArray{<:AbstractComponentModel},AbstractDict{N,<:AbstractComponentModel} where N}}
 
     # Copy the objects only once before the computation for performance reasons:
     object_tmp = copy(object)
@@ -109,7 +109,7 @@ function photosynthesis!(
     object::T,
     meteo::Weather,
     constants = Constants()
-    ) where T <: Union{AbstractArray{<:AbstractComponentModel},AbstractDict{N,<:AbstractComponentModel} where N}
+) where {T<:Union{AbstractArray{<:AbstractComponentModel},AbstractDict{N,<:AbstractComponentModel} where N}}
 
     # Check if the meteo data and the status have the same length (or length 1)
     check_status_wheather(object, meteo)
@@ -133,7 +133,7 @@ function photosynthesis(
     object::T,
     meteo::Weather,
     constants = Constants()
-    ) where T <: Union{AbstractComponentModel,AbstractDict{N,<:AbstractComponentModel} where N}
+) where {T<:Union{AbstractComponentModel,AbstractDict{N,<:AbstractComponentModel} where N}}
 
     object_tmp = copy(object)
     photosynthesis!(object_tmp, meteo, constants)
@@ -159,48 +159,10 @@ function photosynthesis!(leaf::AbstractComponentModel, meteo::Nothing = nothing,
         photosynthesis!_(leaf, meteo, constants)
     else
         # We have several time-steps here
-        for i in 1:length(leaf.status)
+        for i = 1:length(leaf.status)
             photosynthesis!_(leaf[i], meteo, constants)
         end
 
     end
 
-end
-
-
-
-"""
-    check_status_meteo(component,weather)
-
-Checks if a component status and the wheather have the same length, or
-if they can be recycled (length 1)
-"""
-function check_status_wheather(
-        component::LeafModels{I,E,A,Gs,<:Vector{MutableNamedTuples.MutableNamedTuple}},
-        weather::Weather
-    ) where {I,E,A,Gs}
-   length(component.status) != length(weather.data) &&
-    @error "component status should have the same number of time-steps than weather"
-end
-
-# here we only have one time-step in the status, so we use it for all time-steps
-function check_status_wheather(
-        component::LeafModels{I,E,A,Gs,<:MutableNamedTuples.MutableNamedTuple},
-        weather::Weather
-    )  where {I,E,A,Gs}
-    nothing
-end
-
-# for several components as an array
-function check_status_wheather(component::T, weather::Weather) where T <: AbstractArray{<:AbstractComponentModel}
-    for i in component
-        check_status_wheather(i, weather)
-    end
-end
-
-# for several components as a Dict
-function check_status_wheather(component::T, weather::Weather) where T <: AbstractDict{N,<:AbstractComponentModel} where N
-    for (key, val) in component
-        check_status_wheather(val, weather)
-    end
 end
