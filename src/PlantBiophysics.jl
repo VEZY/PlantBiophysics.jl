@@ -13,14 +13,14 @@ using Dates
 import DataFrames.DataFrame # For convenience transformations
 import DataFrames.Not
 import DataFrames.rename!
-import DataFrames:select!,select
+import DataFrames: select!, select
 import DataFrames.dropmissing!
 import Base.show
 import Base.getindex
 import Impute.locf # For filling missing values in comments in Walz to identify curves
-import LsqFit:curve_fit
+import LsqFit: curve_fit
 using RecipesBase
-import Statistics:mean
+import Statistics: mean
 
 # Generic structures:
 include("structs/Abstract_model_structs.jl")
@@ -29,11 +29,11 @@ include("structs/concrete_component_structs.jl")
 # Physical constants:
 include("structs/constants.jl")
 
-# Models helpers:
-include("models_helpers.jl")
-
 # Atmosphere computations (vapor pressure...)
 include("structs/atmosphere.jl")
+
+# Models helpers:
+include("models_helpers.jl")
 
 # Conversions
 include("conversions.jl")
@@ -159,7 +159,7 @@ export ConstantGs
 # Temporary structures (to move to another package)
 export Translucent
 export Ignore
-export get_km, Γ_star, arrhenius, get_J, gs_closure, get_Cᵢⱼ,get_Cᵢᵥ,get_Dₕ
+export get_km, Γ_star, arrhenius, get_J, gs_closure, get_Cᵢⱼ, get_Cᵢᵥ, get_Dₕ
 export init_variables_manual, init_variables, Fvcb_net_assimiliation
 export get_component_type, get_process, get_model, instantiate, get_component_type
 

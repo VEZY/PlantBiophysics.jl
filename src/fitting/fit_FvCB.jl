@@ -65,7 +65,7 @@ plot(ACi_struct_full,leg=:bottomright)
 # Note that the results differ a bit because there are more variables that are re-simulated (e.g. Cᵢ)
 ```
 """
-function fit(::T, df; Tᵣ = nothing, VcMaxRef = 0., JMaxRef = 0., RdRef = 0., TPURef = 0.) where T <: Union{Type{Fvcb},Type{FvcbIter},Type{FvcbRaw}}
+function fit(::T, df; Tᵣ = nothing, VcMaxRef = 0.0, JMaxRef = 0.0, RdRef = 0.0, TPURef = 0.0) where {T<:Union{Type{Fvcb},Type{FvcbIter},Type{FvcbRaw}}}
     if Tᵣ === nothing
         Tᵣ = mean(df.Tₗ)
     end
@@ -74,7 +74,7 @@ function fit(::T, df; Tᵣ = nothing, VcMaxRef = 0., JMaxRef = 0., RdRef = 0., T
         leaf =
             LeafModels(
                 photosynthesis = FvcbRaw(VcMaxRef = p[1], JMaxRef = p[2], RdRef = p[3], TPURef = p[4]),
-                Tₗ = x[:,1], PPFD = x[:,2], Cᵢ = x[:,3]
+                Tₗ = x[:, 1], PPFD = x[:, 2], Cᵢ = x[:, 3]
             )
         photosynthesis!(leaf)
         DataFrame(leaf).A
@@ -98,9 +98,9 @@ mutable struct ACi
     Cᵢ_sim
 end
 
-ACi(VcMaxRef,JMaxRef,RdRef,A_meas,A_sim,Cᵢ_meas) = ACi(VcMaxRef, JMaxRef, RdRef, A_meas, A_sim, Cᵢ_meas, copy(Cᵢ_meas))
+ACi(VcMaxRef, JMaxRef, RdRef, A_meas, A_sim, Cᵢ_meas) = ACi(VcMaxRef, JMaxRef, RdRef, A_meas, A_sim, Cᵢ_meas, copy(Cᵢ_meas))
 
-    @recipe function f(h::ACi)
+@recipe function f(h::ACi)
     x = h.Cᵢ_meas
     x2 = h.Cᵢ_sim
     y = h.A_meas
@@ -115,13 +115,13 @@ ACi(VcMaxRef,JMaxRef,RdRef,A_meas,A_sim,Cᵢ_meas) = ACi(VcMaxRef, JMaxRef, RdRe
 
     @series begin
         seriestype := :scatter
-    label := "Measured"
-    x, y
+        label := "Measured"
+        x, y
     end
 
     @series begin
         label := "Simulated (EF:$EF_,dr:$dr_,RMSE:$RMSE_)"
         seriestype := :line
         x2, y2
-end
+    end
 end

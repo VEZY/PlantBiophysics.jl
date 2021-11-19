@@ -283,7 +283,7 @@ end
 
 function is_initialised(m::T, models...; info = true) where {T<:AbstractComponentModel}
     var_names = to_initialise(models...)
-    is_not_init = [getproperty(m.status, i) == -999.99 for i in var_names]
+    is_not_init = is_not_init_(m.status, var_names)
     if any(is_not_init)
         info && @info "Some variables must be initialised before simulation: $(var_names[is_not_init]) (see `to_initialise()`)"
         return false
