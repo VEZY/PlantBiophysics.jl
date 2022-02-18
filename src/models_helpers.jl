@@ -165,9 +165,10 @@ function to_initialise(v::T, vars...) where {T<:Union{Missing,AbstractModel}}
 end
 
 function to_initialise(m::T) where {T<:AbstractComponentModel}
-    # Get al fields
+    # Get all fields
     models = [getfield(m, x) for x in setdiff(fieldnames(typeof(m)), (:status,))]
-    to_initialise(models...)
+    to_init = to_initialise(models...)
+    to_init[is_not_init_(m.status, to_init)]
 end
 
 
