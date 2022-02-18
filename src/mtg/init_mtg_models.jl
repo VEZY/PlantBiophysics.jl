@@ -8,34 +8,46 @@ and if not, it tries to initialise the variables using the MTG attributes of the
 and if not found, returns an error.
 
 ```julia
+# Read the file
 file = joinpath(dirname(dirname(pathof(PlantBiophysics))),"test","inputs","scene","opf","coffee.opf")
 mtg = read_mtg(file)
 
+# Declare our models:
 models = Dict(
     "Leaf" =>
         LeafModels(
-            energy = monteith,
-            photosynthesis = fvcb,
-            stomatal_conductance = medlyn,
-            d = 0.03
-        ),
-    "Metamer" =>
-            LeafModels(
-            energy = monteith,
-            Rₛ = 10.,
-            skyFraction = 1.,
+            energy = Monteith(),
+            photosynthesis = Fvcb(),
+            stomatal_conductance = Medlyn(0.03, 12.0),
             d = 0.03
         )
 )
 
+# Checking which variables are needed for our models:
+[component => to_initialise(model) for (component, model) in models]
+# OK we need to initialise Rₛ, skyFraction and the PPFD
+
+# We can compute them directly inside the MTG from available variables:
+transform!(
+    mtg,
+    [:Ra_PAR_f, :Ra_NIR_f] => ((x, y) -> x + y) => :Rₛ,
+    :Ra_PAR_f => (x -> x * 4.57) => :PPFD,
+    ignore_nothing = true
+)
+
+# Initialising all components with their corresponding models and initialisations:
 init_mtg_models!(mtg, models)
+# Note that this is possible only because the initialisations values are found in the MTG.
+# If the initialisations are constant values between components, we can directly initilise
+# them in the models definition (we initialise d like this).
 ```
 """
 function init_mtg_models!(mtg, models::Dict{String,<:AbstractModel}; verbose = true)
 
     # Check if all components have a model
-    if verbose
-        #! TO DO
+    component_no_models = setdiff(components(mtg), keys(models))
+    if verbose && length(component_no_models) > 0
+        @info string("No model found for component(s) ", join(component_no_models, ", ", ", and "))
     end
 
     # Get which model has values that needs to be further initialised:
