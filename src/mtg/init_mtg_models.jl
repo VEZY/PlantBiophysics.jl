@@ -8,7 +8,7 @@ and if not, it tries to initialise the variables using the MTG attributes of the
 and if not found, returns an error.
 
 ```julia
-file = joinpath(dirname(dirname(pathof(MultiScaleTreeGraph))),"test","files","simple_plant.mtg")
+file = joinpath(dirname(dirname(pathof(PlantBiophysics))),"test","inputs","scene","opf","coffee.opf")
 mtg = read_mtg(file)
 
 models = Dict(
@@ -50,6 +50,7 @@ function init_mtg_models!(mtg, models::Dict{String,<:AbstractModel}; verbose = t
     # If some values need initialisation, check first if they are found as MTG attributes, and if they do, use them:
     if length(to_init) > 0
         attrs_missing = Dict(i => Set{Symbol}() for i in keys(to_init))
+        # node = get_node(mtg, 816)
         traverse!(
             mtg,
             function (node)
@@ -61,15 +62,15 @@ function init_mtg_models!(mtg, models::Dict{String,<:AbstractModel}; verbose = t
                         # Search if any is missing:
                         attr_not_found = setdiff(
                             to_init[node.MTG.symbol],
-                            keys(collect(node.attributes))
+                            collect(keys(node.attributes))
                         )
 
                         if length(attr_not_found) == 0
                             # If not, initialise the LeafModels using attributes
-                            @info "Initialising $(to_init[node.MTG.symbol]) using node attributes"
+                            @info "Initialising $(to_init[node.MTG.symbol]) using node attributes" maxlog = 1
                             models_node = models[node.MTG.symbol]
                             init_status!(
-                                models_node,
+                                models_node;
                                 NamedTuple(i => node[i] for i in to_init[node.MTG.symbol])...
                             )
                             node[:leaf_model] = models_node
@@ -86,7 +87,7 @@ function init_mtg_models!(mtg, models::Dict{String,<:AbstractModel}; verbose = t
                 end
             end
         )
-        if length(attrs_missing) > 0
+        if any([length(value) > 0 for (key, value) in attrs_missing])
             err_msg = [string("\n", key, ": [", join(value, ", ", " and "), "]") for (key, value) in attrs_missing]
             @error string(
                 "Some variables need to be initialised for some components before simulation:",

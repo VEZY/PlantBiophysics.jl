@@ -191,7 +191,7 @@ function init_status!(object::Dict{String,AbstractComponentModel}; vars...)
     for (component_name, component) in object
         for j in keys(new_vals)
             if !in(j, keys(component.status))
-                @info "Key $j not found as a variable for any provided models in $component_name"
+                @info "Key $j not found as a variable for any provided models in $component_name" maxlog = 1
                 continue
             end
             setproperty!(component.status, j, new_vals[j])
@@ -199,7 +199,7 @@ function init_status!(object::Dict{String,AbstractComponentModel}; vars...)
     end
 end
 
-function init_status!(component::AbstractComponentModel; vars...)
+function init_status!(component::T; vars...) where {T<:AbstractComponentModel}
     new_vals = (; vars...)
     for j in keys(new_vals)
         if !in(j, keys(component.status))
