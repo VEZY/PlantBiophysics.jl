@@ -1,4 +1,3 @@
-using Base:Symbol
 """
     read_weather(file[,args...];
         date_format = DateFormat("yyyy-mm-ddTHH:MM:SS.s"),
@@ -35,10 +34,10 @@ meteo = read_weather(
 ```
 """
 function read_weather(
-    file,args...;
-    date_format = DateFormat("yyyy-mm-ddTHH:MM:SS.s"),
-    hour_format = DateFormat("HH:MM:SS")
-    )
+    file, args...;
+    date_format = Dates.DateFormat("yyyy-mm-ddTHH:MM:SS.s"),
+    hour_format = Dates.DateFormat("HH:MM:SS")
+)
 
     arguments = (args...,)
     data, metadata = read_weather(file, DataFrame)
@@ -100,7 +99,7 @@ Compute the `date` column depending on several cases:
 `hour_start`
 """
 function compute_date!(df, date_format, hour_format)
-        if hasproperty(df, :date) && typeof(df.date[1]) != DateTime
+    if hasproperty(df, :date) && typeof(df.date[1]) != Dates.DateTime
         # There's a "date" column but it is not a DateTime
         # Trying to parse it with the user-defined format:
         try
@@ -145,7 +144,7 @@ Compute the `duration` column depending on several cases:
 or `date`, compute the duration from the period between `hour_start` (or `date`) and `hour_end`.
 """
 function compute_duration!(df, hour_format)
-        # `duration` is not in the df but there is an `hour_end` column:
+    # `duration` is not in the df but there is an `hour_end` column:
     if hasproperty(df, :hour_end) && !hasproperty(df, :duration)
         if typeof(df.hour_end[1]) != Dates.Time
             # There's a `hour_end` column but it is not of Time type
@@ -156,22 +155,22 @@ function compute_duration!(df, hour_format)
                     df.hour_end = Dates.Time.(df.hour_end, hour_format)
                 catch
                     error(
-                            "The values in the `hour_end` column cannot be parsed.",
-                            " Please check the format of the hours or provide the format as argument."
-                        )
+                        "The values in the `hour_end` column cannot be parsed.",
+                        " Please check the format of the hours or provide the format as argument."
+                    )
                 end
             end
 
             # If it is of Time type, transform it into a DateTime:
-            if typeof(df.hour_end[1]) == dates.DateTime
+            if typeof(df.hour_end[1]) == Dates.DateTime
                 df.hour_end = Dates.Time(df.hour_end)
             end
         end
 
         if hasproperty(df, :hour_start)
-            df.duration = Minute.(df.hour_end .- df.hour_start)
+            df.duration = Dates.Minute.(df.hour_end .- df.hour_start)
         elseif hasproperty(df, :date)
-            df.duration = Minute.(df.hour_end .- Time.(df.date))
+            df.duration = Dates.Minute.(df.hour_end .- Dates.Time.(df.date))
         end
     end
 end

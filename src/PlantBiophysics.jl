@@ -4,11 +4,10 @@ module PlantBiophysics
 using MutableNamedTuples
 
 # For IO:
-using YAML
-using CSV
-using OrderedCollections
-
-using Dates
+import YAML
+import CSV
+import OrderedCollections: OrderedDict
+import Dates
 
 import DataFrames.DataFrame # For convenience transformations
 import DataFrames.Not
@@ -159,10 +158,13 @@ export ConstantGs
 # Temporary structures (to move to another package)
 export Translucent
 export Ignore
+
+# Model helpers
 export get_km, Γ_star, arrhenius, get_J, gs_closure, get_Cᵢⱼ, get_Cᵢᵥ, get_Dₕ
 export init_variables_manual, init_variables, Fvcb_net_assimiliation
 export get_component_type, get_process, get_model, instantiate, get_component_type
 
+# Models
 export AbstractModel
 
 # Components (structures that hold models)

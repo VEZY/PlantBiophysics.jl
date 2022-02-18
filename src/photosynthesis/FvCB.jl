@@ -98,7 +98,7 @@ struct Fvcb{T} <: AbstractAModel
     θ::T
 end
 
-function Fvcb(;Tᵣ = 25.0, VcMaxRef = 200.0, JMaxRef = 250.0, RdRef = 0.6, TPURef = 9999., Eₐᵣ = 46390.0,
+function Fvcb(; Tᵣ = 25.0, VcMaxRef = 200.0, JMaxRef = 250.0, RdRef = 0.6, TPURef = 9999.0, Eₐᵣ = 46390.0,
     O₂ = 210.0, Eₐⱼ = 29680.0, Hdⱼ = 200000.0, Δₛⱼ = 631.88, Eₐᵥ = 58550.0, Hdᵥ = 200000.0,
     Δₛᵥ = 629.26, α = 0.24, θ = 0.7)
 
@@ -110,7 +110,7 @@ function inputs(::Fvcb)
 end
 
 function outputs(::Fvcb)
-(:A, :Gₛ, :Cᵢ)
+    (:A, :Gₛ, :Cᵢ)
 end
 
 Base.eltype(x::Fvcb) = typeof(x).parameters[1]
@@ -230,11 +230,11 @@ function photosynthesis!_(leaf::LeafModels{I,E,<:Fvcb,<:AbstractGsModel,S}, mete
     Km = get_km(Tₖ, Tᵣₖ, leaf.photosynthesis.O₂, constants.R) # effective Michaelis–Menten coefficient for CO2
 
     # Maximum electron transport rate at the given leaf temperature (μmol m-2 s-1):
-    JMax = arrhenius(leaf.photosynthesis.JMaxRef,leaf.photosynthesis.Eₐⱼ,Tₖ,Tᵣₖ,
-                        leaf.photosynthesis.Hdⱼ,leaf.photosynthesis.Δₛⱼ,constants.R)
+    JMax = arrhenius(leaf.photosynthesis.JMaxRef, leaf.photosynthesis.Eₐⱼ, Tₖ, Tᵣₖ,
+        leaf.photosynthesis.Hdⱼ, leaf.photosynthesis.Δₛⱼ, constants.R)
     # Maximum rate of Rubisco activity at the given leaf temperature (μmol m-2 s-1):
-    VcMax = arrhenius(leaf.photosynthesis.VcMaxRef,leaf.photosynthesis.Eₐᵥ,Tₖ,Tᵣₖ,
-                        leaf.photosynthesis.Hdᵥ,leaf.photosynthesis.Δₛᵥ,constants.R)
+    VcMax = arrhenius(leaf.photosynthesis.VcMaxRef, leaf.photosynthesis.Eₐᵥ, Tₖ, Tᵣₖ,
+        leaf.photosynthesis.Hdᵥ, leaf.photosynthesis.Δₛᵥ, constants.R)
     # Rate of mitochondrial respiration at the given leaf temperature (μmol m-2 s-1):
     Rd = arrhenius(leaf.photosynthesis.RdRef, leaf.photosynthesis.Eₐᵣ, Tₖ, Tᵣₖ, constants.R)
     # Rd is also described as the CO2 release in the light by processes other than the PCO
@@ -254,7 +254,7 @@ function photosynthesis!_(leaf::LeafModels{I,E,<:Fvcb,<:AbstractGsModel,S}, mete
     Wⱼ = Vⱼ * (Cᵢⱼ - Γˢ) / (Cᵢⱼ + 2.0 * Γˢ) # also called Aⱼ
     # See Von Caemmerer, Susanna. 2000. Biochemical models of leaf photosynthesis.
     # Csiro publishing, eq. 2.23.
-        # NB: here the equation is modified because we use Vⱼ instead of J, but it is the same.
+    # NB: here the equation is modified because we use Vⱼ instead of J, but it is the same.
 
     # If Rd is larger than Wⱼ, no assimilation:
     if Wⱼ - Rd < 1.0e-6

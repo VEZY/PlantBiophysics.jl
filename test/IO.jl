@@ -5,7 +5,7 @@ file = "inputs/models/plant_coffee.yml"
 @testset "read_model()" begin
     model = read_model(file)
 
-    @test all([haskey(model, i) for i in ["Metamer","Leaf"]])
+    @test all([haskey(model, i) for i in ["Metamer", "Leaf"]])
 
     model = model["Leaf"]
     # @test typeof(model)
@@ -42,5 +42,5 @@ var_names = Dict(:temperature => :T, :relativeHumidity => :Rh, :wind => :Wind, :
 
     @test typeof(meteo) <: Weather
     @test typeof(meteo) <: Weather
-    @test NamedTuple(meteo.metadata) == (;name = "Aquiares", latitude = 15.0, altitude = 100.0, use = [:Rh, :clearness], file = file)
+    @test NamedTuple(meteo.metadata) == (; name = "Aquiares", latitude = 15.0, altitude = 100.0, use = [:Rh, :clearness], file = file)
 end;
