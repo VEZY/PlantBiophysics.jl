@@ -7,6 +7,7 @@ using MutableNamedTuples
 import YAML
 import CSV
 import OrderedCollections: OrderedDict
+import MultiScaleTreeGraph: traverse!
 import Dates
 
 import DataFrames.DataFrame # For convenience transformations
@@ -75,6 +76,9 @@ include("fitting/fit_FvCB.jl")
 
 # Model evaluation
 include("evaluation/statistics.jl")
+
+# Compatibility with MultiScaleTreeGraph.jl
+include("mtg/init_mtg_models.jl")
 
 # Depreciations
 include("depreciations/models.jl")
@@ -163,6 +167,7 @@ export Ignore
 export get_km, Γ_star, arrhenius, get_J, gs_closure, get_Cᵢⱼ, get_Cᵢᵥ, get_Dₕ
 export init_variables_manual, init_variables, Fvcb_net_assimiliation
 export get_component_type, get_process, get_model, instantiate, get_component_type
+export init_mtg_models!
 
 # Models
 export AbstractModel
