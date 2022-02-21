@@ -326,23 +326,23 @@ end
 
 
 """
-    get_status(component)
-    get_status(components::AbstractArray{<:AbstractComponentModel})
-    get_status(components::AbstractDict{T,<:AbstractComponentModel})
+    status(component)
+    status(components::AbstractArray{<:AbstractComponentModel})
+    status(components::AbstractDict{T,<:AbstractComponentModel})
 
 Get a component status, *i.e.* the state of the input (and output) variables.
 
 See also [`is_initialised`](@ref) and [`to_initialise`](@ref)
 """
-function get_status(component)
+function status(component)
     component.status
 end
 
-function get_status(components::T) where {T<:AbstractArray{<:AbstractComponentModel}}
+function status(components::T) where {T<:AbstractArray{<:AbstractComponentModel}}
     [i.status for i in components]
 end
 
-function get_status(components::T) where {T<:AbstractDict{N,<:AbstractComponentModel} where {N}}
+function status(components::T) where {T<:AbstractDict{N,<:AbstractComponentModel} where {N}}
     Dict([k => v.status for (k, v) in components])
 end
 

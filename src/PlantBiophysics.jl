@@ -180,7 +180,7 @@ export LeafModels
 export fit
 
 # Convenience functions
-export DataFrame, copy, getindex
+export DataFrame, copy, getindex, status
 
 # Model evaluation
 export EF, RMSE, dr
