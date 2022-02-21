@@ -65,7 +65,7 @@ LeafModels(photosynthesis = Fvcb(),Cᵢ = 380.0)
 LeafModels(photosynthesis = Fvcb(), energy = Monteith(), Cᵢ = 380.0, Tₗ = 20.0)
 ```
 """
-struct LeafModels{I <: Union{Missing,AbstractInterceptionModel},E <: Union{Missing,AbstractEnergyModel},A <: Union{Missing,AbstractAModel},Gs <: Union{Missing,AbstractGsModel},S <: Union{MutableNamedTuple,Vector{MutableNamedTuple}}} <: AbstractComponentModel
+struct LeafModels{I<:Union{Missing,AbstractInterceptionModel},E<:Union{Missing,AbstractEnergyModel},A<:Union{Missing,AbstractAModel},Gs<:Union{Missing,AbstractGsModel},S<:Union{MutableNamedTuple,Vector{MutableNamedTuple}}} <: AbstractComponentModel
     interception::I
     energy::E
     photosynthesis::A
@@ -73,8 +73,8 @@ struct LeafModels{I <: Union{Missing,AbstractInterceptionModel},E <: Union{Missi
     status::S
 end
 
-function LeafModels(;interception = missing, energy = missing,
-                photosynthesis = missing, stomatal_conductance = missing,status...)
+function LeafModels(; interception = missing, energy = missing,
+    photosynthesis = missing, stomatal_conductance = missing, status...)
     status_vals = collect(values(status))
 
     length_status = [length(i) for i in status_vals]
@@ -108,7 +108,7 @@ function LeafModels(;interception = missing, energy = missing,
         status = status_array
     else
         status = init_variables_manual(interception, energy, photosynthesis,
-            stomatal_conductance;status...)
+            stomatal_conductance; status...)
     end
 
     LeafModels(interception, energy, photosynthesis, stomatal_conductance, status)
@@ -120,7 +120,7 @@ end
 
 Copy a [`LeafModels`](@ref), eventually with new values for the status.
 """
-function Base.copy(l::T) where T <: LeafModels
+function Base.copy(l::T) where {T<:LeafModels}
     LeafModels(
         l.interception,
         l.energy,
@@ -130,7 +130,7 @@ function Base.copy(l::T) where T <: LeafModels
     )
 end
 
-function Base.copy(l::T, status) where T <: LeafModels
+function Base.copy(l::T, status) where {T<:LeafModels}
     LeafModels(
         l.interception,
         l.energy,
@@ -145,7 +145,7 @@ end
 
 Copy an array-alike of [`LeafModels`](@ref)
 """
-function Base.copy(l::T) where T <: AbstractArray{<:LeafModels}
+function Base.copy(l::T) where {T<:AbstractArray{<:LeafModels}}
     return [copy(i) for i in l]
 end
 
@@ -154,30 +154,60 @@ end
 
 Copy a Dict-alike of [`LeafModels`](@ref)
 """
-function Base.copy(l::T) where {T <: AbstractDict{N,<:AbstractComponentModel} where N}
-    return  Dict([k => v for (k, v) in l])
+function Base.copy(l::T) where {T<:AbstractDict{N,<:AbstractComponentModel} where {N}}
+    return Dict([k => v for (k, v) in l])
 end
 
 
 """
-    getindex(component::LeafModels,i)
+    getindex(component::LeafModels, i::Integer)
 
 Get a LeafModels component at time-step `i`.
 """
-function getindex(component::LeafModels,i) where {I,E,A,Gs}
+function Base.getindex(component::LeafModels, i::Integer) where {I,E,A,Gs}
     LeafModels(
-            component.interception,
-            component.energy,
-            component.photosynthesis,
-            component.stomatal_conductance,
-            component.status[i]
+        component.interception,
+        component.energy,
+        component.photosynthesis,
+        component.stomatal_conductance,
+        component.status[i]
     )
 end
 
 # Same but with a status with only one time-step (will return the same each-time)
-function getindex(component::LeafModels{I,E,A,Gs,<:MutableNamedTuples.MutableNamedTuple},i) where {I,E,A,Gs}
+function Base.getindex(component::LeafModels{I,E,A,Gs,<:MutableNamedTuples.MutableNamedTuple}, i) where {I,E,A,Gs}
     component
 end
+
+"""
+    getindex(component::LeafModels, key::Symbol)
+    getindex(component::LeafModels, key)
+
+Get a variable from the status of a LeafModels component.
+
+Carefull, indexing with an integer will return the ith time-step of the status instead.
+
+# Examples
+
+```julia
+lm = LeafModels(
+    energy = Monteith(),
+    photosynthesis = Fvcb(),
+    stomatal_conductance = ConstantGs(0.0, 0.0011),
+    Cᵢ = 380.0, Tₗ = 20.0
+)
+
+lm[:Tₗ]
+```
+"""
+function Base.getindex(component::LeafModels, key::T) where {I,E,A,Gs,T<:Symbol}
+    getproperty(component.status, key)
+end
+
+function Base.getindex(component::LeafModels, key) where {I,E,A,Gs}
+    getproperty(component.status, Symbol(key))
+end
+
 
 """
     DataFrame(components <: AbstractArray{<:AbstractComponentModel})
@@ -186,9 +216,9 @@ end
 Fetch the data from a [`AbstractComponentModel`](@ref) (or an Array/Dict of) status into
 a DataFrame.
 """
-function DataFrame(components::T) where T <: Union{AbstractComponentModel,AbstractArray{<:AbstractComponentModel}}
+function DataFrame(components::T) where {T<:Union{AbstractComponentModel,AbstractArray{<:AbstractComponentModel}}}
     df = DataFrame[]
-    for (k,v) in enumerate(components)
+    for (k, v) in enumerate(components)
         df_c = DataFrame(v)
         df_c[!, :component] .= k
         push!(df, df_c)
@@ -196,7 +226,7 @@ function DataFrame(components::T) where T <: Union{AbstractComponentModel,Abstra
     reduce(vcat, df)
 end
 
-function DataFrame(components::T) where {T <: AbstractDict{N,<:AbstractComponentModel} where N}
+function DataFrame(components::T) where {T<:AbstractDict{N,<:AbstractComponentModel} where {N}}
     df = DataFrame[]
     for (k, v) in components
         df_c = DataFrame(v)
@@ -207,8 +237,8 @@ function DataFrame(components::T) where {T <: AbstractDict{N,<:AbstractComponent
 end
 
 # NB: could use dispatch on concrete types but would enforce specific implementation for each...
-function DataFrame(components::T) where T <: AbstractComponentModel
-    status = get_status(components)
+function DataFrame(components::T) where {T<:AbstractComponentModel}
+    status = status(components)
     if typeof(status) == Vector{MutableNamedTuples.MutableNamedTuple}
         DataFrame([(NamedTuple(j)..., timestep = i) for (i, j) in enumerate(status)])
     else
@@ -239,13 +269,13 @@ the component. Values are set to `0.0` if not provided as VarArgs (see examples)
 Component(energy = Monteith())
 ```
 """
-struct Component{I <: Union{Missing,AbstractInterceptionModel},E <: Union{Missing,AbstractEnergyModel},S <: MutableNamedTuple} <: AbstractComponentModel
+struct Component{I<:Union{Missing,AbstractInterceptionModel},E<:Union{Missing,AbstractEnergyModel},S<:MutableNamedTuple} <: AbstractComponentModel
     interception::I
     energy::E
     status::S
 end
 
-function Component(;interception = missing, energy = missing,status...)
-    status = init_variables_manual(interception, energy;status...)
+function Component(; interception = missing, energy = missing, status...)
+    status = init_variables_manual(interception, energy; status...)
     Component(interception, energy, status)
 end
