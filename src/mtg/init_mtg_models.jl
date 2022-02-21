@@ -10,7 +10,7 @@ and if not found, returns an error.
 ```julia
 # Read the file
 file = joinpath(dirname(dirname(pathof(PlantBiophysics))),"test","inputs","scene","opf","coffee.opf")
-mtg = read_mtg(file)
+mtg = read_opf(file)
 
 # Declare our models:
 models = Dict(
@@ -51,6 +51,7 @@ function init_mtg_models!(mtg, models::Dict{String,<:AbstractModel}; verbose = t
     end
 
     # Get which model has values that needs to be further initialised:
+
     to_init = Dict()
     for (key, value) in models
         init = to_initialise(value)
@@ -62,43 +63,44 @@ function init_mtg_models!(mtg, models::Dict{String,<:AbstractModel}; verbose = t
     # If some values need initialisation, check first if they are found as MTG attributes, and if they do, use them:
     if length(to_init) > 0
         attrs_missing = Dict(i => Set{Symbol}() for i in keys(to_init))
-        # node = get_node(mtg, 816)
-        traverse!(
-            mtg,
-            function (node)
-                # If the component has models associated to it
-                if haskey(models, node.MTG.symbol)
+        # node = get_node(mtg, 2070)
+        traverse!(mtg) do node
+            # If the component has models associated to it
+            if haskey(models, node.MTG.symbol)
 
-                    # If the component needs further initialisations
-                    if haskey(to_init, node.MTG.symbol)
-                        # Search if any is missing:
-                        attr_not_found = setdiff(
-                            to_init[node.MTG.symbol],
-                            collect(keys(node.attributes))
-                        )
+                # If the component needs further initialisations
+                if haskey(to_init, node.MTG.symbol)
+                    # Search if any is missing:
+                    attr_not_found = setdiff(
+                        to_init[node.MTG.symbol],
+                        collect(keys(node.attributes))
+                    )
 
-                        if length(attr_not_found) == 0
-                            # If not, initialise the LeafModels using attributes
-                            @info "Initialising $(to_init[node.MTG.symbol]) using node attributes" maxlog = 1
-                            models_node = models[node.MTG.symbol]
-                            init_status!(
-                                models_node;
-                                NamedTuple(i => node[i] for i in to_init[node.MTG.symbol])...
-                            )
-                            node[:leaf_model] = models_node
-                        else
-                            # If some initialisations are not available from the node attributes:
-                            for i in attr_not_found
-                                push!(attrs_missing[node.MTG.symbol], i)
-                            end
+                    if length(attr_not_found) == 0
+                        # If not, initialise the LeafModels using attributes
+                        @info "Initialising $(to_init[node.MTG.symbol]) using node attributes" maxlog = 1
+                        models_node = copy(models[node.MTG.symbol])
+                        if node[:Rₛ] == 416.68402099609375
+                            print("node", node.id)
                         end
+
+                        init_status!(
+                            models_node;
+                            NamedTuple(i => node[i] for i in to_init[node.MTG.symbol])...
+                        )
+                        node[:leaf_model] = models_node
                     else
-                        # Else we initialise as is
-                        node[:leaf_status] = models[node.MTG.symbol]
+                        # If some initialisations are not available from the node attributes:
+                        for i in attr_not_found
+                            push!(attrs_missing[node.MTG.symbol], i)
+                        end
                     end
+                else
+                    # Else we initialise as is
+                    node[:leaf_status] = models[node.MTG.symbol]
                 end
             end
-        )
+        end
         if any([length(value) > 0 for (key, value) in attrs_missing])
             err_msg = [string("\n", key, ": [", join(value, ", ", " and "), "]") for (key, value) in attrs_missing]
             @error string(
@@ -106,6 +108,10 @@ function init_mtg_models!(mtg, models::Dict{String,<:AbstractModel}; verbose = t
                 join(err_msg, ", ", " and ")
             )
         end
+    elseif verbose
+        @info string(
+            "All models are aleady initialised. Make a new model if you want to update the values."
+        )
     end
 
     return nothing

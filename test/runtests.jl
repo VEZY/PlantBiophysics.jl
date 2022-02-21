@@ -4,6 +4,7 @@ using MutableNamedTuples
 using Test
 using Dates
 using DataFrames
+using MultiScaleTreeGraph, PlantGeom
 
 @testset "File IO" begin
     include("IO.jl")
@@ -27,4 +28,8 @@ end
 
 @testset "Energy balance" begin
     include("energy_balance.jl")
+end
+
+@testset "MTG compatibility" begin
+    include("test-mtg.jl")
 end
