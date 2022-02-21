@@ -50,3 +50,18 @@ function pull_status(node)
         append!(node, node[:leaf_model].status)
     end
 end
+
+
+function pull_status(node, key::T) where {T<:Union{AbstractArray,Tuple}}
+    if node[:leaf_model] !== nothing
+        st = node[:leaf_model].status
+        vars = findall(x -> x in key, collect(keys(st)))
+        append!(node, Dict(keys(st)[i] => st[i] for i in vars))
+    end
+end
+
+function pull_status(node, key::T) where {T<:Symbol}
+    if node[:leaf_model] !== nothing
+        append!(node, (; key => getproperty(node[:leaf_model].status, key)))
+    end
+end

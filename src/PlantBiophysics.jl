@@ -79,6 +79,7 @@ include("evaluation/statistics.jl")
 
 # Compatibility with MultiScaleTreeGraph.jl
 include("mtg/init_mtg_models.jl")
+include("mtg/mtg_helpers.jl")
 
 # Depreciations
 include("depreciations/models.jl")
@@ -180,7 +181,7 @@ export LeafModels
 export fit
 
 # Convenience functions
-export DataFrame, copy, getindex, status
+export DataFrame, copy, getindex, status, pull_status
 
 # Model evaluation
 export EF, RMSE, dr
