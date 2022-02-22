@@ -51,8 +51,9 @@ For more examples, please read the documentation.
 - [x] Add stomatal + boundary layer conductance models
 - [x] Add energy balance model, coupled with photosynthesis amd stomatal conductance models
 - [x] Make the functions work on the output from `read_model`.
+- [ ] Rename skyFraction into sky_fraction
 - [ ] Add a new conductance model using the version from Duursma, Remko A, Christopher J Blackman, Rosana Lop, et K Martin-StPaul. 2018. « On the Minimum Leaf Conductance: Its Role in Models of Plant Water Use, and Ecological and Environmental Controls ». New Phytologist, 13.
-- [ ] Make the functions compatible with an MTG, e.g. apply photosynthesis to an MTG, and use the right method for each node. NB: I think the models should be a field of the node.
+- [x] Make the functions compatible with an MTG, e.g. apply photosynthesis to an MTG, and use the right method for each node. NB: I think the models should be a field of the node.
 - [ ] Make the functions compatible with several meteorological time-steps
   - [x] Add a new struct for that: Weather
   - [x] Do it for energy_balance
@@ -60,6 +61,7 @@ For more examples, please read the documentation.
   - [ ] stomatal conductance
   - [ ] Add tests for each
   - [ ] Update the doc!
+  - [ ] Check if it works with MTGs
 - [ ] Evaluate using Schymanski et al. (2017) data + leaf measurements models (in progress)
 - [ ] Check Schymanski input: is Rs = Rnleaf ok? Because Rs is Rn - Rll.
 - [ ] Add more documentation + tutorial:
@@ -105,12 +107,12 @@ Leuning et al. (1995)
 
 Baldocchi, Dennis. 1994. « An analytical solution for coupled leaf photosynthesis and
 stomatal conductance models ». Tree Physiology 14 (7-8‑9): 1069‑79.
-https://doi.org/10.1093/treephys/14.7-8-9.1069.
+<https://doi.org/10.1093/treephys/14.7-8-9.1069>.
 
 Duursma, R. A., et B. E. Medlyn. 2012. « MAESPA: a model to study interactions between water
 limitation, environmental drivers and vegetation function at tree and stand levels, with an
 example application to [CO2] × drought interactions ». Geoscientific Model Development 5
-(4): 919‑40. https://doi.org/10.5194/gmd-5-919-2012.
+(4): 919‑40. <https://doi.org/10.5194/gmd-5-919-2012>.
 
 Farquhar, G. D., S. von von Caemmerer, et J. A. Berry. 1980. « A biochemical model of
 photosynthetic CO2 assimilation in leaves of C3 species ». Planta 149 (1): 78‑90.
@@ -119,11 +121,11 @@ Leuning, R., F. M. Kelliher, DGG de Pury, et E.-D. SCHULZE. 1995. « LeafModels
 photosynthesis, conductance and transpiration: scaling from leaves to canopies ». Plant,
 Cell & Environment 18 (10): 1183‑1200.
 
-Medlyn, B. E., E. Dreyer, D. Ellsworth, M. Forstreuter, P. C. Harley, M. U. F. Kirschbaum, X. Le Roux, et al. 2002. « Temperature response of parameters of a biochemically based model of photosynthesis. II. A review of experimental data ». Plant, Cell & Environment 25 (9): 1167‑79. https://doi.org/10.1046/j.1365-3040.2002.00891.x.
+Medlyn, B. E., E. Dreyer, D. Ellsworth, M. Forstreuter, P. C. Harley, M. U. F. Kirschbaum, X. Le Roux, et al. 2002. « Temperature response of parameters of a biochemically based model of photosynthesis. II. A review of experimental data ». Plant, Cell & Environment 25 (9): 1167‑79. <https://doi.org/10.1046/j.1365-3040.2002.00891.x>.
 
 Monteith, John L., et Mike H. Unsworth. 2013. « Chapter 13 - Steady-State Heat Balance: (i) Water Surfaces, Soil, and Vegetation ». In Principles of Environmental Physics (Fourth Edition), edited by John L. Monteith et Mike H. Unsworth, 217‑47. Boston: Academic Press.
 
 Schymanski, Stanislaus J., et Dani Or. 2017. « LeafModels-Scale Experiments Reveal an Important
-Omission in the Penman–Monteith Equation ». Hydrology and Earth System Sciences 21 (2): 685‑706. https://doi.org/10.5194/hess-21-685-2017.
+Omission in the Penman–Monteith Equation ». Hydrology and Earth System Sciences 21 (2): 685‑706. <https://doi.org/10.5194/hess-21-685-2017>.
 
-Vezy, Rémi, Mathias Christina, Olivier Roupsard, Yann Nouvellon, Remko Duursma, Belinda Medlyn, Maxime Soma, et al. 2018. « Measuring and modelling energy partitioning in canopies of varying complexity using MAESPA model ». Agricultural and Forest Meteorology 253‑254 (printemps): 203‑17. https://doi.org/10.1016/j.agrformet.2018.02.005.
+Vezy, Rémi, Mathias Christina, Olivier Roupsard, Yann Nouvellon, Remko Duursma, Belinda Medlyn, Maxime Soma, et al. 2018. « Measuring and modelling energy partitioning in canopies of varying complexity using MAESPA model ». Agricultural and Forest Meteorology 253‑254 (printemps): 203‑17. <https://doi.org/10.1016/j.agrformet.2018.02.005>.

@@ -1,5 +1,5 @@
 """
-    pull_status(node)
+    pull_status!(node)
 
 Copy the status of a node's LeafModel (*i.e.* the outputs of the simulations) into the MTG
 attributes. This function is used when we need to compute further the simulation outputs with
@@ -38,30 +38,30 @@ transform!(
 init_mtg_models!(mtg, models)
 
 # Make a simulation
-transform!(mtg, :leaf_model => (x -> energy_balance!(x, meteo)), ignore_nothing = true)
+transform!(mtg, :models => (x -> energy_balance!(x, meteo)), ignore_nothing = true)
 # Pull the simulation results into the MTG attributes:
-transform!(mtg, pull_status)
+transform!(mtg, pull_status!)
 # Now the simulated variables are available from the MTG attributes field:
 names(mtg)
 ```
 """
-function pull_status(node)
-    if node[:leaf_model] !== nothing
-        append!(node, node[:leaf_model].status)
+function pull_status!(node)
+    if node[:models] !== nothing
+        append!(node, node[:models].status)
     end
 end
 
 
-function pull_status(node, key::T) where {T<:Union{AbstractArray,Tuple}}
-    if node[:leaf_model] !== nothing
-        st = node[:leaf_model].status
+function pull_status!(node, key::T) where {T<:Union{AbstractArray,Tuple}}
+    if node[:models] !== nothing
+        st = node[:models].status
         vars = findall(x -> x in key, collect(keys(st)))
         append!(node, Dict(keys(st)[i] => st[i] for i in vars))
     end
 end
 
-function pull_status(node, key::T) where {T<:Symbol}
-    if node[:leaf_model] !== nothing
-        append!(node, (; key => getproperty(node[:leaf_model].status, key)))
+function pull_status!(node, key::T) where {T<:Symbol}
+    if node[:models] !== nothing
+        append!(node, (; key => getproperty(node[:models].status, key)))
     end
 end

@@ -80,15 +80,12 @@ function init_mtg_models!(mtg, models::Dict{String,<:AbstractModel}; verbose = t
                         # If not, initialise the LeafModels using attributes
                         @info "Initialising $(to_init[node.MTG.symbol]) using node attributes" maxlog = 1
                         models_node = copy(models[node.MTG.symbol])
-                        if node[:Rₛ] == 416.68402099609375
-                            print("node", node.id)
-                        end
 
                         init_status!(
                             models_node;
                             NamedTuple(i => node[i] for i in to_init[node.MTG.symbol])...
                         )
-                        node[:leaf_model] = models_node
+                        node[:models] = models_node
                     else
                         # If some initialisations are not available from the node attributes:
                         for i in attr_not_found
