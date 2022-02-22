@@ -25,14 +25,14 @@ struct Monteith{T,S} <: AbstractEnergyModel
     ΔT::T
 end
 
-function Monteith(;aₛₕ = 2, aₛᵥ = 1, ε = 0.955, maxiter = 10, ΔT = 0.01)
+function Monteith(; aₛₕ = 2, aₛᵥ = 1, ε = 0.955, maxiter = 10, ΔT = 0.01)
     param_int = promote(aₛₕ, aₛᵥ, maxiter)
     param_float = promote(ε, ΔT)
     Monteith(param_int[1], param_int[2], param_float[1], param_int[3], param_float[2])
 end
 
 function inputs(::Monteith)
-    (:Rₛ, :skyFraction, :d)
+    (:Rₛ, :sky_fraction, :d)
 end
 
 function outputs(::Monteith)
@@ -54,14 +54,14 @@ the energy balance using the mass flux (~ Rn - λE).
 - `leaf::LeafModels{.,<:Monteith,.,.,.}`: A [`LeafModels`](@ref) struct holding the parameters for
 the model with initialisations for:
     - `Rₛ` (W m-2): net shortwave radiation (PAR + NIR). Often computed from a light interception model
-    - `skyFraction` (0-2): view factor between the object and the sky for both faces (see details).
+    - `sky_fraction` (0-2): view factor between the object and the sky for both faces (see details).
     - `d` (m): characteristic dimension, *e.g.* leaf width (see eq. 10.9 from Monteith and Unsworth, 2013).
 - `meteo`: meteorology structure, see [`Atmosphere`](@ref)
 - `constants = Constants()`: physical constants. See [`Constants`](@ref) for more details
 
 # Details
 
-The skyFraction in the variables is equal to 2 if all the leaf is viewing is sky (e.g. in a
+The sky_fraction in the variables is equal to 2 if all the leaf is viewing is sky (e.g. in a
 controlled chamber), 1 if the leaf is *e.g.* up on the canopy where the upper side of the
 leaf sees the sky, and the side bellow sees soil + other leaves that are all considered at
 the same temperature than the leaf, or less than 1 if it is partly shaded.
@@ -82,7 +82,7 @@ meteo = Atmosphere(T = 22.0, Wind = 0.8333, P = 101.325, Rh = 0.4490995)
 leaf = LeafModels(energy = Monteith(),
             photosynthesis = Fvcb(),
             stomatal_conductance = ConstantGs(0.0, 0.0011),
-            Rₛ = 13.747, skyFraction = 1.0, d = 0.03)
+            Rₛ = 13.747, sky_fraction = 1.0, d = 0.03)
 PlantBiophysics.energy_balance!_(leaf,meteo)
 leaf.status.Rn
 julia> 12.902547446281233
@@ -91,7 +91,7 @@ julia> 12.902547446281233
 leaf = LeafModels(energy = Monteith(),
             photosynthesis = Fvcb(),
             stomatal_conductance = Medlyn(0.03, 12.0),
-            Rₛ = 13.747, skyFraction = 1.0, PPFD = 1500.0, d = 0.03)
+            Rₛ = 13.747, sky_fraction = 1.0, PPFD = 1500.0, d = 0.03)
 
 PlantBiophysics.energy_balance!_(leaf,meteo)
 leaf.status.Rn
@@ -144,23 +144,23 @@ function energy_balance!_(leaf::LeafModels{I,<:Monteith,A,Gs,S}, meteo::Abstract
 
         # Stomatal resistance to water vapor
         Rsᵥ = 1.0 / (gsc_to_gsw(mol_to_ms(leaf.status.Gₛ, meteo.T, meteo.P, constants.R, constants.K₀),
-                                constants.Gsc_to_Gsw))
+            constants.Gsc_to_Gsw))
 
         # Re-computing the net radiation according to simulated leaf temperature:
-        leaf.status.Rₗₗ = net_longwave_radiation(leaf.status.Tₗ,meteo.T,leaf.energy.ε,meteo.ε,
-                                                leaf.status.skyFraction,constants.K₀,constants.σ)
+        leaf.status.Rₗₗ = net_longwave_radiation(leaf.status.Tₗ, meteo.T, leaf.energy.ε, meteo.ε,
+            leaf.status.sky_fraction, constants.K₀, constants.σ)
         #= ? NB: we use the sky fraction here (0-2) instead of the view factor (0-1) because:
             - we consider both sides of the leaf at the same time (1 -> leaf sees sky on one face)
             - we consider all objects in the scene have the same temperature as the leaf
             of interest except the atmosphere. So the leaf exchange thermal energy only with
             the atmosphere. =#
-        # leaf.status.Rₗₗ = (grey_body(meteo.T,1.0) - grey_body(leaf.status.Tₗ, 1.0))*leaf.status.skyFraction
+        # leaf.status.Rₗₗ = (grey_body(meteo.T,1.0) - grey_body(leaf.status.Tₗ, 1.0))*leaf.status.sky_fraction
 
         leaf.status.Rn = leaf.status.Rₛ + leaf.status.Rₗₗ
 
         # Leaf boundary conductance for heat (m s-1), one sided:
         leaf.status.Gbₕ = gbₕ_free(meteo.T, leaf.status.Tₗ, leaf.status.d, constants.Dₕ₀) +
-                             gbₕ_forced(meteo.Wind, leaf.status.d)
+                          gbₕ_forced(meteo.Wind, leaf.status.d)
         # NB, in MAESPA we use Rni so we add the radiation conductance also (not here)
 
         # Leaf boundary resistance for heat (s m-1):
@@ -171,7 +171,7 @@ function energy_balance!_(leaf::LeafModels{I,<:Monteith,A,Gs,S}, meteo::Abstract
 
         # Leaf boundary resistance for CO₂ (mol[CO₂] m-2 s-1):
         leaf.status.Gbc = ms_to_mol(leaf.status.Gbₕ, meteo.T, meteo.P, constants.R, constants.K₀) /
-            constants.Gbc_to_Gbₕ
+                          constants.Gbc_to_Gbₕ
 
         # Update Cₛ using boundary layer conductance to CO₂ and assimilation:
         leaf.status.Cₛ = min(meteo.Cₐ, meteo.Cₐ - leaf.status.A / (leaf.status.Gbc * leaf.energy.aₛᵥ))
@@ -180,27 +180,29 @@ function energy_balance!_(leaf::LeafModels{I,<:Monteith,A,Gs,S}, meteo::Abstract
         γˢ = γ_star(meteo.γ, leaf.energy.aₛₕ, leaf.energy.aₛᵥ, Rbᵥ, Rsᵥ, Rbₕ)
 
         leaf.status.λE = latent_heat(leaf.status.Rn, meteo.VPD, γˢ, Rbₕ, meteo.Δ, meteo.ρ,
-                                        leaf.energy.aₛₕ, constants.Cₚ)
+            leaf.energy.aₛₕ, constants.Cₚ)
 
         # If potential evaporation is needed, here is how to compute it:
         # γˢₑ = γ_star(meteo.γ, energy.aₛₕ, 1, Rbᵥ, 1.0e-9, Rbₕ) # Rsᵥ is inf. low
         # Ev = latent_heat(leaf.status.Rn, meteo.VPD, γˢₑ, Rbₕ, meteo.Δ, meteo.ρ, energy.aₛₕ, constants.Cₚ)
 
         Tₗ_new = meteo.T + (leaf.status.Rn - leaf.status.λE) /
-                (meteo.ρ * constants.Cₚ * (leaf.energy.aₛₕ / Rbₕ))
+                           (meteo.ρ * constants.Cₚ * (leaf.energy.aₛₕ / Rbₕ))
 
-        if abs(Tₗ_new - leaf.status.Tₗ) <= leaf.energy.ΔT break end
+        if abs(Tₗ_new - leaf.status.Tₗ) <= leaf.energy.ΔT
+            break
+        end
 
         leaf.status.Tₗ = Tₗ_new
 
         # Vapour pressure difference between the surface and the saturation vapour pressure:
-        leaf.status.Dₗ = e_sat(leaf.status.Tₗ) - e_sat(meteo.T) *  meteo.Rh
+        leaf.status.Dₗ = e_sat(leaf.status.Tₗ) - e_sat(meteo.T) * meteo.Rh
 
         iter += 1
     end
 
     leaf.status.H = sensible_heat(leaf.status.Rn, meteo.VPD, γˢ, Rbₕ, meteo.Δ, meteo.ρ,
-                                    leaf.energy.aₛₕ, constants.Cₚ)
+        leaf.energy.aₛₕ, constants.Cₚ)
 
     leaf.status.iter = iter
 
@@ -251,7 +253,7 @@ latent_heat(300.0, 2.0, 0.1461683, 50.0, Δ, ρ, 2.0)
 ```
 """
 function latent_heat(Rn, VPD, γˢ, Rbₕ, Δ, ρ, aₛₕ, Cₚ)
-  (Δ * Rn + ρ * Cₚ * VPD * (aₛₕ / Rbₕ)) / (Δ + γˢ)
+    (Δ * Rn + ρ * Cₚ * VPD * (aₛₕ / Rbₕ)) / (Δ + γˢ)
 end
 
 function latent_heat(Rn, VPD, γˢ, Rbₕ, Δ, ρ, aₛₕ)
@@ -293,9 +295,9 @@ sensible_heat(300.0, 2.0, 0.1461683, 50.0, Δ, ρ, 2.0)
 ```
 """
 function sensible_heat(Rn, VPD, γˢ, Rbₕ, Δ, ρ, aₛₕ, Cₚ)
-  (γˢ * Rn - ρ * Cₚ * VPD * (aₛₕ / Rbₕ)) / (Δ + γˢ)
+    (γˢ * Rn - ρ * Cₚ * VPD * (aₛₕ / Rbₕ)) / (Δ + γˢ)
 end
 
 function sensible_heat(Rn, VPD, γˢ, Rbₕ, Δ, ρ, aₛₕ)
-  sensible_heat(Rn, VPD, γˢ, Rbₕ, Δ, ρ, aₛₕ, Constants().Cₚ)
+    sensible_heat(Rn, VPD, γˢ, Rbₕ, Δ, ρ, aₛₕ, Constants().Cₚ)
 end

@@ -37,7 +37,7 @@ leaf = LeafModels(geometry = Geom1D(0.03),
             energy = Monteith(),
             photosynthesis = Fvcb(),
             stomatal_conductance = Medlyn(0.03, 12.0),
-            Rₛ = 13.747, skyFraction = 1.0, PPFD = 1500.0)
+            Rₛ = 13.747, sky_fraction = 1.0, PPFD = 1500.0)
 
 energy_balance(leaf,meteo)
 ```
@@ -51,7 +51,7 @@ For more examples, please read the documentation.
 - [x] Add stomatal + boundary layer conductance models
 - [x] Add energy balance model, coupled with photosynthesis amd stomatal conductance models
 - [x] Make the functions work on the output from `read_model`.
-- [ ] Rename skyFraction into sky_fraction
+- [x] Rename skyFraction into sky_fraction
 - [ ] Add a new conductance model using the version from Duursma, Remko A, Christopher J Blackman, Rosana Lop, et K Martin-StPaul. 2018. « On the Minimum Leaf Conductance: Its Role in Models of Plant Water Use, and Ecological and Environmental Controls ». New Phytologist, 13.
 - [x] Make the functions compatible with an MTG, e.g. apply photosynthesis to an MTG, and use the right method for each node. NB: I think the models should be a field of the node.
 - [ ] Make the functions compatible with several meteorological time-steps

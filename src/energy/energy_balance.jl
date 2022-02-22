@@ -20,7 +20,7 @@ At the moment, two models are implemented in the package:
 # Note
 
 Some models need input values for some variables. For example [`Monteith`](@ref) requires a
-value for `Rₛ`, `d` and `skyFraction`. If you read the models from a file, you can
+value for `Rₛ`, `d` and `sky_fraction`. If you read the models from a file, you can
 use [`init_status!`](@ref) (see examples).
 
 
@@ -36,7 +36,7 @@ meteo = Atmosphere(T = 20.0, Wind = 1.0, P = 101.3, Rh = 0.65)
 leaf = LeafModels(energy = Monteith(),
             photosynthesis = Fvcb(),
             stomatal_conductance = Medlyn(0.03, 12.0),
-            Rₛ = 13.747, skyFraction = 1.0, PPFD = 1500.0, d = 0.03)
+            Rₛ = 13.747, sky_fraction = 1.0, PPFD = 1500.0, d = 0.03)
 
 energy_balance(leaf,meteo)
 
@@ -70,7 +70,7 @@ model = read_model(joinpath(dirname(dirname(pathof(PlantBiophysics))),"test","in
 # "https://raw.githubusercontent.com/VEZY/PlantBiophysics/main/test/inputs/models/plant_coffee.yml"
 
 # Initialising the mandatory variables:
-init_status!(model, Rₛ = 13.747, skyFraction = 1.0, PPFD = 1500.0, Tₗ = 25.0, d = 0.03)
+init_status!(model, Rₛ = 13.747, sky_fraction = 1.0, PPFD = 1500.0, Tₗ = 25.0, d = 0.03)
 
 # NB: To know which variables has to be initialised according to the models used, you can use
 # `to_initialise(Component)`, *e.g.*:

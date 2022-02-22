@@ -32,7 +32,7 @@ end;
 @testset "Rₗₗ" begin
     # Testing that both calls return the same value with default parameters:
     @test net_longwave_radiation(25.0, 20.0, 0.955, 1.0, 1.0, constants.K₀, constants.σ) ==
-            net_longwave_radiation(25.0, 20.0, 0.955, 1.0, 1.0)
+          net_longwave_radiation(25.0, 20.0, 0.955, 1.0, 1.0)
     # Example from Cengel (2003), Example 12-7 (p. 627):
     # Cengel, Y, et Transfer Mass Heat. 2003. A practical approach. New York, NY, USA: McGraw-Hill.
     @test net_longwave_radiation(526.85, 226.85000000000002, 0.2, 0.7, 1.0, constants.K₀, constants.σ) ≈ -3625.6066521315793
@@ -45,7 +45,7 @@ end;
     # Reference value:
     ref = (
         Rₛ = 13.747,
-        skyFraction = 1.0,
+        sky_fraction = 1.0,
         d = 0.03,
         Tₗ = 17.659873993789848,
         Rn = 21.266393383716945,
@@ -65,9 +65,9 @@ end;
 
     meteo = Atmosphere(T = 20.0, Wind = 1.0, P = 101.3, Rh = 0.65)
     leaf = LeafModels(energy = Monteith(),
-                photosynthesis = Fvcb(),
-                stomatal_conductance = Medlyn(0.03, 12.0),
-                Rₛ = 13.747, skyFraction = 1.0, PPFD = 1500.0, d = 0.03)
+        photosynthesis = Fvcb(),
+        stomatal_conductance = Medlyn(0.03, 12.0),
+        Rₛ = 13.747, sky_fraction = 1.0, PPFD = 1500.0, d = 0.03)
 
     non_mutating = energy_balance(leaf, meteo)
 
@@ -88,7 +88,7 @@ end;
 # leaf = LeafModels(energy = Monteith(),
 #             photosynthesis = Fvcb(),
 #             stomatal_conductance = Medlyn(0.03, 12.0),
-#             Rₛ = 13.747, skyFraction = 1.0, PPFD = 1500.0, d = 0.03)
+#             Rₛ = 13.747, sky_fraction = 1.0, PPFD = 1500.0, d = 0.03)
 
 # res = DataFrame(:PPFD => Float64[], :A => Float64[])
 # for i in 1:10:1500

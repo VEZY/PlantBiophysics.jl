@@ -25,7 +25,7 @@ leaf = LeafModels(
         photosynthesis = Fvcb(),
         stomatal_conductance = Medlyn(0.03, 12.0),
         Rₛ = meteo[:Ri_SW_f] .* 0.8,
-        skyFraction = 1.0,
+        sky_fraction = 1.0,
         PPFD = meteo[:Ri_SW_f] .* 0.8 .* 0.48 .* 4.57,
         d = 0.03
 )

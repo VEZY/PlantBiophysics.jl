@@ -21,7 +21,7 @@ leaf = LeafModels(
         energy = Monteith(),
         photosynthesis = Fvcb(),
         stomatal_conductance = Medlyn(0.03, 12.0),
-        Rₛ = 13.747 ± 1., skyFraction = 1.0, PPFD = 1500.0 ± 1., d = 0.03 ± 0.001
+        Rₛ = 13.747 ± 1., sky_fraction = 1.0, PPFD = 1500.0 ± 1., d = 0.03 ± 0.001
     )
 
 
@@ -52,7 +52,7 @@ meteo = Atmosphere(T = 15.0 .. 18.0, Wind = 0.8333 ± 0.1, P = 101.325 ± 1., Rh
 leaf = LeafModels(energy = Monteith(),
             photosynthesis = Fvcb(),
             stomatal_conductance = Medlyn(0.03, 12.0),
-            Rₛ = 13.747 ± 1., skyFraction = 1.0, PPFD = 1500.0 ± 1., d = 0.01 .. 0.03)
+            Rₛ = 13.747 ± 1., sky_fraction = 1.0, PPFD = 1500.0 ± 1., d = 0.01 .. 0.03)
 
 energy_balance!(leaf,meteo)
 
@@ -65,7 +65,6 @@ savefig("distributions-example-various.svg"); nothing #hide
 ```
 
 ![](distributions-example-various.svg)
-
 
 ## Plotting
 

@@ -252,7 +252,7 @@ leaf = LeafModels(
         energy = Monteith(),
         photosynthesis = Fvcb(),
         stomatal_conductance = Medlyn(0.03, 12.0),
-        Rₛ = 13.747, skyFraction = 1.0, PPFD = 1500.0, d = 0.03
+        Rₛ = 13.747, sky_fraction = 1.0, PPFD = 1500.0, d = 0.03
     )
 
 energy_balance!(leaf,meteo)

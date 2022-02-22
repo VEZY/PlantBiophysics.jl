@@ -28,7 +28,7 @@ The status field depends on the input models. You can get the variables needed b
 
 - `Rₛ` (W m-2): net shortwave radiation (PAR + NIR). Often computed from a light interception model
 - `PPFD` (μmol m-2 s-1): absorbed Photosynthetic Photon Flux Density
-- `skyFraction` (0-2): view factor between the object and the sky for both faces.
+- `sky_fraction` (0-2): view factor between the object and the sky for both faces.
 
 ## Energy balance model (see [`energy_balance`](@ref))
 

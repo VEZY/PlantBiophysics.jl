@@ -17,14 +17,14 @@ leaf1 = LeafModels(
         energy = Monteith(),
         photosynthesis = Fvcb(),
         stomatal_conductance = Medlyn(0.03, 12.0),
-        Rₛ = 13.747, skyFraction = 1.0, PPFD = 1500.0, d = 0.03
+        Rₛ = 13.747, sky_fraction = 1.0, PPFD = 1500.0, d = 0.03
     )
 
 leaf2 = LeafModels(
         energy = Monteith(),
         photosynthesis = Fvcb(),
         stomatal_conductance = Medlyn(0.03, 12.0),
-        Rₛ = 10., skyFraction = 1.0, PPFD = 1250.0, d = 0.02
+        Rₛ = 10., sky_fraction = 1.0, PPFD = 1250.0, d = 0.02
     )
 
 
@@ -51,7 +51,7 @@ leaf1 = LeafModels(
         photosynthesis = Fvcb(),
         stomatal_conductance = Medlyn(0.03, 12.0),
         Rₛ = [5., 10., 20.],
-        skyFraction = 1.0,
+        sky_fraction = 1.0,
         PPFD = [500., 1000., 1500.0],
         d = 0.03
     )
@@ -61,7 +61,7 @@ leaf2 = LeafModels(
         photosynthesis = Fvcb(),
         stomatal_conductance = Medlyn(0.03, 12.0),
         Rₛ = [3., 7., 16.],
-        skyFraction = 1.0,
+        sky_fraction = 1.0,
         PPFD = [400., 800., 1200.0],
         d = 0.03
     )
