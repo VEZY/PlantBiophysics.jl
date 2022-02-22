@@ -359,14 +359,15 @@ function check_status_wheather(
     weather::Weather
 ) where {T<:Vector{MutableNamedTuples.MutableNamedTuple}}
 
-    length(status) != length(weather.data) &&
-        error("component status should have the same number of time-steps than weather")
+    length(st) > 1 && length(st) != length(weather.data) &&
+        error("Component status should have the same number of time-steps than weather (or one only)")
 
     return true
 end
 
 function check_status_wheather(st::T, weather::Weather) where {T<:MutableNamedTuples.MutableNamedTuple}
-    error("component status should have the same number of time-steps than weather")
+    # This is authorized, the component is update at each time-step, but no intermediate saving!
+    nothing
 end
 
 
