@@ -79,13 +79,32 @@ function init_mtg_models!(mtg, models::Dict{String,<:AbstractModel}; verbose = t
                     if length(attr_not_found) == 0
                         # If not, initialise the LeafModels using attributes
                         @info "Initialising $(to_init[node.MTG.symbol]) using node attributes" maxlog = 1
-                        models_node = copy(models[node.MTG.symbol])
+                        model_node = models[node.MTG.symbol]
+                        comp_type = typeof(model_node)
 
-                        init_status!(
-                            models_node;
-                            NamedTuple(i => node[i] for i in to_init[node.MTG.symbol])...
+                        fieldnames_no_status = setdiff(fieldnames(comp_type), (:status,))
+
+                        node_models = [getfield(model_node, x) for x in fieldnames_no_status]
+                        component_constructor = getfield(parentmodule(comp_type), nameof(comp_type))
+                        # component_constructor can also be constructed using `comp_type.name.wrapper`
+
+                        # New status with previous initialisations + the ones from attributes:
+                        st = merge(
+                            NamedTuple(model_node.status),
+                            NamedTuple(i => node[i] for i in to_init[node.MTG.symbol])
                         )
-                        node[:models] = models_node
+                        #! merge keeps the attriutes of the last collection. If this behavior
+                        #! chanegs in future Julia versions, use `mergewith`.
+
+                        node[:models] = component_constructor(;
+                            zip(fieldnames_no_status, node_models)...,
+                            st...
+                        )
+                        # NB: component_constructor is the generic component type, without
+                        # parametrization, e.g. LeafModels instead of
+                        # LeafModels{Translucent{Float64}, Monteith{Float64, Int64}...}
+                        # We use the generic type to update the status because otherwise it
+                        # would be already parameterised, and may not allow updating.
                     else
                         # If some initialisations are not available from the node attributes:
                         for i in attr_not_found
