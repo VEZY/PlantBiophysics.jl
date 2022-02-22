@@ -160,10 +160,26 @@ end
 
 
 """
+    getindex(component::AbstractComponentModel, i::Integer)
     getindex(component::LeafModels, i::Integer)
 
-Get a LeafModels component at time-step `i`.
+Get a component at time-step `i`. You should consider implementing a method for your
+component type for speed. Otherwise it will use the `AbstractComponentModel` method.
 """
+function Base.getindex(component::T, i::Integer) where {T<:AbstractComponentModel}
+    if !isa(component.status, MutableNamedTuples.MutableNamedTuple) && length(component.status) > 1
+        T.name.wrapper(
+            [getfield(component, x) for x in setdiff(fieldnames(T), (:status,))]...,
+            component.status[i]
+        )
+    else
+        T.name.wrapper(
+            [getfield(component, x) for x in setdiff(fieldnames(T), (:status,))]...,
+            component.status
+        )
+    end
+end
+
 function Base.getindex(component::LeafModels, i::Integer) where {I,E,A,Gs}
     LeafModels(
         component.interception,
