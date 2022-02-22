@@ -25,7 +25,7 @@ models = Dict(
 
 # Checking which variables are needed for our models:
 [component => to_initialise(model) for (component, model) in models]
-# OK we need to initialise Rₛ, skyFraction and the PPFD
+# OK we need to initialise Rₛ, sky_fraction and the PPFD
 
 # We can compute them directly inside the MTG from available variables:
 transform!(
@@ -37,9 +37,9 @@ transform!(
 
 # Initialising all components with their corresponding models and initialisations:
 init_mtg_models!(mtg, models)
-# Note that this is possible only because the initialisations values are found in the MTG.
-# If the initialisations are constant values between components, we can directly initilise
-# them in the models definition (we initialise d like this).
+# Note that this is possible only because the initialisation values are found in the MTG.
+# If the initialisations are constant values between components, we can directly initialise
+# them in the models definition (we initialise `:d` like this in our example).
 ```
 """
 function init_mtg_models!(mtg, models::Dict{String,<:AbstractModel}; verbose = true)
@@ -94,7 +94,7 @@ function init_mtg_models!(mtg, models::Dict{String,<:AbstractModel}; verbose = t
                     end
                 else
                     # Else we initialise as is
-                    node[:leaf_status] = models[node.MTG.symbol]
+                    node[:models] = models[node.MTG.symbol]
                 end
             end
         end

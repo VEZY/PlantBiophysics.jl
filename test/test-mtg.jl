@@ -26,6 +26,7 @@ transform!(
 init_mtg_models!(mtg, models)
 
 @testset "mtg: init_mtg_models!" begin
+    leaf_node = get_node(mtg, 2524)
     @test leaf_node[:models].photosynthesis === photo
     @test leaf_node[:models].energy === nrj
     @test leaf_node[:models].stomatal_conductance === Gs
@@ -84,6 +85,14 @@ end
     # Initialising all components with their corresponding models and initialisations:
     init_mtg_models!(mtg, models)
 
+    metamer = get_node(mtg, 2069)
+    leaf = get_node(mtg, 2070)
+
+    @test typeof(metamer[:models]) == typeof(models["Metamer"])
+    @test typeof(leaf[:models]) == typeof(models["Leaf"])
+
     meteo = Atmosphere(T = 22.0, Wind = 0.8333, P = 101.325, Rh = 0.4490995)
     transform!(mtg, :models => (x -> energy_balance!(x, meteo)), ignore_nothing = true)
+
+    status(leaf[:models])
 end
