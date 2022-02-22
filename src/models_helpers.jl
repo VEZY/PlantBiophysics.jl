@@ -349,24 +349,29 @@ end
 
 """
     check_status_meteo(component,weather)
+    check_status_meteo(status,weather)
 
-Checks if a component status and the wheather have the same length, or
-if they can be recycled (length 1)
+Checks if a component status and the wheather have the same length, or if they can be
+recycled (length 1).
 """
 function check_status_wheather(
-    component::LeafModels{I,E,A,Gs,<:Vector{MutableNamedTuples.MutableNamedTuple}},
+    st::T,
     weather::Weather
-) where {I,E,A,Gs}
-    length(component.status) != length(weather.data) &&
+) where {T<:Vector{MutableNamedTuples.MutableNamedTuple}}
+
+    length(status) != length(weather.data) &&
         error("component status should have the same number of time-steps than weather")
+
+    return true
 end
 
-# here we only have one time-step in the status, so we use it for all time-steps
-function check_status_wheather(
-    component::LeafModels{I,E,A,Gs,<:MutableNamedTuples.MutableNamedTuple},
-    weather::Weather
-) where {I,E,A,Gs}
+function check_status_wheather(st::T, weather::Weather) where {T<:MutableNamedTuples.MutableNamedTuple}
     error("component status should have the same number of time-steps than weather")
+end
+
+
+function check_status_wheather(component::T, weather::Weather) where {T<:AbstractComponentModel}
+    check_status_wheather(status(component), weather)
 end
 
 # for several components as an array
