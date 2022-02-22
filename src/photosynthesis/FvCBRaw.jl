@@ -50,7 +50,7 @@ struct FvcbRaw{T} <: AbstractAModel
     θ::T
 end
 
-function FvcbRaw(;Tᵣ = 25.0, VcMaxRef = 200.0, JMaxRef = 250.0, RdRef = 0.6, TPURef = 9999., Eₐᵣ = 46390.0,
+function FvcbRaw(; Tᵣ = 25.0, VcMaxRef = 200.0, JMaxRef = 250.0, RdRef = 0.6, TPURef = 9999.0, Eₐᵣ = 46390.0,
     O₂ = 210.0, Eₐⱼ = 29680.0, Hdⱼ = 200000.0, Δₛⱼ = 631.88, Eₐᵥ = 58550.0, Hdᵥ = 200000.0,
     Δₛᵥ = 629.26, α = 0.24, θ = 0.7)
 
@@ -62,7 +62,7 @@ function inputs(::FvcbRaw)
 end
 
 function outputs(::FvcbRaw)
-(:A,)
+    (:A,)
 end
 
 Base.eltype(x::FvcbRaw) = typeof(x).parameters[1]
@@ -138,7 +138,7 @@ Letters 13.7: 1748-9326. https://doi.org/10.1088/1748-9326/aacf68.
 function photosynthesis!_(leaf::LeafModels{I,E,<:FvcbRaw,Gs,<:MutableNamedTuples.MutableNamedTuple}, meteo = nothing,
     constants = Constants()) where {I,E,Gs}
 
-    Tₖ =  leaf.status.Tₗ - constants.K₀
+    Tₖ = leaf.status.Tₗ - constants.K₀
     Tᵣₖ = leaf.photosynthesis.Tᵣ - constants.K₀
     Γˢ = Γ_star(Tₖ, Tᵣₖ, constants.R) # Gamma star (CO2 compensation point) in μmol mol-1
     Km = get_km(Tₖ, Tᵣₖ, leaf.photosynthesis.O₂, constants.R) # effective Michaelis–Menten coefficient for CO2
@@ -149,7 +149,7 @@ function photosynthesis!_(leaf::LeafModels{I,E,<:FvcbRaw,Gs,<:MutableNamedTuples
     Vⱼ = J / 4
     Wⱼ = Vⱼ * (leaf.status.Cᵢ - Γˢ) / (leaf.status.Cᵢ + 2.0 * Γˢ) # also called Aⱼ
     Wᵥ = VcMax * (leaf.status.Cᵢ - Γˢ) / (leaf.status.Cᵢ + Km)
-    ag = 0.
+    ag = 0.0
     Wₚ = (leaf.status.Cᵢ - Γˢ) * 3 * leaf.photosynthesis.TPURef / (leaf.status.Cᵢ - (1 .+ 3 * ag) * Γˢ)
     leaf.status.A = min(Wᵥ, Wⱼ, Wₚ) - Rd
 

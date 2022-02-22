@@ -399,17 +399,21 @@ end
 
 
 """
-Positive root of a quadratic equation.
+Positive root of a quadratic equation, but returns 0 if Δ is negative.
+Careful, this is not right mathematically, but biologically OK because used in the
+computation of Cᵢ (gives A = 0 in this case).
 """
 function positive_root(a, b, c)
     Δ = b^2.0 - 4.0 * a * c
-    return (-b + sqrt(Δ)) / (2.0 * a)
+    return Δ >= 0.0 ? (-b + sqrt(Δ)) / (2.0 * a) : 0.0
 end
 
 """
-Negative root of a quadratic equation.
+Negative root of a quadratic equation, but returns 0 if Δ is negative.
+Careful, this is not right mathematically, but biologically OK because used in the
+computation of Cᵢ (gives A = 0 in this case).
 """
 function negative_root(a, b, c)
     Δ = b^2.0 - 4.0 * a * c
-    return (-b - sqrt(Δ)) / (2.0 * a)
+    return Δ >= 0.0 ? (-b - sqrt(Δ)) / (2.0 * a) : 0.0
 end
