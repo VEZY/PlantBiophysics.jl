@@ -7,7 +7,7 @@ using MutableNamedTuples
 import YAML
 import CSV
 import OrderedCollections: OrderedDict
-import MultiScaleTreeGraph: traverse!, components
+import MultiScaleTreeGraph
 import Dates
 
 import DataFrames.DataFrame # For convenience transformations

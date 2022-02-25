@@ -82,6 +82,62 @@ energy_balance!(model, meteo)
 model["Leaf"].status.Rn
 model["Leaf"].status.A
 model["Leaf"].status.Cᵢ
+
+# ---Simulation on a full plant using an MTG---
+
+
+using PlantBiophysics, MultiScaleTreeGraph, PlantGeom, GLMakie, Dates
+
+file = joinpath(dirname(dirname(pathof(PlantBiophysics))), "test", "inputs", "scene", "opf", "coffee.opf")
+mtg = read_opf(file)
+
+# Import the meteorology:
+meteo = read_weather(
+    "archimed/meteo.csv",
+    :temperature => :T,
+    :relativeHumidity => (x -> x ./ 100) => :Rh,
+    :wind => :Wind,
+    :atmosphereCO2_ppm => :Cₐ,
+    date_format = DateFormat("yyyy/mm/dd")
+)
+
+# Make the models:
+models = Dict(
+    "Leaf" =>
+        LeafModels(
+            energy = Monteith(),
+            photosynthesis = Fvcb(),
+            stomatal_conductance = Medlyn(0.03, 12.0),
+            d = 0.03
+        )
+)
+
+# List the MTG attributes:
+names(mtg)
+# We have the skyFraction already, but not Rₛ and PPFD, so we must compute them first.
+# Rₛ is the shortwave radiation (or global radiation), so it is the sum of Ra_PAR_f and Ra_NIR_f.
+# PPFD is the PAR in μmol m-2 s-1, so Ra_PAR_f * 4.57.
+
+# We can compute them using the following code (transform! comes from MultiScaleTreeGraph.jl):
+transform!(
+    mtg,
+    [:Ra_PAR_f, :Ra_NIR_f] => ((x, y) -> x + y) => :Rₛ,
+    :Ra_PAR_f => (x -> x * 4.57) => :PPFD,
+    ignore_nothing = true
+)
+
+# Initialising all components with their corresponding models and initialisations:
+energy_balance!(mtg, models, meteo)
+
+# Pull the leaf temperature of the first step:
+transform!(
+    mtg,
+    :Tₗ => (x -> x[1]) => :Tₗ_1,
+    ignore_nothing = true
+)
+
+# Vizualise the output:
+viz(mtg, color = :Tₗ_1)
 ```
 
 # References
@@ -195,4 +251,47 @@ function energy_balance(
     energy_balance!(object_tmp, meteo, constants)
 
     return object_tmp
+end
+
+# Compatibility with MTG:
+function energy_balance!(
+    mtg::MultiScaleTreeGraph.Node,
+    models::Dict{String,<:AbstractModel},
+    meteo::AbstractAtmosphere,
+    constants = Constants()
+)
+
+    # Define the attribute name used for the models in the nodes
+    attr_name = MultiScaleTreeGraph.cache_name("PlantBiophysics models")
+
+    # Initialise the MTG nodes with the corresponding models:
+    init_mtg_models!(mtg, models, attr_name = attr_name)
+
+    MultiScaleTreeGraph.transform!(mtg, attr_name => (x -> energy_balance!(x, meteo, constants)), ignore_nothing = true)
+end
+
+function energy_balance!(
+    mtg::MultiScaleTreeGraph.Node,
+    models::Dict{String,<:AbstractModel},
+    meteo::Weather,
+    constants = Constants()
+)
+    # Define the attribute name used for the models in the nodes
+    attr_name = Symbol(MultiScaleTreeGraph.cache_name("PlantBiophysics models"))
+
+    # Init the status for the meteo step only (with an AbstractAtmosphere)
+    to_init = init_mtg_models!(mtg, models, 1, attr_name = attr_name)
+
+    # Computing for each time-steps:
+    for (i, meteo_i) in enumerate(meteo.data)
+        # Then update the initialisation each time-step.
+        update_mtg_models!(mtg, i, to_init, attr_name)
+
+        MultiScaleTreeGraph.transform!(
+            mtg,
+            attr_name => (x -> energy_balance!(x, meteo_i, constants)),
+            (node) -> pull_status_step!(node, attr_name = attr_name),
+            ignore_nothing = true
+        )
+    end
 end

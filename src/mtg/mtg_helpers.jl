@@ -51,7 +51,6 @@ function pull_status!(node)
     end
 end
 
-
 function pull_status!(node, key::T) where {T<:Union{AbstractArray,Tuple}}
     if node[:models] !== nothing
         st = node[:models].status
@@ -63,5 +62,35 @@ end
 function pull_status!(node, key::T) where {T<:Symbol}
     if node[:models] !== nothing
         append!(node, (; key => getproperty(node[:models].status, key)))
+    end
+end
+
+"""
+    pull_status_step!(node)
+
+Copy the status of a node's LeafModel (*i.e.* the outputs of the simulations) into the MTG
+attributes. New attributes are stored as vectors, one value per time-step.
+
+See [`pull_status!`](@ref) for storing attributes as is (no vector transformation).
+"""
+function pull_status_step!(node; attr_name = :models)
+    if node[attr_name] !== nothing
+        st = node[attr_name].status
+        vars = collect(keys(st))
+        for i in vars
+            if node[i] === nothing
+                # If the attribute does not exist, create a vector of one value with it
+                node[i] = typeof(st[i])[st[i]]
+            elseif typeof(node[i]) <: AbstractArray
+                # If it does exist and is already an array, push the new value
+                push!(node[i], st[i])
+            else
+                # If the value already exist but is not an array, make an array out of it
+                # and push the new value. This case happens when dealing with initialised
+                # variables that have only one value
+                node[i] = typeof(st[i])[node[i]]
+                push!(node[i], st[i])
+            end
+        end
     end
 end
