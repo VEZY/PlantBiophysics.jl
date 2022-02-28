@@ -170,14 +170,6 @@ function energy_balance!(object::AbstractComponentModel, meteo::AbstractAtmosphe
     return nothing
 end
 
-# Same as above but non-mutating
-function energy_balance(object::AbstractComponentModel, meteo::AbstractAtmosphere, constants = Constants())
-    object_tmp = copy(object)
-    energy_balance!(object_tmp, meteo, constants)
-
-    return object_tmp
-end
-
 # energy_balance over several objects (e.g. all leaves of a plant) in an Array
 function energy_balance!(object::O, meteo::AbstractAtmosphere, constants = Constants()) where {O<:AbstractArray{<:AbstractComponentModel}}
 
@@ -196,22 +188,6 @@ function energy_balance!(object::O, meteo::AbstractAtmosphere, constants = Const
     end
 
     return nothing
-end
-
-# same as the above but non-mutating
-function energy_balance(
-    object::O,
-    meteo::AbstractAtmosphere,
-    constants = Constants()
-) where {O<:Union{AbstractArray{<:AbstractComponentModel},AbstractDict{N,<:AbstractComponentModel} where N}}
-
-    # Copy the objects only once before the computation for performance reasons:
-    object_tmp = copy(object)
-
-    # Computation:
-    energy_balance!(object_tmp, meteo, constants)
-
-    return object_tmp
 end
 
 # energy_balance over several meteo time steps (called Weather) and possibly several components:
@@ -237,20 +213,6 @@ end
 # If we call weather with one component only, put it in an Array and call the function above
 function energy_balance!(object::AbstractComponentModel, meteo::Weather, constants = Constants())
     energy_balance!([object], meteo, constants)
-end
-
-# energy_balance over several meteo time steps (same as above) but non-mutating
-function energy_balance(
-    object::T,
-    meteo::Weather,
-    constants = Constants()
-) where {T<:Union{AbstractComponentModel,AbstractDict{N,<:AbstractComponentModel} where N}}
-
-    object_tmp = copy(object)
-
-    energy_balance!(object_tmp, meteo, constants)
-
-    return object_tmp
 end
 
 # Compatibility with MTG:
@@ -285,10 +247,9 @@ function energy_balance!(
     # Pre-allocate the node attributes based on the simulated variables and number of steps:
     nsteps = length(meteo)
 
-    MultiScaleTreeGraph.transform!(
+    MultiScaleTreeGraph.traverse!(
         mtg,
-        attr_name => (x -> pre_allocate_attr!(x, nsteps; attr_name = attr_name)),
-        ignore_nothing = true
+        (x -> pre_allocate_attr!(x, nsteps; attr_name = attr_name)),
     )
 
     # Computing for each time-steps:
@@ -303,4 +264,20 @@ function energy_balance!(
             ignore_nothing = true
         )
     end
+end
+
+# Non-mutating version (make a copy before the call, and return the copy):
+function energy_balance(
+    object::O,
+    meteo::Union{AbstractAtmosphere,Weather},
+    constants = Constants()
+) where {
+    O<:Union{
+        AbstractComponentModel,
+        AbstractArray{<:AbstractComponentModel},
+        AbstractDict{N,<:AbstractComponentModel} where N}
+}
+    object_tmp = copy(object)
+    energy_balance!(object_tmp, meteo, constants)
+    return object_tmp
 end
