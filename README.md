@@ -70,8 +70,8 @@ For more examples, please read the documentation.
   - [ ] add doc for each process
   - [ ] add a list of models for each process
   - [ ] add documentation for each model
-  - [ ] add a tutorial for a single leaf at one time-step
-  - [ ] add a tutorial for a single leaf at several time-step
+  - [x] add a tutorial for a single leaf at one time-step
+  - [x] add a tutorial for a single leaf at several time-step
   - [ ] add a tutorial for a plant
   - [ ] How to implement a new model -> e.g. conductance (add a `variables` method)
   - [ ] How to implement a new component:
