@@ -254,11 +254,11 @@ end
 
 # NB: could use dispatch on concrete types but would enforce specific implementation for each...
 function DataFrame(components::T) where {T<:AbstractComponentModel}
-    status = status(components)
-    if typeof(status) == Vector{MutableNamedTuples.MutableNamedTuple}
-        DataFrame([(NamedTuple(j)..., timestep = i) for (i, j) in enumerate(status)])
+    st = status(components)
+    if typeof(st) == Vector{MutableNamedTuples.MutableNamedTuple}
+        DataFrame([(NamedTuple(j)..., timestep = i) for (i, j) in enumerate(st)])
     else
-        DataFrame([NamedTuple(status)])
+        DataFrame([NamedTuple(st)])
     end
 end
 

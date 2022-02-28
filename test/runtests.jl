@@ -33,3 +33,7 @@ end
 @testset "MTG compatibility" begin
     include("test-mtg.jl")
 end
+
+@testset "Fitting" begin
+    include("test-fitting.jl")
+end
