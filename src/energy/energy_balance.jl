@@ -163,8 +163,7 @@ https://doi.org/10.1016/j.agrformet.2018.02.005.
 energy_balance!, energy_balance
 
 function energy_balance!(object::AbstractComponentModel, meteo::AbstractAtmosphere, constants = Constants())
-    is_init = is_initialised(object)
-    !is_init && error("Some variables must be initialized before simulation")
+    !is_initialised(object) && error("Some variables must be initialized before simulation")
 
     energy_balance!_(object, meteo, constants)
     return nothing

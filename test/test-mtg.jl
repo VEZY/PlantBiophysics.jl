@@ -96,3 +96,55 @@ end
 
     status(leaf[:models])
 end
+
+
+@testset "mtg: energy_balance!" begin
+    file = joinpath(dirname(dirname(pathof(PlantBiophysics))), "test", "inputs", "models", "plant_coffee.yml")
+    models = read_model(file)
+    mtg = read_opf(joinpath(dirname(dirname(pathof(PlantBiophysics))), "test", "inputs", "scene", "opf", "coffee.opf"))
+    weather = read_weather(
+        joinpath(dirname(dirname(pathof(PlantBiophysics))), "test", "inputs", "meteo.csv"),
+        :temperature => :T,
+        :relativeHumidity => (x -> x ./ 100) => :Rh,
+        :wind => :Wind,
+        :atmosphereCO2_ppm => :Cₐ,
+        date_format = DateFormat("yyyy/mm/dd")
+    )
+
+    # We can compute them directly inside the MTG from available variables:
+    transform!(
+        mtg,
+        [:Ra_PAR_f, :Ra_NIR_f] => ((x, y) -> fill(x + y, length(weather))) => :Rₛ,
+        :Ra_PAR_f => (x -> x * 4.57) => :PPFD,
+        (x -> 0.03) => :d,
+        ignore_nothing = true
+    )
+
+    leaf_node = get_node(mtg, 2070)
+
+    # Get the Ra_PAR_f before computation to check that it is not modified
+    Ra_PAR_f = copy(leaf_node[:Ra_PAR_f])
+    # Get some initialisations to check if they have the same length as n steps in weather (after computation):
+    sky_fraction = copy(leaf_node[:sky_fraction])
+
+    # Make the computation:
+    energy_balance!(mtg, models, weather)
+
+
+    @test leaf_node[:Ra_PAR_f] == Ra_PAR_f
+    @test leaf_node[:sky_fraction] == fill(sky_fraction, length(weather))
+    @test leaf_node[:sky_fraction] == fill(sky_fraction, length(weather))
+
+    # Just use the values of today (28/02/2022) as a reference:
+    @test leaf_node[:A] ≈ [33.6416, 34.0212, 33.8763] atol = 1e-4
+    @test leaf_node[:Tₗ] ≈ [25.5959, 26.2083, 25.3744] atol = 1e-4
+    @test leaf_node[:Rₗₗ] ≈ [-2.3841, -0.85057, -0.297067] atol = 1e-4
+    @test leaf_node[:H] ≈ [28.587, 11.236, 4.418] atol = 1e-2
+    @test leaf_node[:λE] ≈ [355.621, 374.506, 381.878] atol = 1e-3
+    @test leaf_node[:Gₛ] ≈ [1.12406, 1.13801, 1.11500] atol = 1e-4
+    @test leaf_node[:Gbₕ] ≈ [0.02026, 0.02349, 0.02296] atol = 1e-4
+    @test leaf_node[:Gbc] ≈ [0.62765, 0.72508, 0.71055] atol = 1e-4
+    @test leaf_node[:Rn] ≈ [384.209, 385.742, 386.296] atol = 1e-2
+    @test leaf_node[:Cᵢ] ≈ [296.26, 302.97, 302.08] atol = 1e-2
+    @test leaf_node[:Cₛ] ≈ [326.40, 333.08, 332.32] atol = 1e-2
+end
