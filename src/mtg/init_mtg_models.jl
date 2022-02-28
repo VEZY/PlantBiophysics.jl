@@ -72,7 +72,6 @@ function init_mtg_models!(
     end
 
     # Get which model has values that needs to be further initialised:
-
     to_init = Dict()
     for (key, value) in models
         init = to_initialise(value)

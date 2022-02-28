@@ -66,30 +66,46 @@ function pull_status!(node, key::T) where {T<:Symbol}
 end
 
 """
-    pull_status_step!(node)
+    pull_status_step!(node, step; attr_name = :models)
 
-Copy the status of a node's LeafModel (*i.e.* the outputs of the simulations) into the MTG
-attributes. New attributes are stored as vectors, one value per time-step.
+Copy the status of a node's LeafModel (*i.e.* the outputs of the simulations) into the
+pre-allocated MTG attributes, i.e. one value per step.
 
-See [`pull_status!`](@ref) for storing attributes as is (no vector transformation).
+See [`pre_allocate_attr!`](@ref) for the pre-allocation step.
 """
-function pull_status_step!(node; attr_name = :models)
+function pull_status_step!(node, step; attr_name = :models)
+    if node[attr_name] !== nothing
+        st = node[attr_name].status
+        for i in keys(st)
+            node[i][step] = st[i]
+        end
+    end
+end
+
+"""
+    pre_allocate_attr!(node, nsteps; attr_name = :models)
+
+Pre-allocate the node attributes based on the status of a component model and a given number
+of simulation steps.
+"""
+function pre_allocate_attr!(node, nsteps; attr_name = :models)
     if node[attr_name] !== nothing
         st = node[attr_name].status
         vars = collect(keys(st))
         for i in vars
             if node[i] === nothing
-                # If the attribute does not exist, create a vector of one value with it
-                node[i] = typeof(st[i])[st[i]]
+                # If the attribute does not exist, create a vector of n-steps values
+                node[i] = zeros(typeof(st[i]), nsteps)
             elseif typeof(node[i]) <: AbstractArray
-                # If it does exist and is already an array, push the new value
-                push!(node[i], st[i])
+                # If it does exist and is already an n-steps array, do nothing
+                if length(node[i]) != nsteps
+                    error("Attribute $i is already stored in node $(node.id) but as length",
+                        "!= number of steps to simulate ($nsteps).")
+                end
             else
-                # If the value already exist but is not an array, make an array out of it
-                # and push the new value. This case happens when dealing with initialised
-                # variables that have only one value
-                node[i] = typeof(st[i])[node[i]]
-                push!(node[i], st[i])
+                # If the value already exist but is not an array, make an array out of it.
+                # This happens when dealing with variables initialised with only one value.
+                node[i] = fill(node[i], nsteps)
             end
         end
     end

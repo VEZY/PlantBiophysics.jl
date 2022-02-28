@@ -282,6 +282,15 @@ function energy_balance!(
     # Init the status for the meteo step only (with an AbstractAtmosphere)
     to_init = init_mtg_models!(mtg, models, 1, attr_name = attr_name)
 
+    # Pre-allocate the node attributes based on the simulated variables and number of steps:
+    nsteps = length(meteo)
+
+    MultiScaleTreeGraph.transform!(
+        mtg,
+        attr_name => (x -> pre_allocate_attr!(x, nsteps; attr_name = attr_name)),
+        ignore_nothing = true
+    )
+
     # Computing for each time-steps:
     for (i, meteo_i) in enumerate(meteo.data)
         # Then update the initialisation each time-step.
@@ -290,7 +299,7 @@ function energy_balance!(
         MultiScaleTreeGraph.transform!(
             mtg,
             attr_name => (x -> energy_balance!(x, meteo_i, constants)),
-            (node) -> pull_status_step!(node, attr_name = attr_name),
+            (node) -> pull_status_step!(node, i, attr_name = attr_name),
             ignore_nothing = true
         )
     end
