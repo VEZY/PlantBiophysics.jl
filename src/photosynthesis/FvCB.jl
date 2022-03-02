@@ -245,10 +245,10 @@ function photosynthesis!_(leaf::LeafModels{I,E,<:Fvcb,<:AbstractGsModel,S}, mete
     # RuBP regeneration
     Vⱼ = J / 4
 
-    # Stomatal conductance (mol[CO₂] m-2 s-1), dispatched on type of first argument (Gs_mod):
-    gs_mod = gs_closure(leaf, meteo)
+    # Stomatal conductance (mol[CO₂] m-2 s-1), dispatched on type of first argument (gs_closure):
+    st_closure = gs_closure(leaf, meteo)
 
-    Cᵢⱼ = get_Cᵢⱼ(Vⱼ, Γˢ, leaf.status.Cₛ, Rd, leaf.stomatal_conductance.g0, gs_mod)
+    Cᵢⱼ = get_Cᵢⱼ(Vⱼ, Γˢ, leaf.status.Cₛ, Rd, leaf.stomatal_conductance.g0, st_closure)
 
     # Electron-transport-limited rate of CO2 assimilation (RuBP regeneration-limited):
     Wⱼ = Vⱼ * (Cᵢⱼ - Γˢ) / (Cᵢⱼ + 2.0 * Γˢ) # also called Aⱼ
@@ -262,7 +262,7 @@ function photosynthesis!_(leaf::LeafModels{I,E,<:Fvcb,<:AbstractGsModel,S}, mete
         Wⱼ = Vⱼ * (Cᵢⱼ - Γˢ) / (Cᵢⱼ + 2.0 * Γˢ)
     end
 
-    Cᵢᵥ = get_Cᵢᵥ(VcMax, Γˢ, leaf.status.Cₛ, Rd, leaf.stomatal_conductance.g0, gs_mod, Km)
+    Cᵢᵥ = get_Cᵢᵥ(VcMax, Γˢ, leaf.status.Cₛ, Rd, leaf.stomatal_conductance.g0, st_closure, Km)
 
     # Rubisco-carboxylation-limited rate of CO₂ assimilation (RuBP activity-limited):
     if Cᵢᵥ <= 0.0 || Cᵢᵥ > leaf.status.Cₛ
@@ -275,8 +275,9 @@ function photosynthesis!_(leaf::LeafModels{I,E,<:Fvcb,<:AbstractGsModel,S}, mete
     leaf.status.A = min(Wᵥ, Wⱼ, 3 * leaf.photosynthesis.TPURef) - Rd
 
     # Stomatal conductance (mol[CO₂] m-2 s-1)
-    leaf.status.Gₛ = gs(leaf, gs_mod)
-    # replace by ifelse directly ? Should be faster as `max()` add some tests.\
+    gs!_(leaf, st_closure)
+    # NB: `gs!_(` is the function that implements the computation directly. If you want to
+    # call the stomatal conductance interactively, use `gs!()` or `gs()` instead.
 
     # Intercellular CO₂ concentration (Cᵢ, μmol mol)
     leaf.status.Cᵢ = min(leaf.status.Cₛ, leaf.status.Cₛ - leaf.status.A / leaf.status.Gₛ)
@@ -342,7 +343,7 @@ Analytic resolution of Cᵢ when the rate of electron transport is limiting (``�
 - `Cₛ`: stomatal CO₂ concentration (``μmol\\ mol^{-1}``)
 - `Rd`: day respiration (``μmol\\ m^{-2}\\ s^{-1}``)
 - `g0`: residual stomatal conductance (``μmol\\ m^{-2}\\ s^{-1}``)
-- `gs_mod`: stomatal conductance term computed from a given implementation of a Gs model,
+- `st_closure`: stomatal conductance term computed from a given implementation of a Gs model,
 e.g. [`Medlyn`](@ref).
 
 
@@ -355,11 +356,11 @@ example application to [CO2] × drought interactions ». Geoscientific Model De
 
 Wang and Leuning, 1998
 """
-function get_Cᵢⱼ(Vⱼ, Γˢ, Cₛ, Rd, g0, gs_mod)
-    a = g0 + gs_mod * (Vⱼ - Rd)
-    b = (1.0 - Cₛ * gs_mod) * (Vⱼ - Rd) + g0 * (2.0 * Γˢ - Cₛ) -
-        gs_mod * (Vⱼ * Γˢ + 2.0 * Γˢ * Rd)
-    c = -(1.0 - Cₛ * gs_mod) * Γˢ * (Vⱼ + 2.0 * Rd) -
+function get_Cᵢⱼ(Vⱼ, Γˢ, Cₛ, Rd, g0, st_closure)
+    a = g0 + st_closure * (Vⱼ - Rd)
+    b = (1.0 - Cₛ * st_closure) * (Vⱼ - Rd) + g0 * (2.0 * Γˢ - Cₛ) -
+        st_closure * (Vⱼ * Γˢ + 2.0 * Γˢ * Rd)
+    c = -(1.0 - Cₛ * st_closure) * Γˢ * (Vⱼ + 2.0 * Rd) -
         g0 * 2.0 * Γˢ * Cₛ
 
     return positive_root(a, b, c)
@@ -375,14 +376,14 @@ Analytic resolution of Cᵢ when the RuBisCo activity is limiting (``μmol\\ mol
 - `Cₛ`: stomatal CO₂ concentration (``μmol\\ mol^{-1}``)
 - `Rd`: day respiration (``μmol\\ m^{-2}\\ s^{-1}``)
 - `g0`: residual stomatal conductance (``μmol\\ m^{-2}\\ s^{-1}``)
-- `gs_mod`: stomatal conductance term computed from a given implementation of a Gs model,
+- `st_closure`: stomatal conductance term computed from a given implementation of a Gs model,
 e.g. [`Medlyn`](@ref).
 - `Km`: effective Michaelis–Menten coefficient for CO2 (``μ mol\\ mol^{-1}``)
 """
-function get_Cᵢᵥ(VcMAX, Γˢ, Cₛ, Rd, g0, gs_mod, Km)
-    a = g0 + gs_mod * (VcMAX - Rd)
-    b = (1.0 - Cₛ * gs_mod) * (VcMAX - Rd) + g0 * (Km - Cₛ) - gs_mod * (VcMAX * Γˢ + Km * Rd)
-    c = -(1.0 - Cₛ * gs_mod) * (VcMAX * Γˢ + Km * Rd) - g0 * Km * Cₛ
+function get_Cᵢᵥ(VcMAX, Γˢ, Cₛ, Rd, g0, st_closure, Km)
+    a = g0 + st_closure * (VcMAX - Rd)
+    b = (1.0 - Cₛ * st_closure) * (VcMAX - Rd) + g0 * (Km - Cₛ) - st_closure * (VcMAX * Γˢ + Km * Rd)
+    c = -(1.0 - Cₛ * st_closure) * (VcMAX * Γˢ + Km * Rd) - g0 * Km * Cₛ
 
     return positive_root(a, b, c)
 end

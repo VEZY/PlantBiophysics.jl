@@ -43,7 +43,7 @@ macro gen_process_methods(f)
         # Process method over several objects (e.g. all leaves of a plant) in an Array
         function $(esc(mutating_f))(object::O, meteo::AbstractAtmosphere, constants = Constants()) where {O<:AbstractArray{<:AbstractComponentModel}}
             for i in values(object)
-                $(f)(i, meteo, constants)
+                $(mutating_f)(i, meteo, constants)
             end
             return nothing
         end
@@ -51,7 +51,7 @@ macro gen_process_methods(f)
         # Process method over several objects (e.g. all leaves of a plant) in a kind of Dict.
         function $(esc(mutating_f))(object::O, meteo::AbstractAtmosphere, constants = Constants()) where {O<:AbstractDict{N,<:AbstractComponentModel} where {N}}
             for (k, v) in object
-                $(f)(v, meteo, constants)
+                $(mutating_f)(v, meteo, constants)
             end
             return nothing
         end
@@ -70,7 +70,7 @@ macro gen_process_methods(f)
             for (i, meteo_i) in enumerate(meteo.data)
                 # Each object in a time-step:
                 for obj in object
-                    $(f)(obj[i], meteo_i, constants)
+                    $(mutating_f)(obj[i], meteo_i, constants)
                 end
             end
 
@@ -78,7 +78,7 @@ macro gen_process_methods(f)
 
         # If we call weather with one component only, put it in an Array and call the function above
         function $(esc(mutating_f))(object::AbstractComponentModel, meteo::Weather, constants = Constants())
-            $(f)([object], meteo, constants)
+            $(mutating_f)([object], meteo, constants)
         end
 
         # Method for calling the process without any meteo. In this case we need to check if
@@ -109,7 +109,7 @@ macro gen_process_methods(f)
             # Initialise the MTG nodes with the corresponding models:
             init_mtg_models!(mtg, models, attr_name = attr_name)
 
-            MultiScaleTreeGraph.transform!(mtg, attr_name => (x -> $(f)(x, meteo, constants)), ignore_nothing = true)
+            MultiScaleTreeGraph.transform!(mtg, attr_name => (x -> $(mutating_f)(x, meteo, constants)), ignore_nothing = true)
         end
 
         # Compatibility with MTG + Weather:
@@ -140,7 +140,7 @@ macro gen_process_methods(f)
 
                 MultiScaleTreeGraph.transform!(
                     mtg,
-                    attr_name => (x -> $(f)(x, meteo_i, constants)),
+                    attr_name => (x -> $(mutating_f)(x, meteo_i, constants)),
                     (node) -> pull_status_step!(node, i, attr_name = attr_name),
                     ignore_nothing = true
                 )

@@ -295,3 +295,26 @@ function Component(; interception = missing, energy = missing, status...)
     status = init_variables_manual(interception, energy; status...)
     Component(interception, energy, status)
 end
+
+
+"""
+    Base.copy(l::LeafModels)
+    Base.copy(l::LeafModels, status)
+
+Copy a [`Component`](@ref), eventually with new values for the status.
+"""
+function Base.copy(l::T) where {T<:Component}
+    Component(
+        l.interception,
+        l.energy,
+        deepcopy(l.status)
+    )
+end
+
+function Base.copy(l::T, status) where {T<:Component}
+    Component(
+        l.interception,
+        l.energy,
+        status
+    )
+end
