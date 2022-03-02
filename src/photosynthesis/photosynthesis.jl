@@ -1,3 +1,8 @@
+# Generate all methods for the photosynthesis process: several meteo time-steps, components,
+#  over an MTG, and the mutating /non-mutating versions
+@gen_process_methods photosynthesis
+
+
 """
     photosynthesis(object, meteo, constants = Constants())
     photosynthesis!(object, meteo, constants = Constants())
@@ -61,108 +66,3 @@ model["Leaf"].status.A
 ```
 """
 photosynthesis, photosynthesis!
-
-function photosynthesis(leaf::AbstractComponentModel, meteo::AbstractAtmosphere, constants = Constants())
-    leaf_tmp = copy(leaf)
-    photosynthesis!(leaf_tmp, meteo, constants)
-    leaf_tmp.status
-end
-
-# photosynthesis over several objects (e.g. all leaves of a plant) in an Array
-function photosynthesis!(object::O, meteo::AbstractAtmosphere, constants = Constants()) where {O<:AbstractArray{<:AbstractComponentModel}}
-
-    for i in values(object)
-        photosynthesis!(i, meteo, constants)
-    end
-
-    return nothing
-end
-
-# photosynthesis over several objects (e.g. all leaves of a plant) in a kind of Dict.
-function photosynthesis!(object::O, meteo::AbstractAtmosphere, constants = Constants()) where {O<:AbstractDict{N,<:AbstractComponentModel} where {N}}
-    for (k, v) in object
-        photosynthesis!(v, meteo, constants)
-    end
-
-    return nothing
-end
-
-
-# same as the above but non-mutating
-function photosynthesis(
-    object::O,
-    meteo::AbstractAtmosphere,
-    constants = Constants()
-) where {O<:Union{AbstractArray{<:AbstractComponentModel},AbstractDict{N,<:AbstractComponentModel} where N}}
-
-    # Copy the objects only once before the computation for performance reasons:
-    object_tmp = copy(object)
-
-    # Computation:
-    photosynthesis!(object_tmp, meteo, constants)
-
-    return DataFrame(object_tmp)
-end
-
-# photosynthesis over several meteo time steps (called Weather) and possibly several components:
-function photosynthesis!(
-    object::T,
-    meteo::Weather,
-    constants = Constants()
-) where {T<:Union{AbstractArray{<:AbstractComponentModel},AbstractDict{N,<:AbstractComponentModel} where N}}
-
-    # Check if the meteo data and the status have the same length (or length 1)
-    check_status_wheather(object, meteo)
-
-    # Computing for each time-steps:
-    for (i, meteo_i) in enumerate(meteo.data)
-        # Each object in a time-step:
-        for obj in object
-            photosynthesis!(obj[i], meteo_i, constants)
-        end
-    end
-end
-
-# If we call weather with one component only, put it in an Array and call the function above
-function photosynthesis!(object::AbstractComponentModel, meteo::Weather, constants = Constants())
-    photosynthesis!([object], meteo, constants)
-end
-
-# photosynthesis over several meteo time steps (same as above) but non-mutating
-function photosynthesis(
-    object::T,
-    meteo::Weather,
-    constants = Constants()
-) where {T<:Union{AbstractComponentModel,AbstractDict{N,<:AbstractComponentModel} where N}}
-
-    object_tmp = copy(object)
-    photosynthesis!(object_tmp, meteo, constants)
-
-    return object_tmp
-end
-
-# The function that finally calls photosynthesis!_:
-function photosynthesis!(leaf::AbstractComponentModel, meteo::AbstractAtmosphere, constants = Constants())
-    is_init = is_initialised(leaf, leaf.photosynthesis, leaf.stomatal_conductance)
-    !is_init && error("Some variables must be initialized before simulation (see info message for more details)")
-    return photosynthesis!_(leaf, meteo, constants)
-end
-
-# The same function (calls photosynthesis!_) but for LeafModels without meteo, so we have to check
-# first if the leaf as several time-steps or not. NB: we could do it each time in the function
-# just above but I prefer make a new method for performance reasons.
-function photosynthesis!(leaf::AbstractComponentModel, meteo::Nothing = nothing, constants = Constants()) where {I,E,A,Gs}
-    is_init = is_initialised(leaf, leaf.photosynthesis, leaf.stomatal_conductance)
-    !is_init && error("Some variables must be initialized before simulation (see info message for more details)")
-
-    if typeof(leaf.status) == MutableNamedTuples.MutableNamedTuple
-        photosynthesis!_(leaf, meteo, constants)
-    else
-        # We have several time-steps here
-        for i = 1:length(leaf.status)
-            photosynthesis!_(leaf[i], meteo, constants)
-        end
-
-    end
-
-end

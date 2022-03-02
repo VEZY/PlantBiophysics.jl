@@ -293,13 +293,19 @@ function is_initialised(m::T, models...; info = true) where {T<:AbstractComponen
     end
 end
 
-function is_not_init_(status::T, var_names) where {T<:MutableNamedTuple}
-    [getproperty(status, i) == -999.99 for i in var_names]
+function is_not_init_(st::T, var_names) where {T<:MutableNamedTuple}
+    [getproperty(st, i) == -999.99 for i in var_names]
 end
 
 # For components with a status with multiple time-steps:
-function is_not_init_(status::T, var_names) where {T<:Vector{MutableNamedTuple}}
-    [getproperty(j, i) == -999.99 for i in var_names, j in status]
+function is_not_init_(st::T, var_names) where {T<:Vector{MutableNamedTuple}}
+    isnotinit = fill(false, length(var_names))
+    for j in st, i in 1:length(var_names)
+        if getproperty(j, var_names[i]) == -999.99
+            isnotinit[i] = true
+        end
+    end
+    return isnotinit
 end
 
 """

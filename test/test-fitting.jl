@@ -1,4 +1,4 @@
-@testset "mtg: init_mtg_models!" begin
+@testset "Fitting FvCB" begin
     file = joinpath(dirname(dirname(pathof(PlantBiophysics))), "test", "inputs", "data", "P1F20129.csv")
     df = read_walz(file)
     # Removing the Rh and light curves for the fitting because temperature varies

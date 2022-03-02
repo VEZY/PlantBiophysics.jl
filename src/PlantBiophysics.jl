@@ -38,6 +38,9 @@ include("models_helpers.jl")
 # Conversions
 include("conversions.jl")
 
+# Automatic process methods generation:
+include("process_methods_generation.jl")
+
 # Light interception
 include("light_interception/generic_structs.jl")
 include("light_interception/Ignore.jl")
