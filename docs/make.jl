@@ -5,7 +5,7 @@ using DataFrames
 using CSV
 using Plots
 
-DocMeta.setdocmeta!(PlantBiophysics, :DocTestSetup, :(using PlantBiophysics,Plots,DataFrames,CSV); recursive = true)
+DocMeta.setdocmeta!(PlantBiophysics, :DocTestSetup, :(using PlantBiophysics, Plots, DataFrames, CSV); recursive = true)
 
 makedocs(;
     modules = [PlantBiophysics],
@@ -15,7 +15,7 @@ makedocs(;
     format = Documenter.HTML(;
         prettyurls = get(ENV, "CI", "false") == "true",
         canonical = "https://VEZY.github.io/PlantBiophysics.jl",
-        assets = String[],
+        assets = String[]
     ),
     pages = [
         "Home" => "index.md",
@@ -23,32 +23,33 @@ makedocs(;
             "TL;DR" => "./getting_started/get_started.md",
             "Parameter fitting" => "./getting_started/first_fit.md",
         ],
-        "Parameter fitting" => "./fitting/parameter_fitting.md",
-        "Simulation" => [
+        "Fitting tutorials" => "./fitting/parameter_fitting.md",
+        "Simulation tutorials" => [
             "Simple Simulation" => "./simulation/first_simulation.md",
             "Several time steps" => "./simulation/several_simulation.md",
             "Several objects" => "./simulation/several_objects_simulation.md",
+            "Plant simulation" => "./simulation/mtg_simulation.md",
             "Uncertainty propagation" => "./simulation/uncertainty_propagation.md",
         ],
         "Concepts" => Any[
-            "Package design" => "./concepts/package_design.md",
-            "Implement a model" => "./concepts/implement_a_model.md",
+            "Package design"=>"./concepts/package_design.md",
+            "Implement a model"=>"./concepts/implement_a_model.md",
         ],
         "Generic models" => Any[
-            "Photosynthesis" => "./models/photosynthesis.md",
-            "Stomatal conductance" => "./models/gs.md",
-            "Energy balance" => "./models/energy_balance.md",
-            "Light interception" => "./models/light.md",
+            "Photosynthesis"=>"./models/photosynthesis.md",
+            "Stomatal conductance"=>"./models/gs.md",
+            "Energy balance"=>"./models/energy_balance.md",
+            "Light interception"=>"./models/light.md",
         ],
         "Components and methods" => Any[
-            "LeafModels" => "./components/leafmodels.md",
+            "LeafModels"=>"./components/leafmodels.md",
         ],
         "API" => "functions.md"
-    ],
+    ]
 )
 
 
 
 deploydocs(;
-    repo = "github.com/VEZY/PlantBiophysics.jl.git",
+    repo = "github.com/VEZY/PlantBiophysics.jl.git"
 )

@@ -58,7 +58,7 @@ For more examples, please read the documentation.
   - [x] Add a new struct for that: Weather
   - [x] Do it for energy_balance
   - [x] photosynthesis
-  - [ ] stomatal conductance
+  - [x] stomatal conductance
   - [ ] Add tests for each
   - [ ] Update the doc!
   - [ ] Check if it works with MTGs

@@ -10,9 +10,9 @@ The package provides a generic [`fit`](@ref) function to calibrate a model to us
 
 The generic function takes several parameters:
 
-- the model type, *e.g.* `FvCB`*
-- a `DataFrame` of the needed data that depends on the given method
-- keyword arguments that also depend on the fit method
+- the model type, *e.g.* `FvCB`
+- a `DataFrame` with the data (depends on the given method)
+- keyword arguments (also depend on the fit method)
 
 ## Example with FvCB
 
@@ -37,7 +37,8 @@ First, let's select only the data used for the CO₂ curve:
 
 ```@example usepkg
 # Checking the results:
-filter!(x -> x.curve == "CO2 Curve", df);
+filter!(x -> x.curve == "CO2 Curve", df)
+nothing # hide
 ```
 
 Now let's re-simulate the assimilation with our optimised parameter values:

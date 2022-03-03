@@ -55,7 +55,7 @@ When we know which parameters have to be initialized, we can get the list of the
 fieldnames(Fvcb)
 ```
 
-Or look into the documentation of the structure (e.g. `?Fvcb`) or the implementation of the model (*e.g.* `?assimilation`) to get more informations such as the units.
+Or look into the documentation of the structure (e.g. `?Fvcb`) or the implementation of the model (*e.g.* ?[`photosynthesis`](@ref)) to get more informations such as the units.
 
 ## energy_balance
 

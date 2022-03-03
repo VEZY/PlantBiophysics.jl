@@ -130,7 +130,7 @@ transform!(
     ignore_nothing = true
 )
 
-# Initialising all components with their corresponding models and initialisations:
+# Making the simulation:
 energy_balance!(mtg, models, meteo)
 
 # Pull the leaf temperature of the first step:
