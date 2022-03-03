@@ -104,7 +104,7 @@ transform!(
 )
 ```
 
-And the actually plotting it:
+And then actually plotting it:
 
 ```@example usepkg
 f, ax, p = viz(mtg, color = :Tₗ_1)
