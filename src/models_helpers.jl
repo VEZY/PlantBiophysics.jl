@@ -171,6 +171,18 @@ function to_initialise(m::T) where {T<:AbstractComponentModel}
     to_init[is_not_init_(m.status, to_init)]
 end
 
+function to_initialise(m::T) where {T<:Dict{String,AbstractComponentModel}}
+    toinit = Dict{String,Vector{Symbol}}()
+    for (key, value) in m
+        toinit_ = to_initialise(value)
+
+        if length(toinit_) > 0
+            push!(toinit, key => toinit_)
+        end
+    end
+
+    return toinit
+end
 
 """
     init_status!(object::Dict{String,AbstractComponentModel};vars...)
