@@ -1,5 +1,9 @@
 # [Model implementation in 5 minutes](@id model_implementation_page)
 
+```@setup usepkg
+using PlantBiophysics
+```
+
 ## Introduction
 
 `PlantBiophysics.jl` was designed to make new model implementation very simple. So let's learn about how to implement you own model with a simple example: implementing a new stomatal conductance model.
