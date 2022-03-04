@@ -178,7 +178,7 @@ export AbstractModel
 
 # Components (structures that hold models)
 export AbstractComponentModel
-export LeafModels
+export LeafModels, ComponentModels
 
 # Parameters optimization
 export fit
