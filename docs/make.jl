@@ -23,14 +23,6 @@ makedocs(;
             "TL;DR" => "./getting_started/get_started.md",
             "Parameter fitting" => "./getting_started/first_fit.md",
         ],
-        "Fitting tutorials" => "./fitting/parameter_fitting.md",
-        "Simulation tutorials" => [
-            "Simple Simulation" => "./simulation/first_simulation.md",
-            "Several time steps" => "./simulation/several_simulation.md",
-            "Several objects" => "./simulation/several_objects_simulation.md",
-            "Plant simulation" => "./simulation/mtg_simulation.md",
-            "Uncertainty propagation" => "./simulation/uncertainty_propagation.md",
-        ],
         "Concepts" => Any[
             "Package design"=>"./concepts/package_design.md",
             "Implement a model"=>"./concepts/implement_a_model.md",
@@ -43,6 +35,14 @@ makedocs(;
         ],
         "Components and methods" => Any[
             "LeafModels"=>"./components/leafmodels.md",
+        ],
+        "Fitting tutorials" => "./fitting/parameter_fitting.md",
+        "Simulation tutorials" => [
+            "Simple Simulation" => "./simulation/first_simulation.md",
+            "Several time steps" => "./simulation/several_simulation.md",
+            "Several objects" => "./simulation/several_objects_simulation.md",
+            "Whole-plant simulation" => "./simulation/mtg_simulation.md",
+            "Uncertainty propagation" => "./simulation/uncertainty_propagation.md",
         ],
         "API" => "functions.md"
     ]

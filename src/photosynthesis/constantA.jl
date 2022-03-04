@@ -40,8 +40,8 @@ Modify the leaf status in place for A, Gₛ and Cᵢ:
 - `leaf::LeafModels{.,.,<:ConstantA,<:AbstractGsModel,.}`: A [`LeafModels`](@ref) struct holding the parameters for
 the model with initialisations for:
     - `Cₛ` (mol m-2 s-1): surface CO₂ concentration.
-    - `Dₗ` (mol m-2 s-1): vapour pressure difference between the surface and the air saturation
-    vapour pressure in case you're using the stomatal conductance model of [`Medlyn`](@ref).
+    - `Dₗ` (kPa): vapour pressure difference between the surface and the saturated
+    air vapour pressure in case you're using the stomatal conductance model of [`Medlyn`](@ref).
 - `meteo`: meteorology structure, see [`Atmosphere`](@ref)
 - `constants = Constants()`: physical constants. See [`Constants`](@ref) for more details
 

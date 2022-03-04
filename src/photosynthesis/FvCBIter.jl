@@ -32,7 +32,7 @@ struct FvcbIter{T} <: AbstractAModel
     ΔT_A::T
 end
 
-function FvcbIter(;Tᵣ = 25.0, VcMaxRef = 200.0, JMaxRef = 250.0, RdRef = 0.6, Eₐᵣ = 46390.0,
+function FvcbIter(; Tᵣ = 25.0, VcMaxRef = 200.0, JMaxRef = 250.0, RdRef = 0.6, Eₐᵣ = 46390.0,
     O₂ = 210.0, Eₐⱼ = 29680.0, Hdⱼ = 200000.0, Δₛⱼ = 631.88, Eₐᵥ = 58550.0, Hdᵥ = 200000.0,
     Δₛᵥ = 629.26, α = 0.425, θ = 0.90, iter_A_max = 20, ΔT_A = 1.0)
 
@@ -40,7 +40,7 @@ function FvcbIter(;Tᵣ = 25.0, VcMaxRef = 200.0, JMaxRef = 250.0, RdRef = 0.6, 
     # we don't want to set each parameter to ± 0 by hand.
     param_float = promote(Tᵣ, VcMaxRef, JMaxRef, RdRef, Eₐᵣ, O₂, Eₐⱼ, Hdⱼ, Δₛⱼ, Eₐᵥ, Hdᵥ, Δₛᵥ, α, θ, ΔT_A)
     FvcbIter(
-        param_float[1:end - 1]...,
+        param_float[1:end-1]...,
         iter_A_max,
         param_float[end]
     )
@@ -82,8 +82,8 @@ the model with initialisations for:
     - `Tₗ` (°C): leaf temperature
     - `PPFD` (μmol m-2 s-1): absorbed Photosynthetic Photon Flux Density
     - `Gbc` (mol m-2 s-1): boundary conductance for CO₂
-    - `Dₗ` (mol m-2 s-1): vapour pressure difference between the surface and the air saturation
-    vapour pressure in case you're using the stomatal conductance model of [`Medlyn`](@ref).
+    - `Dₗ` (kPa): vapour pressure difference between the surface and the saturated
+    air vapour pressure in case you're using the stomatal conductance model of [`Medlyn`](@ref).
 - `meteo`: meteorology structure, see [`Atmosphere`](@ref)
 - `constants = Constants()`: physical constants. See [`Constants`](@ref) for more details
 
@@ -138,11 +138,11 @@ function photosynthesis!_(leaf::LeafModels{I,E,<:FvcbIter,<:AbstractGsModel,S}, 
     Km = get_km(Tₖ, Tᵣₖ, leaf.photosynthesis.O₂, constants.R) # effective Michaelis–Menten coefficient for CO2
 
     # Maximum electron transport rate at the given leaf temperature (μmol m-2 s-1):
-    JMax = arrhenius(leaf.photosynthesis.JMaxRef,leaf.photosynthesis.Eₐⱼ,Tₖ,Tᵣₖ,
-                        leaf.photosynthesis.Hdⱼ,leaf.photosynthesis.Δₛⱼ,constants.R)
+    JMax = arrhenius(leaf.photosynthesis.JMaxRef, leaf.photosynthesis.Eₐⱼ, Tₖ, Tᵣₖ,
+        leaf.photosynthesis.Hdⱼ, leaf.photosynthesis.Δₛⱼ, constants.R)
     # Maximum rate of Rubisco activity at the given leaf temperature (μmol m-2 s-1):
-    VcMax = arrhenius(leaf.photosynthesis.VcMaxRef,leaf.photosynthesis.Eₐᵥ,Tₖ,Tᵣₖ,
-                        leaf.photosynthesis.Hdᵥ,leaf.photosynthesis.Δₛᵥ,constants.R)
+    VcMax = arrhenius(leaf.photosynthesis.VcMaxRef, leaf.photosynthesis.Eₐᵥ, Tₖ, Tᵣₖ,
+        leaf.photosynthesis.Hdᵥ, leaf.photosynthesis.Δₛᵥ, constants.R)
     # Rate of mitochondrial respiration at the given leaf temperature (μmol m-2 s-1):
     Rd = arrhenius(leaf.photosynthesis.RdRef, leaf.photosynthesis.Eₐᵣ, Tₖ, Tᵣₖ, constants.R)
     # Rd is also described as the CO2 release in the light by processes other than the PCO
@@ -177,15 +177,15 @@ function photosynthesis!_(leaf::LeafModels{I,E,<:FvcbIter,<:AbstractGsModel,S}, 
         end
 
         if abs(A_new - leaf.status.A) / leaf.status.A <= leaf.photosynthesis.ΔT_A ||
-            iter_inc == leaf.photosynthesis.iter_A_max
+           iter_inc == leaf.photosynthesis.iter_A_max
 
             iter = false
         end
 
-leaf.status.A = A_new
+        leaf.status.A = A_new
 
         iter_inc += 1
-end
+    end
 end
 
 """

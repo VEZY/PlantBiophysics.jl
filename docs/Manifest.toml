@@ -1175,9 +1175,9 @@ uuid = "9a3f8284-a2c9-5f02-9a11-845980a1fd5c"
 
 [[Ratios]]
 deps = ["Requires"]
-git-tree-sha1 = "01d341f502250e81f6fec0afe662aa861392a3aa"
+git-tree-sha1 = "dc84268fe0e3335a62e315a3a7cf2afa7178a734"
 uuid = "c84ed2f1-dad5-54f0-aa8e-dbefe2724439"
-version = "0.4.2"
+version = "0.4.3"
 
 [[RecipesBase]]
 git-tree-sha1 = "6bf3f380ff52ce0832ddd3a2a7b9538ed1bcca7d"
