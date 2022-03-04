@@ -264,8 +264,8 @@ end
 
 
 """
-    Component(interception, energy, status)
-    Component(;interception = missing, energy = missing, status...)
+    ComponentModels(interception, energy, status)
+    ComponentModels(;interception = missing, energy = missing, status...)
 
 Generic component, which is a subtype of `AbstractComponentModel` implementing a component with
 an interception model and an energy balance model. It can be anything such as a trunk, a
@@ -282,18 +282,18 @@ the component. Values are set to `0.0` if not provided as VarArgs (see examples)
 
 ```julia
 # An internode in a plant:
-Component(energy = Monteith())
+ComponentModels(energy = Monteith())
 ```
 """
-struct Component{I<:Union{Missing,AbstractInterceptionModel},E<:Union{Missing,AbstractEnergyModel},S<:MutableNamedTuple} <: AbstractComponentModel
+struct ComponentModels{I<:Union{Missing,AbstractInterceptionModel},E<:Union{Missing,AbstractEnergyModel},S<:MutableNamedTuple} <: AbstractComponentModel
     interception::I
     energy::E
     status::S
 end
 
-function Component(; interception = missing, energy = missing, status...)
+function ComponentModels(; interception = missing, energy = missing, status...)
     status = init_variables_manual(interception, energy; status...)
-    Component(interception, energy, status)
+    ComponentModels(interception, energy, status)
 end
 
 
@@ -301,18 +301,18 @@ end
     Base.copy(l::LeafModels)
     Base.copy(l::LeafModels, status)
 
-Copy a [`Component`](@ref), eventually with new values for the status.
+Copy a [`ComponentModels`](@ref), eventually with new values for the status.
 """
-function Base.copy(l::T) where {T<:Component}
-    Component(
+function Base.copy(l::T) where {T<:ComponentModels}
+    ComponentModels(
         l.interception,
         l.energy,
         deepcopy(l.status)
     )
 end
 
-function Base.copy(l::T, status) where {T<:Component}
-    Component(
+function Base.copy(l::T, status) where {T<:ComponentModels}
+    ComponentModels(
         l.interception,
         l.energy,
         status

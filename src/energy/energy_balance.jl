@@ -16,7 +16,8 @@ At the moment, two models are implemented in the package:
 
 # Arguments
 
-- `object`: a [`Component`](@ref) struct ([`AbstractComponentModel`](@ref)), or a Dict/Array of.
+- `object`: an [`AbstractComponentModel`](@ref) (*e.g.* [`LeafModels`](@ref)), a Dict/Array
+of, or an MTG.
 - `meteo::Union{AbstractAtmosphere,Weather}`: meteorology structure, see [`Atmosphere`](@ref) or
 [`Weather`](@ref)
 - `constants = Constants()`: physical constants. See [`Constants`](@ref) for more details
@@ -77,7 +78,7 @@ model = read_model(joinpath(dirname(dirname(pathof(PlantBiophysics))),"test","in
 init_status!(model, Rₛ = 13.747, sky_fraction = 1.0, PPFD = 1500.0, Tₗ = 25.0, d = 0.03)
 
 # NB: To know which variables has to be initialised according to the models used, you can use
-# `to_initialise(Component)`, *e.g.*:
+# `to_initialise(ComponentModels)`, *e.g.*:
 to_initialise(model["Leaf"])
 
 # Running a simulation for all component types in the same scene:

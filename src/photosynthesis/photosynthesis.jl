@@ -17,7 +17,8 @@ fields of `leaf`. For exemple to use the implementation of the Farquhar–von Ca
 
 # Arguments
 
-- `object`: a [`Component`](@ref) struct ([`AbstractComponentModel`](@ref)), or a Dict/Array of.
+- `object`: an [`AbstractComponentModel`](@ref) (*e.g.* [`LeafModels`](@ref)), a Dict/Array
+of, or an MTG.
 - `meteo::Union{AbstractAtmosphere,Weather}`: meteorology structure, see [`Atmosphere`](@ref) or
 [`Weather`](@ref)
 - `constants = Constants()`: physical constants. See [`Constants`](@ref) for more details
