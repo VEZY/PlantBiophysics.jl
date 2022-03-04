@@ -364,6 +364,47 @@ function status(components::T) where {T<:AbstractDict{N,<:AbstractComponentModel
     Dict([k => v.status for (k, v) in components])
 end
 
+function status(component, key::Symbol)
+    get_status_var(component.status, key)
+end
+
+function get_status_var(st::MutableNamedTuples.MutableNamedTuple, key::Symbol)
+    getproperty(st, key)
+end
+
+
+function get_status_var(st::MutableNamedTuples.MutableNamedTuple, key)
+    getproperty(st, Symbol(key))
+end
+
+function get_status_var(st::T, key) where {T<:Vector{MutableNamedTuples.MutableNamedTuple}}
+    [getproperty(st_i, Symbol(key)) for st_i in st]
+end
+
+"""
+    getindex(component::LeafModels, key::Symbol)
+    getindex(component::LeafModels, key)
+
+Get a variable from the status of a LeafModels component.
+
+Carefull, indexing with an integer will return the ith time-step of the status instead.
+
+# Examples
+
+```julia
+lm = LeafModels(
+    energy = Monteith(),
+    photosynthesis = Fvcb(),
+    stomatal_conductance = ConstantGs(0.0, 0.0011),
+    Cᵢ = 380.0, Tₗ = 20.0
+)
+
+lm[:Tₗ]
+```
+"""
+function Base.getindex(component::AbstractComponentModel, key)
+    get_status_var(component.status, key)
+end
 
 """
     check_status_meteo(component,weather)

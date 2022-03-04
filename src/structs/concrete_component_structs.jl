@@ -65,7 +65,14 @@ LeafModels(photosynthesis = Fvcb(),Cᵢ = 380.0)
 LeafModels(photosynthesis = Fvcb(), energy = Monteith(), Cᵢ = 380.0, Tₗ = 20.0)
 ```
 """
-struct LeafModels{I<:Union{Missing,AbstractInterceptionModel},E<:Union{Missing,AbstractEnergyModel},A<:Union{Missing,AbstractAModel},Gs<:Union{Missing,AbstractGsModel},S<:Union{MutableNamedTuple,Vector{MutableNamedTuple}}} <: AbstractComponentModel
+struct LeafModels{
+    I<:Union{Missing,AbstractInterceptionModel},
+    E<:Union{Missing,AbstractEnergyModel},
+    A<:Union{Missing,AbstractAModel},
+    Gs<:Union{Missing,AbstractGsModel},
+    S<:Union{MutableNamedTuple,Vector{MutableNamedTuple}}
+} <: AbstractComponentModel
+
     interception::I
     energy::E
     photosynthesis::A
@@ -180,6 +187,7 @@ function Base.getindex(component::T, i::Integer) where {T<:AbstractComponentMode
     end
 end
 
+# This is the implementation for LeafModels:
 function Base.getindex(component::LeafModels, i::Integer) where {I,E,A,Gs}
     LeafModels(
         component.interception,
@@ -192,38 +200,8 @@ end
 
 # Same but with a status with only one time-step (will return the same each-time)
 function Base.getindex(component::LeafModels{I,E,A,Gs,<:MutableNamedTuples.MutableNamedTuple}, i) where {I,E,A,Gs}
-    component
+    component.status
 end
-
-"""
-    getindex(component::LeafModels, key::Symbol)
-    getindex(component::LeafModels, key)
-
-Get a variable from the status of a LeafModels component.
-
-Carefull, indexing with an integer will return the ith time-step of the status instead.
-
-# Examples
-
-```julia
-lm = LeafModels(
-    energy = Monteith(),
-    photosynthesis = Fvcb(),
-    stomatal_conductance = ConstantGs(0.0, 0.0011),
-    Cᵢ = 380.0, Tₗ = 20.0
-)
-
-lm[:Tₗ]
-```
-"""
-function Base.getindex(component::LeafModels, key::T) where {I,E,A,Gs,T<:Symbol}
-    getproperty(component.status, key)
-end
-
-function Base.getindex(component::LeafModels, key) where {I,E,A,Gs}
-    getproperty(component.status, Symbol(key))
-end
-
 
 """
     DataFrame(components <: AbstractArray{<:AbstractComponentModel})
