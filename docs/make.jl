@@ -23,27 +23,27 @@ makedocs(;
             "TL;DR" => "./getting_started/get_started.md",
             "Parameter fitting" => "./getting_started/first_fit.md",
         ],
-        "Concepts" => Any[
-            "Package design"=>"./concepts/package_design.md",
-            "Implement a model"=>"./concepts/implement_a_model.md",
-        ],
-        "Generic models" => Any[
+        "Design" => "./concepts/package_design.md",
+        "Models" => Any[
             "Photosynthesis"=>"./models/photosynthesis.md",
             "Stomatal conductance"=>"./models/gs.md",
             "Energy balance"=>"./models/energy_balance.md",
             "Light interception"=>"./models/light.md",
+            "Implement a model"=>"./models/implement_a_model.md",
         ],
         "Components and methods" => Any[
             "LeafModels"=>"./components/leafmodels.md",
+            "CompnentModels"=>"./components/componentmodels.md",
+            "Implement a component model"=>"./components/implement_a_component.md",
         ],
-        "Fitting tutorials" => "./fitting/parameter_fitting.md",
-        "Simulation tutorials" => [
+        "Tutorial: Parameter fitting" => "./fitting/parameter_fitting.md",
+        "Tutorial: Simulation" => [
             "Simple Simulation" => "./simulation/first_simulation.md",
             "Several time steps" => "./simulation/several_simulation.md",
             "Several objects" => "./simulation/several_objects_simulation.md",
             "Whole-plant simulation" => "./simulation/mtg_simulation.md",
-            "Uncertainty propagation" => "./simulation/uncertainty_propagation.md",
         ],
+        "Tutorial: Uncertainty propagation" => "./simulation/uncertainty_propagation.md",
         "API" => "functions.md"
     ]
 )

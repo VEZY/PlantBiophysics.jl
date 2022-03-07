@@ -66,19 +66,27 @@ macro gen_process_methods(f)
             # Check if the meteo data and the status have the same length (or length 1)
             check_status_wheather(object, meteo)
 
-            # Computing for each time-steps:
-            for (i, meteo_i) in enumerate(meteo.data)
-                # Each object in a time-step:
-                for obj in object
-                    $(mutating_f)(obj[i], meteo_i, constants)
+            # Each object:
+            for obj in object
+                # Computing for each time-step:
+                for (i, meteo_i) in enumerate(meteo.data)
+                    $(mutating_f)(copy(obj, obj[i]), meteo_i, constants)
                 end
             end
 
         end
 
-        # If we call weather with one component only, put it in an Array and call the function above
+        # If we call weather with one component only:
         function $(esc(mutating_f))(object::AbstractComponentModel, meteo::Weather, constants = Constants())
             $(mutating_f)([object], meteo, constants)
+
+            # Check if the meteo data and the status have the same length (or length 1)
+            check_status_wheather(object, meteo)
+
+            # Computing for each time-steps:
+            for (i, meteo_i) in enumerate(meteo.data)
+                $(mutating_f)(copy(object, object[i]), meteo_i, constants)
+            end
         end
 
         # Method for calling the process without any meteo. In this case we need to check if

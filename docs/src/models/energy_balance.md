@@ -1,5 +1,7 @@
 # Energy balance
 
+Energy balance is the process of computing the balance between influx and outflux of energy.
+
 ```@setup schymanskifig6a
 include("./schymanski.jl")
 ```
