@@ -30,16 +30,16 @@ init_mtg_models!(mtg, models)
     @test leaf_node[:models].photosynthesis === photo
     @test leaf_node[:models].energy === nrj
     @test leaf_node[:models].stomatal_conductance === Gs
-    @test leaf_node[:models].status[:Rₛ] == leaf_node[:Rₛ]
-    @test leaf_node[:models].status[:PPFD] == leaf_node[:Ra_PAR_f] * 4.57
-    @test leaf_node[:models].status[:d] == 0.03
+    @test status(leaf_node[:models], :Rₛ) == leaf_node[:Rₛ]
+    @test status(leaf_node[:models], :PPFD) == leaf_node[:Ra_PAR_f] * 4.57
+    @test status(leaf_node[:models], :d) == 0.03
 end
 
 
 @testset "mtg: pull_status!" begin
     leaf1 = get_node(mtg, 2070)
     pull_status!(leaf1)
-    @test leaf1[:Rₛ] == leaf1[:models][:Rₛ]
+    @test leaf1[:Rₛ] == status(leaf1[:models], :Rₛ)
     @test leaf1[:PPFD] == leaf1[:models][:PPFD]
 
     leaf1[:models].status.Rₛ = 300.0

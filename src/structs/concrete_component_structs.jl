@@ -199,7 +199,7 @@ function Base.getindex(component::LeafModels, i::Integer) where {I,E,A,Gs}
 end
 
 # Same but with a status with only one time-step (will return the same each-time)
-function Base.getindex(component::LeafModels{I,E,A,Gs,<:MutableNamedTuples.MutableNamedTuple}, i) where {I,E,A,Gs}
+function Base.getindex(component::LeafModels{I,E,A,Gs,<:MutableNamedTuples.MutableNamedTuple}, i::Integer) where {I,E,A,Gs}
     component.status
 end
 
