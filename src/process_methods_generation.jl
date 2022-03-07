@@ -89,9 +89,9 @@ macro gen_process_methods(f)
             if typeof(status(object)) == MutableNamedTuples.MutableNamedTuple
                 $(esc(f_))(object, meteo, constants)
             else
-                # We have several time-steps here
+                # We have several time-steps here, we pass each time-step after another
                 for i = 1:length(status(object))
-                    $(esc(f_))(object[i], meteo, constants)
+                    $(esc(f_))(copy(object, object[i]), meteo, constants)
                 end
             end
         end
