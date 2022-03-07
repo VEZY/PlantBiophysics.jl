@@ -33,7 +33,7 @@ makedocs(;
         ],
         "Components and methods" => Any[
             "LeafModels"=>"./components/leafmodels.md",
-            "CompnentModels"=>"./components/componentmodels.md",
+            "ComponentModels"=>"./components/componentmodels.md",
             "Implement a component model"=>"./components/implement_a_component.md",
         ],
         "Tutorial: Parameter fitting" => "./fitting/parameter_fitting.md",
