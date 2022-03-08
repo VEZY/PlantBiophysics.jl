@@ -2,6 +2,9 @@
 """
 Constant (forced) assimilation, given in ``μmol\\ m^{-2}\\ s^{-1}``.
 
+See also [`ConstantAGs`](@ref).
+
+
 # Examples
 
 ```julia
@@ -13,11 +16,11 @@ Base.@kwdef struct ConstantA{T} <: AbstractAModel
 end
 
 function inputs(::ConstantA)
-    (:Cₛ,)
+    (:A,)
 end
 
 function outputs(::ConstantA)
-    (:A, :Gₛ, :Cᵢ)
+    (:A,)
 end
 
 Base.eltype(x::ConstantA) = typeof(x).parameters[1]
@@ -25,57 +28,37 @@ Base.eltype(x::ConstantA) = typeof(x).parameters[1]
 """
     photosynthesis!_(leaf::LeafModels{I,E,<:ConstantA,<:AbstractGsModel,S},constants = Constants())
 
-Constant photosynthesis.
+Constant photosynthesis (forcing the value).
 
 # Returns
 
-Modify the leaf status in place for A, Gₛ and Cᵢ:
+Modify the leaf status in place for A with a constant value:
 
 - A: carbon assimilation, set to leaf.photosynthesis.A (μmol[CO₂] m-2 s-1)
-- Gₛ: stomatal conductance for CO₂ (mol[CO₂] m-2 s-1)
-- Cᵢ: intercellular CO₂ concentration (ppm)
 
 # Arguments
 
-- `leaf::LeafModels{.,.,<:ConstantA,<:AbstractGsModel,.}`: A [`LeafModels`](@ref) struct holding the parameters for
-the model with initialisations for:
-    - `Cₛ` (mol m-2 s-1): surface CO₂ concentration.
-    - `Dₗ` (kPa): vapour pressure difference between the surface and the saturated
-    air vapour pressure in case you're using the stomatal conductance model of [`Medlyn`](@ref).
+- `leaf::LeafModels{.,.,<:ConstantA,.,.}`: A [`LeafModels`](@ref) struct holding the parameters for
+the model.
 - `meteo`: meteorology structure, see [`Atmosphere`](@ref)
 - `constants = Constants()`: physical constants. See [`Constants`](@ref) for more details
-
-# Note
-
-`Cₛ` (and `Dₗ` if you use [`Medlyn`](@ref)) must be initialised by providing them as keyword
-arguments (see examples). If in doubt, it is simpler to compute the energy balance of the
-leaf with the photosynthesis to get those variables. See [`energy_balance`](@ref) for more
-details.
 
 # Examples
 
 ```julia
 meteo = Atmosphere(T = 20.0, Wind = 1.0, P = 101.3, Rh = 0.65)
-leaf = LeafModels(photosynthesis = ConstantA(),
-            stomatal_conductance = Medlyn(0.03, 12.0),
-            Cₛ = 400.0)
+leaf = LeafModels(photosynthesis = ConstantA(26.0))
 
 photosynthesis!_(leaf,meteo,Constants())
 
 leaf.status.A
 ```
 """
-function photosynthesis!_(leaf::LeafModels{I,E,<:ConstantA,<:AbstractGsModel,S}, meteo,
-    constants = Constants()) where {I,E,S}
+function photosynthesis!_(leaf::LeafModels{I,E,<:ConstantA,G,S}, meteo,
+    constants = Constants()) where {I,E,G,S}
 
     # Net assimilation (μmol m-2 s-1)
     leaf.status.A = leaf.photosynthesis.A
 
-    # Stomatal conductance (mol[CO₂] m-2 s-1)
-    leaf.status.Gₛ = gs(leaf, meteo)
-
-    # Intercellular CO₂ concentration (Cᵢ, μmol mol)
-    leaf.status.Cᵢ = min(leaf.status.Cₛ, leaf.status.Cₛ - leaf.status.A / leaf.status.Gₛ)
-
-    nothing
+    return nothing
 end

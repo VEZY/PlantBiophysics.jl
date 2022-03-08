@@ -49,6 +49,7 @@ include("light_interception/Translucent.jl")
 # Photosynthesis related files:
 include("photosynthesis/photosynthesis.jl")
 include("photosynthesis/constantA.jl")
+include("photosynthesis/constantAGs.jl")
 include("photosynthesis/FvCB.jl")
 include("photosynthesis/FvCBIter.jl")
 include("photosynthesis/FvCBRaw.jl")
@@ -145,7 +146,7 @@ export AbstractInterceptionModel
 
 # Photosynthesis
 export AbstractAModel
-export ConstantA
+export ConstantA, ConstantAGs
 export Fvcb # Parameters for the coupled Farquhar et al. (1980) model
 export FvcbIter # To update...
 export FvcbRaw # Parameters for the original Farquhar et al. (1980) model
