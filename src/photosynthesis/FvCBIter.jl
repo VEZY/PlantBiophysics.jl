@@ -164,7 +164,7 @@ function photosynthesis!_(leaf::LeafModels{I,E,<:FvcbIter,<:AbstractGsModel,S}, 
 
     while iter
         # Stomatal conductance (mol[CO₂] m-2 s-1)
-        gs!(leaf, meteo)
+        gs!_(leaf, meteo)
         # Surface CO₂ concentration (ppm):
         leaf.status.Cₛ = min(meteo.Cₐ, meteo.Cₐ - leaf.status.A / leaf.status.Gbc)
         # Intercellular CO₂ concentration (ppm):

@@ -60,7 +60,7 @@ These processes can be simulated using different models.
 
 A process is simulated using a particular implementation of a model. The user can choose which model is used to simulate a process when instantiating the component models.
 
-You can see the list of available models for each processes in the [Generic models](@ref) section.
+You can see the list of available models for each processes in the sections about the models, *e.g.* [photosynthesis_page](@ref).
 
 Each model is implemented using a structure that lists the parameters of the model. For example PlantBiophysics provides the [`Fvcb`](@ref) structure for the implementation of the Farquhar–von Caemmerer–Berry model for C3 photosynthesis (Farquhar et al., 1980; von Caemmerer and Farquhar, 1981), and the [`Medlyn`](@ref) structure for the model of Medlyn et al. (2011).
 
@@ -347,9 +347,7 @@ For example, you can simulate a constant assimilation of a leaf using the follow
 meteo = Atmosphere(T = 20.0, Wind = 1.0, P = 101.3, Rh = 0.65)
 
 leaf = LeafModels(
-    photosynthesis = ConstantA(25.0),
-    stomatal_conductance = ConstantGs(0.03,0.1),
-    Cₛ = 380.0
+    photosynthesis = ConstantA(25.0)
 )
 
 photosynthesis(leaf,meteo)

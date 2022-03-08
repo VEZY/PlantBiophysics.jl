@@ -213,7 +213,7 @@ DataFrame(leaf)
 
 We can easily investigate the effects of parameters on the simulation. For example we can see what is the effect of PPFD on J.
 
-## J~PPFD
+### J~PPFD
 
 First we import the packages needed:
 

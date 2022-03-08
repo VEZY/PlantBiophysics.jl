@@ -68,7 +68,7 @@ function photosynthesis!_(leaf::LeafModels{I,E,<:ConstantAGs,<:AbstractGsModel,S
     leaf.status.A = leaf.photosynthesis.A
 
     # Stomatal conductance (mol[CO₂] m-2 s-1)
-    gs!(leaf, meteo)
+    gs!_(leaf, meteo)
 
     # Intercellular CO₂ concentration (Cᵢ, μmol mol)
     leaf.status.Cᵢ = min(leaf.status.Cₛ, leaf.status.Cₛ - leaf.status.A / leaf.status.Gₛ)
