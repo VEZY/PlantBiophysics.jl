@@ -82,8 +82,8 @@ the model with initialisations for:
     - `Tₗ` (°C): leaf temperature
     - `PPFD` (μmol m-2 s-1): absorbed Photosynthetic Photon Flux Density
     - `Gbc` (mol m-2 s-1): boundary conductance for CO₂
-    - `Dₗ` (kPa): vapour pressure difference between the surface and the saturated
-    air vapour pressure in case you're using the stomatal conductance model of [`Medlyn`](@ref).
+    - `Dₗ` (kPa): is the difference between the vapour pressure at the leaf surface and the
+    saturated air vapour pressure in case you're using the stomatal conductance model of [`Medlyn`](@ref).
 - `meteo`: meteorology structure, see [`Atmosphere`](@ref)
 - `constants = Constants()`: physical constants. See [`Constants`](@ref) for more details
 
@@ -99,9 +99,11 @@ balance of the leaf with the photosynthesis to get those variables. See
 ```julia
 meteo = Atmosphere(T = 20.0, Wind = 1.0, P = 101.3, Rh = 0.65)
 
-leaf = LeafModels(photosynthesis = FvcbIter(),
-            stomatal_conductance = Medlyn(0.03, 12.0),
-            Tₗ = 25.0, PPFD = 1000.0, Gbc = 0.67, Dₗ = meteo.VPD)
+leaf = LeafModels(
+    photosynthesis = FvcbIter(),
+    stomatal_conductance = Medlyn(0.03, 12.0),
+    Tₗ = 25.0, PPFD = 1000.0, Gbc = 0.67, Dₗ = meteo.VPD
+)
 # NB: we need  to initalise Tₗ, PPFD and Gbc.
 
 photosynthesis!_(leaf,meteo,Constants())

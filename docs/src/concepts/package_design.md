@@ -93,7 +93,7 @@ Perfect! Now is that all we need for making a simulation? Well, usually no. Mode
 
 ### Model initialisation
 
-Remember that our component models have a field named `:status`? Well this status is actually used to hold all inputs and outputs of our models. For example the [`Fvcb`](@ref) model needs the leaf temperature (`Tₗ`, Celsius degree), the Photosynthetic Photon Flux Density (`PPFD`, μmol m-2 s-1) and the CO₂ concentration at the leaf surface (`Cₛ`, ppm) to run. The [`Medlyn`](@ref) model needs the assimilation (`A`, μmol m-2 s-1), the CO₂ concentration at the leaf surface (`Cₛ`, ppm) and the vapour pressure difference between the surface and the saturated air vapour pressure (`Dₗ`, kPa). How do we know that? Well, we can use [`inputs`](@ref) to know:
+Remember that our component models have a field named `:status`? Well this status is actually used to hold all inputs and outputs of our models. For example the [`Fvcb`](@ref) model needs the leaf temperature (`Tₗ`, Celsius degree), the Photosynthetic Photon Flux Density (`PPFD`, ``μmol\\ m^{-2}\\ s^{-1}``) and the CO₂ concentration at the leaf surface (`Cₛ`, ppm) to run. The [`Medlyn`](@ref) model needs the assimilation (`A`, ``μmol\\ m^{-2}\\ s^{-1}``), the CO₂ concentration at the leaf surface (`Cₛ`, ppm) and the vapour pressure difference between the surface and the saturated air vapour pressure (`Dₗ`, kPa). How do we know that? Well, we can use [`inputs`](@ref) to know:
 
 ```@example usepkg
 inputs(Fvcb())

@@ -86,7 +86,7 @@ transform!(
 )
 ```
 
-The design of `MultiScaleTreeGraph.transform!()` is very close to the one adopted by `DataFrames`. It helps us compute new variables (or attributes) from others, modify their units or rename them. Here we compute `Rₛ` from the sum of `Ra_PAR_f` (absorbed radiation flux in the PAR) and `Ra_NIR_f` (...in the NIR), `PPFD` from `Ra_PAR_f` using the conversion between W m2 to μmol m-2 s-1, and `d` using a contant value of 0.3m. Note that `sky_fraction` is already computed for each node with the right units thanks to Archimed-ϕ.
+The design of `MultiScaleTreeGraph.transform!()` is very close to the one adopted by `DataFrames`. It helps us compute new variables (or attributes) from others, modify their units or rename them. Here we compute `Rₛ` from the sum of `Ra_PAR_f` (absorbed radiation flux in the PAR) and `Ra_NIR_f` (...in the NIR), `PPFD` from `Ra_PAR_f` using the conversion between ``W\\ m^{2}`` to ``μmol\\ m^{-2}\\ s^{-1}``, and `d` using a contant value of 0.3m. Note that `sky_fraction` is already computed for each node with the right units thanks to Archimed-ϕ.
 
 Then `PlantBiophysics.jl` takes care of the rest and simulate the energy balance over each time-step:
 

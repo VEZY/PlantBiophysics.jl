@@ -4,26 +4,22 @@ Constant stomatal conductance for CO₂ struct.
 
 # Arguments
 
-- `g0`: intercept.
+- `g0`: intercept (only used when calling from a photosynthesis model, *e.g.* Fvcb).
 - `gs`: stomatal conductance.
-- `gs_min = 0.001`: residual conductance. We consider the residual conductance being different
- from `g0` because in practice `g0` can be negative when fitting real-world data.
 
 Then used as follows:
 Gs = ConstantGs(0.0,0.1)
-Gₛ = Gs.g0 + Gs.gs * A
 """
 struct ConstantGs{T} <: AbstractGsModel
     g0::T
     gs::T
-    gs_min::T
 end
 
-function ConstantGs(g0, gs, gs_min)
-    ConstantGs(promote(g0, gs, gs_min)...)
+function ConstantGs(g0, gs)
+    ConstantGs(promote(g0, gs)...)
 end
 
-ConstantGs(g0,gs) = ConstantGs(g0, gs, oftype(gs, 0.001))
+ConstantGs(; g0 = 0.0, gs) = ConstantGs(g0, gs)
 
 function inputs(::ConstantGs)
     (:Gₛ,)
@@ -37,14 +33,14 @@ Base.eltype(x::ConstantGs) = typeof(x).parameters[1]
 
 
 """
-Constant stomatal closure
+Constant stomatal closure. Usually called from a photosynthesis model.
 
 # Note
 
 `meteo` is just declared here for compatibility with other formats of calls.
 """
-function gs_closure(leaf::LeafModels{I,E,A,Gs,S}, meteo = missing) where {I,E,A,Gs <: ConstantGs,S}
-    leaf.stomatal_conductance.gs - leaf.stomatal_conductance.g0
+function gs_closure(leaf::LeafModels{I,E,A,Gs,S}, meteo = missing) where {I,E,A,Gs<:ConstantGs,S}
+    (leaf.stomatal_conductance.gs - leaf.stomatal_conductance.g0) / leaf.status.A
 end
 
 
@@ -56,18 +52,10 @@ Constant stomatal conductance for CO₂ (mol m-2 s-1).
 `meteo` or `gs_mod` are just declared here for compatibility with the call from
 photosynthesis (need a constant way of calling the functions).
 """
-function gs(leaf::LeafModels{I,E,A,Gs,S}, gs_mod) where {I,E,A,Gs <: ConstantGs,S}
-    leaf.stomatal_conductance.gs
-end
-
-function gs(leaf::LeafModels{I,E,A,Gs,S}, meteo::M) where {I,E,A,Gs <: ConstantGs,S,M <: AbstractAtmosphere}
-    leaf.stomatal_conductance.gs
-end
-
-function gs!(leaf::LeafModels{I,E,A,Gs,S}, gs_mod) where {I,E,A,Gs <: ConstantGs,S}
+function gs!_(leaf::LeafModels{I,E,A,Gs,S}, gs_closure) where {I,E,A,Gs<:ConstantGs,S}
     leaf.status.Gₛ = leaf.stomatal_conductance.gs
 end
 
-function gs!(leaf::LeafModels{I,E,A,Gs,S}, meteo::M) where {I,E,A,Gs <: ConstantGs,S,M <: AbstractAtmosphere}
+function gs!_(leaf::LeafModels{I,E,A,Gs,S}, meteo::M, constants = Constants()) where {I,E,A,Gs<:ConstantGs,S,M<:AbstractAtmosphere}
     leaf.status.Gₛ = leaf.stomatal_conductance.gs
 end

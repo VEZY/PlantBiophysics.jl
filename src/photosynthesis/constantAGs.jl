@@ -55,10 +55,10 @@ leaf = LeafModels(
     Cₛ = 400.0, Dₗ = 2.0
 )
 
-photosynthesis!_(leaf,meteo,Constants())
+photosynthesis!(leaf,meteo,Constants())
 
-leaf.status.A
-leaf.status.Cᵢ
+status(leaf, :A)
+status(leaf, :Cᵢ)
 ```
 """
 function photosynthesis!_(leaf::LeafModels{I,E,<:ConstantAGs,<:AbstractGsModel,S}, meteo,
