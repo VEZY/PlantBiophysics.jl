@@ -13,7 +13,7 @@ The stomatal conductance (`Gₛ`, ``mol_{CO_2} \cdot m^{-2} \cdot s^{-1}``) can 
 - [`Medlyn`](@ref): an implementation of the Medlyn et al. (2011) model
 - [`ConstantGs`](@ref): a model to force a constant value for `Gₛ`
 
-You can choose which model to use by passing a component with an assimilation model set to one of the `structs` above.
+You can choose which model to use by passing a component with a stomatal conductance model set to one of the `structs` above.
 
 For example, you can "simulate" a constant assimilation for a leaf using the following:
 
@@ -102,3 +102,10 @@ leaf = LeafModels(stomatal_conductance = ConstantGs(gs = 0.1))
 gs!(leaf,meteo)
 leaf[:Gₛ]
 ```
+
+## References
+
+Medlyn, B. E., E. Dreyer, D. Ellsworth, M. Forstreuter, P. C. Harley, M. U. F. Kirschbaum,
+X. Le Roux, et al. 2002. « Temperature response of parameters of a biochemically based model
+of photosynthesis. II. A review of experimental data ». Plant, Cell & Environment 25 (9): 1167‑79.
+<https://doi.org/10.1046/j.1365-3040.2002.00891.x>.

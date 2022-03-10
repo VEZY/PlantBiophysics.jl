@@ -8,8 +8,7 @@ Monteith and Unsworth (2013)
 - `aₛᵥ = 1`: number of faces of the object that exchange latent heat fluxes (hypostomatous => 1)
 - `ε = 0.955`: emissivity of the object
 - `maxiter = 10`: maximal number of iterations allowed to close the energy balance
-- `ΔT = 0.01` (°C): maximum difference in object temperature between two iterations to
-consider convergence
+- `ΔT = 0.01` (°C): maximum difference in object temperature between two iterations to consider convergence
 
 # Examples
 
@@ -79,28 +78,31 @@ More information [here](https://docs.julialang.org/en/v1/stdlib/Logging/#Environ
 meteo = Atmosphere(T = 22.0, Wind = 0.8333, P = 101.325, Rh = 0.4490995)
 
 # Using a constant value for Gs:
-leaf = LeafModels(energy = Monteith(),
-            photosynthesis = Fvcb(),
-            stomatal_conductance = ConstantGs(0.0, 0.0011),
-            Rₛ = 13.747, sky_fraction = 1.0, d = 0.03)
+leaf = LeafModels(
+    energy = Monteith(),
+    photosynthesis = Fvcb(),
+    stomatal_conductance = ConstantGs(0.0, 0.0011),
+    Rₛ = 13.747, sky_fraction = 1.0, d = 0.03
+)
+
 PlantBiophysics.energy_balance!_(leaf,meteo)
 leaf.status.Rn
 julia> 12.902547446281233
 
 # Using the model from Medlyn et al. (2011) for Gs:
-leaf = LeafModels(energy = Monteith(),
-            photosynthesis = Fvcb(),
-            stomatal_conductance = Medlyn(0.03, 12.0),
-            Rₛ = 13.747, sky_fraction = 1.0, PPFD = 1500.0, d = 0.03)
+leaf = LeafModels(
+    energy = Monteith(),
+    photosynthesis = Fvcb(),
+    stomatal_conductance = Medlyn(0.03, 12.0),
+    Rₛ = 13.747, sky_fraction = 1.0, PPFD = 1500.0, d = 0.03
+)
 
-PlantBiophysics.energy_balance!_(leaf,meteo)
-leaf.status.Rn
-leaf.status.Rₗₗ
-leaf.status.A
-leaf.status.Gₛ
-leaf.status.Cₛ
-leaf.status.Cᵢ
-leaf.status.Gbc
+energy_balance!(leaf,meteo)
+leaf[:Rn]
+leaf[:Rₗₗ]
+leaf[:A]
+
+DataFrame(leaf)
 ```
 
 # References

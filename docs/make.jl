@@ -24,17 +24,17 @@ makedocs(;
             "Parameter fitting" => "./getting_started/first_fit.md",
         ],
         "Design" => "./concepts/package_design.md",
-        "Models" => Any[
+        "Components and methods" => Any[
+            "LeafModels"=>"./components/leafmodels.md",
+            "ComponentModels"=>"./components/componentmodels.md",
+            "Implement a component model"=>"./components/implement_a_component.md",
+        ],
+        "Models for LeafModels" => Any[
             "Photosynthesis"=>"./models/photosynthesis.md",
             "Stomatal conductance"=>"./models/gs.md",
             "Energy balance"=>"./models/energy_balance.md",
             "Light interception"=>"./models/light.md",
             "Implement a model"=>"./models/implement_a_model.md",
-        ],
-        "Components and methods" => Any[
-            "LeafModels"=>"./components/leafmodels.md",
-            "ComponentModels"=>"./components/componentmodels.md",
-            "Implement a component model"=>"./components/implement_a_component.md",
         ],
         "Tutorial: Parameter fitting" => "./fitting/parameter_fitting.md",
         "Tutorial: Simulation" => [
