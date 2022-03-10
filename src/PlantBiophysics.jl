@@ -22,52 +22,66 @@ import LsqFit: curve_fit
 using RecipesBase
 import Statistics: mean
 
-# Generic structures:
-include("structs/Abstract_model_structs.jl")
-include("structs/concrete_component_structs.jl")
+# Abstract structures:
+include("Abstract_model_structs.jl")
+
+# Component models
+include("component_models/leafmodels.jl")
+include("component_models/componentmodels.jl")
+
+# Component status
+include("component_models/component_status.jl")
+
+# Copy component models
+include("component_models/copy.jl")
 
 # Physical constants:
-include("structs/constants.jl")
+include("constants.jl")
 
 # Atmosphere computations (vapor pressure...)
-include("structs/atmosphere.jl")
+include("climate/variables_computations.jl")
+include("climate/atmosphere.jl")
+include("climate/weather.jl")
 
-# Models helpers:
-include("models_helpers.jl")
+# Checks for status and weather (same length):
+include("checks/status_weather_corresp.jl")
 
 # Conversions
 include("conversions.jl")
+include("dataframe.jl")
 
 # Automatic process methods generation:
-include("process_methods_generation.jl")
+include("processes/process_methods_generation.jl")
+include("processes/models_inputs_outputs.jl")
+include("processes/model_initialisation.jl")
 
 # Light interception
-include("light_interception/generic_structs.jl")
-include("light_interception/Ignore.jl")
-include("light_interception/Translucent.jl")
+include("processes/light_interception/generic_structs.jl")
+include("processes/light_interception/Ignore.jl")
+include("processes/light_interception/Translucent.jl")
 
 # Photosynthesis related files:
-include("photosynthesis/photosynthesis.jl")
-include("photosynthesis/constantA.jl")
-include("photosynthesis/constantAGs.jl")
-include("photosynthesis/FvCB.jl")
-include("photosynthesis/FvCBIter.jl")
-include("photosynthesis/FvCBRaw.jl")
-include("photosynthesis/temperature-dependence.jl")
+include("processes/photosynthesis/photosynthesis.jl")
+include("processes/photosynthesis/constantA.jl")
+include("processes/photosynthesis/constantAGs.jl")
+include("processes/photosynthesis/FvCB.jl")
+include("processes/photosynthesis/FvCBIter.jl")
+include("processes/photosynthesis/FvCBRaw.jl")
+include("processes/photosynthesis/temperature-dependence.jl")
 
 # Stomatal conductance related files:
-include("conductances/stomatal/stomatal_conductance.jl")
-include("conductances/stomatal/constantGs.jl")
-include("conductances/stomatal/medlyn.jl")
+include("processes/conductances/stomatal/stomatal_conductance.jl")
+include("processes/conductances/stomatal/constantGs.jl")
+include("processes/conductances/stomatal/medlyn.jl")
 
 # Boundary layer conductance:
-include("conductances/boundary/gb.jl")
+include("processes/conductances/boundary/gb.jl")
 
 # Energy balance
-include("energy/longwave_energy.jl")
-include("energy/energy_balance.jl")
-include("energy/Missing.jl")
-include("energy/Monteith.jl")
+include("processes/energy/longwave_energy.jl")
+include("processes/energy/energy_balance.jl")
+include("processes/energy/Missing.jl")
+include("processes/energy/Monteith.jl")
 
 # File IO
 include("io/read_model.jl")

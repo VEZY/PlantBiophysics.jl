@@ -85,7 +85,7 @@ leaf = LeafModels(
     Rₛ = 13.747, sky_fraction = 1.0, d = 0.03
 )
 
-PlantBiophysics.energy_balance!_(leaf,meteo)
+energy_balance!(leaf,meteo)
 leaf.status.Rn
 julia> 12.902547446281233
 

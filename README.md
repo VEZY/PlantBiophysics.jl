@@ -81,6 +81,7 @@ For more examples, please read the documentation.
     - add methods to functions eventually (unless they are already compatible)
 - [ ] Use [PrettyTables.jl](https://ronisbr.github.io/PrettyTables.jl/stable/#PrettyTables.jl) for printing the Weather and simulation outputs
 - [ ] Use leaf[:var] in the models implementations instead of leaf.status.var. It will make the code way clearer. Do we have a `setindex!` method for that? Implement it if missing.
+- [ ] Make boundary layer conductances models as for stomatal conductances.
 
 ### Notes
 

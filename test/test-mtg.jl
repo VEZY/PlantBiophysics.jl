@@ -25,8 +25,9 @@ transform!(
 # Initialising all components with their corresponding models and initialisations:
 init_mtg_models!(mtg, models)
 
+
 @testset "mtg: init_mtg_models!" begin
-    leaf_node = get_node(mtg, 2524)
+    leaf_node = get_node(mtg, 816)
     @test leaf_node[:models].photosynthesis === photo
     @test leaf_node[:models].energy === nrj
     @test leaf_node[:models].stomatal_conductance === Gs
@@ -37,7 +38,7 @@ end
 
 
 @testset "mtg: pull_status!" begin
-    leaf1 = get_node(mtg, 2070)
+    leaf1 = get_node(mtg, 815)
     pull_status!(leaf1)
     @test leaf1[:Rₛ] == status(leaf1[:models], :Rₛ)
     @test leaf1[:PPFD] == leaf1[:models][:PPFD]
@@ -60,7 +61,7 @@ end
     @test leaf1[:A] == leaf1[:models][:A]
 
     # Checks if we can pull only some variables:
-    leaf2 = get_node(mtg, 2524)
+    leaf2 = get_node(mtg, 816)
     pull_status!(leaf2, :A)
     @test leaf2[:A] == leaf2[:models][:A]
     @test leaf2[:Rn] === nothing
@@ -115,7 +116,7 @@ end
         ignore_nothing = true
     )
 
-    leaf_node = get_node(mtg, 2070)
+    leaf_node = get_node(mtg, 815)
 
     # Get the Ra_PAR_f before computation to check that it is not modified
     Ra_PAR_f = copy(leaf_node[:Ra_PAR_f])
@@ -131,15 +132,15 @@ end
     @test leaf_node[:sky_fraction] == fill(sky_fraction, length(weather))
 
     # Just use the values of today (28/02/2022) as a reference:
-    @test leaf_node[:A] ≈ [33.6416, 34.0212, 33.8763] atol = 1e-4
-    @test leaf_node[:Tₗ] ≈ [25.5959, 26.2083, 25.3744] atol = 1e-4
-    @test leaf_node[:Rₗₗ] ≈ [-2.3841, -0.85057, -0.297067] atol = 1e-4
-    @test leaf_node[:H] ≈ [28.587, 11.236, 4.418] atol = 1e-2
-    @test leaf_node[:λE] ≈ [355.621, 374.506, 381.878] atol = 1e-3
-    @test leaf_node[:Gₛ] ≈ [1.12406, 1.13801, 1.11500] atol = 1e-4
-    @test leaf_node[:Gbₕ] ≈ [0.02026, 0.02349, 0.02296] atol = 1e-4
-    @test leaf_node[:Gbc] ≈ [0.62765, 0.72508, 0.71055] atol = 1e-4
-    @test leaf_node[:Rn] ≈ [384.209, 385.742, 386.296] atol = 1e-2
-    @test leaf_node[:Cᵢ] ≈ [296.26, 302.97, 302.08] atol = 1e-2
-    @test leaf_node[:Cₛ] ≈ [326.40, 333.08, 332.32] atol = 1e-2
+    @test leaf_node[:A] ≈ [11.31594, 11.12645, 11.29447] atol = 1e-4
+    @test leaf_node[:Tₗ] ≈ [23.94156, 24.97411, 24.13802] atol = 1e-4
+    @test leaf_node[:Rₗₗ] ≈ [1.01122, 1.00249, 1.11028] atol = 1e-4
+    @test leaf_node[:H] ≈ [-52.71902, -60.47476, -68.89932] atol = 1e-4
+    @test leaf_node[:λE] ≈ [162.72725, 170.47426, 179.00661] atol = 1e-4
+    @test leaf_node[:Gₛ] ≈ [0.36235, 0.35164, 0.3481] atol = 1e-4
+    @test leaf_node[:Gbₕ] ≈ [0.02072, 0.02461, 0.0247] atol = 1e-4
+    @test leaf_node[:Gbc] ≈ [0.64175, 0.75955, 0.76421] atol = 1e-4
+    @test leaf_node[:Rn] ≈ [110.00823, 109.99951, 110.1073] atol = 1e-4
+    @test leaf_node[:Cᵢ] ≈ [331.13285, 333.70711, 332.77212] atol = 1e-4
+    @test leaf_node[:Cₛ] ≈ [362.36708, 365.35128, 365.22066] atol = 1e-4
 end
