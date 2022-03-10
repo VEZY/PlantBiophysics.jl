@@ -6,15 +6,15 @@ using PlantBiophysics
 
 ## Introduction
 
-`PlantBiophysics.jl` was designed to make new model implementation very simple. So let's learn about how to implement you own model with a simple example: implementing a new stomatal conductance model.
+`PlantBiophysics.jl` was designed to make new model implementation very simple. So let's learn about how to implement your own model with a simple example: implementing a new stomatal conductance model.
 
 ## Inspiration
 
 If you want to implement a new model, the best way to do it is to start from another implementation.
 
-So for a photosynthesis model, I advise you to look at the implementation of the FvCB model in this Julia file: [src/photosynthesis/FvCB.jl](https://github.com/VEZY/PlantBiophysics.jl/blob/master/src/photosynthesis/FvCB.jl).
+So for a photosynthesis model, I advise you to look at the implementation of the FvCB model in this Julia file: [src/photosynthesis/FvCB.jl](https://github.com/VEZY/PlantBiophysics.jl/blob/master/src/processes/photosynthesis/FvCB.jl).
 
-For an energy balance model you can look at the implementation of the Monteith model in [src/energy/Monteith.jl](https://github.com/VEZY/PlantBiophysics.jl/blob/master/src/energy/Monteith.jl), and for a stomatal conductance model in [src/conductances/stomatal/medlyn.jl](https://github.com/VEZY/PlantBiophysics.jl/blob/master/src/conductances/stomatal/medlyn.jl).
+For an energy balance model you can look at the implementation of the Monteith model in [src/energy/Monteith.jl](https://github.com/VEZY/PlantBiophysics.jl/blob/master/src/processes/energy/Monteith.jl), and for a stomatal conductance model in [src/conductances/stomatal/medlyn.jl](https://github.com/VEZY/PlantBiophysics.jl/blob/master/src/processes/conductances/stomatal/medlyn.jl).
 
 ## Requirements
 
@@ -37,7 +37,7 @@ The purpose of the structure is two-fold:
 - hold the parameter values
 - dispatch to the right method when calling the process function
 
-Let's take the [stomatal conductance model from Medlyn et al. (2011)](https://github.com/VEZY/PlantBiophysics.jl/blob/3fccb2cecf03cc3987ad037a8994016b0527546f/src/conductances/stomatal/medlyn.jl#L37) as a starting point. The structure of the model (or type) is defined as follows:
+Let's take the [stomatal conductance model from Medlyn et al. (2011)](https://github.com/VEZY/PlantBiophysics.jl/blob/master/src/processes/conductances/stomatal/medlyn.jl#L37) as a starting point. The structure of the model (or type) is defined as follows:
 
 ```julia
 struct Medlyn{T} <: AbstractGsModel
@@ -116,13 +116,17 @@ So if you want to implement a new photosynthesis model, you have to make your ow
 
 So in practice, the `gs!_` implementation is rather generic and will not be modified by developers. They will rather implement their method for `gs_closure`, that will be used automatically by `gs!_`.
 
-So let's do it! Here is our own implementation of the stomatal closure:
+So let's do it! Here is our own implementation of the stomatal closure for a `LeafModels` component models:
 
 ```julia
 function gs_closure(leaf::LeafModels{I,E,A,<:BandB,S},meteo) where {I,E,A,S}
     leaf.stomatal_conductance.g1 * meteo.Rh / leaf.status.Cₛ
 end
 ```
+
+There is an important bit of code to understand here: `leaf::LeafModels{I,E,A,<:BandB,S}`. The right-hand side of the `::` means that the `leaf` argument must be of `LeafModels` type, with any parameterized models for all processes, except for the stomatal conductance that must be of `BandB` type (or subtype).
+
+This is important because it restricts the use of your model to one component only. But this is the right solution because component models such as `LeafModels` should implement their own models. And if a model is generic to all types of component models, not just `LeafModels`, then you must define it for each (or define a function that is called by each).
 
 OK ! So that's it ? Almost. One last thing to do is to define a method for inputs/outputs so that PlantBiophysics knows which variables are needed for our model, and which it provides. Remember that the actual model is implemented for `gs!_`, so we have to tell PlantBiophysics which ones are needed overall:
 
@@ -247,7 +251,7 @@ The `photosynthesis` field is the third one in a [`LeafModels`](@ref). So what o
 leaf::LeafModels{I,E,<:Fvcb,<:AbstractGsModel,S}
 ```
 
-is simply that the leaf argument must be a [`LeafModels`](@ref) with its third field being of type [`Fvcb`](@ref). This seems perfectly right because what we are talking about here is a function that implements the [`Fvcb`](@ref) model. Note again that the fourth field must be a subtype of [`AbstractGsModel`](@ref), hence a stomatal conductance model must be provided (whatever the model). This is because the `Fvcb` model couples the assimilation with the stomatal conductance, so we need to simulate the stomatal conductance too for the computation of the assimilation (this is made inside the function).
+...is simply that the leaf argument must be a [`LeafModels`](@ref) with its third field being of type [`Fvcb`](@ref). This seems perfectly right because what we are talking about here is a function that implements the [`Fvcb`](@ref) model for a `LeafModels`. Note again that the fourth field must be a subtype of [`AbstractGsModel`](@ref), hence a stomatal conductance model must be provided (whatever the model). This is because the `Fvcb` model couples the assimilation with the stomatal conductance, so we need to simulate the stomatal conductance too for the computation of the assimilation (this is made inside the function).
 
 Then we also have `I`, `E`, and `S` that are defined as `where {I,E,S}`. This means we expect something here, but we don't put any constraint on what it is. This is because we don't need explicitly a model for these processes (I: light interception, E: energy balance, S: status) to simulate the photosynthesis as soon as we have the values of some required input variables.
 
@@ -295,3 +299,49 @@ We have a new model for photosynthesis that is coupled with the stomatal conduct
 
 !!! note
     Notice that we compute the stomatal conductance directly using the internal function `gs!_`. We do this for speed, because the generic function `gs!` does some checks on its inputs every time it is called, while `gs!_` only does the computation. We don't need the extra checks because they are already made when calling `photosynthesis!`.
+
+Lastly, we note that the implementations of the models are linked to a given component models structure, here `LeafModels`. Some models -like a light interception model- are generic enough to be used for any components though. In this case we recommend to put the algorithm into a function that will be called by the generic function for each component.
+
+For exemple we could define the following dummy interception structure:
+
+```julia
+struct DummyInterception{T} <: AbstractEnergyModel
+    PAR::T
+    w_to_umol::T
+    sky_fraction::T
+end
+
+DummyInterception(;PAR = 0.48, w_to_umol = 4.57, sky_fraction = 1.0) = DummyInterception(PAR, w_to_umol,sky_fraction)
+
+function inputs(::DummyInterception)
+    (:area,)
+end
+
+function outputs(::DummyInterception)
+    (:Rₛ, :PPFD, :sky_fraction)
+end
+
+Base.eltype(x::DummyInterception) = typeof(x).parameters[1]
+```
+
+Now let's say its computation is always the same, whatever the component models structure:
+
+```julia
+function dummy_interception(object, meteo)
+    object.status.sky_fraction = object.interception.sky_fraction
+    object.status.Rₛ = object.status.area * meteo.Ri_SW_f
+object.status.PPFD = object.status.Rₛ * object.interception.PAR * object.interception.w_to_umol
+end
+```
+
+So what's the procedure to implement it for all component models? Well, we call this function from all implementations, *e.g.*:
+
+```julia
+function light_interception!_(leaf::LeafModels{<:DummyInterception,E,A,Gs,S}, meteo::AbstractAtmosphere, constants = Constants()) where {E,A,Gs,S}
+    dummy_interception(leaf, meteo)
+end
+
+function light_interception!_(leaf::ComponentModels{<:DummyInterception,E,A,Gs,S}, meteo::AbstractAtmosphere, constants = Constants()) where {E,A,Gs,S}
+    dummy_interception(leaf, meteo)
+end
+```
