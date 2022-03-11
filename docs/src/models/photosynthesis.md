@@ -4,7 +4,7 @@
 using PlantBiophysics
 ```
 
-The photosynthesis is, in this package, the process of atmospheric CO₂ assimilation.
+The photosynthesis is, in this package, the process of assimilation of the atmospheric CO₂ by the component.
 
 ## Models overview
 
@@ -21,11 +21,8 @@ You can choose which model to use by passing a component with an assimilation mo
 For example, you can "simulate" a constant assimilation for a leaf using the following:
 
 ```@example usepkg
-meteo = Atmosphere(T = 20.0, Wind = 1.0, P = 101.3, Rh = 0.65)
-
 leaf = LeafModels(photosynthesis = ConstantA(25.0))
-
-photosynthesis(leaf,meteo)
+photosynthesis(leaf)
 ```
 
 This model does one thing only: force the photosynthesis to the value given as a parameter in the model, here 25.0 ``μmol \cdot m^{-2} \cdot s^{-1}``.

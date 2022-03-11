@@ -217,3 +217,38 @@ The only difference with the previous method is that we provide the new status a
 And that's it! You did it, there's know a new component models structure available to you.
 
 What's the next step now? Well, implementing models for it! You can learn more about it on [`this page`](@ref model_implementation_page).
+
+## Implement a new process
+
+If your new component models implement a new process, you'll need to define the generic methods associated to it that helps run its simulation for:
+
+- one or several time-steps
+- one or several components
+- an MTG from MultiScaleTreeGraph
+
+...and all the above with a mutating function and a non-mutating one.
+
+This is a lot of work! But fortunately PlantBiophysics provides a macro to generate all of the above: [`gen_process_methods`](@ref).
+
+This macro takes only one argument: the name of the non-mutating function.
+
+So for example all the photosynthesis methods are created using just this tiny line of code:
+
+```julia
+@gen_process_methods photosynthesis
+```
+
+!!! note
+    The function is not exported by the package as it is very rarely used. To use it you'll have to prefix it by the name of the package.
+
+So imagine we have a solar panel in our scene, and we want to simulate its production, we could create a new components model called `PhotoVoltaicModels` with a light interception process, an energy balance process, and a new process called `production`. To create the generic functions to simulate the production we would do:
+
+```julia
+PlantBiophysics.@gen_process_methods production
+```
+
+And that's it! You created a new process called production, with the following functions:
+
+- `production!`: the mutating function
+- `production`: the non-mutating function
+- `production!_`: the function that actually make the computation. You'll have to implement methods for each model you need, else it will not work.
