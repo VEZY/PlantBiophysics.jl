@@ -119,7 +119,10 @@ leaf = LeafModels(
 energy_balance!(leaf, weather)
 
 ribbonplot(weather[:date], leaf[:Tₗ], alpha = 0.2, ylab = "Leaf Temperature", xlab = "Time")
+savefig("error-ribbon.svg"); nothing #hide
 ```
+
+![](error-ribbon.svg)
 
 ## Performance
 
