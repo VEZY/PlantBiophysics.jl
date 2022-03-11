@@ -32,6 +32,17 @@ macro gen_process_methods(f)
 
     expr = quote
 
+        function $(esc(f_))(object, meteo = nothing, constants = nothing)
+            process_models = Dict(process => typeof(getfield(object, process)).name.wrapper for process in fieldnames(typeof(object)))
+            pop!(process_models, :status) # status is not a model
+            error(
+                "No model was found for this combination of process simulation, component models and/or models:",
+                "\nProcess simulation: ", $(String(non_mutating_f)),
+                "\nComponent models: ", typeof(object).name.wrapper,
+                "\nModels: ", join(["$(i.first) => $(i.second)" for i in process_models], ", ", " and ")
+            )
+        end
+
         # Base method that calls the actual algorithms:
         function $(esc(mutating_f))(object::AbstractComponentModel, meteo::AbstractAtmosphere, constants = Constants())
             !is_initialised(object) && error("Some variables must be initialized before simulation")
@@ -158,7 +169,7 @@ macro gen_process_methods(f)
         # Non-mutating version (make a copy before the call, and return the copy):
         function $(esc(non_mutating_f))(
             object::O,
-            meteo::Union{AbstractAtmosphere,Weather},
+            meteo::Union{Nothing,AbstractAtmosphere,Weather} = nothing,
             constants = Constants()
         ) where {
             O<:Union{
