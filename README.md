@@ -15,10 +15,7 @@ The benefits of using this package are:
 - Great composability. Makes it easy to extend (add your model for any process, and it just works with the others)
 - Easy to read, the code implement the equations as they are written in the scientific articles (thanks Julia Unicode!)
 - Included in the Archimed platform. Will be used by other packages to simulate single leaves, voxels, canopies...
-- Soon:
-  - Units
-  - Error propagation
-  - Sensitivity analyses
+- Error propagation
 
 ## Examples
 
@@ -31,15 +28,17 @@ using PlantBiophysics
 # Declaring the meteorology for the simulated time-step:
 meteo = Atmosphere(T = 22.0, Wind = 0.8333, P = 101.325, Rh = 0.4490995)
 
-# Using the model from Medlyn et al. (2011) for Gs and the model of Monteith and Unsworth (2013) for the
-# energy balance:
-leaf = LeafModels(geometry = Geom1D(0.03),
-            energy = Monteith(),
-            photosynthesis = Fvcb(),
-            stomatal_conductance = Medlyn(0.03, 12.0),
-            Rₛ = 13.747, sky_fraction = 1.0, PPFD = 1500.0)
+# Using the model from Medlyn et al. (2011) for Gs and the model of Monteith and Unsworth (2013) for the energy balance:
+leaf = LeafModels(
+    energy = Monteith(),
+    photosynthesis = Fvcb(),
+    stomatal_conductance = Medlyn(0.03, 12.0),
+    Rₛ = 13.747, sky_fraction = 1.0, PPFD = 1500.0
+)
 
-energy_balance(leaf,meteo)
+energy_balance!(leaf, meteo)
+
+leaf[:A]
 ```
 
 For more examples, please read the documentation.
@@ -59,39 +58,29 @@ For more examples, please read the documentation.
   - [x] Do it for energy_balance
   - [x] photosynthesis
   - [x] stomatal conductance
-  - [ ] Add tests for each
-  - [ ] Update the doc!
-  - [ ] Check if it works with MTGs
+  - [x] Add tests for each
+  - [x] Update the doc!
+  - [x] Check if it works with MTGs
 - [ ] Evaluate using Schymanski et al. (2017) data + leaf measurements models (in progress)
 - [ ] Check Schymanski input: is Rs = Rnleaf ok? Because Rs is Rn - Rll.
 - [ ] Add more documentation + tutorial:
-  - [ ] add doc about the design (components, models, model values, multiple dispatch)
-  - [ ] add doc about input files
-  - [ ] add doc for each process
-  - [ ] add a list of models for each process
-  - [ ] add documentation for each model
+  - [x] add doc about the design (components, models, model values, multiple dispatch)
+  - [x] add doc about input files
+  - [x] add doc for each process
+  - [x] add a list of models for each process
+  - [x] add documentation for each model
   - [x] add a tutorial for a single leaf at one time-step
   - [x] add a tutorial for a single leaf at several time-step
-  - [ ] add a tutorial for a plant
-  - [ ] How to implement a new model -> e.g. conductance (add a `variables` method)
-  - [ ] How to implement a new component:
-    - add a component type (subtype of `AbstractComponent` or `AbstractPhotoComponent`)
-    - add a keyword method for the type and use `init_variables_manual`
-    - modify `get_component_type()`
-    - add methods to functions eventually (unless they are already compatible)
+  - [x] add a tutorial for a plant
+  - [x] How to implement a new model -> e.g. conductance (add a `variables` method)
+  - [x] How to implement a new component:
 - [ ] Use [PrettyTables.jl](https://ronisbr.github.io/PrettyTables.jl/stable/#PrettyTables.jl) for printing the Weather and simulation outputs
-- [ ] Use leaf[:var] in the models implementations instead of leaf.status.var. It will make the code way clearer. Do we have a `setindex!` method for that? Implement it if missing.
+- [ ] Try to make `get_component_type()` more generic? Or easily extendable?
+- [x] Use leaf[:var] in the models implementations instead of leaf.status.var. It will make the code way clearer.
+- [ ] Do we have a `setindex!` method for `leaf[:var]`? Implement it if missing.
 - [ ] Make boundary layer conductances models as for stomatal conductances.
 - [ ] Make a diagram of a leaf for gaz and energy exchanges
 - [ ] Add checks on the models provided for a simulation: for example Fvcb requires a stomatal conductance model. At the moment Julia returns an error on missing method for the particular implementation of photosynthesis!_(Fvcb,Gs) (in short). We could check before that both are needed and present, and return a more informational error if missing.
-
-### Notes
-
-The Fvcb model is implemented in two ways:
-
-- as in MAESPA, where the model needs Cₛ as input. And Cₛ is computed in the energy balance model and helps to close the whole balance with leaf temperature. If needed, Cₛ can be given as Cₐ.
-- as in Archimed, where the model needs Gbc, but not Cₛ (and Cₐ instead) because the model iterates over the assimilation until it finds a stable Cᵢ. This implementation
-can be less efficient because of the iterations.
 
 ## Contributing
 

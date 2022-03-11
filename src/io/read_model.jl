@@ -130,11 +130,13 @@ Return the process type (the actual struct) given its name passed as a String.
 function get_process(x)
     x = lowercase(x)
     # All possible ways to write the processes in the input (compared to lowecase x):
-    processes = Dict("interception" => "interception",
+    processes = Dict(
+        "interception" => "interception",
         "energy" => "energy",
         "photosynthesis" => "photosynthesis",
         "stomatalconductance" => "stomatal_conductance",
-        "stomatal_conductance" => "stomatal_conductance")
+        "stomatal_conductance" => "stomatal_conductance"
+    )
 
     if !(haskey(processes, lowercase(x)))
         @warn "Process `$x` is not implemented yet. Did you make a typo?"
