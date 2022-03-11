@@ -36,7 +36,7 @@ atmospheric pressure on Earth.
 # Notes
 
 The structure can be built using only `T`, `Rh`, `Wind` and `P`. All other variables are optional
-and can be automatically computed using the functions given in `Arguments`.
+and either let at their default value or automatically computed using the functions given in `Arguments`.
 
 # Examples
 
