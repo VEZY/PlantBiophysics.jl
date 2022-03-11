@@ -85,7 +85,7 @@ function Base.show(io::IO, n::Weather)
     printstyled(io, "Data:\n", color = :green)
     # :normal, :default, :bold, :black, :blink, :blue, :cyan, :green, :hidden, :light_black, :light_blue, :light_cyan, :light_green, :light_magenta, :light_red, :light_yellow, :magenta, :nothing, :red,
     #   :reverse, :underline, :white, or :yellow
-    print(DataFrame(n))
+    print(io, DataFrame(n))
     return nothing
 end
 
