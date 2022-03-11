@@ -8,6 +8,9 @@ using PlantBiophysics, MutableNamedTuples
 
 `PlantBiophysics.jl` was designed to make the implementation of new component models easy and fast. Let's learn about how to implement your own component models with a simple example: implementing a component models structure for wood.
 
+!!! warning
+    Implementing a new component model should be very rare. Make sure you really need it before creating it. If you have a photosynthetic organ, look into [`LeafModels`](@ref), if you have a non-photosynthetic component, look into [`ComponentModels`](@ref). Eventually, ou can also propose a pull request to add a new process to them if really needed so everybody can use the models and the new process. If you feel you need a brand new component and that you want to implement models for each of their processes, you're in the right place.
+
 ## Inspiration
 
 As for implementing a new model, the most straightforward way is to look at the code of ones already implemented.

@@ -36,6 +36,7 @@ makedocs(;
             "Light interception"=>"./models/light.md",
             "Implement a model"=>"./models/implement_a_model.md",
         ],
+        "Micro-climate" => "./climate/microclimate.md",
         "Tutorial: Parameter fitting" => "./fitting/parameter_fitting.md",
         "Tutorial: Simulation" => [
             "Simple Simulation" => "./simulation/first_simulation.md",

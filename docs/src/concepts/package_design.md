@@ -19,32 +19,32 @@ A component is the most basic structural unit of an object. Its nature depends o
 Those three organs we present here are what we call components.
 
 !!! note
-    Of course we could describe the plant at a coarser (*e.g.* axis) or finer (*e.g.* growth units) scale, but this is not relevant here.
+    Of course we could describe the plant at a coarser (*e.g.* axis) or finer (*e.g.* growth units) scale.
 
-PlantBiophysics doesn't implement components *per se*, because it is more the job of other packages. However, PlantBiophysics provides components models.
+PlantBiophysics doesn't implement components *per se*, because it is more the job of other packages. However, it provides components models.
 
 !!! tip
-    [MultiScaleTreeGraph](https://vezy.github.io/MultiScaleTreeGraph.jl/stable/) implements a way of describing a plant as a tree data-structure. PlantBiophysics even provides methods for computing processes over such data.
+    [MultiScaleTreeGraph](https://vezy.github.io/MultiScaleTreeGraph.jl/stable/) implements a way to describe a plant as a tree data-structure. PlantBiophysics compose well with MTGs and provides methods for computing processes over such data.
 
-### What are component models
+### Component models description
 
 Components models are structures that define which models are used to simulate the biophysical processes of a component.
 
 PlantBiophysics provides the [`LeafModels`](@ref) and the more generic [`ComponentModels`](@ref) component models. The first one is designed to represent a photosynthetic organ such as a leaf, and the second for a more generic organ such as wood for example.
 
 !!! tip
-    These are provided as defaults, but you can easily define your own component models if you want, and then implement the models for each of its processes.
+    These are provided as defaults, but you can easily define your own component models if you want, and then implement the models for each of its processes. See the [Implement a new component models](@ref) section for more details.
 
 ### Processes
 
-A process in this package defines a biological or a physical phenomena. For example [`LeafModels`](@ref) implements four processes:
+A process in this package defines a biological or a physical phenomena associated to a component. For example [`LeafModels`](@ref) implements four processes:
 
-- the radiation interception
-- the energy balance
-- the photosynthesis
-- and the stomatal conductance
+- radiation interception
+- energy balance
+- photosynthesis
+- stomatal conductance
 
-We can list the processes of a component model using `fieldnames`:
+We can list the processes of a component models structure using `fieldnames`:
 
 ```@example usepkg
 fieldnames(LeafModels)
@@ -52,7 +52,7 @@ fieldnames(LeafModels)
 
 We can see there is a fifth field along the processes called `:status`. This one is mandatory for all component models, and is used to initialise the simulated variables and keep track of their values during the simulation.
 
-These processes can be simulated using different models.
+Each process is simulated using a model.
 
 ## Models
 
@@ -60,7 +60,7 @@ These processes can be simulated using different models.
 
 A process is simulated using a particular implementation of a model. The user can choose which model is used to simulate a process when instantiating the component models.
 
-You can see the list of available models for each processes in the sections about the models, *e.g.* [photosynthesis_page](@ref).
+You can see the list of available models for each processes in the sections about the models, *e.g.* [for photosynthesis](@ref photosynthesis_page).
 
 Each model is implemented using a structure that lists the parameters of the model. For example PlantBiophysics provides the [`Fvcb`](@ref) structure for the implementation of the Farquhar–von Caemmerer–Berry model for C3 photosynthesis (Farquhar et al., 1980; von Caemmerer and Farquhar, 1981), and the [`Medlyn`](@ref) structure for the model of Medlyn et al. (2011).
 
@@ -68,16 +68,16 @@ Each model is implemented using a structure that lists the parameters of the mod
 
 To simulate a process for a component models we need to parameterize it with a given model.
 
-Let's instantiate a [`LeafModels`](@ref) with the model of Farquhar et al. (1980) for the photosynthesis and the model of Medlyn et al. (2011) for the stomatal conductance. THe corresponding structures are `Fvcb()` and `Medlyn()` respectively.
+Let's instantiate a [`LeafModels`](@ref) with the model of Farquhar et al. (1980) for the photosynthesis and the model of Medlyn et al. (2011) for the stomatal conductance. The corresponding structures are `Fvcb()` and `Medlyn()` respectively.
 
 ```@example usepkg
 LeafModels(photosynthesis = Fvcb(), stomatal_conductance = Medlyn(0.03, 12.0))
 ```
 
 !!! tip
-    We see that we only instantiated the [`LeafModels`](@ref) for the photosynthesis and stomatal conductance processes. What about the radiation interception and the energy balance? Well there is no need to give models if we have no intention to simulate them.
+    We see that we only instantiated the [`LeafModels`](@ref) for the photosynthesis and stomatal conductance processes. What about the radiation interception and the energy balance? Well there is no need to give models if we have no intention to simulate them. In this case they are defines as `missing` by default.
 
-OK so what happened here? We provided a instance of models to the processes. But why Fvcb has no parameters and Medlyn has two? Well, models usually provide default values for their parameter. We can see that the `Fvcb` model as actually a lot of parameters:
+OK so what happened here? We provided an instance of models to the processes. But why Fvcb has no parameters and Medlyn has two? Well, models usually provide default values for their parameter. We can see that the `Fvcb` model as actually a lot of parameters:
 
 ```@example usepkg
 fieldnames(Fvcb)
@@ -93,13 +93,17 @@ Perfect! Now is that all we need for making a simulation? Well, usually no. Mode
 
 ### Model initialisation
 
-Remember that our component models have a field named `:status`? Well this status is actually used to hold all inputs and outputs of our models. For example the [`Fvcb`](@ref) model needs the leaf temperature (`Tₗ`, Celsius degree), the Photosynthetic Photon Flux Density (`PPFD`, ``μmol\\ m^{-2}\\ s^{-1}``) and the CO₂ concentration at the leaf surface (`Cₛ`, ppm) to run. The [`Medlyn`](@ref) model needs the assimilation (`A`, ``μmol\\ m^{-2}\\ s^{-1}``), the CO₂ concentration at the leaf surface (`Cₛ`, ppm) and the vapour pressure difference between the surface and the saturated air vapour pressure (`Dₗ`, kPa). How do we know that? Well, we can use [`inputs`](@ref) to know:
+Remember that our component models have a field named `:status`? Well this status is actually used to hold all inputs and outputs of our models. For example the [`Fvcb`](@ref) model needs the leaf temperature (`Tₗ`, Celsius degree), the Photosynthetic Photon Flux Density (`PPFD`, ``μmol \cdot m^{-2} \cdot s^{-1}``) and the CO₂ concentration at the leaf surface (`Cₛ`, ppm) to run. The [`Medlyn`](@ref) model needs the assimilation (`A`, ``μmol \cdot m^{-2} \cdot s^{-1}``), the CO₂ concentration at the leaf surface (`Cₛ`, ppm) and the vapour pressure difference between the surface and the saturated air vapour pressure (`Dₗ`, kPa). How do we know that? Well, we can use [`inputs`](@ref) to know:
 
 ```@example usepkg
 inputs(Fvcb())
 ```
 
-Or better, we can use [`to_initialise`](@ref) on one or several model instances, or directly on a component model (*e.g.* [`LeafModels`](@ref)). For example in our case we use the `Fvcb` and `Medlyn` models, so we would do:
+```@example usepkg
+inputs(Medlyn(0.03, 12.0))
+```
+
+Note that some variables are common inputs between models. This is why we prefer using [`to_initialise`](@ref) instead. [`to_initialise`](@ref) is a clever little function that gives unique input variables and remove the input variables that are outputs of other models (no need to input if they are simulated):
 
 ```@example usepkg
 to_initialise(Fvcb(),Medlyn(0.03, 12.0))
@@ -115,8 +119,6 @@ leaf = LeafModels(
 
 to_initialise(leaf)
 ```
-
-[`to_initialise`](@ref) is a clever little function that gesses which variables need initialisation considering that inputs of some models will be simulated by others.
 
 We can also use [`is_initialised`](@ref) to know if a component is correctly initialised:
 
@@ -152,18 +154,21 @@ Our component models structure is now fully parameterized and initialized for a 
 
 ### Simulation of processes
 
-Simulating a component is rather simple, simply use the function that has the name of the process to simulate it:
+Simulating a component is rather simple, simply use the function with the name of the process you want to simulate:
 
 - [`gs`](@ref) for the stomatal conductance
 - [`photosynthesis`](@ref) for the photosynthesis
 - [`energy_balance`](@ref) for the energy balance
 
+!!! note
+    All functions exist in a non-mutating form and a mutating form. Just add `!` at the end of the name of the function to use the mutating form and speed! 🚀
+
 The call to the function is the same whatever the model you choose for simulating the process. This is some magic allowed by Julia! A call to a function is made as follows:
 
 ```julia
-gs(component,meteo)
-photosynthesis!(component,meteo)
-energy_balance!(component,meteo)
+gs(component_models,meteo)
+photosynthesis(component_models,meteo)
+energy_balance(component_models,meteo)
 ```
 
 The first argument is the component models, and the second defines the micro-climatic conditions (more details below in [Climate forcing](@ref)).
@@ -181,106 +186,46 @@ leaf = LeafModels(
     Tₗ = 25.0, PPFD = 1000.0, Cₛ = 400.0, Dₗ = meteo.VPD
 )
 
-photosynthesis(leaf, meteo)
+photosynthesis!(leaf, meteo)
 ```
 
-Very simple right? There are functions for [`energy_balance`](@ref) and [`gs`](@ref) too.
+Very simple right? There are functions for [`energy_balance!`](@ref) and [`gs!`](@ref) too.
 
 ### Functions forms
 
 Each function exists on three forms, *e.g.* [`energy_balance`](@ref) has:
 
 - `energy_balance`: the generic function that makes a copy of the components model and return the status (not very efficient but easy to use)
-- `energy_balance!`: the faster generic function. But we need to extract the outputs from the components models after the simulation (note the `!` at the end of the name)
+- `energy_balance!`: the faster generic function. But we need to extract the outputs from the component models after the simulation (note the `!` at the end of the name)
 - `energy_balance!_`: the internal implementation with a method for each model. PlantBiophysics then uses multiple dispatch to choose the right method based on the model type. If you don't plan to make your own models, you'll never have to use it 🙂
 
 If you want to implement your own models, please read this section in full first, and then [Model implementation](@ref model_implementation_page).
 
-### Climate forcing
+!!! note
+    The functions can be applied on a components model only if there is a model parameterized for its corresponding process.
+
+## Climate forcing
 
 To make a simulation, we usually need the climatic/meteorological conditions measured close to the object or component. They are given as the second argument of the simulation functions shown before.
 
-The package provide its own data structure to declare those conditions, and to pre-compute other required variables. This data structure is a type called [`Atmosphere`](@ref).
+The package provide its own data structures to declare those conditions, and to pre-compute other required variables. The most basic data structure is a type called [`Atmosphere`](@ref), which defines the conditions for a steady-state, *i.e.* the conditions are considered at equilibrium. Another structure is available to define different consecutive time-steps: [`Weather`](@ref).
 
-The mandatory variables to provide are: `T` (air temperature in °C), `Rh` (relative humidity, 0-1), `Wind` (the wind speed in m s-1) and `P` (the air pressure in kPa).
-
-We can declare such conditions using [`Atmosphere`](@ref) such as:
+The mandatory variables to provide for an [`Atmosphere`](@ref) are: `T` (air temperature in °C), `Rh` (relative humidity, 0-1), `Wind` (the wind speed in m s-1) and `P` (the air pressure in kPa). We can declare such conditions like so:
 
 ```@example usepkg
 meteo = Atmosphere(T = 20.0, Wind = 1.0, P = 101.3, Rh = 0.65)
 ```
 
-The [`Atmosphere`](@ref) also computes other variables based on the provided conditions, such as the vapor pressure deficit (VPD) or the air density (ρ). You can also provide those variables as inputs if necessary. For example if you need another way of computing the VPD, you can provide it as follows:
-
-```@example usepkg
-Atmosphere(T = 20.0, Wind = 1.0, P = 101.3, Rh = 0.65, VPD = 0.82)
-```
-
-To access the values of the variables in after instantiation, we can use the dot syntax. For example if we need the vapor pressure at saturation, we would do as follows:
-
-```@example usepkg
-meteo.eₛ
-```
-
-See the documentation of the function if you need more information about the variables: [`Atmosphere`](@ref).
-
-If you want to simulate several time-steps with varying conditions, you can do so by using [`Weather`](@ref) instead of [`Atmosphere`](@ref).
-
-[`Weather`](@ref) is just an array of [`Atmosphere`](@ref) along with some optional metadata. For example for three time-steps, we can declare it like so:
-
-```@example usepkg
-w = Weather(
-    [
-        Atmosphere(T = 20.0, Wind = 1.0, P = 101.3, Rh = 0.65),
-        Atmosphere(T = 23.0, Wind = 1.5, P = 101.3, Rh = 0.60),
-        Atmosphere(T = 25.0, Wind = 3.0, P = 101.3, Rh = 0.55)
-    ],
-    (site = "Montpellier",
-    other_info = "another crucial metadata")
-)
-```
-
-As you see the first argument is an array of [`Atmosphere`](@ref), and the second is a named tuple of optional metadata such as the site or whatever you think is important.
-
-A [`Weather`](@ref) can also be declared from a DataFrame, provided each row is an observation from a time-step, and each column is a variable needed for [`Atmosphere`](@ref) (see the help of [`Atmosphere`](@ref) for more details on the possible variables and their units).
-
-Here's an example of using a DataFrame as input:
-
-```@example usepkg
-using CSV, DataFrames
-file = joinpath(dirname(dirname(pathof(PlantBiophysics))),"test","inputs","meteo.csv")
-df = CSV.read(file, DataFrame; header=5, datarow = 6)
-# Select and rename the variables:
-select!(df, :date, :VPD, :temperature => :T, :relativeHumidity => :Rh, :wind => :Wind, :atmosphereCO2_ppm => :Cₐ)
-df[!,:duration] .= 1800 # Add the time-step duration, 30min
-
-# Make the weather, and add some metadata:
-Weather(df, (site = "Aquiares", file = file))
-```
-
-One can also directly import the Weather from an Archimed-formatted meteorology file (a csv file optionally enriched with some metadata). In this case, the user can rename and transform the variables from the file to match the names and units needed in PlantBiophysics using a [`DataFrame.jl`](https://dataframes.juliadata.org/stable/)-alike syntax:
-
-```@example usepkg
-using Dates
-
-meteo = read_weather(
-    joinpath(dirname(dirname(pathof(PlantBiophysics))),"test","inputs","meteo.csv"),
-    :temperature => :T,
-    :relativeHumidity => (x -> x ./100) => :Rh,
-    :wind => :Wind,
-    :atmosphereCO2_ppm => :Cₐ,
-    date_format = DateFormat("yyyy/mm/dd")
-)
-```
+More details are available from the [dedicated section](@ref microclimate_page).
 
 ### Outputs
 
-The `status` field of a component model (*e.g.* [`LeafModels`](@ref)) is used to keep track of the variables values during the simulation. We can extract the simulation outputs of a component models using [`status`](@ref), *e.g.*:
+The `status` field of a component model (*e.g.* [`LeafModels`](@ref)) is used to keep track of the variables values during the simulation. We can extract the simulation outputs of a component models using [`status`](@ref).
 
 !!! note
-    Getting the status is only useful when using the mutating version of the function (*e.g.* [`energy_balance`](@ref)), as the non-mutating version returns the output directly.
+    Getting the status is only useful when using the mutating version of the function (*e.g.* [`energy_balance!`](@ref)), as the non-mutating version returns the output directly.
 
-The status can either be a MutableNamedTuple (works like a tuple) if simulating only one time-step, or a vector of MutableNamedTuples if several.
+The status can either be a [MutableNamedTuple](https://github.com/MasonProtter/MutableNamedTuples.jl) (works like a tuple) if simulating only one time-step, or a vector of MutableNamedTuples if several.
 
 Let's look at the status of our previous simulated leaf:
 
@@ -313,48 +258,12 @@ DataFrame(leaf)
 ```
 
 !!! note
-    The output from `DataFrame` is adapted to the kind of simulation you did: one or several component over one or several time-steps.
+    The output from `DataFrame` is adapted to the kind of simulation you did: one row per time-steps, and per component models if you simulated several.
 
 ## List of models
 
-As presented above, each process is simulated using a particular model. A model can work either independently or in conjunction with other models. For example a stomatal conductance model is often associated with a photosynthesis model. *i.e.*, it is called from the photosynthesis model.
+As presented above, each process is simulated using a particular model. A model can work either independently or in conjunction with other models. For example a stomatal conductance model is often associated with a photosynthesis model, *i.e.* it is called from the photosynthesis model.
 
 Several models are provided in this package, and the user can also add new models by following the instructions in the corresponding section.
 
-The models included in the package are listed below.
-
-### Stomatal conductance
-
-The stomatal conductance (`Gₛ`) can be simulated using the [`gs`](@ref) function. Several models are available to simulate it:
-
-- [`Medlyn`](@ref): an implementation of the Medlyn et al. (2011) model
-- [`ConstantGs`](@ref): a model to force a constant value for `Gₛ`
-
-### Photosynthesis
-
-The photosynthesis can be simulated using the [`photosynthesis`](@ref) function. Several models are available to simulate it:
-
-- [`Fvcb`](@ref): an implementation of the Farquhar–von Caemmerer–Berry (FvCB) model for C3 photosynthesis (Farquhar et al., 1980; von Caemmerer and Farquhar, 1981) using the analytical resolution
-- [`FvcbIter`](@ref): the same model but implemented using an iterative computation over Cᵢ
-- [`FvcbRaw`](@ref): the same model but without the coupling with the stomatal conductance, *i.e.* as presented in the original paper. This version needs Cᵢ as input.
-- [`ConstantA`](@ref): a model to set the photosynthesis to a constant value (mainly for testing)
-
-You can choose which model you use by passing a component with an assimilation model set to one of the `structs` above. We will show some examples in the end of this paragraph.
-
-For example, you can simulate a constant assimilation of a leaf using the following code:
-
-```@example usepkg
-meteo = Atmosphere(T = 20.0, Wind = 1.0, P = 101.3, Rh = 0.65)
-
-leaf = LeafModels(
-    photosynthesis = ConstantA(25.0)
-)
-
-photosynthesis(leaf,meteo)
-```
-
-### Energy balance
-
-The simulation of the energy balance of a component is the most integrative process of the package because it is (potentially) coupled with the conductance and assimilation models if any.
-
-To simulate the energy balance of a component, we use the [`energy_balance!`](@ref) function. Only one model is implemented yet, the one presented in Monteith and Unsworth (2013). The structure is called [`Monteith`](@ref), and is only used for photosynthetic organs. Further implementations will come in the future.
+The models included in the package are listed in their own section, *i.e.* for photosynthesis, you can look at [this section](@ref photosynthesis_page).

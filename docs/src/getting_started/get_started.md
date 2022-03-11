@@ -5,7 +5,7 @@ using PlantBiophysics
 using Dates
 ```
 
-Mare your first simulation for a leaf energy balance, photosynthesis and stomatal conductance altogether with few lines of codes:
+Make your first simulation for a leaf energy balance, photosynthesis and stomatal conductance altogether with few lines of codes:
 
 ```@example usepkg
 using PlantBiophysics, Dates
