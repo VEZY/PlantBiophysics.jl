@@ -58,7 +58,7 @@ inputs(Monteith())
 the fraction of sky the object is viewing compared to everything else. It is given for the 360° viewing angle, *i.e.* for both faces. `d` (m) is the characteristic dimension, *e.g.* the leaf width (see eq. 10.9 from Monteith and Unsworth, 2013).
 
 !!! note
-    `sky_fraction` is equal to `2` if the leaf is viewing sky only (*e.g.* in a controlled chamber), `1` if the leaf is *e.g.* up on the canopy where the upper side of the leaf sees sky, and the bottom side sees soil and other components, or less than 1 if it is partly shaded. `sky_fraction` is used to compute the thermal radiation exchanges. Everything except the sky is considered at the same temperature than the object. This simplification makes the computations very fast, but less precise, especially when another object has a very different temperature.
+    `sky_fraction` is equal to `2` if the leaf is viewing sky only (*e.g.* in a controlled chamber with lights everywhere), `1` if the leaf is *e.g.* up on the canopy where the upper side of the leaf sees sky, and the bottom side sees soil and other components, or less than 1 if it is partly shaded. `sky_fraction` is used to compute the thermal radiation exchanges. Everything except the sky is considered at the same temperature than the object. This simplification makes the computations very fast, but less precise, especially when another object has a very different temperature.
 
 ### [Output variables](@id outputs_monteith)
 
@@ -99,7 +99,7 @@ The Monteith model implementation can be tested on the data provided by Schymans
 include("./schymanski.jl")
 ```
 
-![](./models/schymanski_et_al_2017_6a.svg)
+![](./schymanski_et_al_2017_6a.svg)
 
 The figure is the same as Figure 6a from Schymanski et al. (2017). The code to reproduce this figure is available in [this file](./schymanski.jl).
 

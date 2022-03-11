@@ -49,8 +49,7 @@ The FvCB model has a lot of parameters:
 - `Eₐᵥ`: activation energy (``J \cdot mol^{-1}``), or the exponential rate of rise for VcMax.
 - `Hdᵥ`: rate of decrease of the function above the optimum (also called EDVC) for VcMax.
 - `Δₛᵥ`: entropy factor for VcMax.
-- `α`: quantum yield of electron transport (``mol_e \cdot mol^{-1}_{quanta}``). See also eq. 4 of
-Medlyn et al. (2002) and its implementation in [`get_J`](@ref)
+- `α`: quantum yield of electron transport (``mol_e \cdot mol^{-1}_{quanta}``). See also eq. 4 of Medlyn et al. (2002) and its implementation in [`get_J`](@ref)
 - `θ`: determines the curvature of the light response curve for `J~PPFD`. See also eq. 4 of Medlyn et al. (2002) and its implementation in [`get_J`](@ref)
 
 The default values of the temperature correction parameters are taken from
@@ -70,7 +69,7 @@ The [`Fvcb`](@ref) model needs three input variables:
 inputs(Fvcb())
 ```
 
-The PPFD is the absorbed photosynthetically active photon flux density (``μmol_{quanta} \cdot m^{-2} \cdot s^{-1}``). It is usually compute by a light interception model.
+The PPFD is the absorbed photosynthetically active photon flux density (``μmol_{quanta} \cdot m^{-2} \cdot s^{-1}``). It is usually computed by a light interception model.
 
 Tₗ is the leaf temperature in Celsius degree.
 
@@ -96,7 +95,7 @@ DataFrame(leaf)
 ```
 
 !!! note
-    You can use [`inputs`](@ref) to get the variables needed for a given model, e.g.: `inputs(Fvcb())`, `inputs(Medlyn(0.03, 12.0))`, or better: `inputs(Fvcb(), Medlyn(0.03, 12.0))`
+    You can use [`inputs`](@ref) to get the variables needed for a given model, *e.g.*: `inputs(Fvcb())`, `inputs(Medlyn(0.03, 12.0))`, or better: `inputs(Fvcb(), Medlyn(0.03, 12.0))`
 
 ## FvcbIter
 
@@ -142,7 +141,7 @@ The `FvcbRaw` model needs three input variables:
 inputs(FvcbRaw())
 ```
 
-The PPFD is, again, the absorbed photosynthetically active photon flux density (``μmol_{quanta} \cdot m^{-2} \cdot s^{-1}``). It is usually compute by a light interception model. Tₗ (°C) is the leaf temperature in Celsius degree, and Cᵢ (ppm) is the intercellular CO₂ concentration, usually computed using a conductance model.
+The PPFD is, again, the absorbed photosynthetically active photon flux density (``μmol_{quanta} \cdot m^{-2} \cdot s^{-1}``). It is usually computed by a light interception model. Tₗ (°C) is the leaf temperature, and Cᵢ (ppm) is the intercellular CO₂ concentration, usually computed using a conductance model.
 
 !!! note
     The three implementations of the FvCB model needs different input variables because they implement more or less coupling with other models.
@@ -210,12 +209,10 @@ DataFrame(leaf)
 
 We can easily investigate the effects of parameters on the simulation. For example we can see what is the effect of PPFD on J.
 
-### J~PPFD
-
 First we import the packages needed:
 
 ```@example 1
-using Plots;
+using Plots
 using PlantBiophysics
 ```
 

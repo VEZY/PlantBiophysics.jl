@@ -1127,9 +1127,9 @@ version = "1.4.0"
 
 [[Preferences]]
 deps = ["TOML"]
-git-tree-sha1 = "de893592a221142f3db370f48290e3a2ef39998f"
+git-tree-sha1 = "d3538e7f8a790dc8903519090857ef8e1283eecd"
 uuid = "21216c6a-2e73-6563-6e65-726566657250"
-version = "1.2.4"
+version = "1.2.5"
 
 [[PrettyTables]]
 deps = ["Crayons", "Formatting", "Markdown", "Reexport", "Tables"]
@@ -1406,9 +1406,9 @@ uuid = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
 
 [[TiffImages]]
 deps = ["ColorTypes", "DataStructures", "DocStringExtensions", "FileIO", "FixedPointNumbers", "IndirectArrays", "Inflate", "OffsetArrays", "PkgVersion", "ProgressMeter", "UUIDs"]
-git-tree-sha1 = "991d34bbff0d9125d93ba15887d6594e8e84b305"
+git-tree-sha1 = "aaa19086bc282630d82f818456bc40b4d314307d"
 uuid = "731e570b-9d59-4bfa-96dc-6df516fadf69"
-version = "0.5.3"
+version = "0.5.4"
 
 [[TranscodingStreams]]
 deps = ["Random", "Test"]

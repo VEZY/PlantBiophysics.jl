@@ -4,7 +4,7 @@
 using PlantBiophysics
 ```
 
-The stomatal conductance defines the conductance **for CO₂** between the atmosphere (the aire around the leaf) and the air inside the stomata. The stomatal conductance to CO₂ and H₂O are related by a constant (see [`gsc_to_gsw`](@ref)).
+The stomatal conductance defines the conductance **for CO₂** between the atmosphere (the air around the leaf) and the air inside the stomata. The stomatal conductance to CO₂ and H₂O are related by a constant (see [`gsc_to_gsw`](@ref)).
 
 ## Models overview
 

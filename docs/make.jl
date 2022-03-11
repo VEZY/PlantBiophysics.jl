@@ -24,17 +24,15 @@ makedocs(;
             "Parameter fitting" => "./getting_started/first_fit.md",
         ],
         "Design" => "./concepts/package_design.md",
-        "Components and methods" => Any[
-            "LeafModels"=>"./components/leafmodels.md",
-            "ComponentModels"=>"./components/componentmodels.md",
-            "Implement a component model"=>"./components/implement_a_component.md",
+        "Components and methods" => [
+            "LeafModels" => "./components/leafmodels.md",
+            "ComponentModels" => "./components/componentmodels.md",
         ],
-        "Models for LeafModels" => Any[
-            "Photosynthesis"=>"./models/photosynthesis.md",
-            "Stomatal conductance"=>"./models/gs.md",
-            "Energy balance"=>"./models/energy_balance.md",
-            "Light interception"=>"./models/light.md",
-            "Implement a model"=>"./models/implement_a_model.md",
+        "Models for LeafModels" => [
+            "Photosynthesis" => "./models/photosynthesis.md",
+            "Stomatal conductance" => "./models/gs.md",
+            "Energy balance" => "./models/energy_balance.md",
+            "Light interception" => "./models/light.md",
         ],
         "Micro-climate" => "./climate/microclimate.md",
         "Tutorial: Parameter fitting" => "./fitting/parameter_fitting.md",
@@ -45,6 +43,10 @@ makedocs(;
             "Whole-plant simulation" => "./simulation/mtg_simulation.md",
         ],
         "Tutorial: Uncertainty propagation" => "./simulation/uncertainty_propagation.md",
+        "Extending PlantBiophysics" => [
+            "Implement a model" => "./extending/implement_a_model.md",
+            "Implement a component" => "./extending/implement_a_component.md",
+        ],
         "API" => "functions.md"
     ]
 )

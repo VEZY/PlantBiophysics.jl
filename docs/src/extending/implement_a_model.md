@@ -58,7 +58,7 @@ Fvcb <: AbstractAModel
 Then comes the parameters names, and their types. The type of the parameters is always forced to be of the same type in our example. This is done using the `T` notation as follows:
 
 - we say that our structure `Medlyn` is a parameterized struct by putting `T` in between brackets after the name of the struct
-- We pur `::T` after our parameter names in the struct. This way Julia knows that all parameters must be of type T.
+- We put `::T` after our parameter names in the struct. This way Julia knows that all parameters must be of type `T`.
 
 The `T` is completely free, you can use any other letter or word instead. If you have parameters that you know will be of different types, you can either force their type, or make them parameterizable too using another letter, *e.g.*:
 
@@ -71,7 +71,7 @@ struct YourStruct{T,S} <: AbstractGsModel
 end
 ```
 
-Parameterized types are very useful because they let the user choose the type of the parameters, but still help Julia make the computations fast.
+Parameterized types are very useful because they let the user choose the type of the parameters, and make the computations fast.
 
 But why not forcing the type such as the following:
 
@@ -104,7 +104,7 @@ Well, the only thing we had to change relative to the one from Medlyn is the nam
 
 The models are implemented in a function named after the process and a "!\_" as a suffix. The exclamation point is used in Julia to tell users the function is mutating, *i.e.* it modifies its input.
 
-You implementation should always modify the input object (here the `leaf`) and return nothing. This ensures that models compute fast. The "_" suffix is used to tell users that this is the internal implementation.
+Your implementation should always modify the input object (here the `leaf`) and return nothing. This ensures that models compute fast. The "_" suffix is used to tell users that this is the internal implementation.
 
 Remember that PlantBiophysics only exports the generic functions of the processes to users because they are the one that handles every other details, such as checking that the object is correctly initialized, and applying the computations over objects and time-steps. This is nice because as a developer you don't have to deal with those details, and you can just concentrate on your implementation.
 
@@ -128,7 +128,16 @@ There is an important bit of code to understand here: `leaf::LeafModels{I,E,A,<:
 
 This is important because it restricts the use of your model to one component only. But this is the right solution because component models such as `LeafModels` should implement their own models. And if a model is generic to all types of component models, not just `LeafModels`, then you must define it for each (or define a function that is called by each).
 
-OK ! So that's it ? Almost. One last thing to do is to define a method for inputs/outputs so that PlantBiophysics knows which variables are needed for our model, and which it provides. Remember that the actual model is implemented for `gs!_`, so we have to tell PlantBiophysics which ones are needed overall:
+A second important thing to note is that our variables are stored in different structures:
+
+- the parameters come from the model (`leaf.stomatal_conductance` here)
+- the micro-climatic conditions comes from the `meteo` structure
+- the variables are stored in the component models `status` (`leaf.status` here)
+
+!!! note
+    The micro-meteorological conditions are always given for one time-step inside the models methods, so they are always of `Atmosphere` type. The `Weather` type of conditions are handled earlier by the generic functions.
+
+OK ! So that's it ? Almost. One last thing to do is to define a method for inputs/outputs so that PlantBiophysics knows which variables are needed for our model, and which it computes. Remember that the actual model is implemented for `gs!_`, so we have to tell PlantBiophysics which ones are needed overall:
 
 - Inputs: `:Rh` and `:Cₛ` for our specific implementation, and `:A` for `gs!_`
 - Outputs: our model does not compute any new variable, and `gs!_` computes, well, `:Gₛ`
@@ -165,7 +174,7 @@ This allows your user to instantiate your model parameters using different types
 BandB(0,2.0,0.001)
 ```
 
-You don't see the problem? And it is most than probable that your user won't.
+You don't see a problem? Well your users won't either.
 
 Here's the problem: we use parametric types, and when we declared our structure, we said that all fields in our type will share the same type. This is the `T` here:
 
@@ -182,10 +191,10 @@ And in our example above, the user provides `0` as the first argument. Well, thi
 A second thing also is to help your user with default values for some parameters (if applicable). For example a user will almost never change the value of the minimum stomatal conductance. So we can provide a default value like so:
 
 ```julia
-BandB(g0,g1) = BandB(g0,g1,oftype(g0,0.001))
+BandB(g0,g1) = BandB(g0, g1, 0.001)
 ```
 
-Now the user can call `BandB` with only two values, and the third one will be set to `0.001`. The `oftype` ensures that our default value (`0.001`) will be set to the same type as the other two. This is optional and will be promoted afterward anyway so it is not important.
+Now the user can call `BandB` with only two values, and the third one will be set to `0.001`.
 
 Another useful thing to provide to the user is the ability to instantiate your model type with keyword values. You can do it by adding the following method:
 
@@ -230,7 +239,7 @@ end
 
 Where `[...]` represent the lines of code implementing the model (not shown here).
 
-The interesting bit is in the function declaration at the top, this is how all the magic happens. The first argument is called `leaf`, and is an instance of a [`LeafModels`](@ref) with a photosynthesis type that is a subtype of `Fvcb`: `LeafModels{I,E,<:Fvcb,<:AbstractGsModel,S}`. We also note that this particular implementation needs a model for the stomatal conductance.
+The interesting bit is in the function declaration at the top. This is where all the magic happens. The first argument is called `leaf`, and is an instance of a [`LeafModels`](@ref) with a photosynthesis type that is a (sub-)type of `Fvcb`: `LeafModels{I,E,<:Fvcb,<:AbstractGsModel,S}`. We also note that this particular implementation needs a model for the stomatal conductance (this is the `<:AbstractGsModel` bit).
 
 Now if we look again at what are the fields of a [`LeafModels`](@ref):
 
@@ -258,27 +267,32 @@ Then we also have `I`, `E`, and `S` that are defined as `where {I,E,S}`. This me
 So if we want to implement our own model for the photosynthesis, we could do:
 
 ```julia
+# Make the struct to hold the parameters:
 struct OurModel{T} <: AbstractAModel
     a::T
     b::T
     c::T
 end
 
+# Instantiate the struct with default values + kwargs:
 function OurModel(;a = 400.0, b = 1000.0, c = 1.5)
     OurModel(promote(a,b)...)
 end
 
+# Define inputs:
 function inputs(::OurModel)
     (:PPFD, :Tₗ, :Cₛ)
 end
 
+# Define outputs:
 function outputs(::OurModel)
     (:A, :Gₛ, :Cᵢ)
 end
 
+# Tells Julia what is the type of elements:
 Base.eltype(x::OurModel) = typeof(x).parameters[1]
 
-
+# Implement the photosynthesis model:
 function photosynthesis!_(leaf::LeafModels{I,E,<:OurModel,<:AbstractGsModel,S}, meteo, constants = Constants()) where {I,E,S}
 
     leaf.status.A =
@@ -295,7 +309,7 @@ end
 We have a new model for photosynthesis that is coupled with the stomatal conductance.
 
 !!! warning
-    This is a dummy photosynthesis model. Don't use it, it is very wrong!
+    This is a dummy photosynthesis model. Don't use it, it is very wrong biologically speaking!
 
 !!! note
     Notice that we compute the stomatal conductance directly using the internal function `gs!_`. We do this for speed, because the generic function `gs!` does some checks on its inputs every time it is called, while `gs!_` only does the computation. We don't need the extra checks because they are already made when calling `photosynthesis!`.

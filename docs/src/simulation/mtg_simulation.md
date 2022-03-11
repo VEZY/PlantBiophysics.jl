@@ -33,9 +33,9 @@ transform!(
 
 ## Multiscale Tree Graph
 
-The Multiscale Tree Graph, or MTG for short is a data structure that help represent a plant topology, and optionally its geometry.
+The Multiscale Tree Graph, or MTG for short is a data structure that helps represent a plant topology, and optionally its geometry.
 
-The OPF is a file format that helps store an MTG with geometry onto the disk. Let's read an example OPF using `read_opf()`, a function from the `PlantGeom` package:
+The OPF is a file format that stores an MTG with geometry onto the disk. Let's read an example OPF using `read_opf()`, a function from the `PlantGeom` package:
 
 ```@example usepkg
 using PlantGeom
@@ -86,9 +86,9 @@ transform!(
 )
 ```
 
-The design of `MultiScaleTreeGraph.transform!()` is very close to the one adopted by `DataFrames`. It helps us compute new variables (or attributes) from others, modify their units or rename them. Here we compute `Rₛ` from the sum of `Ra_PAR_f` (absorbed radiation flux in the PAR) and `Ra_NIR_f` (...in the NIR), `PPFD` from `Ra_PAR_f` using the conversion between ``W\\ m^{2}`` to ``μmol\\ m^{-2}\\ s^{-1}``, and `d` using a contant value of 0.3m. Note that `sky_fraction` is already computed for each node with the right units thanks to Archimed-ϕ.
+The design of `MultiScaleTreeGraph.transform!` is very close to the one adopted by `DataFrames`. It helps us compute new variables (or attributes) from others, modify their units or rename them. Here we compute `Rₛ` from the sum of `Ra_PAR_f` (absorbed radiation flux in the PAR) and `Ra_NIR_f` (...in the NIR), `PPFD` from `Ra_PAR_f` using the conversion between ``W \cdot m^{2}`` to ``μmol \cdot m^{-2} \cdot s^{-1}``, and `d` using a constant value of 0.3 m. Note that `sky_fraction` is already computed for each node with the right units thanks to Archimed-ϕ.
 
-Then `PlantBiophysics.jl` takes care of the rest and simulate the energy balance over each time-step:
+Then `PlantBiophysics.jl` takes care of the rest and simulates the energy balance over each time-step:
 
 ```@example usepkg
 energy_balance!(mtg, models, weather)
