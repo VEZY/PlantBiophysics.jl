@@ -9,7 +9,7 @@ using Plots
 # Some constants used in the experiment:
 maxiter = 20 # Maximum number of iterations for the algorithm to converge
 aₛᵥ = 1 # number of sides used for transpiration (hypostomatous: 1, amphistomatous: 2)
-cst = Constants(Cₚ = 1004.834)
+cst = Constants(Cₚ=1004.834)
 A = 20.0 # Not used.
 
 # Defining key functions:
@@ -28,14 +28,18 @@ function run_simulation!(data, params, aₛᵥ)
     data[!, :Rn] .= 0.0
 
     for i in 1:size(data, 1)
-        meteo = Atmosphere(T = Float64(data.T_a[i]) - params["T0"],
-            Wind = Float64(data.v_w[i]),
-            P = data.P_a[i] / 1000,
-            Rh = data.rh[i])
-        leaf = LeafModels(energy = Monteith(aₛᵥ = aₛᵥ, maxiter = maxiter),
-            photosynthesis = ConstantA(A),
-            stomatal_conductance = ConstantGs(0.0, gsw_to_gsc(ms_to_mol(data.g_sw[i], data.T_a[i] - params["T0"], data.P_a[i] / 1000))),
-            Rₛ = data.Rn_leaf[i], sky_fraction = 2.0, d = data.L_l[i])
+        meteo = Atmosphere(
+            T=Float64(data.T_a[i]) - params["T0"],
+            Wind=Float64(data.v_w[i]),
+            P=data.P_a[i] / 1000,
+            Rh=data.rh[i]
+        )
+        leaf = LeafModels(
+            energy=Monteith(aₛᵥ=aₛᵥ, maxiter=maxiter),
+            photosynthesis=ConstantAGs(A),
+            stomatal_conductance=ConstantGs(0.0, gsw_to_gsc(ms_to_mol(data.g_sw[i], data.T_a[i] - params["T0"], data.P_a[i] / 1000))),
+            Rₛ=data.Rn_leaf[i], sky_fraction=2.0, d=data.L_l[i]
+        )
         energy_balance!(leaf, meteo, cst)
 
         data.Tₗ[i] = leaf.status.Tₗ
@@ -61,13 +65,13 @@ params = read_dict("../data/schymanski_et_al_2017/vdict_6a.txt")
 # Running the simulation:
 run_simulation!(results1_6a, params, aₛᵥ)
 
-scatter(results1_6a.v_w, results1_6a.Elmeas, ylim = (-400, 400),
-    ylab = "Energy flux from leaf (W m-2)", legend = :inline,
-    xlab = "Wind speed (m s-1)", label = "LE meas", color = "blue")
-scatter!(results1_6a.v_w, results1_6a.Hlmeas, label = "H meas", color = "red")
-scatter!(results1_6a.v_w, results1_6a.Rn_leaf, label = "Rn meas", color = "green")
-scatter!(results1_6a.v_w, results1_6a.Hlmeas + results1_6a.Elmeas, label = "H+LE meas", color = "green", shape = :star5)
-plot!(results1_6a.v_w, results1_6a.H, label = "H sim", color = "red")
-plot!(results1_6a.v_w, results1_6a.λE, label = "LE sim", color = "blue")
-plot!(results1_6a.v_w, results1_6a.Rn, label = "Rn sim", color = "green")
+scatter(results1_6a.v_w, results1_6a.Elmeas, ylim=(-400, 400),
+    ylab="Energy flux from leaf (W m-2)", legend=:inline,
+    xlab="Wind speed (m s-1)", label="LE meas", color="blue")
+scatter!(results1_6a.v_w, results1_6a.Hlmeas, label="H meas", color="red")
+scatter!(results1_6a.v_w, results1_6a.Rn_leaf, label="Rn meas", color="green")
+scatter!(results1_6a.v_w, results1_6a.Hlmeas + results1_6a.Elmeas, label="H+LE meas", color="green", shape=:star5)
+plot!(results1_6a.v_w, results1_6a.H, label="H sim", color="red")
+plot!(results1_6a.v_w, results1_6a.λE, label="LE sim", color="blue")
+plot!(results1_6a.v_w, results1_6a.Rn, label="Rn sim", color="green")
 savefig("./schymanski_et_al_2017_6a.svg")
