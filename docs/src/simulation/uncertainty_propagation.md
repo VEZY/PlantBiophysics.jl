@@ -4,8 +4,16 @@
 using PlantBiophysics
 using MonteCarloMeasurements
 using Plots
+using Dates
 # Toggle the use of a comparison function (using `mean`):
 unsafe_comparisons(true)
+meteo = Atmosphere(T = 22.0 ± 0.1, Wind = 0.8333 ± 0.1, P = 101.325 ± 1., Rh = 0.4490995 ± 0.02, Cₐ = 400. ± 1.)
+leaf = LeafModels(
+        energy = Monteith(),
+        photosynthesis = Fvcb(),
+        stomatal_conductance = Medlyn(0.03, 12.0),
+        Rₛ = 13.747 ± 1., sky_fraction = 1.0, PPFD = 1500.0 ± 1., d = 0.03 ± 0.001
+    )
 ```
 
 ## Introduction
@@ -18,7 +26,7 @@ We can very easily propagate uncertainties in all computations in PlantBiophysic
 
 Let's first import all packages we need:
 
-```@example
+```julia
 using PlantBiophysics
 using MonteCarloMeasurements
 using Plots
@@ -28,7 +36,7 @@ unsafe_comparisons(true)
 
 We can use the `μ ± σ` notation for the values of the parameters and micro-meteorological conditions to create a Gaussian distribution (of mean μ and standard deviation σ):
 
-```@example
+```julia
 meteo = Atmosphere(T = 22.0 ± 0.1, Wind = 0.8333 ± 0.1, P = 101.325 ± 1., Rh = 0.4490995 ± 0.02, Cₐ = 400. ± 1.)
 leaf = LeafModels(
         energy = Monteith(),
@@ -42,13 +50,13 @@ Now our parameters and conditions are not scalars, but `Particles`, which are n 
 
 We can now run our simulation:
 
-```@example
+```@example usepkg
 energy_balance!(leaf,meteo)
 ```
 
 And now we can plot the resulting inputs/outputs values:
 
-```@example
+```@example usepkg
 p1 = plot(meteo.T,legend=:false,xlabel="Tₐ (°C)",ylabel="density",dpi=300,title="(a)",titlefontsize=9)
 p2 = plot(leaf.status.d,legend=:false,xlabel="d (m)",ylabel="density",dpi=300,title="(b)",titlefontsize=9)
 p3 = plot(leaf.status.Tₗ,legend=:false,xlabel="Tₗ (°C)",ylabel="density",dpi=300,title="(c)",titlefontsize=9)
@@ -65,7 +73,7 @@ It is also possible to use other types of distributions. For example the `a .. b
 
 Here's an example usage:
 
-```@example
+```@example usepkg
 using PlantBiophysics
 using MonteCarloMeasurements
 using Plots

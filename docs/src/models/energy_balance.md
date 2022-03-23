@@ -101,7 +101,7 @@ include("./schymanski.jl")
 
 ![](./schymanski_et_al_2017_6a.svg)
 
-The figure is the same as Figure 6a from Schymanski et al. (2017). The code to reproduce this figure is available in [this file](./schymanski.jl).
+*Figure 1. Energy flux measured on an artificial leaf (points) or simulated from its digital twin (lines). Data from Schymanski et al. (2017) figure 6a. The code to reproduce this figure is available in [this file](./schymanski.jl).*
 
 ## References
 

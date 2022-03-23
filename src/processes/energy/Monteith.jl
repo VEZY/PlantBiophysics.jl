@@ -24,7 +24,7 @@ struct Monteith{T,S} <: AbstractEnergyModel
     ΔT::T
 end
 
-function Monteith(; aₛₕ = 2, aₛᵥ = 1, ε = 0.955, maxiter = 10, ΔT = 0.01)
+function Monteith(; aₛₕ=2, aₛᵥ=1, ε=0.955, maxiter=10, ΔT=0.01)
     param_int = promote(aₛₕ, aₛᵥ, maxiter)
     param_float = promote(ε, ΔT)
     Monteith(param_int[1], param_int[2], param_float[1], param_int[3], param_float[2])
@@ -125,7 +125,7 @@ Maxime Soma, et al. 2018. « Measuring and modelling energy partitioning in can
 complexity using MAESPA model ». Agricultural and Forest Meteorology 253‑254 (printemps): 203‑17.
 https://doi.org/10.1016/j.agrformet.2018.02.005.
 """
-function energy_balance!_(leaf::LeafModels{I,<:Monteith,A,Gs,S}, meteo::AbstractAtmosphere, constants = Constants()) where {I,A,Gs,S}
+function energy_balance!_(leaf::LeafModels{I,<:Monteith,A,Gs,S}, meteo::AbstractAtmosphere, constants=Constants()) where {I,A,Gs,S}
 
     # Initialisations
     leaf.status.Tₗ = meteo.T - 0.2
@@ -135,8 +135,8 @@ function energy_balance!_(leaf::LeafModels{I,<:Monteith,A,Gs,S}, meteo::Abstract
     γˢ = Rbₕ = Δ = zero(meteo.T)
     leaf.status.Rn = leaf.status.Rₛ
     iter = 0
-    # ?NB: We use iter = 0 and not 1 because to get the right number of iterations at the end
-    # of the for loop, becaue we use iter += 1 at the end (so it increments once again)
+    # ?NB: We use iter = 0 and not 1 to get the right number of iterations at the end
+    # of the for loop, because we use iter += 1 at the end (so it increments once again)
 
     # Iterative resolution of the energy balance
     for i in 1:leaf.energy.maxiter

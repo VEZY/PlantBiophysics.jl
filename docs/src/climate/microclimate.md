@@ -1,5 +1,9 @@
 # [Micro-climate](@id microclimate_page)
 
+```@setup usepkg
+using PlantBiophysics
+```
+
 The micro-climatic/meteorological conditions measured close to the object or component are given as the second argument of the simulation functions shown earlier.
 
 PlantBiophysics provides its own data structure to declare those conditions, and to pre-compute other required variables. This data structure is a type called [`Atmosphere`](@ref).

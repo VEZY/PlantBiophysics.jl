@@ -2,6 +2,28 @@
 
 ```@setup usepkg
 using PlantBiophysics, MutableNamedTuples
+
+struct WoodModels{
+    I<:Union{Missing,AbstractInterceptionModel},
+    E<:Union{Missing,AbstractEnergyModel},
+    S<:MutableNamedTuple
+} <: AbstractComponentModel
+
+    interception::I
+    energy::E
+    status::S
+end
+
+wood = WoodModels(
+    missing,
+    Monteith(),
+    MutableNamedTuple(Rₛ = 13.0, sky_fraction = 1.0, d = 0.03)
+)
+
+function WoodModels(; interception = missing, energy = missing, status...)
+    status = init_variables_manual(interception, energy; status...)
+    WoodModels(interception, energy, status)
+end
 ```
 
 ## Introduction
@@ -38,7 +60,7 @@ Now we can implement the structure that defines the component models. Remember t
 
 Let's call our example wood component models `WoodModels`. Here is how we would define its structure:
 
-```@example usepkg
+```julia
 struct WoodModels{
     I<:Union{Missing,AbstractInterceptionModel},
     E<:Union{Missing,AbstractEnergyModel},
@@ -49,7 +71,6 @@ struct WoodModels{
     energy::E
     status::S
 end
-
 ```
 
 OK, that's a lot of information in few lines. Let's break it up.

@@ -65,7 +65,17 @@ leaf = LeafModels(
 We can now simulate the leaf, *e.g.* for the energy_balance (coupled to photosynthesis and
 stomatal conductance):
 
-```@example usepkg
+```@setup usepkgandleaf
+using PlantBiophysics
+leaf = LeafModels(
+    energy = Monteith(),
+    photosynthesis = Fvcb(),
+    stomatal_conductance = ConstantGs(0.0, 0.0011),
+    Rₛ = 13.747, sky_fraction = 1.0, d = 0.03, PPFD = 1500.
+)
+```
+
+```@example usepkgandleaf
 meteo = Atmosphere(T = 22.0, Wind = 0.8333, P = 101.325, Rh = 0.4490995)
 
 energy_balance!(leaf,meteo)
