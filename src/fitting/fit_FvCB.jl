@@ -50,7 +50,7 @@ df[!, :Wind] .= 10.0
 
 leaf = LeafModels(
         photosynthesis = Fvcb(VcMaxRef = VcMaxRef, JMaxRef = JMaxRef, RdRef = RdRef, Tᵣ = 25.0, TPURef = TPURef),
-        # stomatal_conductance = ConstantGs(0.0, df[i,:gs]),
+        # stomatal_conductance = ConstantGs(0.0, df[i,:Gₛ]),
         stomatal_conductance = Medlyn(0.03, 12.),
         Tₗ = df.Tₗ, PPFD = df.PPFD, Cₛ = df.Cₐ, Dₗ = 0.1
     )

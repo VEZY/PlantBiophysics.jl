@@ -23,13 +23,13 @@ function read_walz(file)
     # Renaming variables to fit the standard in the package:
     rename!(
         df,
-        :GH2O => :gs, :ca => :Cₐ, :Tcuv => :T, :Pamb => :P, :rh => :Rh,
+        :GH2O => :Gₛ, :ca => :Cₐ, :Tcuv => :T, :Pamb => :P, :rh => :Rh,
         :PARtop => :PPFD, :ci => :Cᵢ, :Comment => :curve, :Tleaf => :Tₗ
     )
 
     # Recomputing the variables to fit the units used in the package:
     df[!, :VPD] = round.(df[:, :VPD] .* df[:, :P] ./ 1000.0, digits = 3)
-    df[!, :gs] = round.(gsw_to_gsc.(df[:, :gs]) ./ 1000.0, digits = 5)
+    df[!, :Gₛ] = round.(gsw_to_gsc.(df[:, :Gₛ]) ./ 1000.0, digits = 5)
     df[!, :AVPD] = df[:, :A] ./ (df[:, :Cₐ] .* sqrt.(df[:, :VPD]))
     df[!, :Rh] = df[!, :Rh] ./ 100.0
 

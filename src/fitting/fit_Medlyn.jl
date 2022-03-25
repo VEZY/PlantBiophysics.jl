@@ -30,7 +30,7 @@ leaf = LeafModels(
 gs!(leaf, w)
 
 # Visualising the results:
-gsAvpd = PlantBiophysics.GsAVPD(g0, g1, df.gs, df.VPD, df.A, df.Cₐ, leaf[:Gₛ])
+gsAvpd = PlantBiophysics.GsAVPD(g0, g1, df.Gₛ, df.VPD, df.A, df.Cₐ, leaf[:Gₛ])
 plot(gsAvpd,leg=:bottomright)
 # As in [`Medlyn`](@ref) reference paper, linear regression is also plotted.
 ```
@@ -39,15 +39,15 @@ function fit(::T, df) where {T<:Type{Medlyn}}
     # Fitting the A/(Cₐ√Dₗ) - Gₛ curve using least squares method
     x = df.A ./ df.Cₐ
     y = sqrt.(df.VPD)
-    gs = df.gs
+    Gₛ = df.Gₛ
     y = y[x.>0.0]
-    gs = gs[x.>0.0]
+    Gₛ = Gₛ[x.>0.0]
     x = x[x.>0.0]
 
 
-    # Changing the problem from gs = g₀ + (1 + g₁/√Dₗ)*A/Cₐ to gs - A/Cₐ = g₀ + g₁*A/(Cₐ*√Dₗ)
+    # Changing the problem from Gₛ = g₀ + (1 + g₁/√Dₗ)*A/Cₐ to Gₛ - A/Cₐ = g₀ + g₁*A/(Cₐ*√Dₗ)
     A = [ones(length(x)) x ./ y]
-    f = gs .- x
+    f = Gₛ .- x
     g0, g1 = inv(A' * A) * A' * f
 
     return (g0, g1)
