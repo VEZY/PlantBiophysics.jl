@@ -1,0 +1,36 @@
+Variable,Description,Unit
+T,Temperature,Celsius degree
+Tₗ,Leaf temperature,Celsius degree
+PPFD,Absorbed Photosynthetic Photon Flux Density,μmol[photon] m⁻² s⁻¹
+Dₗ,Vapour pressure difference between the surface and the saturated air vapour pressure,kPa
+Wind,wind speed,m s⁻¹
+P,Air pressure,kPa
+Rh,Relative humidity,0-1
+VPD,Vapor pressure deficit,kPa
+ρ,Air density,kg m⁻³
+λ,Latent heat of vaporization,J kg⁻¹
+γ,Psychrometer "constant",kPa K⁻¹
+ε,Atmosphere emissivity,0-1
+Δ,Slope of the saturation vapor pressure at air temperature,-
+clearness,Sky clearness,0-1
+e,Vapor pressure,kPa
+eₛ,Saturated vapor pressure,kPa
+Cₐ,Air CO₂ concentration,mol[CO₂] m⁻² s⁻¹
+Cₛ,Stomatal CO₂ concentration,mol[CO₂] m⁻² s⁻¹
+Cᵢ,Intercellular CO₂ concentration,mol[CO₂] m⁻² s⁻¹
+Gₛ,stomatal conductance for CO₂,mol[CO₂] m⁻² s⁻¹
+Gbₕ,Leaf boundary conductance for heat (one-sided),m s⁻¹
+Rbₕ,Leaf boundary resistance for heat (one-sided),m s⁻¹
+Gbc,Leaf boundary conductance for CO₂ (one-sided),mol[CO₂] m⁻² s⁻¹
+A,carbon assimilation,μmol[CO₂] m⁻² s⁻¹
+λE,Latent heat flux,W m⁻²
+H,Sensible heat flux,W m⁻²
+Rₛ,Net shortwave radiation (PAR + NIR). Often computed from a light interception model,W m⁻²
+Rₗₗ,Net longwave radiation flux (TIR) between the object and the atmosphere,W m⁻²
+Ri_SW_f,Incoming short wave radiation flux,W m⁻²
+Ri_PAR_f,Incoming PAR flux,W m⁻²
+Ri_NIR_f,Incoming NIR flux,W m⁻²
+Ri_TIR_f,Incoming TIR flux,W m⁻²
+sky_fraction,View factor between the object and the sky for both faces (0-2),-
+d,Characteristic dimension *e.g.* leaf width,meter
+duration,Time duration *e.g.* for a time-step,seconds

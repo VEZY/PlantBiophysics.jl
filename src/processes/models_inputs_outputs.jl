@@ -82,6 +82,15 @@ function variables(m::T, ms...) where {T<:Union{Missing,AbstractModel}}
 end
 
 """
+    variables()
+
+Returns a dataframe of all variables in PlantBiophysics, their description and their units.
+"""
+function variables()
+    sort!(CSV.read(joinpath(dirname(dirname(pathof(PlantBiophysics))),"data","variables.csv"), DataFrame))
+end
+
+"""
     variables_typed(model)
     variables_typed(model, models...)
 

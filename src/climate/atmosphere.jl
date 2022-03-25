@@ -28,9 +28,9 @@ atmospheric pressure on Earth.
 - `Δ = e_sat_slope(meteo.T)` (0-1): slope of the saturation vapor pressure at air temperature
 - `clearness::A = 9999.9` (0-1): Sky clearness
 - `Ri_SW_f::A = 9999.9` (W m-2): Incoming short wave radiation flux
-- `Ri_PAR_f::A = 9999.9` (W m-2): Incoming PAR radiation flux
-- `Ri_NIR_f::A = 9999.9` (W m-2): Incoming NIR radiation flux
-- `Ri_TIR_f::A = 9999.9` (W m-2): Incoming TIR radiation flux
+- `Ri_PAR_f::A = 9999.9` (W m-2): Incoming PAR flux
+- `Ri_NIR_f::A = 9999.9` (W m-2): Incoming NIR flux
+- `Ri_TIR_f::A = 9999.9` (W m-2): Incoming TIR flux
 - `Ri_custom_f::A = 9999.9` (W m-2): Incoming radiation flux for a custom waveband
 
 # Notes
