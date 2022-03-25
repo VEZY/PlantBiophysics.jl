@@ -15,35 +15,40 @@ using PlantBiophysics, Plots, DataFrames
 
 file = joinpath(dirname(dirname(pathof(PlantBiophysics))),"test","inputs","data","P1F20129.csv")
 df = read_walz(file)
-# Removing the CO2 and Rh curves 
-filter!(x -> x.curve != "Rh Curve" && x.curve != "CO2 Curve", df)
+# Removing the CO2 and ligth Curve, we fit the parameters on the Rh curve:
+filter!(x -> x.curve != "ligth Curve" && x.curve != "CO2 Curve", df)
 
 # Fit the parameters values:
 g0, g1 = fit(Medlyn, df)
 
 # Re-simulating Gₛ using the newly fitted parameters:
-gs_sim = g0 .+ (1 .+g1./sqrt.(df.VPD)).*df.A./df.Cₐ
+w = Weather(select(df, :T, :P, :Rh, :Cₐ, :VPD, :T => (x -> 10) => :Wind))
+leaf = LeafModels(
+        stomatal_conductance = Medlyn(g0, g1),
+        A = df.A, Cₛ = df.Cₐ, Dₗ = df.VPD
+    )
+gs!(leaf, w)
 
 # Visualising the results:
-gsAvpd = PlantBiophysics.GsAVPD(g0, g1, df.gs, df.VPD, df.A, df.Cₐ, gs_sim)
+gsAvpd = PlantBiophysics.GsAVPD(g0, g1, df.gs, df.VPD, df.A, df.Cₐ, leaf[:Gₛ])
 plot(gsAvpd,leg=:bottomright)
 # As in [`Medlyn`](@ref) reference paper, linear regression is also plotted.
 ```
 """
-function fit(::T, df) where {T<:Union{Type{Medlyn}}}
+function fit(::T, df) where {T<:Type{Medlyn}}
     # Fitting the A/(Cₐ√Dₗ) - Gₛ curve using least squares method
     x = df.A ./ df.Cₐ
     y = sqrt.(df.VPD)
     gs = df.gs
-    y=y[x.>0.]
-    gs=gs[x.>0.]
-    x=x[x.>0.]
+    y = y[x.>0.0]
+    gs = gs[x.>0.0]
+    x = x[x.>0.0]
 
 
     # Changing the problem from gs = g₀ + (1 + g₁/√Dₗ)*A/Cₐ to gs - A/Cₐ = g₀ + g₁*A/(Cₐ*√Dₗ)
-    A = [ones(length(x)) x ./y]
+    A = [ones(length(x)) x ./ y]
     f = gs .- x
-    g0,g1 = inv(A'*A)*A'*f
+    g0, g1 = inv(A' * A) * A' * f
 
     return (g0, g1)
 end
@@ -69,14 +74,14 @@ GsAVPD(g0, g1, gs_meas, VPD_meas, A_meas, Cₐ_meas) = GsAVPD(g0, g1, gs_meas, V
     xguide --> "A/(Cₐ√VPD) (ppm)"
     yguide --> "gₛ (mol m⁻² s⁻¹)"
 
-    EF_ = round(EF(y, y2), digits = 3)
-    dr_ = round(dr(y, y2), digits = 3)
-    RMSE_ = round(RMSE(y, y2), digits = 3)
+    EF_ = round(EF(y, y2), digits=3)
+    dr_ = round(dr(y, y2), digits=3)
+    RMSE_ = round(RMSE(y, y2), digits=3)
 
-    m(t,p) = p[1] .+ t .* p[2]
+    m(t, p) = p[1] .+ t .* p[2]
     p0 = [0.1, 1.0]
-    linearfit = curve_fit(m,x,y,p0)
-    y3 = linearfit.param[1] .+ linearfit.param[2].*x
+    linearfit = curve_fit(m, x, y, p0)
+    y3 = linearfit.param[1] .+ linearfit.param[2] .* x
 
     @series begin
         seriestype := :line
@@ -102,8 +107,8 @@ GsAVPD(g0, g1, gs_meas, VPD_meas, A_meas, Cₐ_meas) = GsAVPD(g0, g1, gs_meas, V
         label := "Simulated (EF:$EF_,dr:$dr_,RMSE:$RMSE_)"
         markercolor := :white
         seriestype := :scatter
-        markeralpha := 1.
-        markerstrokealpha := 1.
+        markeralpha := 1.0
+        markerstrokealpha := 1.0
         dpi := 300
         x, y2
     end
