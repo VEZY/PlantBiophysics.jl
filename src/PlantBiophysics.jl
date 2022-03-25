@@ -91,6 +91,7 @@ include("io/read_walz.jl")
 # Parameters optimization
 include("fitting/fit.jl")
 include("fitting/fit_FvCB.jl")
+include("fitting/fit_Medlyn.jl")
 
 # Model evaluation
 include("evaluation/statistics.jl")
