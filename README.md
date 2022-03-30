@@ -81,6 +81,7 @@ For more examples, please read the documentation.
 - [ ] Make boundary layer conductances models as for stomatal conductances.
 - [ ] Make a diagram of a leaf for gaz and energy exchanges
 - [ ] Add checks on the models provided for a simulation: for example Fvcb requires a stomatal conductance model. At the moment Julia returns an error on missing method for the particular implementation of photosynthesis!_(Fvcb,Gs) (in short). We could check before that both are needed and present, and return a more informational error if missing.
+- [ ] Implement a Gm model. Cf. the [GECROS](https://models.pps.wur.nl/gecros-detailed-eco-physiological-crop-growth-simulation-model-analyse-genotype-environment) model.
 
 ## Contributing
 

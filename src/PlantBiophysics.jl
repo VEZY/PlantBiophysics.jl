@@ -11,7 +11,7 @@ import MultiScaleTreeGraph
 import Dates
 
 import DataFrames.DataFrame # For convenience transformations
-import DataFrames: Not, rename!, select!, select, dropmissing!, sort!
+import DataFrames: Not, rename!, select!, select, dropmissing!, sort!, transform!
 import Base.show
 import Base.getindex
 import Impute.locf # For filling missing values in comments in Walz to identify curves
