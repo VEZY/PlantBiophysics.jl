@@ -1,7 +1,7 @@
 name = "PlantBiophysics"
 uuid = "7ae8fcfa-76ad-4ec6-9ea7-5f8f5e2d6ec9"
 authors = ["remi.vezy <VEZY@users.noreply.github.com> and contributors"]
-version = "0.2.0"
+version = "0.3.0"
 
 [deps]
 CSV = "336ed68f-0bac-5ca0-87d4-7b16caf5d00b"
