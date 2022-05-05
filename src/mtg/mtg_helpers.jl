@@ -1,7 +1,7 @@
 """
     pull_status!(node)
 
-Copy the status of a node's LeafModel (*i.e.* the outputs of the simulations) into the MTG
+Copy the status of a node's component models (*e.g.* the outputs of a [`LeafModel`]@ref simulation) into the MTG
 attributes. This function is used when we need to compute further the simulation outputs with
 *e.g.* [`transform!`](@ref).
 
@@ -73,7 +73,7 @@ pre-allocated MTG attributes, i.e. one value per step.
 
 See [`pre_allocate_attr!`](@ref) for the pre-allocation step.
 """
-function pull_status_step!(node, step; attr_name = :models)
+function pull_status_step!(node, step; attr_name=:models)
     if node[attr_name] !== nothing
         st = node[attr_name].status
         for i in keys(st)
@@ -88,7 +88,7 @@ end
 Pre-allocate the node attributes based on the status of a component model and a given number
 of simulation steps.
 """
-function pre_allocate_attr!(node, nsteps; attr_name = :models)
+function pre_allocate_attr!(node, nsteps; attr_name=:models)
     if node[attr_name] !== nothing
         st = node[attr_name].status
         vars = collect(keys(st))

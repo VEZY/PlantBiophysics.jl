@@ -59,9 +59,9 @@ init_mtg_models!(mtg, models)
 function init_mtg_models!(
     mtg::MultiScaleTreeGraph.Node,
     models::Dict{String,<:AbstractModel},
-    i = nothing;
-    verbose = true,
-    attr_name = :models
+    i=nothing;
+    verbose=true,
+    attr_name=:models
 )
 
     attr_name_sym = Symbol(attr_name)
@@ -138,9 +138,11 @@ function init_mtg_models!(
         end
         if any([length(value) > 0 for (key, value) in attrs_missing])
             err_msg = [string("\n", key, ": [", join(value, ", ", " and "), "]") for (key, value) in attrs_missing]
-            @error string(
-                "Some variables need to be initialised for some components before simulation:",
-                join(err_msg, ", ", " and ")
+            error(
+                string(
+                    "Some variables need to be initialised for some components before simulation:",
+                    join(err_msg, ", ", " and ")
+                )
             )
         end
     elseif verbose

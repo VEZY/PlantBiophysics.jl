@@ -1,6 +1,6 @@
 
 
-file = "inputs/models/plant_coffee.yml"
+file = joinpath(dirname(dirname(pathof(PlantBiophysics))), "test", "inputs", "models", "plant_coffee.yml")
 
 @testset "read_model()" begin
     model = read_model(file)
@@ -37,10 +37,10 @@ var_names = Dict(:temperature => :T, :relativeHumidity => :Rh, :wind => :Wind, :
         :wind => :Wind,
         :atmosphereCO2_ppm => :Cₐ,
         :Re_SW_f => :Ri_SW_f,
-        date_format = DateFormat("yyyy/mm/dd")
+        date_format=DateFormat("yyyy/mm/dd")
     )
 
     @test typeof(meteo) <: Weather
     @test typeof(meteo) <: Weather
-    @test NamedTuple(meteo.metadata) == (; name = "Aquiares", latitude = 15.0, altitude = 100.0, use = [:Rh, :clearness], file = file)
+    @test NamedTuple(meteo.metadata) == (; name="Aquiares", latitude=15.0, altitude=100.0, use=[:Rh, :clearness], file=file)
 end;
