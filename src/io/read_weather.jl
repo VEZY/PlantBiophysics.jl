@@ -35,15 +35,15 @@ meteo = read_weather(
 """
 function read_weather(
     file, args...;
-    date_format = Dates.DateFormat("yyyy-mm-ddTHH:MM:SS.s"),
-    hour_format = Dates.DateFormat("HH:MM:SS")
+    date_format=Dates.DateFormat("yyyy-mm-ddTHH:MM:SS.s"),
+    hour_format=Dates.DateFormat("HH:MM:SS")
 )
 
     arguments = (args...,)
     data, metadata = read_weather(file, DataFrame)
 
     # Clean-up the variable names:
-    length(arguments) > 0 && select!(data, arguments...)
+    length(arguments) > 0 && transform!(data, arguments...)
 
     # If there's a "use" field in the YAML, parse it and rename it:
     if haskey(metadata, "use")
@@ -70,7 +70,7 @@ function read_weather(file, ::Type{DataFrame})
         yaml_data = ""
         is_yaml = true
         while is_yaml
-            line = readline(io, keep = true)
+            line = readline(io, keep=true)
             if line[1:2] == "#'"
                 yaml_data *= lstrip(line[3:end])
             else
@@ -83,9 +83,9 @@ function read_weather(file, ::Type{DataFrame})
     metadata = YAML.load(yaml_data)
     push!(metadata, "file" => file)
 
-    met_data = CSV.read(file, DataFrame; comment = "#")
+    met_data = CSV.read(file, DataFrame; comment="#")
 
-    (data = met_data, metadata = metadata)
+    (data=met_data, metadata=metadata)
 end
 
 """

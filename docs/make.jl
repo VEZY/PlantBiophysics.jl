@@ -24,6 +24,7 @@ makedocs(;
             "Parameter fitting" => "./getting_started/first_fit.md",
         ],
         "Design" => "./concepts/package_design.md",
+        "Variables" => "variables.md",
         "Components and methods" => [
             "LeafModels" => "./components/leafmodels.md",
             "ComponentModels" => "./components/componentmodels.md",

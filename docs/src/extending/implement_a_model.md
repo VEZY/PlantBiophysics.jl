@@ -163,8 +163,8 @@ OK you got me I lied. But just a little bit. Yes you can do more for your implem
 First, you can add a method for type promotion:
 
 ```julia
-function BandB(g0,gs,gs_min)
-    BandB(promote(g0,gs,gs_min))
+function BandB(g0,g1,gs_min)
+    BandB(promote(g0,g1,gs_min))
 end
 ```
 

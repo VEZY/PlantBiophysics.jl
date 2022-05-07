@@ -8,10 +8,10 @@ Gs = Medlyn(0.03, 12.0)
 models = Dict(
     "Leaf" =>
         LeafModels(
-            energy = nrj,
-            photosynthesis = photo,
-            stomatal_conductance = Gs,
-            d = 0.03
+            energy=nrj,
+            photosynthesis=photo,
+            stomatal_conductance=Gs,
+            d=0.03
         )
 )
 # We can compute them directly inside the MTG from available variables:
@@ -19,15 +19,14 @@ transform!(
     mtg,
     [:Ra_PAR_f, :Ra_NIR_f] => ((x, y) -> x + y) => :Rₛ,
     :Ra_PAR_f => (x -> x * 4.57) => :PPFD,
-    ignore_nothing = true
+    ignore_nothing=true
 )
 
-# Initialising all components with their corresponding models and initialisations:
-init_mtg_models!(mtg, models)
-
-
 @testset "mtg: init_mtg_models!" begin
-    leaf_node = get_node(mtg, 816)
+    # Initialising all components with their corresponding models and initialisations:
+    init_mtg_models!(mtg, models)
+
+    leaf_node = get_node(mtg, 818)
     @test leaf_node[:models].photosynthesis === photo
     @test leaf_node[:models].energy === nrj
     @test leaf_node[:models].stomatal_conductance === Gs
@@ -39,7 +38,8 @@ end
 
 @testset "mtg: pull_status!" begin
     leaf1 = get_node(mtg, 815)
-    pull_status!(leaf1)
+
+    # Thos are the inputs we gave earlier so they are both in the mtg attr. and the model status:
     @test leaf1[:Rₛ] == status(leaf1[:models], :Rₛ)
     @test leaf1[:PPFD] == leaf1[:models][:PPFD]
 
@@ -50,8 +50,8 @@ end
     @test leaf1[:Rₛ] == 300.0
 
     # Make a simulation, and check the other ones:
-    meteo = Atmosphere(T = 22.0, Wind = 0.8333, P = 101.325, Rh = 0.4490995)
-    transform!(mtg, :models => (x -> energy_balance!(x, meteo)), ignore_nothing = true)
+    meteo = Atmosphere(T=22.0, Wind=0.8333, P=101.325, Rh=0.4490995)
+    transform!(mtg, :models => (x -> energy_balance!(x, meteo)), ignore_nothing=true)
 
     # The output is not written in the attributes yet:
     @test leaf1[:A] == -999.99
@@ -61,7 +61,7 @@ end
     @test leaf1[:A] == leaf1[:models][:A]
 
     # Checks if we can pull only some variables:
-    leaf2 = get_node(mtg, 816)
+    leaf2 = get_node(mtg, 818)
     pull_status!(leaf2, :A)
     @test leaf2[:A] == leaf2[:models][:A]
     @test leaf2[:Rn] === nothing
@@ -80,7 +80,7 @@ end
         [:Ra_PAR_f, :Ra_NIR_f] => ((x, y) -> x + y) => :Rₛ,
         :Ra_PAR_f => (x -> x * 4.57) => :PPFD,
         (x -> 0.03) => :d,
-        ignore_nothing = true
+        ignore_nothing=true
     )
 
     # Initialising all components with their corresponding models and initialisations:
@@ -104,7 +104,7 @@ end
         :relativeHumidity => (x -> x ./ 100) => :Rh,
         :wind => :Wind,
         :atmosphereCO2_ppm => :Cₐ,
-        date_format = DateFormat("yyyy/mm/dd")
+        date_format=DateFormat("yyyy/mm/dd")
     )
 
     # We can compute them directly inside the MTG from available variables:
@@ -113,10 +113,10 @@ end
         [:Ra_PAR_f, :Ra_NIR_f] => ((x, y) -> fill(x + y, length(weather))) => :Rₛ,
         :Ra_PAR_f => (x -> x * 4.57) => :PPFD,
         (x -> 0.03) => :d,
-        ignore_nothing = true
+        ignore_nothing=true
     )
 
-    leaf_node = get_node(mtg, 815)
+    leaf_node = get_node(mtg, 816)
 
     # Get the Ra_PAR_f before computation to check that it is not modified
     Ra_PAR_f = copy(leaf_node[:Ra_PAR_f])
@@ -126,21 +126,25 @@ end
     # Make the computation:
     energy_balance!(mtg, models, weather)
 
-
     @test leaf_node[:Ra_PAR_f] == Ra_PAR_f
     @test leaf_node[:sky_fraction] == fill(sky_fraction, length(weather))
     @test leaf_node[:sky_fraction] == fill(sky_fraction, length(weather))
 
-    # Just use the values of today (28/02/2022) as a reference:
-    @test leaf_node[:A] ≈ [11.31594, 11.12645, 11.29447] atol = 1e-4
-    @test leaf_node[:Tₗ] ≈ [23.94156, 24.97411, 24.13802] atol = 1e-4
-    @test leaf_node[:Rₗₗ] ≈ [1.01122, 1.00249, 1.11028] atol = 1e-4
-    @test leaf_node[:H] ≈ [-52.71902, -60.47476, -68.89932] atol = 1e-4
-    @test leaf_node[:λE] ≈ [162.72725, 170.47426, 179.00661] atol = 1e-4
-    @test leaf_node[:Gₛ] ≈ [0.36235, 0.35164, 0.3481] atol = 1e-4
-    @test leaf_node[:Gbₕ] ≈ [0.02072, 0.02461, 0.0247] atol = 1e-4
-    @test leaf_node[:Gbc] ≈ [0.64175, 0.75955, 0.76421] atol = 1e-4
-    @test leaf_node[:Rn] ≈ [110.00823, 109.99951, 110.1073] atol = 1e-4
-    @test leaf_node[:Cᵢ] ≈ [331.13285, 333.70711, 332.77212] atol = 1e-4
-    @test leaf_node[:Cₛ] ≈ [362.36708, 365.35128, 365.22066] atol = 1e-4
+
+    # Use the values of today (05/05/2022) as a reference. Run the few lines below to update:
+    # for i in [:A, :Tₗ, :Rₗₗ, :H, :λE, :Gₛ, :Gbₕ, :Gbc, :Rn, :Cᵢ, :Cₛ]
+    #     print("@test leaf_node[:$i] ≈ $(round.(leaf_node[i], digits= 5)) atol = 1e-4\n")
+    # end
+
+    @test leaf_node[:A] ≈ [12.8822, 12.65021, 12.82599] atol = 1e-4
+    @test leaf_node[:Tₗ] ≈ [-253.77282, -226.73428, -229.87083] atol = 1e-4
+    @test leaf_node[:Rₗₗ] ≈ [-1.15294, -1.07987, -1.03496] atol = 1e-4
+    @test leaf_node[:H] ≈ [-13942.29244, -14915.99942, -15075.42555] atol = 1e-4
+    @test leaf_node[:λE] ≈ [14065.04046, 15038.8205, 15198.29154] atol = 1e-4
+    @test leaf_node[:Gₛ] ≈ [0.33472, 0.32801, 0.32619] atol = 1e-4
+    @test leaf_node[:Gbₕ] ≈ [0.02085, 0.02469, 0.02466] atol = 1e-4
+    @test leaf_node[:Gbc] ≈ [0.6457, 0.76197, 0.76276] atol = 1e-4
+    @test leaf_node[:Rn] ≈ [122.74802, 122.82109, 122.86599] atol = 1e-4
+    @test leaf_node[:Cᵢ] ≈ [341.51361, 341.43362, 340.67958] atol = 1e-4
+    @test leaf_node[:Cₛ] ≈ [360.04926, 363.39792, 363.18468] atol = 1e-4
 end

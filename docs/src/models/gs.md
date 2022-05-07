@@ -20,7 +20,7 @@ For example, you can "simulate" a constant assimilation for a leaf using the fol
 ```@example usepkg
 meteo = Atmosphere(T = 20.0, Wind = 1.0, P = 101.3, Rh = 0.65)
 
-leaf = LeafModels(stomatal_conductance = ConstantGs(gs = 0.1))
+leaf = LeafModels(stomatal_conductance = ConstantGs(Gₛ = 0.1))
 
 gs!(leaf,meteo)
 leaf[:Gₛ]
@@ -76,14 +76,14 @@ DataFrame(leaf)
 The [`ConstantGs`](@ref) model has the following set of parameters:
 
 - `g0 = 0.0`: intercept (``mol_{CO_2} \cdot m^{-2} \cdot s^{-1}``).
-- `gs`: forced stomatal conductance.
+- `Gₛ`: forced stomatal conductance.
 
 This model computes the stomatal conductance using a constant value for the stomatal conductance.
 
 `g0` is only provided for compatibility with photosynthesis models such as [`Fvcb`](@ref) that needs a partial computation of the stomatal conductance at one point:
 
 ```julia
-(gs - g0) / A
+(Gₛ - g0) / A
 ```
 
 ### [Input variables](@id inputs_constantgs)
@@ -97,7 +97,7 @@ Here is an example usage:
 ```@example usepkg
 meteo = Atmosphere(T = 20.0, Wind = 1.0, P = 101.3, Rh = 0.65)
 
-leaf = LeafModels(stomatal_conductance = ConstantGs(gs = 0.1))
+leaf = LeafModels(stomatal_conductance = ConstantGs(Gₛ = 0.1))
 
 gs!(leaf,meteo)
 leaf[:Gₛ]

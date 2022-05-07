@@ -171,7 +171,7 @@ function energy_balance!_(leaf::LeafModels{I,<:Monteith,A,Gs,S}, meteo::Abstract
         # Leaf boundary resistance for water vapor (s m-1):
         Rbᵥ = 1 / gbh_to_gbw(leaf.status.Gbₕ)
 
-        # Leaf boundary resistance for CO₂ (mol[CO₂] m-2 s-1):
+        # Leaf boundary conductance for CO₂ (mol[CO₂] m-2 s-1):
         leaf.status.Gbc = ms_to_mol(leaf.status.Gbₕ, meteo.T, meteo.P, constants.R, constants.K₀) /
                           constants.Gbc_to_Gbₕ
 
