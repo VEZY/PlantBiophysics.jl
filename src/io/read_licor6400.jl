@@ -24,10 +24,14 @@ function read_licor6400(file)
     )
 
     # Recomputing the variables to fit the units used in the package:
-    df[!,:VPD] = df[!,:Dₗ]
-    df[!,:gs] = round.(gsw_to_gsc.(df[:,:gs]), digits = 5)
-    df[!,:AVPD] = df[:,:A] ./ (df[:,:Cₐ] .* sqrt.(df[:,:Dₗ]))
     df[!,:Rh] = df[!,:Rh] ./ 100.0
+    transform!(
+		df, 
+		[:T,:Rh] => ((x,y) -> e_sat.(x) .- vapor_pressure.(x, y)) => :VPD,
+		:gs => (x -> gsw_to_gsc.(x)) => :gs,
+		[:A,:Cₐ,:Dₗ] => ((x,y,z) -> x ./ (y .* sqrt.(z))) => :AVPD,
+	)
+    
 
     return df
 end
