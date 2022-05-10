@@ -5,7 +5,7 @@ Import Licor6400 data (such as Medlyn 2001 data).
 
 """
 function read_licor6400(file)
-    df = CSV.read(file, DataFrame, header = 1, datarow = 3)
+    df = CSV.read(file, DataFrame, header = 1, skipto = 3)
 
     if hasproperty(df, :Ttop)
         rename!(df, :Ttop => :Tmin)
@@ -18,7 +18,7 @@ function read_licor6400(file)
     # Renaming variables to fit the standard in the package:
     rename!(
         df,
-        :Cond => :gs, :CO2S => :Cₐ, :Tair => :T, :Press => :P, :RH_S => :Rh,
+        :Cond => :Gₛ, :CO2S => :Cₐ, :Tair => :T, :Press => :P, :RH_S => :Rh,
         :PARi => :PPFD, :Ci => :Cᵢ, :Tleaf => :Tₗ,
         :VpdL => :Dₗ, :Photo => :A, :BLCond => :Gbv,
     )
@@ -28,7 +28,7 @@ function read_licor6400(file)
     transform!(
 		df, 
 		[:T,:Rh] => ((x,y) -> e_sat.(x) .- vapor_pressure.(x, y)) => :VPD,
-		:gs => (x -> gsw_to_gsc.(x)) => :gs,
+		:Gₛ => (x -> gsw_to_gsc.(x)) => :Gₛ,
 		[:A,:Cₐ,:Dₗ] => ((x,y,z) -> x ./ (y .* sqrt.(z))) => :AVPD,
 	)
     
