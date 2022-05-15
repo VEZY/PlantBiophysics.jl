@@ -31,6 +31,10 @@ function read_licor6400(file)
 		:Gₛ => (x -> gsw_to_gsc.(x)) => :Gₛ,
 		[:A,:Cₐ,:Dₗ] => ((x,y,z) -> x ./ (y .* sqrt.(z))) => :AVPD,
 	)
+<<<<<<< HEAD
+=======
+    
+>>>>>>> a5fa593a928c75d19296a6428bf4765477dfa28e
 
     return df
 end
