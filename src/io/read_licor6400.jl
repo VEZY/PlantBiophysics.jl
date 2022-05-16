@@ -1,7 +1,7 @@
 """
-    read_licor6400file)
+    read_licor6400(file)
 
-Import Licor6400 data (such as Medlyn 2001 data).
+Import Licor6400 data (such as Medlyn 2001 data) with the units and names corresponding to the ones used in PlantBiophysics.jl.
 
 """
 function read_licor6400(file)
@@ -23,7 +23,7 @@ function read_licor6400(file)
         :VpdL => :Dₗ, :Photo => :A, :BLCond => :Gbv,
     )
 
-    # Recomputing the variables to fit the units used in the package:
+    # Recomputing the variables to match the units used in the package:
     df[!,:Rh] = df[!,:Rh] ./ 100.0
     transform!(
 		df, 
