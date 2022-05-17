@@ -22,7 +22,7 @@ cst = Constants(
 function read_dict(file)
     lines = readlines(file)
     params = Dict{String,Float64}()
-    for i in 1:length(lines)
+    for i in eachindex(lines)
         param = lstrip.(rstrip.(split(lines[i], "=")))
         push!(params, param[1] => parse(Float64, param[2]))
     end

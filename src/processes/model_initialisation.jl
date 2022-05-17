@@ -95,7 +95,7 @@ force a type in the promotion.
 init_variables(Monteith(), Medlyn(0.03,12.0))
 ```
 """
-function init_variables(models...; types = (Float64,))
+function init_variables(models...; types=(Float64,))
     var_types = promote_type(([i === Any ? Float64 : i for i in eltype.(models)])..., types...)
 
     vars = variables(models...)
@@ -130,7 +130,7 @@ is_initialised(leaf,leaf.photosynthesis)
 # simulated, so its inputs must be initialised
 ```
 """
-function is_initialised(m::T; info = true) where {T<:AbstractComponentModel}
+function is_initialised(m::T; info=true) where {T<:AbstractComponentModel}
     var_names = to_initialise(m)
     is_not_init = is_not_init_(m.status, var_names)
     if any(is_not_init)
@@ -141,7 +141,7 @@ function is_initialised(m::T; info = true) where {T<:AbstractComponentModel}
     end
 end
 
-function is_initialised(m::T, models...; info = true) where {T<:AbstractComponentModel}
+function is_initialised(m::T, models...; info=true) where {T<:AbstractComponentModel}
     var_names = to_initialise(models...)
     is_not_init = is_not_init_(m.status, var_names)
     if any(is_not_init)
@@ -159,7 +159,7 @@ end
 # For components with a status with multiple time-steps:
 function is_not_init_(st::T, var_names) where {T<:Vector{MutableNamedTuple}}
     isnotinit = fill(false, length(var_names))
-    for j in st, i in 1:length(var_names)
+    for j in st, i in eachindex(var_names)
         if getproperty(j, var_names[i]) == -999.99
             isnotinit[i] = true
         end
@@ -181,7 +181,7 @@ init_variables_manual(Monteith(); Tₗ = 20.0)
 function init_variables_manual(models...; vars...)
     new_vals = (; vars...)
     added_types = (fieldtypes(typeof(new_vals).parameters[2])...,)
-    init_vars = init_variables(models...; types = added_types)
+    init_vars = init_variables(models...; types=added_types)
     for i in keys(new_vals)
         !in(i, keys(init_vars)) && error("Key $i not found as a variable of any provided models")
         setproperty!(init_vars, i, new_vals[i])

@@ -32,7 +32,7 @@ macro gen_process_methods(f)
 
     expr = quote
 
-        function $(esc(f_))(object, meteo = nothing, constants = nothing)
+        function $(esc(f_))(object, meteo=nothing, constants=nothing)
             process_models = Dict(process => typeof(getfield(object, process)).name.wrapper for process in fieldnames(typeof(object)))
             pop!(process_models, :status) # status is not a model
             error(
@@ -44,7 +44,7 @@ macro gen_process_methods(f)
         end
 
         # Base method that calls the actual algorithms:
-        function $(esc(mutating_f))(object::AbstractComponentModel, meteo::AbstractAtmosphere, constants = Constants())
+        function $(esc(mutating_f))(object::AbstractComponentModel, meteo::AbstractAtmosphere, constants=Constants())
             !is_initialised(object) && error("Some variables must be initialized before simulation")
 
             $(esc(f_))(object, meteo, constants)
@@ -52,7 +52,7 @@ macro gen_process_methods(f)
         end
 
         # Process method over several objects (e.g. all leaves of a plant) in an Array
-        function $(esc(mutating_f))(object::O, meteo::AbstractAtmosphere, constants = Constants()) where {O<:AbstractArray{<:AbstractComponentModel}}
+        function $(esc(mutating_f))(object::O, meteo::AbstractAtmosphere, constants=Constants()) where {O<:AbstractArray{<:AbstractComponentModel}}
             for i in values(object)
                 $(mutating_f)(i, meteo, constants)
             end
@@ -60,7 +60,7 @@ macro gen_process_methods(f)
         end
 
         # Process method over several objects (e.g. all leaves of a plant) in a kind of Dict.
-        function $(esc(mutating_f))(object::O, meteo::AbstractAtmosphere, constants = Constants()) where {O<:AbstractDict{N,<:AbstractComponentModel} where {N}}
+        function $(esc(mutating_f))(object::O, meteo::AbstractAtmosphere, constants=Constants()) where {O<:AbstractDict{N,<:AbstractComponentModel} where {N}}
             for (k, v) in object
                 $(mutating_f)(v, meteo, constants)
             end
@@ -71,7 +71,7 @@ macro gen_process_methods(f)
         function $(esc(mutating_f))(
             object::T,
             meteo::Weather,
-            constants = Constants()
+            constants=Constants()
         ) where {T<:Union{AbstractArray{<:AbstractComponentModel},AbstractDict{N,<:AbstractComponentModel} where N}}
 
             # Check if the meteo data and the status have the same length (or length 1)
@@ -88,7 +88,7 @@ macro gen_process_methods(f)
         end
 
         # If we call weather with one component only:
-        function $(esc(mutating_f))(object::AbstractComponentModel, meteo::Weather, constants = Constants())
+        function $(esc(mutating_f))(object::AbstractComponentModel, meteo::Weather, constants=Constants())
             $(mutating_f)([object], meteo, constants)
 
             # Check if the meteo data and the status have the same length (or length 1)
@@ -102,14 +102,14 @@ macro gen_process_methods(f)
 
         # Method for calling the process without any meteo. In this case we need to check if
         # the status has one or several time-steps.
-        function $(esc(mutating_f))(object::AbstractComponentModel, meteo::Nothing = nothing, constants = Constants())
+        function $(esc(mutating_f))(object::AbstractComponentModel, meteo::Nothing=nothing, constants=Constants())
             !is_initialised(object) && error("Some variables must be initialized before simulation (see info message for more details)")
 
             if typeof(status(object)) == MutableNamedTuples.MutableNamedTuple
                 $(esc(f_))(object, meteo, constants)
             else
                 # We have several time-steps here, we pass each time-step after another
-                for i = 1:length(status(object))
+                for i = eachindex(status(object))
                     $(esc(f_))(copy(object, object[i]), meteo, constants)
                 end
             end
@@ -120,15 +120,15 @@ macro gen_process_methods(f)
             mtg::MultiScaleTreeGraph.Node,
             models::Dict{String,<:AbstractModel},
             meteo::AbstractAtmosphere,
-            constants = Constants()
+            constants=Constants()
         )
             # Define the attribute name used for the models in the nodes
             attr_name = MultiScaleTreeGraph.cache_name("PlantBiophysics models")
 
             # Initialise the MTG nodes with the corresponding models:
-            init_mtg_models!(mtg, models, attr_name = attr_name)
+            init_mtg_models!(mtg, models, attr_name=attr_name)
 
-            MultiScaleTreeGraph.transform!(mtg, attr_name => (x -> $(mutating_f)(x, meteo, constants)), ignore_nothing = true)
+            MultiScaleTreeGraph.transform!(mtg, attr_name => (x -> $(mutating_f)(x, meteo, constants)), ignore_nothing=true)
         end
 
         # Compatibility with MTG + Weather:
@@ -136,20 +136,20 @@ macro gen_process_methods(f)
             mtg::MultiScaleTreeGraph.Node,
             models::Dict{String,<:AbstractModel},
             meteo::Weather,
-            constants = Constants()
+            constants=Constants()
         )
             # Define the attribute name used for the models in the nodes
             attr_name = Symbol(MultiScaleTreeGraph.cache_name("PlantBiophysics models"))
 
             # Init the status for the meteo step only (with an AbstractAtmosphere)
-            to_init = init_mtg_models!(mtg, models, 1, attr_name = attr_name)
+            to_init = init_mtg_models!(mtg, models, 1, attr_name=attr_name)
 
             # Pre-allocate the node attributes based on the simulated variables and number of steps:
             nsteps = length(meteo)
 
             MultiScaleTreeGraph.traverse!(
                 mtg,
-                (x -> pre_allocate_attr!(x, nsteps; attr_name = attr_name)),
+                (x -> pre_allocate_attr!(x, nsteps; attr_name=attr_name)),
             )
 
             # Computing for each time-steps:
@@ -160,8 +160,8 @@ macro gen_process_methods(f)
                 MultiScaleTreeGraph.transform!(
                     mtg,
                     attr_name => (x -> $(mutating_f)(x, meteo_i, constants)),
-                    (node) -> pull_status_step!(node, i, attr_name = attr_name),
-                    ignore_nothing = true
+                    (node) -> pull_status_step!(node, i, attr_name=attr_name),
+                    ignore_nothing=true
                 )
             end
         end
@@ -169,8 +169,8 @@ macro gen_process_methods(f)
         # Non-mutating version (make a copy before the call, and return the copy):
         function $(esc(non_mutating_f))(
             object::O,
-            meteo::Union{Nothing,AbstractAtmosphere,Weather} = nothing,
-            constants = Constants()
+            meteo::Union{Nothing,AbstractAtmosphere,Weather}=nothing,
+            constants=Constants()
         ) where {
             O<:Union{
                 AbstractComponentModel,

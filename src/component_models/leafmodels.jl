@@ -108,7 +108,7 @@ function LeafModels(; interception = missing, energy = missing,
         # One of the variable is given as an array, meaning this is actually several time-steps
         # In this case we make an array of leaves
         max_length_st = maximum(length_status)
-        for i in 1:length(status_vals)
+        for i in eachindex(status_vals)
             # If the ith status has length one, repeat its value to match the others:
             if length_status[i] == 1
                 status_vals[i] = repeat([status_vals[i]], max_length_st)
