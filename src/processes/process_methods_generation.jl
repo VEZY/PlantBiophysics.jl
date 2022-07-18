@@ -89,14 +89,15 @@ macro gen_process_methods(f)
 
         # If we call weather with one component only:
         function $(esc(mutating_f))(object::AbstractComponentModel, meteo::Weather, constants=Constants())
-            $(mutating_f)([object], meteo, constants)
 
             # Check if the meteo data and the status have the same length (or length 1)
             check_status_wheather(object, meteo)
 
+            !is_initialised(object) && error("Some variables must be initialized before simulation")
+
             # Computing for each time-steps:
             for (i, meteo_i) in enumerate(meteo.data)
-                $(mutating_f)(copy(object, object[i]), meteo_i, constants)
+                $(esc(f_))(copy(object, object[i]), meteo_i, constants)
             end
         end
 
