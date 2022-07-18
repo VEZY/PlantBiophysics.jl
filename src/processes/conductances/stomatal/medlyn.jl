@@ -13,7 +13,7 @@ conductance model for CO₂.
 
 Then used for example as follows:
 Gs = Medlyn(0.03,0.1)
-gs_mod = gs(Gs,(Cₛ = 400.0, VPD = 1.5))
+gs_mod = stomatal_conductance(Gs,(Cₛ = 400.0, VPD = 1.5))
 Gₛ = Gs.g0 + gs_mod * A
 
 # Examples
@@ -23,7 +23,7 @@ meteo = Atmosphere(T = 20.0, Wind = 1.0, P = 101.3, Rh = 0.65)
 
 leaf = LeafModels(stomatal_conductance = Medlyn(0.03, 12.0),
             A = A, Cₛ = 380.0, Dₗ = meteo.VPD)
-gs(leaf,meteo)
+stomatal_conductance(leaf,meteo)
 ```
 
 # References
@@ -40,16 +40,16 @@ struct Medlyn{T} <: AbstractGsModel
     gs_min::T
 end
 
-function Medlyn(g0,g1,gs_min)
-    Medlyn(promote(g0,g1,gs_min))
+function Medlyn(g0, g1, gs_min)
+    Medlyn(promote(g0, g1, gs_min))
 end
 
-Medlyn(g0,g1) = Medlyn(g0,g1,oftype(g0,0.001))
+Medlyn(g0, g1) = Medlyn(g0, g1, oftype(g0, 0.001))
 
-Medlyn(;g0,g1) = Medlyn(g0,g1,oftype(g0,0.001))
+Medlyn(; g0, g1) = Medlyn(g0, g1, oftype(g0, 0.001))
 
 function inputs(::Medlyn)
-    (:Dₗ,:Cₛ,:A)
+    (:Dₗ, :Cₛ, :A)
 end
 
 function outputs(::Medlyn)
@@ -69,7 +69,7 @@ The result of this function is then used as:
 
     gs_mod = gs_closure(leaf,meteo)
 
-    # And then stomatal conductance (μmol m-2 s-1) calling [`gs`](@ref):
+    # And then stomatal conductance (μmol m-2 s-1) calling [`stomatal_conductance`](@ref):
     Gₛ = leaf.stomatal_conductance.g0 + gs_mod * leaf.status.A
 
 # Arguments
@@ -108,11 +108,11 @@ gs_mod = gs_closure(leaf, meteo)
 A = 20 # example assimilation (μmol m-2 s-1)
 Gs = leaf.stomatal_conductance.g0 + gs_mod * A
 
-# Or more directly using `gs()`:
+# Or more directly using `stomatal_conductance()`:
 
 leaf = LeafModels(stomatal_conductance = Medlyn(0.03, 12.0),
             A = A, Cₛ = 380.0, Dₗ = meteo.VPD)
-gs(leaf,meteo)
+stomatal_conductance(leaf,meteo)
 ```
 
 # References
@@ -122,6 +122,6 @@ Craig V. M. Barton, Kristine Y. Crous, Paolo De Angelis, Michael Freeman, et Lis
 2011. « Reconciling the optimal and empirical approaches to modelling stomatal conductance ».
 Global Change Biology 17 (6): 2134‑44. https://doi.org/10.1111/j.1365-2486.2010.02375.x.
 """
-function gs_closure(leaf::LeafModels{I,E,A,<:Medlyn,S},meteo) where {I,E,A,S}
-    (1.0 + leaf.stomatal_conductance.g1 / sqrt(max(1e-9,leaf.status.Dₗ))) / leaf.status.Cₛ
+function gs_closure(::Medlyn, models, meteo)
+    (1.0 + models.stomatal_conductance.g1 / sqrt(max(1e-9, models.status.Dₗ))) / models.status.Cₛ
 end

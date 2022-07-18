@@ -59,7 +59,7 @@ Indexing a component models structure:
 
 ```julia
 lm = LeafModels(
-    energy = Monteith(),
+    energy_balance = Monteith(),
     photosynthesis = Fvcb(),
     stomatal_conductance = ConstantGs(0.0, 0.0011),
     Cᵢ = 380.0, Tₗ = [20.0, 25.0]

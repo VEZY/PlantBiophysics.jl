@@ -110,11 +110,11 @@ Remember that PlantBiophysics only exports the generic functions of the processe
 
 However, you have to remember that if your model calls another one, you'll have to use the internal implementation directly to avoid the overheads of the generic functions (you don't want all these checks).
 
-So if you want to implement a new photosynthesis model, you have to make your own method for the `photosynthesis!_` function. But here we are trying to implement a new stomatal conductance model. Well, this one is the most complicated process to implement actually, because it is computed on two steps: `gs!_` and `gs_closure`.
+So if you want to implement a new photosynthesis model, you have to make your own method for the `photosynthesis!_` function. But here we are trying to implement a new stomatal conductance model. Well, this one is the most complicated process to implement actually, because it is computed on two steps: `stomatal_conductance!_` and `gs_closure`.
 
-`gs_closure` is the function that actually implements the conductance model, but only the stomatal closure part. This one does not modify its input, it computes the result and returns it. Then `gs!_` uses this output to compute the stomatal conductance. But why not implementing just `gs!_`? Because `gs_closure` is used elsewhere, usually in the photosynthesis model, before actually computing the stomatal conductance.
+`gs_closure` is the function that actually implements the conductance model, but only the stomatal closure part. This one does not modify its input, it computes the result and returns it. Then `stomatal_conductance!_` uses this output to compute the stomatal conductance. But why not implementing just `stomatal_conductance!_`? Because `gs_closure` is used elsewhere, usually in the photosynthesis model, before actually computing the stomatal conductance.
 
-So in practice, the `gs!_` implementation is rather generic and will not be modified by developers. They will rather implement their method for `gs_closure`, that will be used automatically by `gs!_`.
+So in practice, the `stomatal_conductance!_` implementation is rather generic and will not be modified by developers. They will rather implement their method for `gs_closure`, that will be used automatically by `stomatal_conductance!_`.
 
 So let's do it! Here is our own implementation of the stomatal closure for a `LeafModels` component models:
 
@@ -137,10 +137,10 @@ A second important thing to note is that our variables are stored in different s
 !!! note
     The micro-meteorological conditions are always given for one time-step inside the models methods, so they are always of `Atmosphere` type. The `Weather` type of conditions are handled earlier by the generic functions.
 
-OK ! So that's it ? Almost. One last thing to do is to define a method for inputs/outputs so that PlantBiophysics knows which variables are needed for our model, and which it computes. Remember that the actual model is implemented for `gs!_`, so we have to tell PlantBiophysics which ones are needed overall:
+OK ! So that's it ? Almost. One last thing to do is to define a method for inputs/outputs so that PlantBiophysics knows which variables are needed for our model, and which it computes. Remember that the actual model is implemented for `stomatal_conductance!_`, so we have to tell PlantBiophysics which ones are needed overall:
 
-- Inputs: `:Rh` and `:Cₛ` for our specific implementation, and `:A` for `gs!_`
-- Outputs: our model does not compute any new variable, and `gs!_` computes, well, `:Gₛ`
+- Inputs: `:Rh` and `:Cₛ` for our specific implementation, and `:A` for `stomatal_conductance!_`
+- Outputs: our model does not compute any new variable, and `stomatal_conductance!_` computes, well, `:Gₛ`
 
 And here is how we actually implement our methods:
 
@@ -300,7 +300,7 @@ function photosynthesis!_(leaf::LeafModels{I,E,<:OurModel,<:AbstractGsModel,S}, 
         leaf.status.PPFD / leaf.photosynthesis.b +
         leaf.status.Tₗ / leaf.photosynthesis.c
 
-    gs!_(leaf, st_closure)
+    stomatal_conductance!_(leaf, st_closure)
 end
 ```
 
@@ -312,7 +312,7 @@ We have a new model for photosynthesis that is coupled with the stomatal conduct
     This is a dummy photosynthesis model. Don't use it, it is very wrong biologically speaking!
 
 !!! note
-    Notice that we compute the stomatal conductance directly using the internal function `gs!_`. We do this for speed, because the generic function `gs!` does some checks on its inputs every time it is called, while `gs!_` only does the computation. We don't need the extra checks because they are already made when calling `photosynthesis!`.
+    Notice that we compute the stomatal conductance directly using the internal function `stomatal_conductance!_`. We do this for speed, because the generic function `stomatal_conductance!` does some checks on its inputs every time it is called, while `stomatal_conductance!_` only does the computation. We don't need the extra checks because they are already made when calling `photosynthesis!`.
 
 Lastly, we note that the implementations of the models are linked to a given component models structure, here `LeafModels`. Some models -like a light interception model- are generic enough to be used for any components though. In this case we recommend to put the algorithm into a function that will be called by the generic function for each component.
 

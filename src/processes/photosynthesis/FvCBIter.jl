@@ -32,9 +32,9 @@ struct FvcbIter{T} <: AbstractAModel
     ΔT_A::T
 end
 
-function FvcbIter(; Tᵣ = 25.0, VcMaxRef = 200.0, JMaxRef = 250.0, RdRef = 0.6, Eₐᵣ = 46390.0,
-    O₂ = 210.0, Eₐⱼ = 29680.0, Hdⱼ = 200000.0, Δₛⱼ = 631.88, Eₐᵥ = 58550.0, Hdᵥ = 200000.0,
-    Δₛᵥ = 629.26, α = 0.425, θ = 0.90, iter_A_max = 20, ΔT_A = 1.0)
+function FvcbIter(; Tᵣ=25.0, VcMaxRef=200.0, JMaxRef=250.0, RdRef=0.6, Eₐᵣ=46390.0,
+    O₂=210.0, Eₐⱼ=29680.0, Hdⱼ=200000.0, Δₛⱼ=631.88, Eₐᵥ=58550.0, Hdᵥ=200000.0,
+    Δₛᵥ=629.26, α=0.425, θ=0.90, iter_A_max=20, ΔT_A=1.0)
 
     # Add type promotion in case we want to use e.g. Measurements for one parameter only and
     # we don't want to set each parameter to ± 0 by hand.
@@ -124,67 +124,66 @@ Leuning, R., F. M. Kelliher, DGG de Pury, et E.D. Schulze. 1995. Leaf nitrogen,
 photosynthesis, conductance and transpiration: scaling from leaves to canopies ». Plant,
 Cell & Environment 18 (10): 1183‑1200.
 """
-function photosynthesis!_(leaf::LeafModels{I,E,<:FvcbIter,<:AbstractGsModel,S}, meteo,
-    constants = Constants()) where {I,E,S}
+function photosynthesis!_(::FvcbIter, models, meteo, constants=Constants())
 
     # Start with a probable value for Cₛ and Cᵢ:
-    leaf.status.Cₛ = meteo.Cₐ
-    leaf.status.Cᵢ = leaf.status.Cₛ * 0.75
+    models.status.Cₛ = meteo.Cₐ
+    models.status.Cᵢ = models.status.Cₛ * 0.75
 
     # Tranform Celsius temperatures in Kelvin:
-    Tₖ = leaf.status.Tₗ - constants.K₀
-    Tᵣₖ = leaf.photosynthesis.Tᵣ - constants.K₀
+    Tₖ = models.status.Tₗ - constants.K₀
+    Tᵣₖ = models.photosynthesis.Tᵣ - constants.K₀
 
     # Temperature dependence of the parameters:
     Γˢ = Γ_star(Tₖ, Tᵣₖ, constants.R) # Gamma star (CO2 compensation point) in μmol mol-1
-    Km = get_km(Tₖ, Tᵣₖ, leaf.photosynthesis.O₂, constants.R) # effective Michaelis–Menten coefficient for CO2
+    Km = get_km(Tₖ, Tᵣₖ, models.photosynthesis.O₂, constants.R) # effective Michaelis–Menten coefficient for CO2
 
     # Maximum electron transport rate at the given leaf temperature (μmol m-2 s-1):
-    JMax = arrhenius(leaf.photosynthesis.JMaxRef, leaf.photosynthesis.Eₐⱼ, Tₖ, Tᵣₖ,
-        leaf.photosynthesis.Hdⱼ, leaf.photosynthesis.Δₛⱼ, constants.R)
+    JMax = arrhenius(models.photosynthesis.JMaxRef, models.photosynthesis.Eₐⱼ, Tₖ, Tᵣₖ,
+        models.photosynthesis.Hdⱼ, models.photosynthesis.Δₛⱼ, constants.R)
     # Maximum rate of Rubisco activity at the given leaf temperature (μmol m-2 s-1):
-    VcMax = arrhenius(leaf.photosynthesis.VcMaxRef, leaf.photosynthesis.Eₐᵥ, Tₖ, Tᵣₖ,
-        leaf.photosynthesis.Hdᵥ, leaf.photosynthesis.Δₛᵥ, constants.R)
+    VcMax = arrhenius(models.photosynthesis.VcMaxRef, models.photosynthesis.Eₐᵥ, Tₖ, Tᵣₖ,
+        models.photosynthesis.Hdᵥ, models.photosynthesis.Δₛᵥ, constants.R)
     # Rate of mitochondrial respiration at the given leaf temperature (μmol m-2 s-1):
-    Rd = arrhenius(leaf.photosynthesis.RdRef, leaf.photosynthesis.Eₐᵣ, Tₖ, Tᵣₖ, constants.R)
+    Rd = arrhenius(models.photosynthesis.RdRef, models.photosynthesis.Eₐᵣ, Tₖ, Tᵣₖ, constants.R)
     # Rd is also described as the CO2 release in the light by processes other than the PCO
     # cycle, and termed "day" respiration, or "light respiration" (Harley et al., 1986).
 
     # Actual electron transport rate (considering intercepted PAR and leaf temperature):
-    J = get_J(leaf.status.PPFD, JMax, leaf.photosynthesis.α, leaf.photosynthesis.θ) # in μmol m-2 s-1
+    J = get_J(models.status.PPFD, JMax, models.photosynthesis.α, models.photosynthesis.θ) # in μmol m-2 s-1
     # RuBP regeneration
     Vⱼ = J / 4
 
     # First iteration to initialise the values for A and Gₛ:
     # Net assimilation (μmol m-2 s-1)
-    leaf.status.A = Fvcb_net_assimiliation(leaf.status.Cᵢ, Vⱼ, Γˢ, VcMax, Km, Rd)
+    models.status.A = Fvcb_net_assimiliation(models.status.Cᵢ, Vⱼ, Γˢ, VcMax, Km, Rd)
 
     iter = true
     iter_inc = 1
 
     while iter
         # Stomatal conductance (mol[CO₂] m-2 s-1)
-        gs!_(leaf, meteo)
+        stomatal_conductance!_(models.stomatal_conductance, models, meteo)
         # Surface CO₂ concentration (ppm):
-        leaf.status.Cₛ = min(meteo.Cₐ, meteo.Cₐ - leaf.status.A / leaf.status.Gbc)
+        models.status.Cₛ = min(meteo.Cₐ, meteo.Cₐ - models.status.A / models.status.Gbc)
         # Intercellular CO₂ concentration (ppm):
-        leaf.status.Cᵢ = min(leaf.status.Cₛ, leaf.status.Cₛ - leaf.status.A / leaf.status.Gₛ)
+        models.status.Cᵢ = min(models.status.Cₛ, models.status.Cₛ - models.status.A / models.status.Gₛ)
 
-        if leaf.status.Cᵢ <= zero(leaf.status.Cᵢ)
-            leaf.status.Cᵢ = 1e-9
+        if models.status.Cᵢ <= zero(models.status.Cᵢ)
+            models.status.Cᵢ = 1e-9
             A_new = -Rd
         else
             # Net assimilation (μmol m-2 s-1):
-            A_new = Fvcb_net_assimiliation(leaf.status.Cᵢ, Vⱼ, Γˢ, VcMax, Km, Rd)
+            A_new = Fvcb_net_assimiliation(models.status.Cᵢ, Vⱼ, Γˢ, VcMax, Km, Rd)
         end
 
-        if abs(A_new - leaf.status.A) / leaf.status.A <= leaf.photosynthesis.ΔT_A ||
-           iter_inc == leaf.photosynthesis.iter_A_max
+        if abs(A_new - models.status.A) / models.status.A <= models.photosynthesis.ΔT_A ||
+           iter_inc == models.photosynthesis.iter_A_max
 
             iter = false
         end
 
-        leaf.status.A = A_new
+        models.status.A = A_new
 
         iter_inc += 1
     end

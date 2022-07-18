@@ -8,7 +8,7 @@ Gs = Medlyn(0.03, 12.0)
 models = Dict(
     "Leaf" =>
         LeafModels(
-            energy=nrj,
+            energy_balance=nrj,
             photosynthesis=photo,
             stomatal_conductance=Gs,
             d=0.03
@@ -28,7 +28,7 @@ transform!(
 
     leaf_node = get_node(mtg, 818)
     @test leaf_node[:models].photosynthesis === photo
-    @test leaf_node[:models].energy === nrj
+    @test leaf_node[:models].energy_balance === nrj
     @test leaf_node[:models].stomatal_conductance === Gs
     @test status(leaf_node[:models], :Rₛ) == leaf_node[:Rₛ]
     @test status(leaf_node[:models], :PPFD) == leaf_node[:Ra_PAR_f] * 4.57

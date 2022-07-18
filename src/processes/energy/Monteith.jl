@@ -79,7 +79,7 @@ meteo = Atmosphere(T = 22.0, Wind = 0.8333, P = 101.325, Rh = 0.4490995)
 
 # Using a constant value for Gs:
 leaf = LeafModels(
-    energy = Monteith(),
+    energy_balance = Monteith(),
     photosynthesis = Fvcb(),
     stomatal_conductance = ConstantGs(0.0, 0.0011),
     Rₛ = 13.747, sky_fraction = 1.0, d = 0.03
@@ -91,7 +91,7 @@ julia> 12.902547446281233
 
 # Using the model from Medlyn et al. (2011) for Gs:
 leaf = LeafModels(
-    energy = Monteith(),
+    energy_balance = Monteith(),
     photosynthesis = Fvcb(),
     stomatal_conductance = Medlyn(0.03, 12.0),
     Rₛ = 13.747, sky_fraction = 1.0, PPFD = 1500.0, d = 0.03
@@ -125,97 +125,97 @@ Maxime Soma, et al. 2018. « Measuring and modelling energy partitioning in can
 complexity using MAESPA model ». Agricultural and Forest Meteorology 253‑254 (printemps): 203‑17.
 https://doi.org/10.1016/j.agrformet.2018.02.005.
 """
-function energy_balance!_(leaf::LeafModels{I,<:Monteith,A,Gs,S}, meteo::AbstractAtmosphere, constants=Constants()) where {I,A,Gs,S}
+function energy_balance!_(::Monteith, models, meteo::AbstractAtmosphere, constants=Constants())
 
     # Initialisations
-    leaf.status.Tₗ = meteo.T - 0.2
+    models.status.Tₗ = meteo.T - 0.2
     Tₗ_new = zero(meteo.T)
-    leaf.status.Cₛ = meteo.Cₐ
-    leaf.status.Dₗ = meteo.VPD
+    models.status.Cₛ = meteo.Cₐ
+    models.status.Dₗ = meteo.VPD
     γˢ = Rbₕ = Δ = zero(meteo.T)
-    leaf.status.Rn = leaf.status.Rₛ
+    models.status.Rn = models.status.Rₛ
     iter = 0
     # ?NB: We use iter = 0 and not 1 to get the right number of iterations at the end
     # of the for loop, because we use iter += 1 at the end (so it increments once again)
 
     # Iterative resolution of the energy balance
-    for i in 1:leaf.energy.maxiter
+    for i in 1:models.energy_balance.maxiter
 
-        # Update A, Gₛ, Cᵢ from leaf.status:
-        photosynthesis!_(leaf, meteo, constants)
+        # Update A, Gₛ, Cᵢ from models.status:
+        photosynthesis!_(models.photosynthesis, models, meteo, constants)
 
         # Stomatal resistance to water vapor
-        Rsᵥ = 1.0 / (gsc_to_gsw(mol_to_ms(leaf.status.Gₛ, meteo.T, meteo.P, constants.R, constants.K₀),
+        Rsᵥ = 1.0 / (gsc_to_gsw(mol_to_ms(models.status.Gₛ, meteo.T, meteo.P, constants.R, constants.K₀),
             constants.Gsc_to_Gsw))
 
         # Re-computing the net radiation according to simulated leaf temperature:
-        leaf.status.Rₗₗ = net_longwave_radiation(leaf.status.Tₗ, meteo.T, leaf.energy.ε, meteo.ε,
-            leaf.status.sky_fraction, constants.K₀, constants.σ)
+        models.status.Rₗₗ = net_longwave_radiation(models.status.Tₗ, meteo.T, models.energy_balance.ε, meteo.ε,
+            models.status.sky_fraction, constants.K₀, constants.σ)
         #= ? NB: we use the sky fraction here (0-2) instead of the view factor (0-1) because:
             - we consider both sides of the leaf at the same time (1 -> leaf sees sky on one face)
             - we consider all objects in the scene have the same temperature as the leaf
-            of interest except the atmosphere. So the leaf exchange thermal energy only with
+            of interest except the atmosphere. So the leaf exchange thermal energy_balance only with
             the atmosphere. =#
-        # leaf.status.Rₗₗ = (grey_body(meteo.T,1.0) - grey_body(leaf.status.Tₗ, 1.0))*leaf.status.sky_fraction
+        # models.status.Rₗₗ = (grey_body(meteo.T,1.0) - grey_body(models.status.Tₗ, 1.0))*models.status.sky_fraction
 
-        leaf.status.Rn = leaf.status.Rₛ + leaf.status.Rₗₗ
+        models.status.Rn = models.status.Rₛ + models.status.Rₗₗ
 
         # Leaf boundary conductance for heat (m s-1), one sided:
-        leaf.status.Gbₕ = gbₕ_free(meteo.T, leaf.status.Tₗ, leaf.status.d, constants.Dₕ₀) +
-                          gbₕ_forced(meteo.Wind, leaf.status.d)
+        models.status.Gbₕ = gbₕ_free(meteo.T, models.status.Tₗ, models.status.d, constants.Dₕ₀) +
+                            gbₕ_forced(meteo.Wind, models.status.d)
         # NB, in MAESPA we use Rni so we add the radiation conductance also (not here)
 
         # Leaf boundary resistance for heat (s m-1):
-        Rbₕ = 1 / leaf.status.Gbₕ
+        Rbₕ = 1 / models.status.Gbₕ
 
         # Leaf boundary resistance for water vapor (s m-1):
-        Rbᵥ = 1 / gbh_to_gbw(leaf.status.Gbₕ)
+        Rbᵥ = 1 / gbh_to_gbw(models.status.Gbₕ)
 
         # Leaf boundary conductance for CO₂ (mol[CO₂] m-2 s-1):
-        leaf.status.Gbc = ms_to_mol(leaf.status.Gbₕ, meteo.T, meteo.P, constants.R, constants.K₀) /
-                          constants.Gbc_to_Gbₕ
+        models.status.Gbc = ms_to_mol(models.status.Gbₕ, meteo.T, meteo.P, constants.R, constants.K₀) /
+                            constants.Gbc_to_Gbₕ
 
         # Update Cₛ using boundary layer conductance to CO₂ and assimilation:
-        leaf.status.Cₛ = min(meteo.Cₐ, meteo.Cₐ - leaf.status.A / (leaf.status.Gbc * leaf.energy.aₛᵥ))
+        models.status.Cₛ = min(meteo.Cₐ, meteo.Cₐ - models.status.A / (models.status.Gbc * models.energy_balance.aₛᵥ))
 
         # Apparent value of psychrometer constant (kPa K−1)
-        γˢ = γ_star(meteo.γ, leaf.energy.aₛₕ, leaf.energy.aₛᵥ, Rbᵥ, Rsᵥ, Rbₕ)
+        γˢ = γ_star(meteo.γ, models.energy_balance.aₛₕ, models.energy_balance.aₛᵥ, Rbᵥ, Rsᵥ, Rbₕ)
 
-        leaf.status.λE = latent_heat(leaf.status.Rn, meteo.VPD, γˢ, Rbₕ, meteo.Δ, meteo.ρ,
-            leaf.energy.aₛₕ, constants.Cₚ)
+        models.status.λE = latent_heat(models.status.Rn, meteo.VPD, γˢ, Rbₕ, meteo.Δ, meteo.ρ,
+            models.energy_balance.aₛₕ, constants.Cₚ)
 
         # If potential evaporation is needed, here is how to compute it:
-        # γˢₑ = γ_star(meteo.γ, energy.aₛₕ, 1, Rbᵥ, 1.0e-9, Rbₕ) # Rsᵥ is inf. low
-        # Ev = latent_heat(leaf.status.Rn, meteo.VPD, γˢₑ, Rbₕ, meteo.Δ, meteo.ρ, energy.aₛₕ, constants.Cₚ)
+        # γˢₑ = γ_star(meteo.γ, energy_balance.aₛₕ, 1, Rbᵥ, 1.0e-9, Rbₕ) # Rsᵥ is inf. low
+        # Ev = latent_heat(models.status.Rn, meteo.VPD, γˢₑ, Rbₕ, meteo.Δ, meteo.ρ, energy_balance.aₛₕ, constants.Cₚ)
 
-        Tₗ_new = meteo.T + (leaf.status.Rn - leaf.status.λE) /
-                           (meteo.ρ * constants.Cₚ * (leaf.energy.aₛₕ / Rbₕ))
+        Tₗ_new = meteo.T + (models.status.Rn - models.status.λE) /
+                           (meteo.ρ * constants.Cₚ * (models.energy_balance.aₛₕ / Rbₕ))
 
-        if abs(Tₗ_new - leaf.status.Tₗ) <= leaf.energy.ΔT
+        if abs(Tₗ_new - models.status.Tₗ) <= models.energy_balance.ΔT
             break
         end
 
-        leaf.status.Tₗ = Tₗ_new
+        models.status.Tₗ = Tₗ_new
 
         # Vapour pressure difference between the surface and the saturation vapour pressure:
-        leaf.status.Dₗ = e_sat(leaf.status.Tₗ) - e_sat(meteo.T) * meteo.Rh
+        models.status.Dₗ = e_sat(models.status.Tₗ) - e_sat(meteo.T) * meteo.Rh
 
         iter += 1
     end
 
-    leaf.status.H = sensible_heat(leaf.status.Rn, meteo.VPD, γˢ, Rbₕ, meteo.Δ, meteo.ρ,
-        leaf.energy.aₛₕ, constants.Cₚ)
+    models.status.H = sensible_heat(models.status.Rn, meteo.VPD, γˢ, Rbₕ, meteo.Δ, meteo.ρ,
+        models.energy_balance.aₛₕ, constants.Cₚ)
 
-    leaf.status.iter = iter
+    models.status.iter = iter
 
     @debug begin
-        if iter == leaf.energy.maxiter
+        if iter == models.energy_balance.maxiter
             "`energy_balance!_` algorithm did not converge. Please check the value."
         end
     end
 
     # Transpiration (mol[H₂O] m-2 s-1):
-    # ET = leaf.status.λE / meteo.λ * constants.Mₕ₂ₒ
+    # ET = models.status.λE / meteo.λ * constants.Mₕ₂ₒ
     # ET / constants.Mₕ₂ₒ to get mm s-1 <=> kg m-2 s-1 <=> l m-2 s-1
 
     nothing

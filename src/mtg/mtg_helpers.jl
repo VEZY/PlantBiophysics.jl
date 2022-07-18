@@ -20,7 +20,7 @@ mtg = read_mtg(joinpath(dirname(dirname(pathof(PlantBiophysics))),"test","inputs
 models = Dict(
     "Leaf" =>
         LeafModels(
-            energy = Monteith(),
+            energy_balance = Monteith(),
             photosynthesis = Fvcb(),
             stomatal_conductance = Medlyn(0.03, 12.0),
             d = 0.03

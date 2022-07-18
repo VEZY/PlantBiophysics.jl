@@ -50,9 +50,9 @@ struct FvcbRaw{T} <: AbstractAModel
     θ::T
 end
 
-function FvcbRaw(; Tᵣ = 25.0, VcMaxRef = 200.0, JMaxRef = 250.0, RdRef = 0.6, TPURef = 9999.0, Eₐᵣ = 46390.0,
-    O₂ = 210.0, Eₐⱼ = 29680.0, Hdⱼ = 200000.0, Δₛⱼ = 631.88, Eₐᵥ = 58550.0, Hdᵥ = 200000.0,
-    Δₛᵥ = 629.26, α = 0.24, θ = 0.7)
+function FvcbRaw(; Tᵣ=25.0, VcMaxRef=200.0, JMaxRef=250.0, RdRef=0.6, TPURef=9999.0, Eₐᵣ=46390.0,
+    O₂=210.0, Eₐⱼ=29680.0, Hdⱼ=200000.0, Δₛⱼ=631.88, Eₐᵥ=58550.0, Hdᵥ=200000.0,
+    Δₛᵥ=629.26, α=0.24, θ=0.7)
 
     FvcbRaw(promote(Tᵣ, VcMaxRef, JMaxRef, RdRef, TPURef, Eₐᵣ, O₂, Eₐⱼ, Hdⱼ, Δₛⱼ, Eₐᵥ, Hdᵥ, Δₛᵥ, α, θ)...)
 end
@@ -135,23 +135,22 @@ Lombardozzi, L. D. et al. 2018.« Triose phosphate limitation in photosynthesis 
 reduces leaf photosynthesis and global terrestrial carbon storage ». Environmental Research
 Letters 13.7: 1748-9326. https://doi.org/10.1088/1748-9326/aacf68.
 """
-function photosynthesis!_(leaf::LeafModels{I,E,<:FvcbRaw,Gs,<:MutableNamedTuples.MutableNamedTuple}, meteo = nothing,
-    constants = Constants()) where {I,E,Gs}
+function photosynthesis!_(::FvcbRaw, models, meteo=nothing, constants=Constants())
 
-    Tₖ = leaf.status.Tₗ - constants.K₀
-    Tᵣₖ = leaf.photosynthesis.Tᵣ - constants.K₀
+    Tₖ = models.status.Tₗ - constants.K₀
+    Tᵣₖ = models.photosynthesis.Tᵣ - constants.K₀
     Γˢ = Γ_star(Tₖ, Tᵣₖ, constants.R) # Gamma star (CO2 compensation point) in μmol mol-1
-    Km = get_km(Tₖ, Tᵣₖ, leaf.photosynthesis.O₂, constants.R) # effective Michaelis–Menten coefficient for CO2
-    JMax = arrhenius(leaf.photosynthesis.JMaxRef, leaf.photosynthesis.Eₐⱼ, Tₖ, Tᵣₖ, leaf.photosynthesis.Hdⱼ, leaf.photosynthesis.Δₛⱼ, constants.R)
-    VcMax = arrhenius(leaf.photosynthesis.VcMaxRef, leaf.photosynthesis.Eₐᵥ, Tₖ, Tᵣₖ, leaf.photosynthesis.Hdᵥ, leaf.photosynthesis.Δₛᵥ, constants.R)
-    Rd = arrhenius(leaf.photosynthesis.RdRef, leaf.photosynthesis.Eₐᵣ, Tₖ, Tᵣₖ, constants.R)
-    J = get_J(leaf.status.PPFD, JMax, leaf.photosynthesis.α, leaf.photosynthesis.θ) # in μmol m-2 s-1
+    Km = get_km(Tₖ, Tᵣₖ, models.photosynthesis.O₂, constants.R) # effective Michaelis–Menten coefficient for CO2
+    JMax = arrhenius(models.photosynthesis.JMaxRef, models.photosynthesis.Eₐⱼ, Tₖ, Tᵣₖ, models.photosynthesis.Hdⱼ, models.photosynthesis.Δₛⱼ, constants.R)
+    VcMax = arrhenius(models.photosynthesis.VcMaxRef, models.photosynthesis.Eₐᵥ, Tₖ, Tᵣₖ, models.photosynthesis.Hdᵥ, models.photosynthesis.Δₛᵥ, constants.R)
+    Rd = arrhenius(models.photosynthesis.RdRef, models.photosynthesis.Eₐᵣ, Tₖ, Tᵣₖ, constants.R)
+    J = get_J(models.status.PPFD, JMax, models.photosynthesis.α, models.photosynthesis.θ) # in μmol m-2 s-1
     Vⱼ = J / 4
-    Wⱼ = Vⱼ * (leaf.status.Cᵢ - Γˢ) / (leaf.status.Cᵢ + 2.0 * Γˢ) # also called Aⱼ
-    Wᵥ = VcMax * (leaf.status.Cᵢ - Γˢ) / (leaf.status.Cᵢ + Km)
+    Wⱼ = Vⱼ * (models.status.Cᵢ - Γˢ) / (models.status.Cᵢ + 2.0 * Γˢ) # also called Aⱼ
+    Wᵥ = VcMax * (models.status.Cᵢ - Γˢ) / (models.status.Cᵢ + Km)
     ag = 0.0
-    Wₚ = (leaf.status.Cᵢ - Γˢ) * 3 * leaf.photosynthesis.TPURef / (leaf.status.Cᵢ - (1 .+ 3 * ag) * Γˢ)
-    leaf.status.A = min(Wᵥ, Wⱼ, Wₚ) - Rd
+    Wₚ = (models.status.Cᵢ - Γˢ) * 3 * models.photosynthesis.TPURef / (models.status.Cᵢ - (1 .+ 3 * ag) * Γˢ)
+    models.status.A = min(Wᵥ, Wⱼ, Wₚ) - Rd
 
-    return leaf.status.A
+    return models.status.A
 end

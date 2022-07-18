@@ -61,17 +61,16 @@ status(leaf, :A)
 status(leaf, :Cᵢ)
 ```
 """
-function photosynthesis!_(leaf::LeafModels{I,E,<:ConstantAGs,<:AbstractGsModel,S}, meteo,
-    constants = Constants()) where {I,E,S}
+function photosynthesis!_(::ConstantAGs, models, meteo, constants=Constants())
 
     # Net assimilation (μmol m-2 s-1)
-    leaf.status.A = leaf.photosynthesis.A
+    models.status.A = models.photosynthesis.A
 
     # Stomatal conductance (mol[CO₂] m-2 s-1)
-    gs!_(leaf, meteo)
+    stomatal_conductance!_(models.stomatal_conductance, models, meteo)
 
     # Intercellular CO₂ concentration (Cᵢ, μmol mol)
-    leaf.status.Cᵢ = min(leaf.status.Cₛ, leaf.status.Cₛ - leaf.status.A / leaf.status.Gₛ)
+    models.status.Cᵢ = min(models.status.Cₛ, models.status.Cₛ - models.status.A / models.status.Gₛ)
 
     return nothing
 end

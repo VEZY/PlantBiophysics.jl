@@ -14,8 +14,8 @@ Thermal infrared, *i.e.* longwave radiation emitted from a black body at tempera
 
 """
 function black_body(T, K₀, σ)
-  Tₖ = T - K₀
-  σ * (Tₖ^4.0)
+    Tₖ = T - K₀
+    σ * (Tₖ^4.0)
 end
 
 function black_body(T)
@@ -45,7 +45,7 @@ grey_body(25.0, 0.96)
 ```
 """
 function grey_body(T, ε, K₀, σ)
-  ε * black_body(T, K₀, σ)
+    ε * black_body(T, K₀, σ)
 end
 
 function grey_body(T, ε)
@@ -60,7 +60,7 @@ end
 
 Net longwave radiation fluxes (*i.e.* thermal radiation, W m-2) between an object and another.
 The object of interest is at temperature T₁ and has an emissivity ε₁, and the object with
-wich it exchanges energy is at temperature T₂ and has an emissivity ε₂.
+which it exchanges energy is at temperature T₂ and has an emissivity ε₂.
 
 If the result is positive, then the object of interest gain energy.
 
@@ -114,13 +114,13 @@ Rₗₗ * leaf_area
 
 Cengel, Y, et Transfer Mass Heat. 2003. A practical approach. New York, NY, USA: McGraw-Hill.
 """
-function net_longwave_radiation(T₁,T₂,ε₁,ε₂,F₁,K₀,σ)
-    (black_body(T₂,K₀,σ) - black_body(T₁,K₀,σ)) / (1.0 / ε₁ + 1.0 / ε₂ - 1.0) * F₁
+function net_longwave_radiation(T₁, T₂, ε₁, ε₂, F₁, K₀, σ)
+    (black_body(T₂, K₀, σ) - black_body(T₁, K₀, σ)) / (1.0 / ε₁ + 1.0 / ε₂ - 1.0) * F₁
 end
 
-function net_longwave_radiation(T₁,T₂,ε₁,ε₂,F₁)
+function net_longwave_radiation(T₁, T₂, ε₁, ε₂, F₁)
     constants = Constants()
-    net_longwave_radiation(T₁,T₂,ε₁,ε₂,F₁,constants.K₀,constants.σ)
+    net_longwave_radiation(T₁, T₂, ε₁, ε₂, F₁, constants.K₀, constants.σ)
 end
 
 """
@@ -148,10 +148,10 @@ Leuning, R., F. M. Kelliher, DGG de Pury, et E.-D. SCHULZE. 1995. Leaf nitrogen,
 photosynthesis, conductance and transpiration: scaling from leaves to canopies ». Plant,
 Cell & Environment 18 (10): 1183‑1200.
 """
-function atmosphere_emissivity(Tₐ,eₐ,K₀)
+function atmosphere_emissivity(Tₐ, eₐ, K₀)
     0.642 * (eₐ * 100 / (Tₐ - K₀))^(1 / 7)
 end
 
-function atmosphere_emissivity(Tₐ,eₐ)
-    atmosphere_emissivity(Tₐ,eₐ,Constants().K₀)
+function atmosphere_emissivity(Tₐ, eₐ)
+    atmosphere_emissivity(Tₐ, eₐ, Constants().K₀)
 end

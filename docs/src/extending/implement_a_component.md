@@ -10,7 +10,7 @@ struct WoodModels{
 } <: AbstractComponentModel
 
     interception::I
-    energy::E
+    energy_balance::E
     status::S
 end
 
@@ -20,9 +20,9 @@ wood = WoodModels(
     MutableNamedTuple(Rₛ = 13.0, sky_fraction = 1.0, d = 0.03)
 )
 
-function WoodModels(; interception = missing, energy = missing, status...)
-    status = init_variables_manual(interception, energy; status...)
-    WoodModels(interception, energy, status)
+function WoodModels(; interception = missing, energy_balance = missing, status...)
+    status = init_variables_manual(interception, energy_balance; status...)
+    WoodModels(interception, energy_balance, status)
 end
 ```
 
@@ -68,7 +68,7 @@ struct WoodModels{
 } <: AbstractComponentModel
 
     interception::I
-    energy::E
+    energy_balance::E
     status::S
 end
 ```
@@ -92,7 +92,7 @@ So to instantiate our structure, we would do *e.g.*:
 StructName(1,2)
 ```
 
-Following this logic, the fields for our `WoodModels` are `interception`, `energy` and `status`. Right. Now sometimes we want the fields of a structure to be of a certain type. To tell Julia that fields must be of a given type, we can provide the type after the field name like so:
+Following this logic, the fields for our `WoodModels` are `interception`, `energy_balance` and `status`. Right. Now sometimes we want the fields of a structure to be of a certain type. To tell Julia that fields must be of a given type, we can provide the type after the field name like so:
 
 ```julia
 struct StructName2
@@ -136,14 +136,14 @@ struct WoodModels{
 } <: AbstractComponentModel
 
     interception::I
-    energy::E
+    energy_balance::E
     status::S
 end
 ```
 
 And what it tells us is that the interception model must be either a `Missing` value or an [`AbstractInterceptionModel`](@ref), the energy model must be `Missing` or an [`AbstractEnergyModel`](@ref), and the `status` must be a `MutableNamedTuple`.
 
-Another important thing to note here is that our component models structure defines two processes: `interception` and `energy`. So only these two processes can be simulated for this type of components models.
+Another important thing to note here is that our component models structure defines two processes: `interception` and `energy_balance`. So only these two processes can be simulated for this type of components models.
 
 Now a last information, the `<: AbstractComponentModel` part tells Julia that our structure is a component models and should be treated like such. This gives your component models access to some generic methods graciously provided by PlantBiophysics, such as [`status`](@ref).
 
@@ -174,9 +174,9 @@ Some methods are not generic enough, and should be defined by users when they im
 The first method to implement is crucial for users, it helps them define the structure by providing the values as keyword arguments (kwargs) with default values:
 
 ```julia
-function WoodModels(; interception = missing, energy = missing, status...)
-    status = init_variables_manual(interception, energy; status...)
-    WoodModels(interception, energy, status)
+function WoodModels(; interception = missing, energy_balance = missing, status...)
+    status = init_variables_manual(interception, energy_balance; status...)
+    WoodModels(interception, energy_balance, status)
 end
 ```
 
@@ -187,7 +187,7 @@ Finally, we allow the users to provide the status variables as keyword arguments
 For example one can instantiate the structure like so now:
 
 ```@example usepkg
-WoodModels(energy = Monteith(), Rₛ = 13.0, sky_fraction = 1.0, d = 0.03)
+WoodModels(energy_balance = Monteith(), Rₛ = 13.0, sky_fraction = 1.0, d = 0.03)
 ```
 
 Our newly created structure has a model to simulate the energy balance, but no model to compute the light interception. It is completely initialised, with values for `Rₛ`, `sky_fraction` and `d`.
@@ -210,7 +210,7 @@ We also need to implement a method to tell Julia how we can copy our structure. 
 function Base.copy(l::T) where {T<:WoodModels}
     WoodModels(
         l.interception,
-        l.energy,
+        l.energy_balance,
         deepcopy(l.status)
     )
 end
@@ -227,7 +227,7 @@ And finally, the last step to create your very own component models structure is
 function Base.copy(l::T, status) where {T<:WoodModels}
     WoodModels(
         l.interception,
-        l.energy,
+        l.energy_balance,
         status
     )
 end

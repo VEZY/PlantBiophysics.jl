@@ -16,7 +16,7 @@ models = read_model("path_to_a_model_file.yaml")
 ```
 """
 function read_model(file)
-    model = YAML.load_file(file; dicttype = OrderedDict{String,Any})
+    model = YAML.load_file(file; dicttype=OrderedDict{String,Any})
 
     !is_model(model) && error("model argument is not a model (e.g. as returned from `read_model()`)")
     group = model["Group"]
@@ -75,7 +75,7 @@ end
 
 Return the component type (the actual struct) given the processes passed as a named Tuple.
 It is considered a `LeafModels` if it presents models for `photosynthesis` and
-`stomatal_conductance`, and optionally for `interception` and `energy`.
+`stomatal_conductance`, and optionally for `interception` and `energy_balance`.
 """
 function get_component_type(::E, ::I, ::A, ::Gs) where {E<:AbstractEnergyModel,
     I<:AbstractInterceptionModel,A<:AbstractAModel,Gs<:AbstractGsModel}
@@ -104,7 +104,7 @@ end
 
 Return the component type (the actual struct) given the processes passed as a named Tuple.
 
-It is considered a `ComponentModels` if it presents models for `interception` and `energy` only.
+It is considered a `ComponentModels` if it presents models for `interception` and `energy_balance` only.
 """
 function get_component_type(::I, ::E) where {I<:AbstractInterceptionModel,E<:AbstractEnergyModel}
 
@@ -132,7 +132,8 @@ function get_process(x)
     # All possible ways to write the processes in the input (compared to lowecase x):
     processes = Dict(
         "interception" => "interception",
-        "energy" => "energy",
+        "energy_balance" => "energy_balance",
+        "energy" => "energy_balance",
         "photosynthesis" => "photosynthesis",
         "stomatalconductance" => "stomatal_conductance",
         "stomatal_conductance" => "stomatal_conductance"
@@ -161,7 +162,7 @@ function get_model(x, process)
         dict = Dict("medlyn" => Medlyn)
     elseif process == "interception"
         dict = Dict("translucent" => Translucent, "ignore" => Ignore)
-    elseif process == "energy"
+    elseif process == "energy" || process == "energy_balance"
         dict = Dict("monteith" => Monteith, "ignore" => Ignore)
     end
 

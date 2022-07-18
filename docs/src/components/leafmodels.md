@@ -8,7 +8,7 @@ photosynthetic components. It can be a leaf, a leaflet, or really any kind of co
 [`LeafModels`](@ref) implements four processes:
 
 - `interception <: Union{Missing,AbstractInterceptionModel}`: An interception model.
-- `energy <: Union{Missing,AbstractEnergyModel}`: An energy model, *e.g.* [`Monteith`](@ref).
+- `energy_balance <: Union{Missing,AbstractEnergyModel}`: An energy model, *e.g.* [`Monteith`](@ref).
 - `photosynthesis <: Union{Missing,AbstractAModel}`: A photosynthesis model, *e.g.* [`Fvcb`](@ref)
 - `stomatal_conductance <: Union{Missing,AbstractGsModel}`: A stomatal conductance model,
     *e.g.* [`Medlyn`](@ref) or [`ConstantGs`](@ref)
@@ -32,7 +32,7 @@ using PlantBiophysics
 
 ```@example usepkg
 leaf = LeafModels(
-    energy = Monteith(),
+    energy_balance = Monteith(),
     photosynthesis = Fvcb(),
     stomatal_conductance = ConstantGs(0.0, 0.0011)
 )
@@ -55,7 +55,7 @@ We can now provide values for these variables:
 
 ```@example usepkg
 leaf = LeafModels(
-    energy = Monteith(),
+    energy_balance = Monteith(),
     photosynthesis = Fvcb(),
     stomatal_conductance = ConstantGs(0.0, 0.0011),
     Rₛ = 13.747, sky_fraction = 1.0, d = 0.03
@@ -68,7 +68,7 @@ stomatal conductance):
 ```@setup usepkgandleaf
 using PlantBiophysics
 leaf = LeafModels(
-    energy = Monteith(),
+    energy_balance = Monteith(),
     photosynthesis = Fvcb(),
     stomatal_conductance = ConstantGs(0.0, 0.0011),
     Rₛ = 13.747, sky_fraction = 1.0, d = 0.03, PPFD = 1500.

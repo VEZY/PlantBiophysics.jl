@@ -9,7 +9,7 @@ using Dates
 unsafe_comparisons(true)
 meteo = Atmosphere(T = 22.0 ± 0.1, Wind = 0.8333 ± 0.1, P = 101.325 ± 1., Rh = 0.4490995 ± 0.02, Cₐ = 400. ± 1.)
 leaf = LeafModels(
-        energy = Monteith(),
+        energy_balance = Monteith(),
         photosynthesis = Fvcb(),
         stomatal_conductance = Medlyn(0.03, 12.0),
         Rₛ = 13.747 ± 1., sky_fraction = 1.0, PPFD = 1500.0 ± 1., d = 0.03 ± 0.001
@@ -39,7 +39,7 @@ We can use the `μ ± σ` notation for the values of the parameters and micro-me
 ```julia
 meteo = Atmosphere(T = 22.0 ± 0.1, Wind = 0.8333 ± 0.1, P = 101.325 ± 1., Rh = 0.4490995 ± 0.02, Cₐ = 400. ± 1.)
 leaf = LeafModels(
-        energy = Monteith(),
+        energy_balance = Monteith(),
         photosynthesis = Fvcb(),
         stomatal_conductance = Medlyn(0.03, 12.0),
         Rₛ = 13.747 ± 1., sky_fraction = 1.0, PPFD = 1500.0 ± 1., d = 0.03 ± 0.001
@@ -84,10 +84,12 @@ unsafe_comparisons(true)
 
 meteo = Atmosphere(T = 15.0 .. 18.0, Wind = 0.8333 ± 0.1, P = 101.325 ± 1., Rh = 0.4490995 ± 0.02, Cₐ = 400. ± 1.)
 
-leaf = LeafModels(energy = Monteith(),
-            photosynthesis = Fvcb(),
-            stomatal_conductance = Medlyn(0.03, 12.0),
-            Rₛ = 13.747 ± 1., sky_fraction = 1.0, PPFD = 1500.0 ± 1., d = 0.01 .. 0.03)
+leaf = LeafModels(
+    energy_balance = Monteith(),
+    photosynthesis = Fvcb(),
+    stomatal_conductance = Medlyn(0.03, 12.0),
+    Rₛ = 13.747 ± 1., sky_fraction = 1.0, PPFD = 1500.0 ± 1., d = 0.01 .. 0.03
+)
 
 energy_balance!(leaf,meteo)
 
@@ -118,7 +120,7 @@ weather = read_weather(
 )
 
 leaf = LeafModels(
-        energy = Monteith(),
+        energy_balance = Monteith(),
         photosynthesis = Fvcb(),
         stomatal_conductance = Medlyn(0.03, 12.0),
         Rₛ = 13.747 ± 2., sky_fraction = 0.6..1.0, PPFD = 1500.0 ± 100., d = [0.03,0.03,0.03]

@@ -28,11 +28,11 @@ macro gen_process_methods(f)
 
     non_mutating_f = f
     mutating_f = Symbol(string(f, "!"))
-    f_ = Symbol(string(mutating_f, "_"))
+    f_ = Symbol(string(mutating_f, "_")) # The actual function implementing the process
 
     expr = quote
 
-        function $(esc(f_))(object, meteo=nothing, constants=nothing)
+        function $(esc(f_))(mod_type, object, meteo=nothing, constants=nothing)
             process_models = Dict(process => typeof(getfield(object, process)).name.wrapper for process in fieldnames(typeof(object)))
             pop!(process_models, :status) # status is not a model
             error(
@@ -44,15 +44,15 @@ macro gen_process_methods(f)
         end
 
         # Base method that calls the actual algorithms:
-        function $(esc(mutating_f))(object::AbstractComponentModel, meteo::AbstractAtmosphere, constants=Constants())
+        function $(esc(mutating_f))(object, meteo::AbstractAtmosphere, constants=Constants())
             !is_initialised(object) && error("Some variables must be initialized before simulation")
 
-            $(esc(f_))(object, meteo, constants)
+            $(esc(f_))(object.$(f), object, meteo, constants)
             return nothing
         end
 
         # Process method over several objects (e.g. all leaves of a plant) in an Array
-        function $(esc(mutating_f))(object::O, meteo::AbstractAtmosphere, constants=Constants()) where {O<:AbstractArray{<:AbstractComponentModel}}
+        function $(esc(mutating_f))(object::O, meteo::AbstractAtmosphere, constants=Constants()) where {O<:AbstractArray}
             for i in values(object)
                 $(mutating_f)(i, meteo, constants)
             end
@@ -60,7 +60,7 @@ macro gen_process_methods(f)
         end
 
         # Process method over several objects (e.g. all leaves of a plant) in a kind of Dict.
-        function $(esc(mutating_f))(object::O, meteo::AbstractAtmosphere, constants=Constants()) where {O<:AbstractDict{N,<:AbstractComponentModel} where {N}}
+        function $(esc(mutating_f))(object::O, meteo::AbstractAtmosphere, constants=Constants()) where {O<:AbstractDict}
             for (k, v) in object
                 $(mutating_f)(v, meteo, constants)
             end
@@ -72,7 +72,7 @@ macro gen_process_methods(f)
             object::T,
             meteo::Weather,
             constants=Constants()
-        ) where {T<:Union{AbstractArray{<:AbstractComponentModel},AbstractDict{N,<:AbstractComponentModel} where N}}
+        ) where {T<:Union{AbstractArray,AbstractDict}}
 
             # Check if the meteo data and the status have the same length (or length 1)
             check_status_wheather(object, meteo)
@@ -88,7 +88,7 @@ macro gen_process_methods(f)
         end
 
         # If we call weather with one component only:
-        function $(esc(mutating_f))(object::AbstractComponentModel, meteo::Weather, constants=Constants())
+        function $(esc(mutating_f))(object, meteo::Weather, constants=Constants())
 
             # Check if the meteo data and the status have the same length (or length 1)
             check_status_wheather(object, meteo)
@@ -97,13 +97,13 @@ macro gen_process_methods(f)
 
             # Computing for each time-steps:
             for (i, meteo_i) in enumerate(meteo.data)
-                $(esc(f_))(copy(object, object[i]), meteo_i, constants)
+                $(esc(f_))(object.$(f), copy(object, object[i]), meteo_i, constants)
             end
         end
 
         # Method for calling the process without any meteo. In this case we need to check if
         # the status has one or several time-steps.
-        function $(esc(mutating_f))(object::AbstractComponentModel, meteo::Nothing=nothing, constants=Constants())
+        function $(esc(mutating_f))(object, meteo::Nothing=nothing, constants=Constants())
             !is_initialised(object) && error("Some variables must be initialized before simulation (see info message for more details)")
 
             if typeof(status(object)) == MutableNamedTuples.MutableNamedTuple
@@ -111,7 +111,7 @@ macro gen_process_methods(f)
             else
                 # We have several time-steps here, we pass each time-step after another
                 for i = eachindex(status(object))
-                    $(esc(f_))(copy(object, object[i]), meteo, constants)
+                    $(esc(f_))(object.$(f), copy(object, object[i]), meteo, constants)
                 end
             end
         end
@@ -172,12 +172,7 @@ macro gen_process_methods(f)
             object::O,
             meteo::Union{Nothing,AbstractAtmosphere,Weather}=nothing,
             constants=Constants()
-        ) where {
-            O<:Union{
-                AbstractComponentModel,
-                AbstractArray{<:AbstractComponentModel},
-                AbstractDict{N,<:AbstractComponentModel} where N}
-        }
+        ) where {O<:Union{AbstractComponentModel,AbstractArray,AbstractDict}}
             object_tmp = copy(object)
             $(esc(mutating_f))(object_tmp, meteo, constants)
             return object_tmp

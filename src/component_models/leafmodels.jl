@@ -1,7 +1,7 @@
 
 """
-    LeafModels(interception, energy, photosynthesis, stomatal_conductance, status)
-    LeafModels(;interception = missing, energy = missing, photosynthesis = missing,
+    LeafModels(interception, energy_balance, photosynthesis, stomatal_conductance, status)
+    LeafModels(;interception = missing, energy_balance = missing, photosynthesis = missing,
         stomatal_conductance = missing,status...)
 
 [`LeafModels`](@ref) is a structure used to list the processes and associated models for
@@ -14,7 +14,7 @@ but because it is short, simple and self-explanatory.
 [`LeafModels`](@ref) implements four processes:
 
 - `interception <: Union{Missing,AbstractInterceptionModel}`: An interception model.
-- `energy <: Union{Missing,AbstractEnergyModel}`: An energy model, *e.g.* [`Monteith`](@ref).
+- `energy_balance <: Union{Missing,AbstractEnergyModel}`: An energy model, *e.g.* [`Monteith`](@ref).
 - `photosynthesis <: Union{Missing,AbstractAModel}`: A photosynthesis model, *e.g.* [`Fvcb`](@ref)
 - `stomatal_conductance <: Union{Missing,AbstractGsModel}`: A stomatal conductance model,
     *e.g.* [`Medlyn`](@ref) or [`ConstantGs`](@ref)
@@ -42,7 +42,7 @@ using PlantBiophysics
 
 ```@example usepkg
 leaf = LeafModels(
-    energy = Monteith(),
+    energy_balance = Monteith(),
     photosynthesis = Fvcb(),
     stomatal_conductance = ConstantGs(0.0, 0.0011)
 )
@@ -65,7 +65,7 @@ We can now provide values for these variables:
 
 ```@example usepkg
 leaf = LeafModels(
-    energy = Monteith(),
+    energy_balance = Monteith(),
     photosynthesis = Fvcb(),
     stomatal_conductance = ConstantGs(0.0, 0.0011),
     Rₛ = 13.747, sky_fraction = 1.0, d = 0.03
@@ -92,14 +92,14 @@ struct LeafModels{
 } <: AbstractComponentModel
 
     interception::I
-    energy::E
+    energy_balance::E
     photosynthesis::A
     stomatal_conductance::Gs
     status::S
 end
 
-function LeafModels(; interception = missing, energy = missing,
-    photosynthesis = missing, stomatal_conductance = missing, status...)
+function LeafModels(; interception=missing, energy_balance=missing,
+    photosynthesis=missing, stomatal_conductance=missing, status...)
     status_vals = collect(values(status))
 
     length_status = [length(i) for i in status_vals]
@@ -120,23 +120,23 @@ function LeafModels(; interception = missing, energy = missing,
         # Making a status for each ith value in the user status:
         status_array = MutableNamedTuple[]
         for i in 1:max_length_st
-            # status = init_variables_manual(interception, energy, photosynthesis,
+            # status = init_variables_manual(interception, energy_balance, photosynthesis,
             # stomatal_conductance;NamedTuple{keys(status)}([j[i] for j in status_vals])...)
-            # push!(leaf_array, LeafModels(interception, energy, photosynthesis, stomatal_conductance, status))
+            # push!(leaf_array, LeafModels(interception, energy_balance, photosynthesis, stomatal_conductance, status))
             push!(
                 status_array,
                 init_variables_manual(
-                    interception, energy, photosynthesis, stomatal_conductance;
+                    interception, energy_balance, photosynthesis, stomatal_conductance;
                     NamedTuple{keys(status)}([j[i] for j in status_vals])...)
             )
         end
         status = status_array
     else
-        status = init_variables_manual(interception, energy, photosynthesis,
+        status = init_variables_manual(interception, energy_balance, photosynthesis,
             stomatal_conductance; status...)
     end
 
-    LeafModels(interception, energy, photosynthesis, stomatal_conductance, status)
+    LeafModels(interception, energy_balance, photosynthesis, stomatal_conductance, status)
 end
 
 """
@@ -148,7 +148,7 @@ Copy a [`LeafModels`](@ref), eventually with new values for the status.
 function Base.copy(l::T) where {T<:LeafModels}
     LeafModels(
         l.interception,
-        l.energy,
+        l.energy_balance,
         l.photosynthesis,
         l.stomatal_conductance,
         deepcopy(l.status)
@@ -158,7 +158,7 @@ end
 function Base.copy(l::T, status) where {T<:LeafModels}
     LeafModels(
         l.interception,
-        l.energy,
+        l.energy_balance,
         l.photosynthesis,
         l.stomatal_conductance,
         status

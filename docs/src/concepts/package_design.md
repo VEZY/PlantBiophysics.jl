@@ -156,7 +156,7 @@ Our component models structure is now fully parameterized and initialized for a 
 
 Simulating a component is rather simple, simply use the function with the name of the process you want to simulate:
 
-- [`gs`](@ref) for the stomatal conductance
+- [`stomatal_conductance`](@ref) for the stomatal conductance
 - [`photosynthesis`](@ref) for the photosynthesis
 - [`energy_balance`](@ref) for the energy balance
 
@@ -166,7 +166,7 @@ Simulating a component is rather simple, simply use the function with the name o
 The call to the function is the same whatever the model you choose for simulating the process. This is some magic allowed by Julia! A call to a function is made as follows:
 
 ```julia
-gs(component_models,meteo)
+stomatal_conductance(component_models,meteo)
 photosynthesis(component_models,meteo)
 energy_balance(component_models,meteo)
 ```
@@ -189,7 +189,7 @@ leaf = LeafModels(
 photosynthesis!(leaf, meteo)
 ```
 
-Very simple right? There are functions for [`energy_balance!`](@ref) and [`gs!`](@ref) too.
+Very simple right? There are functions for [`energy_balance!`](@ref) and [`stomatal_conductance!`](@ref) too.
 
 ### Functions forms
 

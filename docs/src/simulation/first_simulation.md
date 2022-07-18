@@ -12,7 +12,7 @@ Here is a first simple simulation of the coupled energy balance on a leaf over o
 meteo = Atmosphere(T = 22.0, Wind = 0.8333, P = 101.325, Rh = 0.4490995)
 
 leaf = LeafModels(
-        energy = Monteith(),
+        energy_balance = Monteith(),
         photosynthesis = Fvcb(),
         stomatal_conductance = Medlyn(0.03, 12.0),
         Rₛ = 13.747, sky_fraction = 1.0, PPFD = 1500.0, d = 0.03
@@ -33,7 +33,7 @@ The first line of the simulation is calling [`Atmosphere`](@ref). [`Atmosphere`]
 
 The next command is using [`LeafModels`](@ref), which is a component models structure with a photosynthetic activity (*e.g.* a leaf). This component models helps us declare which model will be used for the given processes that can be simulated. The  [`LeafModels`](@ref) implements four processes: the light interception, the energy balance, the photosynthesis, and the stomatal conductance. For each of these processes, we can choose a model that will be used for its simulation. The package provides some models, but you can also implement your own by following the [tutorial here](@ref model_implementation_page).
 
-In our example we use the Monteith et al. (2013) model implementation for the energy balance (`energy = Monteith()`), the Farquhar et al. (1980) model for the photosynthesis (`photosynthesis = Fvcb()`), and the Medlyn et al. (2011) model for the stomatal conductance (`stomatal_conductance = Medlyn(0.03, 12.0)`). All are available from `PlantBiophysics.jl`. We don't provide any model for the light interception because there isn't any in the package right now, but we provide the input variables needed as arguments (see below).
+In our example we use the Monteith et al. (2013) model implementation for the energy balance (`energy_balance = Monteith()`), the Farquhar et al. (1980) model for the photosynthesis (`photosynthesis = Fvcb()`), and the Medlyn et al. (2011) model for the stomatal conductance (`stomatal_conductance = Medlyn(0.03, 12.0)`). All are available from `PlantBiophysics.jl`. We don't provide any model for the light interception because there isn't any in the package right now, but we provide the input variables needed as arguments (see below).
 
 Each model has its own structure used to provide the parameter values. For example the stomatal conductance model of Medlyn et al. (2011) need two parameters: g0 and g1. We pass both values when calling the structure here: `Medlyn(0.03, 12.0)`. In our example, we use the default values for the two other models used, they are called without passing any argument.
 
@@ -42,7 +42,7 @@ Then we pass different values to instantiate the input variables needed for the 
 ```@example usepkg
 to_initialise(
     LeafModels(
-        energy = Monteith(),
+        energy_balance = Monteith(),
         photosynthesis = Fvcb(),
         stomatal_conductance = Medlyn(0.03, 12.0)
     )

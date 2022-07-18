@@ -98,9 +98,9 @@ struct Fvcb{T} <: AbstractAModel
     θ::T
 end
 
-function Fvcb(; Tᵣ = 25.0, VcMaxRef = 200.0, JMaxRef = 250.0, RdRef = 0.6, TPURef = 9999.0, Eₐᵣ = 46390.0,
-    O₂ = 210.0, Eₐⱼ = 29680.0, Hdⱼ = 200000.0, Δₛⱼ = 631.88, Eₐᵥ = 58550.0, Hdᵥ = 200000.0,
-    Δₛᵥ = 629.26, α = 0.24, θ = 0.7)
+function Fvcb(; Tᵣ=25.0, VcMaxRef=200.0, JMaxRef=250.0, RdRef=0.6, TPURef=9999.0, Eₐᵣ=46390.0,
+    O₂=210.0, Eₐⱼ=29680.0, Hdⱼ=200000.0, Δₛⱼ=631.88, Eₐᵥ=58550.0, Hdᵥ=200000.0,
+    Δₛᵥ=629.26, α=0.24, θ=0.7)
 
     Fvcb(promote(Tᵣ, VcMaxRef, JMaxRef, RdRef, TPURef, Eₐᵣ, O₂, Eₐⱼ, Hdⱼ, Δₛⱼ, Eₐᵥ, Hdᵥ, Δₛᵥ, α, θ)...)
 end
@@ -218,37 +218,36 @@ Lombardozzi, L. D. et al. 2018.« Triose phosphate limitation in photosynthesis 
 reduces leaf photosynthesis and global terrestrial carbon storage ». Environmental Research
 Letters 13.7: 1748-9326. https://doi.org/10.1088/1748-9326/aacf68.
 """
-function photosynthesis!_(leaf::LeafModels{I,E,<:Fvcb,<:AbstractGsModel,S}, meteo,
-    constants = Constants()) where {I,E,S}
+function photosynthesis!_(::Fvcb, models, meteo, constants=Constants())
 
     # Tranform Celsius temperatures in Kelvin:
-    Tₖ = leaf.status.Tₗ - constants.K₀
-    Tᵣₖ = leaf.photosynthesis.Tᵣ - constants.K₀
+    Tₖ = models.status.Tₗ - constants.K₀
+    Tᵣₖ = models.photosynthesis.Tᵣ - constants.K₀
 
     # Temperature dependence of the parameters:
     Γˢ = Γ_star(Tₖ, Tᵣₖ, constants.R) # Gamma star (CO2 compensation point) in μmol mol-1
-    Km = get_km(Tₖ, Tᵣₖ, leaf.photosynthesis.O₂, constants.R) # effective Michaelis–Menten coefficient for CO2
+    Km = get_km(Tₖ, Tᵣₖ, models.photosynthesis.O₂, constants.R) # effective Michaelis–Menten coefficient for CO2
 
     # Maximum electron transport rate at the given leaf temperature (μmol m-2 s-1):
-    JMax = arrhenius(leaf.photosynthesis.JMaxRef, leaf.photosynthesis.Eₐⱼ, Tₖ, Tᵣₖ,
-        leaf.photosynthesis.Hdⱼ, leaf.photosynthesis.Δₛⱼ, constants.R)
-    # Maximum rate of Rubisco activity at the given leaf temperature (μmol m-2 s-1):
-    VcMax = arrhenius(leaf.photosynthesis.VcMaxRef, leaf.photosynthesis.Eₐᵥ, Tₖ, Tᵣₖ,
-        leaf.photosynthesis.Hdᵥ, leaf.photosynthesis.Δₛᵥ, constants.R)
+    JMax = arrhenius(models.photosynthesis.JMaxRef, models.photosynthesis.Eₐⱼ, Tₖ, Tᵣₖ,
+        models.photosynthesis.Hdⱼ, models.photosynthesis.Δₛⱼ, constants.R)
+    # Maximum rate of Rubisco activity at the given models temperature (μmol m-2 s-1):
+    VcMax = arrhenius(models.photosynthesis.VcMaxRef, models.photosynthesis.Eₐᵥ, Tₖ, Tᵣₖ,
+        models.photosynthesis.Hdᵥ, models.photosynthesis.Δₛᵥ, constants.R)
     # Rate of mitochondrial respiration at the given leaf temperature (μmol m-2 s-1):
-    Rd = arrhenius(leaf.photosynthesis.RdRef, leaf.photosynthesis.Eₐᵣ, Tₖ, Tᵣₖ, constants.R)
+    Rd = arrhenius(models.photosynthesis.RdRef, models.photosynthesis.Eₐᵣ, Tₖ, Tᵣₖ, constants.R)
     # Rd is also described as the CO2 release in the light by processes other than the PCO
     # cycle, and termed "day" respiration, or "light respiration" (Harley et al., 1986).
 
     # Actual electron transport rate (considering intercepted PAR and leaf temperature):
-    J = get_J(leaf.status.PPFD, JMax, leaf.photosynthesis.α, leaf.photosynthesis.θ) # in μmol m-2 s-1
+    J = get_J(models.status.PPFD, JMax, models.photosynthesis.α, models.photosynthesis.θ) # in μmol m-2 s-1
     # RuBP regeneration
     Vⱼ = J / 4
 
     # Stomatal conductance (mol[CO₂] m-2 s-1), dispatched on type of first argument (gs_closure):
-    st_closure = gs_closure(leaf, meteo)
+    st_closure = gs_closure(models.stomatal_conductance, models, meteo)
 
-    Cᵢⱼ = get_Cᵢⱼ(Vⱼ, Γˢ, leaf.status.Cₛ, Rd, leaf.stomatal_conductance.g0, st_closure)
+    Cᵢⱼ = get_Cᵢⱼ(Vⱼ, Γˢ, models.status.Cₛ, Rd, models.stomatal_conductance.g0, st_closure)
 
     # Electron-transport-limited rate of CO2 assimilation (RuBP regeneration-limited):
     Wⱼ = Vⱼ * (Cᵢⱼ - Γˢ) / (Cᵢⱼ + 2.0 * Γˢ) # also called Aⱼ
@@ -262,25 +261,25 @@ function photosynthesis!_(leaf::LeafModels{I,E,<:Fvcb,<:AbstractGsModel,S}, mete
         Wⱼ = Vⱼ * (Cᵢⱼ - Γˢ) / (Cᵢⱼ + 2.0 * Γˢ)
     end
 
-    Cᵢᵥ = get_Cᵢᵥ(VcMax, Γˢ, leaf.status.Cₛ, Rd, leaf.stomatal_conductance.g0, st_closure, Km)
+    Cᵢᵥ = get_Cᵢᵥ(VcMax, Γˢ, models.status.Cₛ, Rd, models.stomatal_conductance.g0, st_closure, Km)
 
     # Rubisco-carboxylation-limited rate of CO₂ assimilation (RuBP activity-limited):
-    if Cᵢᵥ <= 0.0 || Cᵢᵥ > leaf.status.Cₛ
+    if Cᵢᵥ <= 0.0 || Cᵢᵥ > models.status.Cₛ
         Wᵥ = 0.0
     else
         Wᵥ = VcMax * (Cᵢᵥ - Γˢ) / (Cᵢᵥ + Km)
     end
 
     # Net assimilation (μmol m-2 s-1)
-    leaf.status.A = min(Wᵥ, Wⱼ, 3 * leaf.photosynthesis.TPURef) - Rd
+    models.status.A = min(Wᵥ, Wⱼ, 3 * models.photosynthesis.TPURef) - Rd
 
     # Stomatal conductance (mol[CO₂] m-2 s-1)
-    gs!_(leaf, st_closure)
-    # NB: `gs!_(` is the function that implements the computation directly. If you want to
-    # call the stomatal conductance interactively, use `gs!()` or `gs()` instead.
+    stomatal_conductance!_(models.stomatal_conductance, models, st_closure)
+    # NB: `stomatal_conductance!_(` is the function that implements the computation directly. If you want to
+    # call the stomatal conductance interactively, use `stomatal_conductance!()` or `stomatal_conductance()` instead.
 
     # Intercellular CO₂ concentration (Cᵢ, μmol mol)
-    leaf.status.Cᵢ = min(leaf.status.Cₛ, leaf.status.Cₛ - leaf.status.A / leaf.status.Gₛ)
+    models.status.Cᵢ = min(models.status.Cₛ, models.status.Cₛ - models.status.A / models.status.Gₛ)
     nothing
 end
 

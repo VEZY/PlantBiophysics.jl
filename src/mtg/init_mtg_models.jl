@@ -30,7 +30,7 @@ mtg = read_opf(file)
 models = Dict(
     "Leaf" =>
         LeafModels(
-            energy = Monteith(),
+            energy_balance = Monteith(),
             photosynthesis = Fvcb(),
             stomatal_conductance = Medlyn(0.03, 12.0),
             d = 0.03

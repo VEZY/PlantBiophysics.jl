@@ -19,7 +19,7 @@ function ConstantGs(g0, Gₛ)
     ConstantGs(promote(g0, Gₛ)...)
 end
 
-ConstantGs(; g0 = 0.0, Gₛ) = ConstantGs(g0, Gₛ)
+ConstantGs(; g0=0.0, Gₛ) = ConstantGs(g0, Gₛ)
 
 function inputs(::ConstantGs)
     (:Gₛ,)
@@ -39,8 +39,8 @@ Constant stomatal closure. Usually called from a photosynthesis model.
 
 `meteo` is just declared here for compatibility with other formats of calls.
 """
-function gs_closure(leaf::LeafModels{I,E,A,Gs,S}, meteo = missing) where {I,E,A,Gs<:ConstantGs,S}
-    (leaf.stomatal_conductance.Gₛ - leaf.stomatal_conductance.g0) / leaf.status.A
+function gs_closure(::ConstantGs, models, meteo=missing)
+    (models.stomatal_conductance.Gₛ - models.stomatal_conductance.g0) / models.status.A
 end
 
 
@@ -52,10 +52,10 @@ Constant stomatal conductance for CO₂ (mol m-2 s-1).
 `meteo` or `gs_mod` are just declared here for compatibility with the call from
 photosynthesis (need a constant way of calling the functions).
 """
-function gs!_(leaf::LeafModels{I,E,A,Gs,S}, gs_closure) where {I,E,A,Gs<:ConstantGs,S}
-    leaf.status.Gₛ = leaf.stomatal_conductance.Gₛ
+function stomatal_conductance!_(::ConstantGs, models, gs_closure)
+    models.status.Gₛ = models.stomatal_conductance.Gₛ
 end
 
-function gs!_(leaf::LeafModels{I,E,A,Gs,S}, meteo::M, constants = Constants()) where {I,E,A,Gs<:ConstantGs,S,M<:AbstractAtmosphere}
-    leaf.status.Gₛ = leaf.stomatal_conductance.Gₛ
+function stomatal_conductance!_(::ConstantGs, models, meteo::M, constants=Constants()) where {I,E,A,Gs<:ConstantGs,S,M<:AbstractAtmosphere}
+    models.status.Gₛ = models.stomatal_conductance.Gₛ
 end

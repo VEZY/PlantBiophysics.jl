@@ -21,7 +21,7 @@ meteo = read_weather(
 )
 
 leaf = LeafModels(
-        energy = Monteith(),
+        energy_balance = Monteith(),
         photosynthesis = Fvcb(),
         stomatal_conductance = Medlyn(0.03, 12.0),
         Rₛ = meteo[:Ri_SW_f] .* 0.8,

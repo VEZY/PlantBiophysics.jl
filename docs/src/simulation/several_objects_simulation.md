@@ -14,14 +14,14 @@ Now it is also very easy to run a simulation for different components by just pr
 meteo = Atmosphere(T = 22.0, Wind = 0.8333, P = 101.325, Rh = 0.4490995)
 
 leaf1 = LeafModels(
-        energy = Monteith(),
+        energy_balance = Monteith(),
         photosynthesis = Fvcb(),
         stomatal_conductance = Medlyn(0.03, 12.0),
         Rₛ = 13.747, sky_fraction = 1.0, PPFD = 1500.0, d = 0.03
     )
 
 leaf2 = LeafModels(
-        energy = Monteith(),
+        energy_balance = Monteith(),
         photosynthesis = Fvcb(),
         stomatal_conductance = Medlyn(0.03, 12.0),
         Rₛ = 10., sky_fraction = 1.0, PPFD = 1250.0, d = 0.02
@@ -47,7 +47,7 @@ w = Weather(
 )
 
 leaf1 = LeafModels(
-        energy = Monteith(),
+        energy_balance = Monteith(),
         photosynthesis = Fvcb(),
         stomatal_conductance = Medlyn(0.03, 12.0),
         Rₛ = [5., 10., 20.],
@@ -57,7 +57,7 @@ leaf1 = LeafModels(
     )
 
 leaf2 = LeafModels(
-        energy = Monteith(),
+        energy_balance = Monteith(),
         photosynthesis = Fvcb(),
         stomatal_conductance = Medlyn(0.03, 12.0),
         Rₛ = [3., 7., 16.],

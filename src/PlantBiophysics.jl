@@ -174,7 +174,7 @@ export AbstractGsModel
 export gbh_to_gbw
 export gbₕ_free
 export gbₕ_forced
-export gs, gs!
+export stomatal_conductance, stomatal_conductance!
 export Medlyn
 export ConstantGs
 

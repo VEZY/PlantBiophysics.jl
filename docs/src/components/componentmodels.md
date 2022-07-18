@@ -8,7 +8,7 @@ generic non-photosynthetic components. It can be any kind of component such as w
 [`ComponentModels`](@ref) implements two processes:
 
 - `interception <: Union{Missing,AbstractInterceptionModel}`: A radiation interception model;
-- `energy <: Union{Missing,AbstractEnergyModel}`: An energy balance model;
+- `energy_balance <: Union{Missing,AbstractEnergyModel}`: An energy balance model;
 
 ...and like every [`AbstractComponentModel`](@ref) a `status` field:
 
@@ -26,5 +26,5 @@ using PlantBiophysics
 ```
 
 ```@example usepkg
-ComponentModels(energy = Monteith())
+ComponentModels(energy_balance = Monteith())
 ```

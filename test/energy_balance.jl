@@ -44,31 +44,31 @@ end;
 @testset "energy_balance(LeafModels{.,Monteith{Float64,Int64},Fvcb{Float64},Medlyn{Float64},.})" begin
     # Reference value:
     ref = (
-        Rₛ = 13.747,
-        sky_fraction = 1.0,
-        d = 0.03,
-        Tₗ = 17.659873993789848,
-        Rn = 21.266393383716945,
-        Rₗₗ = 7.5193933837169435,
-        H = -121.49817112628988,
-        λE = 142.76456451000684,
-        Cₛ = 356.330207843304,
-        Cᵢ = 337.0202128385702,
-        A = 29.35278783520552,
-        Gₛ = 1.506586807729961,
-        Gbₕ = 0.021346792818908434,
-        Dₗ = 0.5021715623565368,
-        Gbc = 0.6721531380291846,
-        iter = 2.0,
-        PPFD = 1500.0
+        Rₛ=13.747,
+        sky_fraction=1.0,
+        d=0.03,
+        Tₗ=17.659873993789848,
+        Rn=21.266393383716945,
+        Rₗₗ=7.5193933837169435,
+        H=-121.49817112628988,
+        λE=142.76456451000684,
+        Cₛ=356.330207843304,
+        Cᵢ=337.0202128385702,
+        A=29.35278783520552,
+        Gₛ=1.506586807729961,
+        Gbₕ=0.021346792818908434,
+        Dₗ=0.5021715623565368,
+        Gbc=0.6721531380291846,
+        iter=2.0,
+        PPFD=1500.0
     )
 
-    meteo = Atmosphere(T = 20.0, Wind = 1.0, P = 101.3, Rh = 0.65)
+    meteo = Atmosphere(T=20.0, Wind=1.0, P=101.3, Rh=0.65)
     leaf = LeafModels(
-        energy = Monteith(),
-        photosynthesis = Fvcb(),
-        stomatal_conductance = Medlyn(0.03, 12.0),
-        Rₛ = 13.747, sky_fraction = 1.0, PPFD = 1500.0, d = 0.03
+        energy_balance=Monteith(),
+        photosynthesis=Fvcb(),
+        stomatal_conductance=Medlyn(0.03, 12.0),
+        Rₛ=13.747, sky_fraction=1.0, PPFD=1500.0, d=0.03
     )
 
     non_mutating = energy_balance(leaf, meteo)
@@ -87,10 +87,12 @@ end;
 
 
 # meteo = Atmosphere(T = 20.0, Wind = 1.0, P = 101.3, Rh = 0.65)
-# leaf = LeafModels(energy = Monteith(),
-#             photosynthesis = Fvcb(),
-#             stomatal_conductance = Medlyn(0.03, 12.0),
-#             Rₛ = 13.747, sky_fraction = 1.0, PPFD = 1500.0, d = 0.03)
+# leaf = LeafModels(
+#     energy_balance = Monteith(),
+#     photosynthesis = Fvcb(),
+#     stomatal_conductance = Medlyn(0.03, 12.0),
+#     Rₛ = 13.747, sky_fraction = 1.0, PPFD = 1500.0, d = 0.03
+# )
 
 # res = DataFrame(:PPFD => Float64[], :A => Float64[])
 # for i in 1:10:1500

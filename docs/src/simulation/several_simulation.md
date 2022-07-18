@@ -18,7 +18,7 @@ w = Weather(
 )
 
 leaf = LeafModels(
-        energy = Monteith(),
+        energy_balance = Monteith(),
         photosynthesis = Fvcb(),
         stomatal_conductance = Medlyn(0.03, 12.0),
         Rₛ = [5., 10., 20.],
