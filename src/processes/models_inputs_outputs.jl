@@ -22,37 +22,46 @@ Get the inputs of one or several models.
 
 Returns an empty tuple by default for `AbstractModel`s (no inputs) or `Missing` models.
 """
-function inputs(model::AbstractModel)
+function inputs(model::T) where {T<:AbstractModel}
+    keys(inputs_(model))
+end
+
+function inputs_(model::AbstractModel)
     ()
 end
 
-function inputs(model::Missing)
-    ()
-end
-
-function inputs(v::T, vars...) where {T<:Union{Missing,AbstractModel}}
+function inputs(v::T, vars...) where {T<:AbstractModel}
     length((vars...,)) > 0 ? union(inputs(v), inputs(vars...)) : inputs(v)
+end
+
+function inputs_(model::Missing)
+    ()
 end
 
 """
     outputs(model::AbstractModel)
-outputs(...)
+    outputs(...)
 
 Get the outputs of one or several models.
 
 Returns an empty tuple by default for `AbstractModel`s (no outputs) or `Missing` models.
 """
-function outputs(model::AbstractModel)
-    ()
+function outputs(model::T) where {T<:AbstractModel}
+    keys(outputs_(model))
 end
 
-function outputs(model::Missing)
-    ()
-end
-
-function outputs(v::T, vars...) where {T<:Union{Missing,AbstractModel}}
+function outputs(v::T, vars...) where {T<:AbstractModel}
     length((vars...,)) > 0 ? union(outputs(v), outputs(vars...)) : outputs(v)
 end
+
+function outputs_(model::AbstractModel)
+    ()
+end
+
+function outputs_(model::Missing)
+    ()
+end
+
 
 """
     variables(model)
@@ -87,7 +96,7 @@ end
 Returns a dataframe of all variables in PlantBiophysics, their description and their units.
 """
 function variables()
-    sort!(CSV.read(joinpath(dirname(dirname(pathof(PlantBiophysics))),"data","variables.csv"), DataFrame))
+    sort!(CSV.read(joinpath(dirname(dirname(pathof(PlantBiophysics))), "data", "variables.csv"), DataFrame))
 end
 
 """
@@ -110,38 +119,60 @@ variables_typed(Monteith(), Medlyn(0.03,12.0))
 [`inputs`](@ref), [`outputs`](@ref) and [`variables`](@ref)
 
 """
-function variables_typed(x)
-    var_names = variables(x)
-    var_type = eltype(x)
-    (; zip(var_names, fill(var_type, length(var_names)))...)
+function variables_typed(m::T) where {T<:AbstractModel}
+
+    in_vars = inputs_(m)
+    in_vars_type = Dict(zip(keys(in_vars), typeof(in_vars).types))
+    out_vars = outputs_(m)
+    out_vars_type = Dict(zip(keys(out_vars), typeof(out_vars).types))
+
+    # Merge both with type promotion:
+    vars = mergewith(promote_type, in_vars_type, out_vars_type)
+
+    # Checking that variables have the same type in inputs and outputs:
+    vars_different_types = diff_vars(in_vars_type, out_vars_type)
+    if length(vars_different_types) > 0
+        @warn "The following variables have different types in inputs and outputs: " *
+              vars_different_types * ", they will be promoted."
+    end
+
+    return (; vars...)
 end
 
-function variables_typed(ms...)
-    var_types = variables_typed.(ms)
+function variables_typed(m::T, ms...) where {T<:AbstractModel}
+    if length((ms...,)) > 0
+        m_vars = variables_typed(m)
+        ms_vars = variables_typed(ms...)
+        vars = mergewith(promote_type, m_vars, ms_vars)
 
-    common_variables = intersect(keys.(var_types)...)
-    vars_union = union(keys.(var_types)...)
+        vars_different_types = diff_vars(m_vars, ms_vars)
+        if length(vars_different_types) > 0
+            @warn "The following variables have different types between models: " *
+                  vars_different_types * ", they will be promoted."
+        end
 
+        return vars
+    else
+        return variables_typed(m)
+    end
+end
 
-    var_types_promoted = []
-    for i in vars_union
-        if i in common_variables
-            types_common_vars = []
+"""
+    diff_vars(x, y)
 
-            for t in var_types
-                if isdefined(t, i)
-                    push!(types_common_vars, t[i])
-                end
-            end
-            push!(var_types_promoted, i => promote_type(types_common_vars...))
-        else
-            for t in var_types
-                if isdefined(t, i)
-                    push!(var_types_promoted, i => t[i])
-                end
+Returns the names of variables that have different values in x and y.
+"""
+function diff_vars(x, y)
+    # Checking that variables have the same value in x and y:
+    common_vars = intersect(keys(x), keys(y))
+    vars_different_types = []
+
+    if length(common_vars) > 0
+        for i in common_vars
+            if x[i] != y[i]
+                push!(vars_different_types, i)
             end
         end
     end
-
-    return (; var_types_promoted...)
+    return vars_different_types
 end

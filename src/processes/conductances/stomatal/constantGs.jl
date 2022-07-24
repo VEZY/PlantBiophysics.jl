@@ -21,12 +21,12 @@ end
 
 ConstantGs(; g0=0.0, Gₛ) = ConstantGs(g0, Gₛ)
 
-function inputs(::ConstantGs)
-    (:Gₛ,)
+function inputs_(::ConstantGs)
+    (Gₛ=-999.99,)
 end
 
-function outputs(::ConstantGs)
-    (:Gₛ,)
+function outputs_(::ConstantGs)
+    (Gₛ=-999.99,)
 end
 
 Base.eltype(x::ConstantGs) = typeof(x).parameters[1]

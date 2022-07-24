@@ -188,3 +188,14 @@ function init_variables_manual(models...; vars...)
     end
     init_vars
 end
+
+function init_variables_manual(models, status)
+    new_vals = (; vars...)
+    added_types = (fieldtypes(typeof(new_vals).parameters[2])...,)
+    init_vars = init_variables(models...; types=added_types)
+    for i in keys(new_vals)
+        !in(i, keys(init_vars)) && error("Key $i not found as a variable of any provided models")
+        setproperty!(init_vars, i, new_vals[i])
+    end
+    init_vars
+end

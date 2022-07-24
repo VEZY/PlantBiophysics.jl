@@ -57,12 +57,12 @@ function FvcbRaw(; Tᵣ=25.0, VcMaxRef=200.0, JMaxRef=250.0, RdRef=0.6, TPURef=9
     FvcbRaw(promote(Tᵣ, VcMaxRef, JMaxRef, RdRef, TPURef, Eₐᵣ, O₂, Eₐⱼ, Hdⱼ, Δₛⱼ, Eₐᵥ, Hdᵥ, Δₛᵥ, α, θ)...)
 end
 
-function inputs(::FvcbRaw)
-    (:PPFD, :Tₗ, :Cᵢ)
+function inputs_(::FvcbRaw)
+    (PPFD=-999.99, Tₗ=-999.99, Cᵢ=-999.99)
 end
 
-function outputs(::FvcbRaw)
-    (:A,)
+function outputs_(::FvcbRaw)
+    (A=-999.99,)
 end
 
 Base.eltype(x::FvcbRaw) = typeof(x).parameters[1]

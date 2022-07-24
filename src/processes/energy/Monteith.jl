@@ -30,12 +30,15 @@ function Monteith(; aₛₕ=2, aₛᵥ=1, ε=0.955, maxiter=10, ΔT=0.01)
     Monteith(param_int[1], param_int[2], param_float[1], param_int[3], param_float[2])
 end
 
-function inputs(::Monteith)
-    (:Rₛ, :sky_fraction, :d)
+function inputs_(::Monteith)
+    (Rₛ=-999.99, sky_fraction=-999.99, d=-999.99)
 end
 
-function outputs(::Monteith)
-    (:Tₗ, :Rn, :Rₗₗ, :H, :λE, :Cₛ, :Cᵢ, :A, :Gₛ, :Gbₕ, :Dₗ, :Gbc, :iter)
+function outputs_(::Monteith)
+    (
+        Tₗ=-999.99, Rn=-999.99, Rₗₗ=-999.99, H=-999.99, λE=-999.99, Cₛ=-999.99, Cᵢ=-999.99,
+        A=-999.99, Gₛ=-999.99, Gbₕ=-999.99, Dₗ=-999.99, Gbc=-999.99, iter=-999.99
+    )
 end
 
 Base.eltype(x::Monteith) = typeof(x).parameters[1]

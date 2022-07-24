@@ -22,6 +22,21 @@ import Statistics: mean
 # Abstract structures:
 include("Abstract_model_structs.jl")
 
+# Atmosphere
+include("climate/atmosphere.jl")
+include("climate/weather.jl")
+
+# Automatic process methods generation:
+include("processes/process_methods_generation.jl")
+include("processes/models_inputs_outputs.jl")
+include("processes/model_initialisation.jl")
+
+# Generic process methods
+include("processes/light_interception/generic_structs.jl")
+include("processes/photosynthesis/photosynthesis.jl")
+include("processes/conductances/stomatal/stomatal_conductance.jl")
+include("processes/energy/energy_balance.jl")
+
 # Component models
 include("component_models/leafmodels.jl")
 include("component_models/componentmodels.jl")
@@ -37,8 +52,6 @@ include("constants.jl")
 
 # Atmosphere computations (vapor pressure...)
 include("climate/variables_computations.jl")
-include("climate/atmosphere.jl")
-include("climate/weather.jl")
 
 # Checks for status and weather (same length):
 include("checks/status_weather_corresp.jl")
@@ -47,18 +60,11 @@ include("checks/status_weather_corresp.jl")
 include("conversions.jl")
 include("dataframe.jl")
 
-# Automatic process methods generation:
-include("processes/process_methods_generation.jl")
-include("processes/models_inputs_outputs.jl")
-include("processes/model_initialisation.jl")
-
 # Light interception
-include("processes/light_interception/generic_structs.jl")
 include("processes/light_interception/Ignore.jl")
 include("processes/light_interception/Translucent.jl")
 
 # Photosynthesis related files:
-include("processes/photosynthesis/photosynthesis.jl")
 include("processes/photosynthesis/constantA.jl")
 include("processes/photosynthesis/constantAGs.jl")
 include("processes/photosynthesis/FvCB.jl")
@@ -67,7 +73,6 @@ include("processes/photosynthesis/FvCBRaw.jl")
 include("processes/photosynthesis/temperature-dependence.jl")
 
 # Stomatal conductance related files:
-include("processes/conductances/stomatal/stomatal_conductance.jl")
 include("processes/conductances/stomatal/constantGs.jl")
 include("processes/conductances/stomatal/medlyn.jl")
 
@@ -76,7 +81,6 @@ include("processes/conductances/boundary/gb.jl")
 
 # Energy balance
 include("processes/energy/longwave_energy.jl")
-include("processes/energy/energy_balance.jl")
 include("processes/energy/Missing.jl")
 include("processes/energy/Monteith.jl")
 

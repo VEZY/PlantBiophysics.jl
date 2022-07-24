@@ -48,12 +48,12 @@ Medlyn(g0, g1) = Medlyn(g0, g1, oftype(g0, 0.001))
 
 Medlyn(; g0, g1) = Medlyn(g0, g1, oftype(g0, 0.001))
 
-function inputs(::Medlyn)
-    (:Dₗ, :Cₛ, :A)
+function inputs_(::Medlyn)
+    (Dₗ=-999.99, Cₛ=-999.99, A=-999.99)
 end
 
-function outputs(::Medlyn)
-    (:Gₛ,)
+function outputs_(::Medlyn)
+    (Gₛ=-999.99,)
 end
 
 Base.eltype(x::Medlyn) = typeof(x).parameters[1]

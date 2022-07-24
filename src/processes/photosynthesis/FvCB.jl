@@ -105,12 +105,12 @@ function Fvcb(; Tᵣ=25.0, VcMaxRef=200.0, JMaxRef=250.0, RdRef=0.6, TPURef=9999
     Fvcb(promote(Tᵣ, VcMaxRef, JMaxRef, RdRef, TPURef, Eₐᵣ, O₂, Eₐⱼ, Hdⱼ, Δₛⱼ, Eₐᵥ, Hdᵥ, Δₛᵥ, α, θ)...)
 end
 
-function inputs(::Fvcb)
-    (:PPFD, :Tₗ, :Cₛ)
+function inputs_(::Fvcb)
+    (:PPFD => -999.99, :Tₗ => -999.99, :Cₛ => -999.99)
 end
 
-function outputs(::Fvcb)
-    (:A, :Gₛ, :Cᵢ)
+function outputs_(::Fvcb)
+    (:A => -999.99, :Gₛ => -999.99, :Cᵢ => -999.99)
 end
 
 Base.eltype(x::Fvcb) = typeof(x).parameters[1]

@@ -46,12 +46,12 @@ function FvcbIter(; Tᵣ=25.0, VcMaxRef=200.0, JMaxRef=250.0, RdRef=0.6, Eₐᵣ
     )
 end
 
-function inputs(::FvcbIter)
-    (:PPFD, :Tₗ, :Gbc)
+function inputs_(::FvcbIter)
+    (PPFD=-999.99, Tₗ=-999.99, Gbc=-999.99)
 end
 
-function outputs(::FvcbIter)
-    (:A, :Gₛ, :Cᵢ, :Cₛ)
+function outputs_(::FvcbIter)
+    (A=-999.99, Gₛ=-999.99, Cᵢ=-999.99, Cₛ=-999.99)
 end
 
 Base.eltype(x::FvcbIter) = typeof(x).parameters[1]
