@@ -132,8 +132,8 @@ function variables_typed(m::T) where {T<:AbstractModel}
     # Checking that variables have the same type in inputs and outputs:
     vars_different_types = diff_vars(in_vars_type, out_vars_type)
     if length(vars_different_types) > 0
-        @warn "The following variables have different types in inputs and outputs: " *
-              vars_different_types * ", they will be promoted."
+        @warn """The following variables have different types between models:
+                    $vars_different_types, they will be promoted."""
     end
 
     return (; vars...)
@@ -143,15 +143,19 @@ function variables_typed(m::T, ms...) where {T<:AbstractModel}
     if length((ms...,)) > 0
         m_vars = variables_typed(m)
         ms_vars = variables_typed(ms...)
-        vars = mergewith(promote_type, m_vars, ms_vars)
+        m_vars_dict = Dict(zip(keys(m_vars), values(m_vars)))
+        ms_vars_dict = Dict(zip(keys(ms_vars), values(ms_vars)))
+        vars = mergewith(promote_type, m_vars_dict, ms_vars_dict)
+        #! remove the transformation into a Dict when mergewith exist for NamedTuples.
+        #! Check here: https://github.com/JuliaLang/julia/issues/36048
 
         vars_different_types = diff_vars(m_vars, ms_vars)
         if length(vars_different_types) > 0
-            @warn "The following variables have different types between models: " *
-                  vars_different_types * ", they will be promoted."
+            @warn """The following variables have different types between models:
+            $vars_different_types, they will be promoted."""
         end
 
-        return vars
+        return (; vars...)
     else
         return variables_typed(m)
     end
