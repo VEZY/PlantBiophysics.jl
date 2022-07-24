@@ -1,3 +1,8 @@
+"""
+Energy balance abstract struct. All energy balance models must be a subtype of this type.
+"""
+abstract type AbstractEnergyModel <: AbstractModel end
+
 # Generate all methods for the energy_balance process: several meteo time-steps, components,
 #  over an MTG, and the mutating /non-mutating versions
 @gen_process_methods energy_balance

@@ -1,3 +1,11 @@
+"""
+Stomatal conductance abstract model. All stomatal conductance models must be a subtype of
+this type.
+
+An AbstractGsModel subtype struct must implement at least a g0 field.
+"""
+abstract type AbstractGsModel <: AbstractModel end
+
 # Generate all methods for the stomatal conductance process: several meteo time-steps, components,
 #  over an MTG, and the mutating /non-mutating versions
 @gen_process_methods stomatal_conductance

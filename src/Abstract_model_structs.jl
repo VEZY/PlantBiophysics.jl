@@ -12,29 +12,3 @@ All `AbstractComponentModel` must have a `status` field. It used by PlantBiophys
 the inputs/outputs of the models and keep track of their values.
 """
 abstract type AbstractComponentModel <: AbstractModel end
-
-
-"""
-Assimilation (photosynthesis) abstract model. All photosynthesis models must be a subtype of
-this.
-"""
-abstract type AbstractAModel <: AbstractModel end
-
-"""
-Stomatal conductance abstract model. All stomatal conductance models must be a subtype of
-this.
-
-An AbstractGsModel subtype struct must implement at least a g0 field.
-"""
-abstract type AbstractGsModel <: AbstractModel end
-
-"""
-Light interception abstract struct. All light interception models must be a subtype of this.
-"""
-abstract type AbstractInterceptionModel <: AbstractModel end
-
-
-"""
-Energy balance abstract struct. All energy balance models must be a subtype of this.
-"""
-abstract type AbstractEnergyModel <: AbstractModel end

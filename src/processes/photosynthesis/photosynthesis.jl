@@ -1,3 +1,9 @@
+"""
+Assimilation (photosynthesis) abstract model. All photosynthesis models must be a subtype of
+this type.
+"""
+abstract type AbstractAModel <: AbstractModel end
+
 # Generate all methods for the photosynthesis process: several meteo time-steps, components,
 #  over an MTG, and the mutating /non-mutating versions
 @gen_process_methods photosynthesis
