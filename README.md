@@ -78,11 +78,22 @@ For more examples, please read the documentation.
 - [ ] Try to make `get_component_type()` more generic? Or easily extendable?
 - [x] Use leaf[:var] in the models implementations instead of leaf.status.var. It will make the code way clearer.
 - [ ] Do we have a `setindex!` method for `leaf[:var]`? Implement it if missing.
-- [ ] Make boundary layer conductances models as for stomatal conductances.
+- [ ] Make boundary layer conductances true models as for stomatal conductances, but maybe define the current ones as default when calling the function (I mean if no model is provided, use the ones currently in use).
 - [ ] Make a diagram of a leaf for gaz and energy exchanges
 - [ ] Add checks on the models provided for a simulation: for example Fvcb requires a stomatal conductance model. At the moment Julia returns an error on missing method for the particular implementation of photosynthesis!_(Fvcb,Gs) (in short). We could check before that both are needed and present, and return a more informational error if missing.
 - [ ] Implement a Gm model. Cf. the [GECROS](https://models.pps.wur.nl/gecros-detailed-eco-physiological-crop-growth-simulation-model-analyse-genotype-environment) model.
-- [ ] Replace component models by MutableNamedTuples ? It could alleviate the need to implement a different component model when needing a new model as it allows as many fields as we want. A call to a function would need to include the type of the model though ? *e.g.* `energy_balance!(mtnt.energy_balance, mtnt, meteo, constant)`, or we do that in the low-level functions so the use only pass the mtnt.
+- [x] Replace component models by MutableNamedTuples ? It could alleviate the need to implement a different component model when needing a new model as it allows as many fields as we want. A call to a function would need to include the type of the model though ? *e.g.* `energy_balance!(mtnt.energy_balance, mtnt, meteo, constant)`, or we do that in the low-level functions so the use only pass the mtnt. -> solution was to make the call to the low-level functions generic for the models (no constraint on the type), but dispatch on the type of the first argument instead that is the model type for this function. This changes nothing to the high-level functions but make the possibility to provide other things than component models.
+- [x] Move the definitions of the abstract models near their processes: e.g. the definition of `AbstractAModel` should be in the `photosynthesis.jl` file.
+- [ ] Change the way we store parameters, models and status:
+  - [ ] Add a new struct for the list of models, with two fields: models and status.
+  - [ ] Models can be a struct, Namedtuple or whatever struct that can be called with `models.process`.
+  - [ ] The status field must be part of the struct in input of the high-level functions for easy construction, but be passed as an argument to the low-level functions so we avoid the copy(object, object[i]) in the high-level calls.
+  - [ ] Make a custom type for status so they are indexable? Maybe use [StaticArrays.jl](https://github.com/JuliaArrays/StaticArrays.jl) instead ? Not sure, `status[i].A = 12` does not modify the array, only `status.A[i] = 12` does, and we will provide status[i] as input to the low-level function so... Or else we get the output of the low level function, and re-assign it to the status: `status[i] = output_status`, but this is not the best solution. Use a dataframe with a view instead for several time steps ? Make a microbenchmark, dataframes should be fast.
+  - [ ] Make sure all functions currently applied to the status are still needed, and if so check if they work.
+  - [ ] Add a check on the combination of models + status to see if the initialisation is complete, but make it optional (arg `check=true` by default).
+  - [ ] Make a new `submodels` function for each model that list all models that are used by a model. It can be nothing, an abstract model (e.g. `AbstractAModel`), a concrete model (e.g. `Fvcb`) or any combinations of models (e.g. photosynthesis + stomatal conductance).
+  - [ ] Make a function to build a tree of models based on the `submodels` outputs.
+- [ ] Remove checks on the models when calling the processes functions, and move it to the construction of the group of models and/or to the user with a check function.
 
 ## Contributing
 

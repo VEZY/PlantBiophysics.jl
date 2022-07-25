@@ -18,6 +18,10 @@ end
     include("structs.jl")
 end
 
+@testset "Initialisations" begin
+    include("initialisations.jl")
+end
+
 @testset "Temperature dependence" begin
     include("temp-dependence.jl")
 end

@@ -21,15 +21,17 @@ leaf = LeafModels(photosynthesis = Fvcb(), stomatal_conductance = Medlyn(0.03,12
 to_initialise(leaf)
 ```
 """
-function to_initialise(v::T, vars...) where {T<:Union{Missing,AbstractModel}}
+function to_initialise(v::T, vars...) where {T<:AbstractModel}
     setdiff(inputs(v, vars...), outputs(v, vars...))
 end
 
 function to_initialise(m::T) where {T<:AbstractComponentModel}
-    # Get all fields
-    models = [getfield(m, x) for x in setdiff(fieldnames(typeof(m)), (:status,))]
-    to_init = to_initialise(models...)
-    to_init[is_not_init_(m.status, to_init)]
+    # These are all the variables needed for a simulation given the models:
+    default_values = init_variables(m.models...)
+
+    # These are the ones that we need to initialize before simulation:
+    needed_variables = NamedTuple(i => default_values[i] for i in to_initialise(m.models...))
+    vars_not_init_(m.status, needed_variables)
 end
 
 function to_initialise(m::T) where {T<:Dict{String,AbstractComponentModel}}
@@ -86,7 +88,8 @@ end
 """
     init_variables(models...)
 
-Intialise model variables based on their instances.
+Intialized model variables with their default values. The variables are taken from the
+inputs and outputs of the models.
 
 # Examples
 
@@ -156,7 +159,7 @@ for other models.
 # Examples
 
 ```julia
-leaf = LeafModels(photosynthesis = Fvcb(), stomatal_conductance = Medlyn(0.03,12.0))
+leaf = ModelList(photosynthesis = Fvcb(), stomatal_conductance = Medlyn(0.03,12.0))
 is_initialised(leaf)
 
 # Searching for just a sub-set of models:
@@ -167,32 +170,43 @@ is_initialised(leaf,leaf.photosynthesis)
 """
 function is_initialised(m::T; info=true) where {T<:AbstractComponentModel}
     var_names = to_initialise(m)
-    is_not_init = is_not_init_(m.status, var_names)
-    if any(is_not_init)
-        info && @info "Some variables must be initialised before simulation: $(var_names[is_not_init]) (see `to_initialise()`)"
+
+    if length(var_names) > 0
+        info && @info "Some variables must be initialised before simulation: $var_names (see `to_initialise()`)"
         return false
     else
         return true
     end
 end
 
-function is_initialised(m::T, models...; info=true) where {T<:AbstractComponentModel}
+function is_initialised(models...; info=true)
     var_names = to_initialise(models...)
-    is_not_init = is_not_init_(m.status, var_names)
-    if any(is_not_init)
-        info && @info "Some variables must be initialised before simulation: $(var_names[is_not_init]) (see `to_initialise()`)"
+    if length(var_names) > 0
+        info && @info "Some variables must be initialised before simulation: $(var_names) (see `to_initialise()`)"
         return false
     else
         return true
     end
 end
 
-function is_not_init_(st::T, var_names) where {T<:MutableNamedTuple}
-    [getproperty(st, i) == -999.99 for i in var_names]
+"""
+    vars_not_init_(st<:Status, var_names)
+
+Get which variable is not initialized in the status struct.
+"""
+function vars_not_init_(status::T, default_values) where {T<:Status}
+    length(default_values) == 0 && return () # no variables
+    not_init = Symbol[]
+    for i in keys(default_values)
+        if getproperty(status.vars, i) == default_values[i]
+            push!(not_init, i)
+        end
+    end
+    return (not_init...,)
 end
 
 # For components with a status with multiple time-steps:
-function is_not_init_(st::T, var_names) where {T<:Vector{MutableNamedTuple}}
+function vars_not_init_(st::T, var_names) where {T<:TimeSteps}
     isnotinit = fill(false, length(var_names))
     for j in st, i in eachindex(var_names)
         if getproperty(j, var_names[i]) == -999.99

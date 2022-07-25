@@ -1,29 +1,10 @@
 
 """
-    LeafModels(interception, energy_balance, photosynthesis, stomatal_conductance, status)
-    LeafModels(;interception = missing, energy_balance = missing, photosynthesis = missing,
-        stomatal_conductance = missing,status...)
+    ModelList(models::M, status::S)
+    ModelList(; status=MutableNamedTuple(), datatype=MutableNamedTuple, kwargs...)
 
-[`LeafModels`](@ref) is a structure used to list the processes and associated models for
-photosynthetic components. It can be a leaf, a leaflet, or really any kind of component that
-has a photosynthetic activity. The name `LeafModels` was chosen not because it is generic,
-but because it is short, simple and self-explanatory.
-
-## Processes
-
-[`LeafModels`](@ref) implements four processes:
-
-- `interception <: Union{Missing,AbstractInterceptionModel}`: An interception model.
-- `energy_balance <: Union{Missing,AbstractEnergyModel}`: An energy model, *e.g.* [`Monteith`](@ref).
-- `photosynthesis <: Union{Missing,AbstractAModel}`: A photosynthesis model, *e.g.* [`Fvcb`](@ref)
-- `stomatal_conductance <: Union{Missing,AbstractGsModel}`: A stomatal conductance model,
-    *e.g.* [`Medlyn`](@ref) or [`ConstantGs`](@ref)
-
-Like all other [`AbstractComponentModel`](@ref), [`LeafModels`](@ref) also has a `status` field:
-
-- `status <: MutableNamedTuple`: a mutable named tuple to track the status of the component,
-    *i.e.* the variables and their values. Values are set to `-999.99` if not provided as
-    keywords arguments (see examples).
+A structure used to list the models for a simulation (`models`), and the associated
+initialized variables (`status`).
 
 !!! note
     The status field depends on the input models. You can get the variables needed by a model
@@ -41,7 +22,7 @@ using PlantBiophysics
 ```
 
 ```@example usepkg
-leaf = LeafModels(
+leaf = ModelList(
     energy_balance = Monteith(),
     photosynthesis = Fvcb(),
     stomatal_conductance = ConstantGs(0.0, 0.0011)
@@ -58,17 +39,17 @@ To know which variables we need to initialise for a simulation, we use [`to_init
 to_initialise(leaf)
 ```
 
-The meaning and units of the variables can be found on documentation of each model,
+The meaning and units of the variables can be found on the documentation of each model,
 *e.g.* [here for photosynthesis](https://vezy.github.io/PlantBiophysics.jl/stable/models/photosynthesis/).
 
 We can now provide values for these variables:
 
 ```@example usepkg
-leaf = LeafModels(
+leaf = ModelList(
     energy_balance = Monteith(),
     photosynthesis = Fvcb(),
     stomatal_conductance = ConstantGs(0.0, 0.0011),
-    Rₛ = 13.747, sky_fraction = 1.0, d = 0.03
+    status = (Rₛ = 13.747, sky_fraction = 1.0, d = 0.03)
 )
 ```
 
@@ -83,7 +64,7 @@ energy_balance!(leaf,meteo)
 DataFrame(leaf)
 ```
 """
-struct ModelList{M,S<:AbstractStatus}
+struct ModelList{M,S<:AbstractStatus} <: AbstractComponentModel
     models::M
     status::S
 end
@@ -95,6 +76,13 @@ function ModelList(; status=MutableNamedTuple(), datatype=MutableNamedTuple, kwa
     ModelList((; kwargs...), status)
 end
 
+"""
+    homogeneous_type_steps(ref_vars, vars, datatype=MutableNamedTuple)
+
+Return a [`Status`](@ref) or [`TimeSteps`](@ref) based on the length of the variables in
+vars. `ref_vars` is a struct with the default values of all the variables needed by the
+models. `datatype` is the type used to hold the status inside the Status.
+"""
 function homogeneous_type_steps(ref_vars, vars, datatype=MutableNamedTuple)
     vars_vals = collect(values(vars))
     length_vars = [length(i) for i in vars_vals]
@@ -126,7 +114,13 @@ function homogeneous_type_steps(ref_vars, vars, datatype=MutableNamedTuple)
 
         return TimeSteps(vars_array)
     else
-        return Status(vars)
+        vars = Status(
+            init_variables_manual(
+                instantiate_status_struct(datatype, ref_vars),
+                vars
+            )
+        )
+        return vars
     end
 end
 
