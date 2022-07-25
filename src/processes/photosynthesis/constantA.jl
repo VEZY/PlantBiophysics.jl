@@ -54,10 +54,10 @@ photosynthesis!_(leaf,meteo,Constants())
 leaf.status.A
 ```
 """
-function photosynthesis!_(::ConstantA; models, meteo, constants=Constants())
+function photosynthesis!_(::ConstantA; models, status, meteo, constants=Constants())
 
     # Net assimilation (μmol m-2 s-1)
-    models.status.A = models.photosynthesis.A
+    status.A = models.photosynthesis.A
 
     return nothing
 end

@@ -122,6 +122,6 @@ Craig V. M. Barton, Kristine Y. Crous, Paolo De Angelis, Michael Freeman, et Lis
 2011. « Reconciling the optimal and empirical approaches to modelling stomatal conductance ».
 Global Change Biology 17 (6): 2134‑44. https://doi.org/10.1111/j.1365-2486.2010.02375.x.
 """
-function gs_closure(::Medlyn, models, meteo)
-    (1.0 + models.stomatal_conductance.g1 / sqrt(max(1e-9, models.status.Dₗ))) / models.status.Cₛ
+function gs_closure(::Medlyn, models, status, meteo)
+    (1.0 + models.stomatal_conductance.g1 / sqrt(max(1e-9, status.Dₗ))) / status.Cₛ
 end

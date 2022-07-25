@@ -7,7 +7,7 @@
 
     inits = init_variables(leaf.models...)
     st = MutableNamedTuple{keys(inits)}(values(inits))
-    @test all(getproperty(leaf.status.vars, i) == getproperty(st, i) for i in keys(st))
+    @test all(getproperty(leaf.status, i) == getproperty(st, i) for i in keys(st))
 end;
 
 
@@ -21,7 +21,7 @@ end;
     inits = init_variables(leaf.models...)
     st = MutableNamedTuple{keys(inits)}(values(inits))
     st.PPFD = 15.0
-    @test all(getproperty(leaf.status.vars, i) == getproperty(st, i) for i in keys(st))
+    @test all(getproperty(leaf.status, i) == getproperty(st, i) for i in keys(st))
 
     @test !is_initialised(leaf)
     @test to_initialise(leaf) == (:Tₗ, :Cₛ, :Dₗ)
@@ -41,7 +41,7 @@ end;
     for i in keys(vals)
         setproperty!(st, i, getproperty(vals, i))
     end
-    @test all(getproperty(leaf.status.vars, i) == getproperty(st, i) for i in keys(st))
+    @test all(getproperty(leaf.status, i) == getproperty(st, i) for i in keys(st))
 
     @test is_initialised(leaf)
     @test to_initialise(leaf) == ()

@@ -128,15 +128,15 @@ Maxime Soma, et al. 2018. « Measuring and modelling energy partitioning in can
 complexity using MAESPA model ». Agricultural and Forest Meteorology 253‑254 (printemps): 203‑17.
 https://doi.org/10.1016/j.agrformet.2018.02.005.
 """
-function energy_balance!_(::Monteith, models, meteo::AbstractAtmosphere, constants=Constants())
+function energy_balance!_(::Monteith, models, status, meteo::AbstractAtmosphere, constants=Constants())
 
     # Initialisations
-    models.status.Tₗ = meteo.T - 0.2
+    status.Tₗ = meteo.T - 0.2
     Tₗ_new = zero(meteo.T)
-    models.status.Cₛ = meteo.Cₐ
-    models.status.Dₗ = meteo.VPD
+    status.Cₛ = meteo.Cₐ
+    status.Dₗ = meteo.VPD
     γˢ = Rbₕ = Δ = zero(meteo.T)
-    models.status.Rn = models.status.Rₛ
+    status.Rn = status.Rₛ
     iter = 0
     # ?NB: We use iter = 0 and not 1 to get the right number of iterations at the end
     # of the for loop, because we use iter += 1 at the end (so it increments once again)
@@ -145,71 +145,71 @@ function energy_balance!_(::Monteith, models, meteo::AbstractAtmosphere, constan
     for i in 1:models.energy_balance.maxiter
 
         # Update A, Gₛ, Cᵢ from models.status:
-        photosynthesis!_(models.photosynthesis, models, meteo, constants)
+        photosynthesis!_(models.photosynthesis, models, status, meteo, constants)
 
         # Stomatal resistance to water vapor
-        Rsᵥ = 1.0 / (gsc_to_gsw(mol_to_ms(models.status.Gₛ, meteo.T, meteo.P, constants.R, constants.K₀),
+        Rsᵥ = 1.0 / (gsc_to_gsw(mol_to_ms(status.Gₛ, meteo.T, meteo.P, constants.R, constants.K₀),
             constants.Gsc_to_Gsw))
 
         # Re-computing the net radiation according to simulated leaf temperature:
-        models.status.Rₗₗ = net_longwave_radiation(models.status.Tₗ, meteo.T, models.energy_balance.ε, meteo.ε,
-            models.status.sky_fraction, constants.K₀, constants.σ)
+        status.Rₗₗ = net_longwave_radiation(status.Tₗ, meteo.T, models.energy_balance.ε, meteo.ε,
+            status.sky_fraction, constants.K₀, constants.σ)
         #= ? NB: we use the sky fraction here (0-2) instead of the view factor (0-1) because:
             - we consider both sides of the leaf at the same time (1 -> leaf sees sky on one face)
             - we consider all objects in the scene have the same temperature as the leaf
             of interest except the atmosphere. So the leaf exchange thermal energy_balance only with
             the atmosphere. =#
-        # models.status.Rₗₗ = (grey_body(meteo.T,1.0) - grey_body(models.status.Tₗ, 1.0))*models.status.sky_fraction
+        # status.Rₗₗ = (grey_body(meteo.T,1.0) - grey_body(status.Tₗ, 1.0))*status.sky_fraction
 
-        models.status.Rn = models.status.Rₛ + models.status.Rₗₗ
+        status.Rn = status.Rₛ + status.Rₗₗ
 
         # Leaf boundary conductance for heat (m s-1), one sided:
-        models.status.Gbₕ = gbₕ_free(meteo.T, models.status.Tₗ, models.status.d, constants.Dₕ₀) +
-                            gbₕ_forced(meteo.Wind, models.status.d)
+        status.Gbₕ = gbₕ_free(meteo.T, status.Tₗ, status.d, constants.Dₕ₀) +
+                     gbₕ_forced(meteo.Wind, status.d)
         # NB, in MAESPA we use Rni so we add the radiation conductance also (not here)
 
         # Leaf boundary resistance for heat (s m-1):
-        Rbₕ = 1 / models.status.Gbₕ
+        Rbₕ = 1 / status.Gbₕ
 
         # Leaf boundary resistance for water vapor (s m-1):
-        Rbᵥ = 1 / gbh_to_gbw(models.status.Gbₕ)
+        Rbᵥ = 1 / gbh_to_gbw(status.Gbₕ)
 
         # Leaf boundary conductance for CO₂ (mol[CO₂] m-2 s-1):
-        models.status.Gbc = ms_to_mol(models.status.Gbₕ, meteo.T, meteo.P, constants.R, constants.K₀) /
-                            constants.Gbc_to_Gbₕ
+        status.Gbc = ms_to_mol(status.Gbₕ, meteo.T, meteo.P, constants.R, constants.K₀) /
+                     constants.Gbc_to_Gbₕ
 
         # Update Cₛ using boundary layer conductance to CO₂ and assimilation:
-        models.status.Cₛ = min(meteo.Cₐ, meteo.Cₐ - models.status.A / (models.status.Gbc * models.energy_balance.aₛᵥ))
+        status.Cₛ = min(meteo.Cₐ, meteo.Cₐ - status.A / (status.Gbc * models.energy_balance.aₛᵥ))
 
         # Apparent value of psychrometer constant (kPa K−1)
         γˢ = γ_star(meteo.γ, models.energy_balance.aₛₕ, models.energy_balance.aₛᵥ, Rbᵥ, Rsᵥ, Rbₕ)
 
-        models.status.λE = latent_heat(models.status.Rn, meteo.VPD, γˢ, Rbₕ, meteo.Δ, meteo.ρ,
+        status.λE = latent_heat(status.Rn, meteo.VPD, γˢ, Rbₕ, meteo.Δ, meteo.ρ,
             models.energy_balance.aₛₕ, constants.Cₚ)
 
         # If potential evaporation is needed, here is how to compute it:
         # γˢₑ = γ_star(meteo.γ, energy_balance.aₛₕ, 1, Rbᵥ, 1.0e-9, Rbₕ) # Rsᵥ is inf. low
-        # Ev = latent_heat(models.status.Rn, meteo.VPD, γˢₑ, Rbₕ, meteo.Δ, meteo.ρ, energy_balance.aₛₕ, constants.Cₚ)
+        # Ev = latent_heat(status.Rn, meteo.VPD, γˢₑ, Rbₕ, meteo.Δ, meteo.ρ, energy_balance.aₛₕ, constants.Cₚ)
 
-        Tₗ_new = meteo.T + (models.status.Rn - models.status.λE) /
+        Tₗ_new = meteo.T + (status.Rn - status.λE) /
                            (meteo.ρ * constants.Cₚ * (models.energy_balance.aₛₕ / Rbₕ))
 
-        if abs(Tₗ_new - models.status.Tₗ) <= models.energy_balance.ΔT
+        if abs(Tₗ_new - status.Tₗ) <= models.energy_balance.ΔT
             break
         end
 
-        models.status.Tₗ = Tₗ_new
+        status.Tₗ = Tₗ_new
 
         # Vapour pressure difference between the surface and the saturation vapour pressure:
-        models.status.Dₗ = e_sat(models.status.Tₗ) - e_sat(meteo.T) * meteo.Rh
+        status.Dₗ = e_sat(status.Tₗ) - e_sat(meteo.T) * meteo.Rh
 
         iter += 1
     end
 
-    models.status.H = sensible_heat(models.status.Rn, meteo.VPD, γˢ, Rbₕ, meteo.Δ, meteo.ρ,
+    status.H = sensible_heat(status.Rn, meteo.VPD, γˢ, Rbₕ, meteo.Δ, meteo.ρ,
         models.energy_balance.aₛₕ, constants.Cₚ)
 
-    models.status.iter = iter
+    status.iter = iter
 
     @debug begin
         if iter == models.energy_balance.maxiter
@@ -218,7 +218,7 @@ function energy_balance!_(::Monteith, models, meteo::AbstractAtmosphere, constan
     end
 
     # Transpiration (mol[H₂O] m-2 s-1):
-    # ET = models.status.λE / meteo.λ * constants.Mₕ₂ₒ
+    # ET = status.λE / meteo.λ * constants.Mₕ₂ₒ
     # ET / constants.Mₕ₂ₒ to get mm s-1 <=> kg m-2 s-1 <=> l m-2 s-1
 
     nothing

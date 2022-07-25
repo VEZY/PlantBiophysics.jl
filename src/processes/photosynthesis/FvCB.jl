@@ -218,10 +218,10 @@ Lombardozzi, L. D. et al. 2018.« Triose phosphate limitation in photosynthesis 
 reduces leaf photosynthesis and global terrestrial carbon storage ». Environmental Research
 Letters 13.7: 1748-9326. https://doi.org/10.1088/1748-9326/aacf68.
 """
-function photosynthesis!_(::Fvcb, models, meteo, constants=Constants())
+function photosynthesis!_(::Fvcb, models, status, meteo, constants=Constants())
 
     # Tranform Celsius temperatures in Kelvin:
-    Tₖ = models.status.Tₗ - constants.K₀
+    Tₖ = status.Tₗ - constants.K₀
     Tᵣₖ = models.photosynthesis.Tᵣ - constants.K₀
 
     # Temperature dependence of the parameters:
@@ -240,14 +240,14 @@ function photosynthesis!_(::Fvcb, models, meteo, constants=Constants())
     # cycle, and termed "day" respiration, or "light respiration" (Harley et al., 1986).
 
     # Actual electron transport rate (considering intercepted PAR and leaf temperature):
-    J = get_J(models.status.PPFD, JMax, models.photosynthesis.α, models.photosynthesis.θ) # in μmol m-2 s-1
+    J = get_J(status.PPFD, JMax, models.photosynthesis.α, models.photosynthesis.θ) # in μmol m-2 s-1
     # RuBP regeneration
     Vⱼ = J / 4
 
     # Stomatal conductance (mol[CO₂] m-2 s-1), dispatched on type of first argument (gs_closure):
-    st_closure = gs_closure(models.stomatal_conductance, models, meteo)
+    st_closure = gs_closure(models.stomatal_conductance, models, status, meteo)
 
-    Cᵢⱼ = get_Cᵢⱼ(Vⱼ, Γˢ, models.status.Cₛ, Rd, models.stomatal_conductance.g0, st_closure)
+    Cᵢⱼ = get_Cᵢⱼ(Vⱼ, Γˢ, status.Cₛ, Rd, models.stomatal_conductance.g0, st_closure)
 
     # Electron-transport-limited rate of CO2 assimilation (RuBP regeneration-limited):
     Wⱼ = Vⱼ * (Cᵢⱼ - Γˢ) / (Cᵢⱼ + 2.0 * Γˢ) # also called Aⱼ
@@ -261,17 +261,17 @@ function photosynthesis!_(::Fvcb, models, meteo, constants=Constants())
         Wⱼ = Vⱼ * (Cᵢⱼ - Γˢ) / (Cᵢⱼ + 2.0 * Γˢ)
     end
 
-    Cᵢᵥ = get_Cᵢᵥ(VcMax, Γˢ, models.status.Cₛ, Rd, models.stomatal_conductance.g0, st_closure, Km)
+    Cᵢᵥ = get_Cᵢᵥ(VcMax, Γˢ, status.Cₛ, Rd, models.stomatal_conductance.g0, st_closure, Km)
 
     # Rubisco-carboxylation-limited rate of CO₂ assimilation (RuBP activity-limited):
-    if Cᵢᵥ <= 0.0 || Cᵢᵥ > models.status.Cₛ
+    if Cᵢᵥ <= 0.0 || Cᵢᵥ > status.Cₛ
         Wᵥ = 0.0
     else
         Wᵥ = VcMax * (Cᵢᵥ - Γˢ) / (Cᵢᵥ + Km)
     end
 
     # Net assimilation (μmol m-2 s-1)
-    models.status.A = min(Wᵥ, Wⱼ, 3 * models.photosynthesis.TPURef) - Rd
+    status.A = min(Wᵥ, Wⱼ, 3 * models.photosynthesis.TPURef) - Rd
 
     # Stomatal conductance (mol[CO₂] m-2 s-1)
     stomatal_conductance!_(models.stomatal_conductance, models, st_closure)
@@ -279,7 +279,7 @@ function photosynthesis!_(::Fvcb, models, meteo, constants=Constants())
     # call the stomatal conductance interactively, use `stomatal_conductance!()` or `stomatal_conductance()` instead.
 
     # Intercellular CO₂ concentration (Cᵢ, μmol mol)
-    models.status.Cᵢ = min(models.status.Cₛ, models.status.Cₛ - models.status.A / models.status.Gₛ)
+    status.Cᵢ = min(status.Cₛ, status.Cₛ - status.A / status.Gₛ)
     nothing
 end
 

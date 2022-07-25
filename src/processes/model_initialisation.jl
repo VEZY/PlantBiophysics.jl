@@ -198,7 +198,7 @@ function vars_not_init_(status::T, default_values) where {T<:Status}
     length(default_values) == 0 && return () # no variables
     not_init = Symbol[]
     for i in keys(default_values)
-        if getproperty(status.vars, i) == default_values[i]
+        if getproperty(status, i) == default_values[i]
             push!(not_init, i)
         end
     end

@@ -50,16 +50,16 @@ stomatal_conductance, stomatal_conductance!
 
 # Gs is used a little bit differently compared to the other processes. We use two forms:
 # the stomatal closure and the full computation of Gs
-function stomatal_conductance!_(Gs::Gsm, models, gs_closure) where {Gsm<:AbstractGsModel}
-    models.status.Gₛ = max(
+function stomatal_conductance!_(Gs::Gsm, models, status, gs_closure) where {Gsm<:AbstractGsModel}
+    status.Gₛ = max(
         models.stomatal_conductance.gs_min,
-        models.stomatal_conductance.g0 + gs_closure * models.status.A
+        models.stomatal_conductance.g0 + gs_closure * status.A
     )
 end
 
-function stomatal_conductance!_(Gs::Gsm, models, meteo::M, constants=Constants()) where {Gsm<:AbstractGsModel,M<:Union{AbstractAtmosphere,Nothing}}
-    models.status.Gₛ = max(
+function stomatal_conductance!_(Gs::Gsm, models, status, meteo::M, constants=Constants()) where {Gsm<:AbstractGsModel,M<:Union{AbstractAtmosphere,Nothing}}
+    status.Gₛ = max(
         models.stomatal_conductance.gs_min,
-        models.stomatal_conductance.g0 + gs_closure(models.stomatal_conductance, models, meteo) * models.status.A
+        models.stomatal_conductance.g0 + gs_closure(models.stomatal_conductance, models, status, meteo) * status.A
     )
 end

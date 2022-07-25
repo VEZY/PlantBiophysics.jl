@@ -29,11 +29,11 @@ using PlantBiophysics
 meteo = Atmosphere(T = 22.0, Wind = 0.8333, P = 101.325, Rh = 0.4490995)
 
 # Using the model from Medlyn et al. (2011) for Gs and the model of Monteith and Unsworth (2013) for the energy balance:
-leaf = LeafModels(
+leaf = ModelList(
     energy_balance = Monteith(),
     photosynthesis = Fvcb(),
     stomatal_conductance = Medlyn(0.03, 12.0),
-    Rₛ = 13.747, sky_fraction = 1.0, PPFD = 1500.0
+    status = (Rₛ = 13.747, sky_fraction = 1.0, PPFD = 1500.0, d = 0.03)
 )
 
 energy_balance!(leaf, meteo)

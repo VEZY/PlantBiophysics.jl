@@ -32,13 +32,11 @@ macro gen_process_methods(f)
 
     expr = quote
 
-        function $(esc(f_))(mod_type, object, meteo=nothing, constants=nothing)
-            process_models = Dict(process => typeof(getfield(object, process)).name.wrapper for process in fieldnames(typeof(object)))
-            pop!(process_models, :status) # status is not a model
+        function $(esc(f_))(mod_type, models, status, meteo=nothing, constants=nothing)
+            process_models = Dict(process => typeof(getfield(models, process)).name.wrapper for process in keys(models))
             error(
-                "No model was found for this combination of process simulation, component models and/or models:",
+                "No model was found for this combination of processes:",
                 "\nProcess simulation: ", $(String(non_mutating_f)),
-                "\nComponent models: ", typeof(object).name.wrapper,
                 "\nModels: ", join(["$(i.first) => $(i.second)" for i in process_models], ", ", " and ")
             )
         end
@@ -47,7 +45,7 @@ macro gen_process_methods(f)
         function $(esc(mutating_f))(object, meteo::AbstractAtmosphere, constants=Constants())
             !is_initialised(object) && error("Some variables must be initialized before simulation")
 
-            $(esc(f_))(object.$(f), object, meteo, constants)
+            $(esc(f_))(object.models.$(f), object.models, object.status, meteo, constants)
             return nothing
         end
 
@@ -97,7 +95,7 @@ macro gen_process_methods(f)
 
             # Computing for each time-steps:
             for (i, meteo_i) in enumerate(meteo.data)
-                $(esc(f_))(object.$(f), copy(object, object[i]), meteo_i, constants)
+                $(esc(f_))(object.models.$(f), object.models, object.status[i], meteo_i, constants)
             end
         end
 
@@ -106,12 +104,12 @@ macro gen_process_methods(f)
         function $(esc(mutating_f))(object, meteo::Nothing=nothing, constants=Constants())
             !is_initialised(object) && error("Some variables must be initialized before simulation (see info message for more details)")
 
-            if typeof(status(object)) == MutableNamedTuples.MutableNamedTuple
-                $(esc(f_))(object, meteo, constants)
+            if status(object) <: Status
+                $(esc(f_))(object.models.$(f), object.models, object.status, meteo, constants)
             else
                 # We have several time-steps here, we pass each time-step after another
                 for i = eachindex(status(object))
-                    $(esc(f_))(object.$(f), copy(object, object[i]), meteo, constants)
+                    $(esc(f_))(object.models.$(f), object.models, object.status[i], meteo, constants)
                 end
             end
         end

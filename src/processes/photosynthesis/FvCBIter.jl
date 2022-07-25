@@ -124,14 +124,14 @@ Leuning, R., F. M. Kelliher, DGG de Pury, et E.D. Schulze. 1995. Leaf nitrogen,
 photosynthesis, conductance and transpiration: scaling from leaves to canopies ». Plant,
 Cell & Environment 18 (10): 1183‑1200.
 """
-function photosynthesis!_(::FvcbIter, models, meteo, constants=Constants())
+function photosynthesis!_(::FvcbIter, models, status, meteo, constants=Constants())
 
     # Start with a probable value for Cₛ and Cᵢ:
-    models.status.Cₛ = meteo.Cₐ
-    models.status.Cᵢ = models.status.Cₛ * 0.75
+    status.Cₛ = meteo.Cₐ
+    status.Cᵢ = status.Cₛ * 0.75
 
     # Tranform Celsius temperatures in Kelvin:
-    Tₖ = models.status.Tₗ - constants.K₀
+    Tₖ = status.Tₗ - constants.K₀
     Tᵣₖ = models.photosynthesis.Tᵣ - constants.K₀
 
     # Temperature dependence of the parameters:
@@ -150,40 +150,40 @@ function photosynthesis!_(::FvcbIter, models, meteo, constants=Constants())
     # cycle, and termed "day" respiration, or "light respiration" (Harley et al., 1986).
 
     # Actual electron transport rate (considering intercepted PAR and leaf temperature):
-    J = get_J(models.status.PPFD, JMax, models.photosynthesis.α, models.photosynthesis.θ) # in μmol m-2 s-1
+    J = get_J(status.PPFD, JMax, models.photosynthesis.α, models.photosynthesis.θ) # in μmol m-2 s-1
     # RuBP regeneration
     Vⱼ = J / 4
 
     # First iteration to initialise the values for A and Gₛ:
     # Net assimilation (μmol m-2 s-1)
-    models.status.A = Fvcb_net_assimiliation(models.status.Cᵢ, Vⱼ, Γˢ, VcMax, Km, Rd)
+    status.A = Fvcb_net_assimiliation(status.Cᵢ, Vⱼ, Γˢ, VcMax, Km, Rd)
 
     iter = true
     iter_inc = 1
 
     while iter
         # Stomatal conductance (mol[CO₂] m-2 s-1)
-        stomatal_conductance!_(models.stomatal_conductance, models, meteo)
+        stomatal_conductance!_(models.stomatal_conductance, models, status, meteo)
         # Surface CO₂ concentration (ppm):
-        models.status.Cₛ = min(meteo.Cₐ, meteo.Cₐ - models.status.A / models.status.Gbc)
+        status.Cₛ = min(meteo.Cₐ, meteo.Cₐ - status.A / status.Gbc)
         # Intercellular CO₂ concentration (ppm):
-        models.status.Cᵢ = min(models.status.Cₛ, models.status.Cₛ - models.status.A / models.status.Gₛ)
+        status.Cᵢ = min(status.Cₛ, status.Cₛ - status.A / status.Gₛ)
 
-        if models.status.Cᵢ <= zero(models.status.Cᵢ)
-            models.status.Cᵢ = 1e-9
+        if status.Cᵢ <= zero(status.Cᵢ)
+            status.Cᵢ = 1e-9
             A_new = -Rd
         else
             # Net assimilation (μmol m-2 s-1):
-            A_new = Fvcb_net_assimiliation(models.status.Cᵢ, Vⱼ, Γˢ, VcMax, Km, Rd)
+            A_new = Fvcb_net_assimiliation(status.Cᵢ, Vⱼ, Γˢ, VcMax, Km, Rd)
         end
 
-        if abs(A_new - models.status.A) / models.status.A <= models.photosynthesis.ΔT_A ||
+        if abs(A_new - status.A) / status.A <= models.photosynthesis.ΔT_A ||
            iter_inc == models.photosynthesis.iter_A_max
 
             iter = false
         end
 
-        models.status.A = A_new
+        status.A = A_new
 
         iter_inc += 1
     end

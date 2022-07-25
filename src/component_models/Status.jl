@@ -17,6 +17,14 @@ struct Status <: AbstractStatus
     vars
 end
 
+function Base.getproperty(status::Status, key::Symbol)
+    getproperty(getfield(status, :vars), key::Symbol)
+end
+
+function Base.setproperty!(status::Status, s::Symbol, x)
+    setproperty!(getfield(status, :vars), s, x)
+end
+
 """
     TimeSteps(vars)
 

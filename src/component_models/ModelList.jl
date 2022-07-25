@@ -49,7 +49,7 @@ leaf = ModelList(
     energy_balance = Monteith(),
     photosynthesis = Fvcb(),
     stomatal_conductance = ConstantGs(0.0, 0.0011),
-    status = (Rₛ = 13.747, sky_fraction = 1.0, d = 0.03)
+    status = (Rₛ = 13.747, sky_fraction = 1.0, d = 0.03, PPFD = 1500)
 )
 ```
 

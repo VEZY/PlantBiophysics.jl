@@ -135,22 +135,22 @@ Lombardozzi, L. D. et al. 2018.« Triose phosphate limitation in photosynthesis 
 reduces leaf photosynthesis and global terrestrial carbon storage ». Environmental Research
 Letters 13.7: 1748-9326. https://doi.org/10.1088/1748-9326/aacf68.
 """
-function photosynthesis!_(::FvcbRaw, models, meteo=nothing, constants=Constants())
+function photosynthesis!_(::FvcbRaw, models, status, meteo=nothing, constants=Constants())
 
-    Tₖ = models.status.Tₗ - constants.K₀
+    Tₖ = status.Tₗ - constants.K₀
     Tᵣₖ = models.photosynthesis.Tᵣ - constants.K₀
     Γˢ = Γ_star(Tₖ, Tᵣₖ, constants.R) # Gamma star (CO2 compensation point) in μmol mol-1
     Km = get_km(Tₖ, Tᵣₖ, models.photosynthesis.O₂, constants.R) # effective Michaelis–Menten coefficient for CO2
     JMax = arrhenius(models.photosynthesis.JMaxRef, models.photosynthesis.Eₐⱼ, Tₖ, Tᵣₖ, models.photosynthesis.Hdⱼ, models.photosynthesis.Δₛⱼ, constants.R)
     VcMax = arrhenius(models.photosynthesis.VcMaxRef, models.photosynthesis.Eₐᵥ, Tₖ, Tᵣₖ, models.photosynthesis.Hdᵥ, models.photosynthesis.Δₛᵥ, constants.R)
     Rd = arrhenius(models.photosynthesis.RdRef, models.photosynthesis.Eₐᵣ, Tₖ, Tᵣₖ, constants.R)
-    J = get_J(models.status.PPFD, JMax, models.photosynthesis.α, models.photosynthesis.θ) # in μmol m-2 s-1
+    J = get_J(status.PPFD, JMax, models.photosynthesis.α, models.photosynthesis.θ) # in μmol m-2 s-1
     Vⱼ = J / 4
-    Wⱼ = Vⱼ * (models.status.Cᵢ - Γˢ) / (models.status.Cᵢ + 2.0 * Γˢ) # also called Aⱼ
-    Wᵥ = VcMax * (models.status.Cᵢ - Γˢ) / (models.status.Cᵢ + Km)
+    Wⱼ = Vⱼ * (status.Cᵢ - Γˢ) / (status.Cᵢ + 2.0 * Γˢ) # also called Aⱼ
+    Wᵥ = VcMax * (status.Cᵢ - Γˢ) / (status.Cᵢ + Km)
     ag = 0.0
-    Wₚ = (models.status.Cᵢ - Γˢ) * 3 * models.photosynthesis.TPURef / (models.status.Cᵢ - (1 .+ 3 * ag) * Γˢ)
-    models.status.A = min(Wᵥ, Wⱼ, Wₚ) - Rd
+    Wₚ = (status.Cᵢ - Γˢ) * 3 * models.photosynthesis.TPURef / (status.Cᵢ - (1 .+ 3 * ag) * Γˢ)
+    status.A = min(Wᵥ, Wⱼ, Wₚ) - Rd
 
-    return models.status.A
+    return status.A
 end

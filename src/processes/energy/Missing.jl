@@ -10,6 +10,6 @@ Method for when energy balance is missing (do nothing).
 - `constants = Constants()`: physical constants. See [`Constants`](@ref) for more details
 
 """
-function energy_balance!_(::Missing, models, meteo::AbstractAtmosphere, constants=Constants())
+function energy_balance!_(::Missing, models, status, meteo::AbstractAtmosphere, constants=Constants())
     nothing
 end

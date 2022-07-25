@@ -139,7 +139,7 @@ transform!(
 )
 
 # Making the simulation:
-energy_balance!(mtg, models, meteo)
+energy_balance!(mtg, models, status, meteo)
 
 # Pull the leaf temperature of the first step:
 transform!(
