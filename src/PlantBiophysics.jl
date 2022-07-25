@@ -22,6 +22,9 @@ import Statistics: mean
 # Abstract structures:
 include("Abstract_model_structs.jl")
 
+# Status
+include("component_models/Status.jl")
+
 # Atmosphere
 include("climate/atmosphere.jl")
 include("climate/weather.jl")
@@ -38,6 +41,7 @@ include("processes/conductances/stomatal/stomatal_conductance.jl")
 include("processes/energy/energy_balance.jl")
 
 # Component models
+include("component_models/ModelList.jl")
 include("component_models/leafmodels.jl")
 include("component_models/componentmodels.jl")
 
@@ -117,6 +121,9 @@ export Constants
 
 # Status
 export init_status!
+
+# ModelList
+export ModelList
 
 # Get models informations
 export variables, variables_typed

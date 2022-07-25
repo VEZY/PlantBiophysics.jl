@@ -84,24 +84,59 @@ function init_status!(component::T; vars...) where {T<:AbstractComponentModel}
 end
 
 """
-    init_variables(models...;types = (Float64,))
+    init_variables(models...)
 
-Intialise model variables based on their instances. The `types` keyword argument is used to
-force a type in the promotion.
+Intialise model variables based on their instances.
 
 # Examples
 
 ```julia
+init_variables(Monteith())
 init_variables(Monteith(), Medlyn(0.03,12.0))
+init_variables(energy = Monteith(), gs = Medlyn(0.03,12.0))
 ```
 """
-function init_variables(models...; types=(Float64,))
-    var_types = promote_type(([i === Any ? Float64 : i for i in eltype.(models)])..., types...)
+function init_variables(model::T) where {T<:AbstractModel}
+    # Only one model is provided:
 
-    vars = variables(models...)
-    vars_MNT = MutableNamedTuple(; zip(vars, [var_types(-999.99) for i in vars])...)
+    in_vars = inputs_(model)
+    out_vars = outputs_(model)
+    # Merge both:
+    vars = merge(in_vars, out_vars)
 
-    return vars_MNT
+    return vars
+end
+
+# Several models are provided:
+function init_variables(models...)
+    mods = (models...,)
+    in_vars = merge(inputs_.(mods)...)
+    out_vars = merge(outputs_.(mods)...)
+    # Merge both:
+    vars = merge(in_vars, out_vars)
+
+    return vars
+end
+
+"""
+    instantiate_status_struct(::Type{MutableNamedTuple}, vars)
+    instantiate_status_struct(::Type{NamedTuple}, vars)
+
+Instantiate a struct with new values for the status of a model in an homogeneous and
+type-stable way.
+"""
+function instantiate_status_struct(::Type{MutableNamedTuple}, vars)
+    MutableNamedTuple{keys(vars)}(values(vars))
+end
+
+function instantiate_status_struct(::Type{NamedTuple}, vars)
+    NamedTuple{keys(vars)}(values(vars))
+end
+
+# Models are provided as keyword arguments:
+function init_variables(; kwargs...)
+    mods = (values(kwargs)...,)
+    init_variables(mods...)
 end
 
 """
@@ -178,24 +213,10 @@ Return an initialisation of the model variables with given values.
 init_variables_manual(Monteith(); Tₗ = 20.0)
 ```
 """
-function init_variables_manual(models...; vars...)
-    new_vals = (; vars...)
-    added_types = (fieldtypes(typeof(new_vals).parameters[2])...,)
-    init_vars = init_variables(models...; types=added_types)
-    for i in keys(new_vals)
-        !in(i, keys(init_vars)) && error("Key $i not found as a variable of any provided models")
-        setproperty!(init_vars, i, new_vals[i])
+function init_variables_manual(status, vars)
+    for i in keys(vars)
+        !in(i, keys(status)) && error("Key $i not found as a variable of the status.")
+        setproperty!(status, i, vars[i])
     end
-    init_vars
-end
-
-function init_variables_manual(models, status)
-    new_vals = (; vars...)
-    added_types = (fieldtypes(typeof(new_vals).parameters[2])...,)
-    init_vars = init_variables(models...; types=added_types)
-    for i in keys(new_vals)
-        !in(i, keys(init_vars)) && error("Key $i not found as a variable of any provided models")
-        setproperty!(init_vars, i, new_vals[i])
-    end
-    init_vars
+    status
 end
