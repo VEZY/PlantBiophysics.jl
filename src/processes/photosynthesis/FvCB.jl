@@ -274,7 +274,7 @@ function photosynthesis!_(::Fvcb, models, status, meteo, constants=Constants())
     status.A = min(Wᵥ, Wⱼ, 3 * models.photosynthesis.TPURef) - Rd
 
     # Stomatal conductance (mol[CO₂] m-2 s-1)
-    stomatal_conductance!_(models.stomatal_conductance, models, st_closure)
+    stomatal_conductance!_(models.stomatal_conductance, models, status, st_closure)
     # NB: `stomatal_conductance!_(` is the function that implements the computation directly. If you want to
     # call the stomatal conductance interactively, use `stomatal_conductance!()` or `stomatal_conductance()` instead.
 
