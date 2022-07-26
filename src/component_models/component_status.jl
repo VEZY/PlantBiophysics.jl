@@ -1,26 +1,30 @@
 """
-    status(component)
-    status(components::AbstractArray{<:AbstractComponentModel})
-    status(components::AbstractDict{T,<:AbstractComponentModel})
+    status(m)
+    status(m::AbstractArray{<:AbstractComponentModel})
+    status(m::AbstractDict{T,<:AbstractComponentModel})
 
-Get a component status, *i.e.* the state of the input (and output) variables.
+Get a ModelList status, *i.e.* the state of the input (and output) variables.
 
 See also [`is_initialised`](@ref) and [`to_initialise`](@ref)
 """
-function status(component)
-    component.status
+function status(m)
+    m.status
 end
 
-function status(components::T) where {T<:AbstractArray{<:AbstractComponentModel}}
-    [i.status for i in components]
+function status(m::T) where {T<:AbstractArray{<:AbstractComponentModel}}
+    [i.status for i in m]
 end
 
-function status(components::T) where {T<:AbstractDict{N,<:AbstractComponentModel} where {N}}
-    Dict([k => v.status for (k, v) in components])
+function status(m::T) where {T<:AbstractDict{N,<:AbstractComponentModel} where {N}}
+    Dict([k => v.status for (k, v) in m])
 end
 
-function status(component, key)
-    get_status_var(component.status, key)
+function status(m, key)
+    get_status_var(m.status, key)
+end
+
+function get_status_var(st::Status, key::Symbol)
+    get_status_var(getfield(st, :vars), key)
 end
 
 function get_status_var(st::MutableNamedTuples.MutableNamedTuple, key::Symbol)
@@ -71,6 +75,6 @@ lm[2][:Tₗ] # Returns the value of Tₗ at the second time-step
 lm[:Tₗ][2] # Equivalent of the above
 ```
 """
-function Base.getindex(component::AbstractComponentModel, key)
+function Base.getindex(component::T, key) where {T<:AbstractComponentModel}
     status(component, key)
 end
