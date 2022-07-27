@@ -9,7 +9,7 @@ file = joinpath(dirname(dirname(pathof(PlantBiophysics))), "test", "inputs", "mo
 
     model = model["Leaf"]
     # @test typeof(model)
-    @test typeof(model) <: LeafModels
+    @test typeof(model) <: ModelList
     @test typeof(model.stomatal_conductance) == Medlyn{Float64}
     @test typeof(model.interception) == Translucent{Float64}
     @test typeof(model.photosynthesis) == Fvcb{Float64}

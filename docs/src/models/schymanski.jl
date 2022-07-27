@@ -52,12 +52,16 @@ weather = Weather(w)
 gs_obs = gsw_to_gsc.(ms_to_mol.(results1_6a.g_sw, results1_6a.T_a .- params["T0"], results1_6a.P_a ./ 1000))
 
 # Just a trick to avoid computing any photosynthesis in our case:
-PlantBiophysics.photosynthesis!_(leaf::LeafModels, meteo, constant) = nothing
+PlantBiophysics.photosynthesis!_(leaf::ModelList, meteo, constant) = nothing
 
-leaf = LeafModels(
+leaf = ModelList(
     energy_balance=Monteith(aₛᵥ=params["a_s"], maxiter=maxiter),
-    Rₛ=results1_6a.Rn_leaf, sky_fraction=2.0, d=results1_6a.L_l,
-    Gₛ=gs_obs
+    status=(
+        Rₛ=results1_6a.Rn_leaf,
+        sky_fraction=2.0,
+        d=results1_6a.L_l,
+        Gₛ=gs_obs
+    )
 )
 
 # NB, we use ConstantAGs and not ConstantA because Monteith calls the photosynthesis,

@@ -21,8 +21,11 @@ Gₛ = Gs.g0 + gs_mod * A
 ```julia
 meteo = Atmosphere(T = 20.0, Wind = 1.0, P = 101.3, Rh = 0.65)
 
-leaf = LeafModels(stomatal_conductance = Medlyn(0.03, 12.0),
-            A = A, Cₛ = 380.0, Dₗ = meteo.VPD)
+leaf =
+    ModelList(
+        stomatal_conductance = Medlyn(0.03, 12.0),
+        status = (A = A, Cₛ = 380.0, Dₗ = meteo.VPD)
+    )
 stomatal_conductance(leaf,meteo)
 ```
 
@@ -60,7 +63,7 @@ Base.eltype(x::Medlyn) = typeof(x).parameters[1]
 
 
 """
-    gs_closure(leaf::LeafModels{I,E,A,<:Medlyn,S},meteo)
+    gs_closure(leaf::ModelList,meteo)
 
 Stomatal closure for CO₂ according to Medlyn et al. (2011). Carefull, this is just a part of
 the computation of the stomatal conductance.
@@ -74,13 +77,16 @@ The result of this function is then used as:
 
 # Arguments
 
-- `leaf::LeafModels{.,.,<:Fvcb,<:Medlyn,.}`: A [`LeafModels`](@ref) struct holding the parameters for
+- `::Medlyn`: a medlyn model, usually the leaf model (*i.e.* leaf.stomatal_conductance)
+- `leaf::ModelList`: A [`ModelList`](@ref) struct holding the parameters for
 the model.
+- `status`: A status, usually the leaf status (*i.e.* leaf.status)
 - `meteo`: meteorology structure, see [`Atmosphere`](@ref). Is not used in this model.
 
 # Details
 
-Use `variables()` on Medlyn to get the variables that must be instantiated in the `LeafModels` struct.
+Use `variables()` on Medlyn to get the variables that must be instantiated in the
+`ModelList` struct.
 
 
 # Notes
@@ -100,8 +106,11 @@ https://doi.org/10.1111/pce.14041
 ```julia
 meteo = Atmosphere(T = 20.0, Wind = 1.0, P = 101.3, Rh = 0.65)
 
-leaf = LeafModels(stomatal_conductance = Medlyn(0.03, 12.0),
-            Cₛ = 380.0, Dₗ = meteo.VPD)
+leaf =
+    ModelList(
+        stomatal_conductance = Medlyn(0.03, 12.0),
+        status = (Cₛ = 380.0, Dₗ = meteo.VPD)
+    )
 
 gs_mod = gs_closure(leaf, meteo)
 
@@ -110,8 +119,11 @@ Gs = leaf.stomatal_conductance.g0 + gs_mod * A
 
 # Or more directly using `stomatal_conductance()`:
 
-leaf = LeafModels(stomatal_conductance = Medlyn(0.03, 12.0),
-            A = A, Cₛ = 380.0, Dₗ = meteo.VPD)
+leaf =
+    ModelList(
+        stomatal_conductance = Medlyn(0.03, 12.0),
+        status = (A = A, Cₛ = 380.0, Dₗ = meteo.VPD)
+    )
 stomatal_conductance(leaf,meteo)
 ```
 

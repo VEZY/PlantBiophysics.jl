@@ -21,7 +21,7 @@ At the moment, two models are implemented in the package:
 
 # Arguments
 
-- `object`: an [`AbstractComponentModel`](@ref) (*e.g.* [`LeafModels`](@ref)), a Dict/Array
+- `object`: an [`AbstractComponentModel`](@ref) (*e.g.* [`ModelList`](@ref)), a Dict/Array
 of, or an MTG.
 - `meteo::Union{AbstractAtmosphere,Weather}`: meteorology structure, see [`Atmosphere`](@ref) or
 [`Weather`](@ref)
@@ -33,7 +33,6 @@ Some models need input values for some variables. For example [`Monteith`](@ref)
 value for `Rₛ`, `d` and `sky_fraction`. If you read the models from a file, you can
 use [`init_status!`](@ref) (see examples).
 
-
 # Examples
 
 ```julia
@@ -43,12 +42,13 @@ meteo = Atmosphere(T = 20.0, Wind = 1.0, P = 101.3, Rh = 0.65)
 
 # Using the model of Monteith and Unsworth (2013) for energy, Farquhar et al. (1980) for
 # photosynthesis, and Medlyn et al. (2011) for stomatal conductance:
-leaf = LeafModels(
-    energy_balance = Monteith(),
-    photosynthesis = Fvcb(),
-    stomatal_conductance = Medlyn(0.03, 12.0),
-    Rₛ = 13.747, sky_fraction = 1.0, PPFD = 1500.0, d = 0.03
-)
+leaf =
+    ModelList(
+        energy_balance = Monteith(),
+        photosynthesis = Fvcb(),
+        stomatal_conductance = Medlyn(0.03, 12.0),
+        status = (Rₛ = 13.747, sky_fraction = 1.0, PPFD = 1500.0, d = 0.03)
+    )
 
 energy_balance(leaf,meteo)
 
@@ -116,11 +116,11 @@ meteo = read_weather(
 # Make the models:
 models = Dict(
     "Leaf" =>
-        LeafModels(
+        ModelList(
             energy_balance = Monteith(),
             photosynthesis = Fvcb(),
             stomatal_conductance = Medlyn(0.03, 12.0),
-            d = 0.03
+            status = (d = 0.03,)
         )
 )
 

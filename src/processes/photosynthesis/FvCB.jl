@@ -116,7 +116,7 @@ end
 Base.eltype(x::Fvcb) = typeof(x).parameters[1]
 
 """
-    photosynthesis!_(leaf::LeafModels{I,E,<:Fvcb,<:AbstractGsModel,S},constants = Constants())
+    photosynthesis!_(::Fvcb, models, status, meteo, constants=Constants())
 
 Coupled photosynthesis and conductance model using the Farquhar–von Caemmerer–Berry (FvCB) model
 for C3 photosynthesis (Farquhar et al., 1980; von Caemmerer and Farquhar, 1981) that models
@@ -164,13 +164,15 @@ Modify the first argument in place for A, Gₛ and Cᵢ:
 
 # Arguments
 
-- `leaf::LeafModels{.,.,<:Fvcb,<:AbstractGsModel,.}`: A [`LeafModels`](@ref) struct holding the parameters for
-the model with initialisations for:
+- `::Fvcb`: the Farquhar–von Caemmerer–Berry (FvCB) model
+- `models`: a [`ModelList`](@ref) struct holding the parameters for the model (or
+`<:AbstractComponentModel`) with initialisations for:
     - `Tₗ` (°C): leaf temperature
     - `PPFD` (μmol m-2 s-1): absorbed Photosynthetic Photon Flux Density
     - `Cₛ` (ppm): surface CO₂ concentration.
     - `Dₗ` (kPa): vapour pressure difference between the surface and the saturated
     air vapour pressure in case you're using the stomatal conductance model of [`Medlyn`](@ref).
+- `status`: A status, usually the leaf status (*i.e.* leaf.status)
 - `meteo`: meteorology structure, see [`Atmosphere`](@ref)
 - `constants = Constants()`: physical constants. See [`Constants`](@ref) for more details
 
@@ -186,9 +188,12 @@ balance of the leaf with the photosynthesis to get those variables. See
 ```julia
 meteo = Atmosphere(T = 20.0, Wind = 1.0, P = 101.3, Rh = 0.65)
 
-leaf = LeafModels(photosynthesis = Fvcb(),
-            stomatal_conductance = Medlyn(0.03, 12.0),
-            Tₗ = 25.0, PPFD = 1000.0, Cₛ = 400.0, Dₗ = meteo.VPD)
+leaf =
+    ModelList(
+        photosynthesis = Fvcb(),
+        stomatal_conductance = Medlyn(0.03, 12.0),
+        status = (Tₗ = 25.0, PPFD = 1000.0, Cₛ = 400.0, Dₗ = meteo.VPD)
+    )
 # NB: we need  to initalise Tₗ, PPFD and Cₛ
 
 photosynthesis!_(leaf,meteo,Constants())

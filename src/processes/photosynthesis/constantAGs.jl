@@ -24,7 +24,7 @@ end
 Base.eltype(x::ConstantAGs) = typeof(x).parameters[1]
 
 """
-    photosynthesis!_(leaf::LeafModels{I,E,<:ConstantAGs,<:AbstractGsModel,S},constants = Constants())
+    photosynthesis!_(::ConstantAGs, models, status, meteo, constants=Constants())
 
 Constant photosynthesis coupled with a stomatal conductance model.
 
@@ -38,10 +38,12 @@ Modify the leaf status in place for A, Gₛ and Cᵢ:
 
 # Arguments
 
-- `leaf::LeafModels{.,.,<:ConstantAGs,<:AbstractGsModel,.}`: A [`LeafModels`](@ref) struct holding the parameters for
-the model with initialisations for:
+- `::ConstantAGs`: a constant assimilation model coupled to a stomatal conductance model
+- `models`: a [`ModelList`](@ref) struct holding the parameters for the model (or
+`<:AbstractComponentModel`) with initialisations for:
     - `Cₛ` (mol m-2 s-1): surface CO₂ concentration.
     - any other value needed by the stomatal conductance model.
+- `status`: A status, usually the leaf status (*i.e.* leaf.status)
 - `meteo`: meteorology structure, see [`Atmosphere`](@ref)
 - `constants = Constants()`: physical constants. See [`Constants`](@ref) for more details
 
@@ -49,10 +51,10 @@ the model with initialisations for:
 
 ```julia
 meteo = Atmosphere(T = 20.0, Wind = 1.0, P = 101.3, Rh = 0.65)
-leaf = LeafModels(
+leaf = ModelList(
     photosynthesis = ConstantAGs(),
     stomatal_conductance = Medlyn(0.03, 12.0),
-    Cₛ = 400.0, Dₗ = 2.0
+    status = (Cₛ = 400.0, Dₗ = 2.0)
 )
 
 photosynthesis!(leaf,meteo,Constants())

@@ -41,7 +41,7 @@ end;
 
 
 
-@testset "energy_balance(LeafModels{.,Monteith{Float64,Int64},Fvcb{Float64},Medlyn{Float64},.})" begin
+@testset "energy_balance!" begin
     # Reference value:
     ref = (
         Rₛ=13.747,
@@ -64,11 +64,11 @@ end;
     )
 
     meteo = Atmosphere(T=20.0, Wind=1.0, P=101.3, Rh=0.65)
-    leaf = LeafModels(
+    leaf = ModelList(
         energy_balance=Monteith(),
         photosynthesis=Fvcb(),
         stomatal_conductance=Medlyn(0.03, 12.0),
-        Rₛ=13.747, sky_fraction=1.0, PPFD=1500.0, d=0.03
+        status=(Rₛ=13.747, sky_fraction=1.0, PPFD=1500.0, d=0.03)
     )
 
     non_mutating = energy_balance(leaf, meteo)
@@ -87,11 +87,11 @@ end;
 
 
 # meteo = Atmosphere(T = 20.0, Wind = 1.0, P = 101.3, Rh = 0.65)
-# leaf = LeafModels(
+# leaf = ModelList(
 #     energy_balance = Monteith(),
 #     photosynthesis = Fvcb(),
 #     stomatal_conductance = Medlyn(0.03, 12.0),
-#     Rₛ = 13.747, sky_fraction = 1.0, PPFD = 1500.0, d = 0.03
+#     status = (Rₛ = 13.747, sky_fraction = 1.0, PPFD = 1500.0, d = 0.03)
 # )
 
 # res = DataFrame(:PPFD => Float64[], :A => Float64[])

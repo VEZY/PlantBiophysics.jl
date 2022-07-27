@@ -7,11 +7,11 @@ photo = Fvcb()
 Gs = Medlyn(0.03, 12.0)
 models = Dict(
     "Leaf" =>
-        LeafModels(
+        ModelList(
             energy_balance=nrj,
             photosynthesis=photo,
             stomatal_conductance=Gs,
-            d=0.03
+            status=(d=0.03,)
         )
 )
 # We can compute them directly inside the MTG from available variables:

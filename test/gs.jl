@@ -10,9 +10,9 @@ Gs = Medlyn(0.03, 12.0, 0.0) # Instance of a Medlyn type with g0 = 0.03 and g1 =
 meteo = Atmosphere(T=28.0, Wind=0.8333, P=101.325, Rh=0.47)
 
 # Defining the leaf struct:
-leaf = LeafModels(
+leaf = ModelList(
     stomatal_conductance=Gs, # Instance of a Medlyn type
-    A=A, Cₛ=Cₛ, Dₗ=meteo.VPD
+    status=(A=A, Cₛ=Cₛ, Dₗ=meteo.VPD)
 )
 
 # Computing the stomatal conductance using the Medlyn et al. (2011) model:

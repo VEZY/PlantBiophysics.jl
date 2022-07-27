@@ -42,12 +42,25 @@ macro gen_process_methods(f)
         end
 
         # Base method that calls the actual algorithms:
-        function $(esc(mutating_f))(object, meteo::AbstractAtmosphere, constants=Constants())
+        function $(esc(mutating_f))(object::ModelList{T,Status}, meteo::AbstractAtmosphere, constants=Constants()) where {T}
             !is_initialised(object) && error("Some variables must be initialized before simulation")
 
             $(esc(f_))(object.models.$(f), object.models, object.status, meteo, constants)
             return nothing
         end
+
+        # Method for a status with several TimeSteps but one meteo only:
+        function $(esc(mutating_f))(object::ModelList{T,TimeSteps}, meteo::AbstractAtmosphere, constants=Constants()) where {T}
+            !is_initialised(object) && error("Some variables must be initialized before simulation")
+
+            for i in status(object)
+                $(esc(f_))(object.models.$(f), object.models, i, meteo, constants)
+            end
+
+            return nothing
+        end
+
+
 
         # Process method over several objects (e.g. all leaves of a plant) in an Array
         function $(esc(mutating_f))(object::O, meteo::AbstractAtmosphere, constants=Constants()) where {O<:AbstractArray}
@@ -79,14 +92,14 @@ macro gen_process_methods(f)
             for obj in object
                 # Computing for each time-step:
                 for (i, meteo_i) in enumerate(meteo.data)
-                    $(mutating_f)(copy(obj, obj[i]), meteo_i, constants)
+                    $(esc(f_))(obj.models.$(f), obj.models, obj[i], meteo_i, constants)
                 end
             end
 
         end
 
         # If we call weather with one component only:
-        function $(esc(mutating_f))(object, meteo::Weather, constants=Constants())
+        function $(esc(mutating_f))(object::T, meteo::Weather, constants=Constants()) where {T<:AbstractComponentModel}
 
             # Check if the meteo data and the status have the same length (or length 1)
             check_status_wheather(object, meteo)

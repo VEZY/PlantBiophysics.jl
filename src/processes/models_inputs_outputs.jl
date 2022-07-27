@@ -27,7 +27,7 @@ function inputs(model::T) where {T<:AbstractModel}
 end
 
 function inputs_(model::AbstractModel)
-    ()
+    NamedTuple()
 end
 
 function inputs(v::T, vars...) where {T<:AbstractModel}
@@ -35,7 +35,7 @@ function inputs(v::T, vars...) where {T<:AbstractModel}
 end
 
 function inputs_(model::Missing)
-    ()
+    NamedTuple()
 end
 
 """
@@ -55,11 +55,11 @@ function outputs(v::T, vars...) where {T<:AbstractModel}
 end
 
 function outputs_(model::AbstractModel)
-    ()
+    NamedTuple()
 end
 
 function outputs_(model::Missing)
-    ()
+    NamedTuple()
 end
 
 

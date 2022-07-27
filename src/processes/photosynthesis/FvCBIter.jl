@@ -57,7 +57,7 @@ end
 Base.eltype(x::FvcbIter) = typeof(x).parameters[1]
 
 """
-    photosynthesis!_(leaf::LeafModels{I,E,<:FvcbIter,<:AbstractGsModel,S}, meteo, constants = Constants())
+    photosynthesis!_(::FvcbIter, models, status, meteo, constants=Constants())
 
 Photosynthesis using the Farquhar–von Caemmerer–Berry (FvCB) model for C3 photosynthesis
  (Farquhar et al., 1980; von Caemmerer and Farquhar, 1981).
@@ -77,13 +77,15 @@ Modify the first argument in place for A, Gₛ and Cᵢ:
 
 # Arguments
 
-- `leaf::LeafModels{.,.,<:FvcbIter,<:AbstractGsModel,.}`: A [`LeafModels`](@ref) struct holding the parameters for
-the model with initialisations for:
+- `::FvcbIter`: Farquhar–von Caemmerer–Berry (FvCB) model with iterative resolution.
+- `models`: a [`ModelList`](@ref) struct holding the parameters for the model (or
+`<:AbstractComponentModel`) with initialisations for:
     - `Tₗ` (°C): leaf temperature
     - `PPFD` (μmol m-2 s-1): absorbed Photosynthetic Photon Flux Density
     - `Gbc` (mol m-2 s-1): boundary conductance for CO₂
     - `Dₗ` (kPa): is the difference between the vapour pressure at the leaf surface and the
     saturated air vapour pressure in case you're using the stomatal conductance model of [`Medlyn`](@ref).
+- `status`: A status, usually the leaf status (*i.e.* leaf.status)
 - `meteo`: meteorology structure, see [`Atmosphere`](@ref)
 - `constants = Constants()`: physical constants. See [`Constants`](@ref) for more details
 
@@ -99,11 +101,12 @@ balance of the leaf with the photosynthesis to get those variables. See
 ```julia
 meteo = Atmosphere(T = 20.0, Wind = 1.0, P = 101.3, Rh = 0.65)
 
-leaf = LeafModels(
-    photosynthesis = FvcbIter(),
-    stomatal_conductance = Medlyn(0.03, 12.0),
-    Tₗ = 25.0, PPFD = 1000.0, Gbc = 0.67, Dₗ = meteo.VPD
-)
+leaf =
+    ModelList(
+        photosynthesis = FvcbIter(),
+        stomatal_conductance = Medlyn(0.03, 12.0),
+        status = (Tₗ = 25.0, PPFD = 1000.0, Gbc = 0.67, Dₗ = meteo.VPD)
+    )
 # NB: we need  to initalise Tₗ, PPFD and Gbc.
 
 photosynthesis!_(leaf,meteo,Constants())

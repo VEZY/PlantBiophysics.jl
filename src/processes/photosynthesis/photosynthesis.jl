@@ -23,7 +23,7 @@ fields of `leaf`. For exemple to use the implementation of the Farquhar–von Ca
 
 # Arguments
 
-- `object`: an [`AbstractComponentModel`](@ref) (*e.g.* [`LeafModels`](@ref)), a Dict/Array
+- `object`: an [`AbstractComponentModel`](@ref) (*e.g.* [`ModelList`](@ref)), a Dict/Array
 of, or an MTG.
 - `meteo::Union{AbstractAtmosphere,Weather}`: meteorology structure, see [`Atmosphere`](@ref) or
 [`Weather`](@ref)
@@ -35,9 +35,12 @@ of, or an MTG.
 meteo = Atmosphere(T = 20.0, Wind = 1.0, P = 101.3, Rh = 0.65)
 
 # Using Fvcb model:
-leaf = LeafModels(photosynthesis = Fvcb(),
-            stomatal_conductance = Medlyn(0.03, 12.0),
-            Tₗ = 25.0, PPFD = 1000.0, Cₛ = 400.0, Dₗ = meteo.VPD)
+leaf =
+    ModelList(
+        photosynthesis = Fvcb(),
+        stomatal_conductance = Medlyn(0.03, 12.0),
+        status = (Tₗ = 25.0, PPFD = 1000.0, Cₛ = 400.0, Dₗ = meteo.VPD)
+    )
 
 photosynthesis(leaf, meteo)
 
@@ -50,8 +53,13 @@ photosynthesis([leaf,leaf2],meteo)
 
 # ---Using several meteo time-steps---
 
-w = Weather([Atmosphere(T = 20.0, Wind = 1.0, P = 101.3, Rh = 0.65),
-             Atmosphere(T = 25.0, Wind = 1.5, P = 101.3, Rh = 0.55)], (site = "Test site,))
+w = Weather(
+        [
+            Atmosphere(T = 20.0, Wind = 1.0, P = 101.3, Rh = 0.65),
+            Atmosphere(T = 25.0, Wind = 1.5, P = 101.3, Rh = 0.55)
+        ],
+        (site = "Test site,)
+    )
 
 photosynthesis(leaf, w)
 

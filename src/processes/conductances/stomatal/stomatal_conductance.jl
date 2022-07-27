@@ -11,10 +11,8 @@ abstract type AbstractGsModel <: AbstractModel end
 @gen_process_methods stomatal_conductance
 
 """
-    stomatal_conductance(leaf::LeafModels{I,E,A,<:AbstractGsModel,S},gs_mod)
-    stomatal_conductance(leaf::LeafModels{I,E,A,<:AbstractGsModel,S},meteo<:AbstractAtmosphere)
-    stomatal_conductance(leaf::LeafModels{I,E,A,<:AbstractGsModel,S},gs_mod)
-    stomatal_conductance(leaf::LeafModels{I,E,A,<:AbstractGsModel,S},meteo<:AbstractAtmosphere)
+    stomatal_conductance(leaf::ModelList,gs_mod)
+    stomatal_conductance(leaf::ModelList,meteo<:AbstractAtmosphere)
 
 Default method to compute the stomatal conductance for CO₂ (mol m-2 s-1), it takes the form:
 
@@ -26,8 +24,10 @@ allowed to go below `leaf.stomatal_conductance.gs_min`.
 
 # Arguments
 
-- `leaf::LeafModels{I,E,A,<:AbstractGsModel,S}`: A leaf struct holding the parameters for the model. See
-[`LeafModels`](@ref), and [`Medlyn`](@ref) or [`ConstantGs`](@ref) for the conductance models.
+- `Gs::Gsm`: a stomatal conductance model, usually the leaf model (*i.e.* leaf.stomatal_conductance)
+- `models::ModelList`: A leaf struct holding the parameters for the model. See
+[`ModelList`](@ref), and [`Medlyn`](@ref) or [`ConstantGs`](@ref) for the conductance models.
+- `status::Status`: A status, usually the leaf status (*i.e.* leaf.status)
 - `gs_mod`: the output from a [`gs_closure`](@ref) implementation (the conductance models
 generally only implement this function)
 - `meteo<:AbstractAtmosphere`: meteo data, see [`Atmosphere`](@ref)
@@ -39,8 +39,11 @@ meteo = Atmosphere(T = 22.0, Wind = 0.8333, P = 101.325, Rh = 0.4490995)
 
 # Using a constant value for Gs:
 
-leaf = LeafModels(stomatal_conductance = Medlyn(0.03,12.0), # Instance of a Medlyn type
-            A = 20.0, Cₛ = 380.0, Dₗ = meteo.VPD)
+leaf =
+    ModelList(
+        stomatal_conductance = Medlyn(0.03,12.0), # Instance of a Medlyn type
+        status = (A = 20.0, Cₛ = 380.0, Dₗ = meteo.VPD)
+    )
 
 # Computing the stomatal conductance using the Medlyn et al. (2011) model:
 stomatal_conductance(leaf,meteo)

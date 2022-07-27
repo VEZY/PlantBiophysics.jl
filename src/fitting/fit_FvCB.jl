@@ -33,9 +33,9 @@ sort!(df, :Cᵢ)
 
 # Re-simulating A using the newly fitted parameters:
 leaf =
-    LeafModels(
+    ModelList(
         photosynthesis = FvcbRaw(VcMaxRef = VcMaxRef, JMaxRef = JMaxRef, RdRef = RdRef, TPURef = TPURef),
-        Tₗ = df.Tₗ, PPFD = df.PPFD, Cᵢ = df.Cᵢ
+        status = (Tₗ = df.Tₗ, PPFD = df.PPFD, Cᵢ = df.Cᵢ)
     )
 photosynthesis!(leaf)
 df_sim = DataFrame(leaf)
@@ -48,11 +48,11 @@ plot(ACi_struct,leg=:bottomright)
 # Adding the windspeed to simulate the boundary-layer conductance (we put a high value):
 df[!, :Wind] .= 10.0
 
-leaf = LeafModels(
+leaf = ModelList(
         photosynthesis = Fvcb(VcMaxRef = VcMaxRef, JMaxRef = JMaxRef, RdRef = RdRef, Tᵣ = 25.0, TPURef = TPURef),
         # stomatal_conductance = ConstantGs(0.0, df[i,:Gₛ]),
         stomatal_conductance = Medlyn(0.03, 12.),
-        Tₗ = df.Tₗ, PPFD = df.PPFD, Cₛ = df.Cₐ, Dₗ = 0.1
+        status = (Tₗ = df.Tₗ, PPFD = df.PPFD, Cₛ = df.Cₐ, Dₗ = 0.1)
     )
 
 w = Weather(select(df, :T, :P, :Rh, :Cₐ, :T => (x -> 10) => :Wind))
@@ -65,16 +65,16 @@ plot(ACi_struct_full,leg=:bottomright)
 # Note that the results differ a bit because there are more variables that are re-simulated (e.g. Cᵢ)
 ```
 """
-function fit(::T, df; Tᵣ = nothing, VcMaxRef = 0.0, JMaxRef = 0.0, RdRef = 0.0, TPURef = 0.0) where {T<:Union{Type{Fvcb},Type{FvcbIter},Type{FvcbRaw}}}
+function fit(::T, df; Tᵣ=nothing, VcMaxRef=0.0, JMaxRef=0.0, RdRef=0.0, TPURef=0.0) where {T<:Union{Type{Fvcb},Type{FvcbIter},Type{FvcbRaw}}}
     if Tᵣ === nothing
         Tᵣ = mean(df.Tₗ)
     end
 
     function model(x, p)
         leaf =
-            LeafModels(
-                photosynthesis = FvcbRaw(VcMaxRef = p[1], JMaxRef = p[2], RdRef = p[3], TPURef = p[4]),
-                Tₗ = x[:, 1], PPFD = x[:, 2], Cᵢ = x[:, 3]
+            ModelList(
+                photosynthesis=FvcbRaw(VcMaxRef=p[1], JMaxRef=p[2], RdRef=p[3], TPURef=p[4]),
+                status=(Tₗ=x[:, 1], PPFD=x[:, 2], Cᵢ=x[:, 3])
             )
         photosynthesis!(leaf)
         DataFrame(leaf).A
@@ -84,7 +84,7 @@ function fit(::T, df; Tᵣ = nothing, VcMaxRef = 0.0, JMaxRef = 0.0, RdRef = 0.0
     # fits = curve_fit(model, df.Cᵢ[ind], df.A[ind], [VcMaxRef, JMaxRef, RdRef, TPURef])
     fits = curve_fit(model, Array(select(df, :Tₗ, :PPFD, :Cᵢ)), df.A, [VcMaxRef, JMaxRef, RdRef, TPURef])
 
-    return (VcMaxRef = fits.param[1], JMaxRef = fits.param[2], RdRef = fits.param[3], TPURef = fits.param[4])
+    return (VcMaxRef=fits.param[1], JMaxRef=fits.param[2], RdRef=fits.param[3], TPURef=fits.param[4])
 end
 
 # Plot recipes for making A/Ci curves:
@@ -109,9 +109,9 @@ ACi(VcMaxRef, JMaxRef, RdRef, A_meas, A_sim, Cᵢ_meas) = ACi(VcMaxRef, JMaxRef,
     xguide --> "Cᵢ (ppm)"
     yguide --> "A (μmol m⁻² s⁻¹)"
 
-    EF_ = round(EF(y, y2), digits = 3)
-    dr_ = round(dr(y, y2), digits = 3)
-    RMSE_ = round(RMSE(y, y2), digits = 3)
+    EF_ = round(EF(y, y2), digits=3)
+    dr_ = round(dr(y, y2), digits=3)
+    RMSE_ = round(RMSE(y, y2), digits=3)
 
     @series begin
         seriestype := :scatter

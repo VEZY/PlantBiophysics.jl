@@ -125,21 +125,21 @@ function homogeneous_type_steps(ref_vars, vars, datatype=MutableNamedTuple)
 end
 
 """
-    Base.copy(l::LeafModels)
-    Base.copy(l::LeafModels, status)
+    Base.copy(l::ModelList)
+    Base.copy(l::ModelList, status)
 
-Copy a [`LeafModels`](@ref), eventually with new values for the status.
+Copy a [`ModelList`](@ref), eventually with new values for the status.
 """
-function Base.copy(l::T) where {T<:ModelList}
+function Base.copy(m::T) where {T<:ModelList}
     ModelList(
-        l.models,
-        deepcopy(l.status)
+        m.models,
+        deepcopy(m.status)
     )
 end
 
-function Base.copy(l::T, status::S) where {T<:ModelList,S<:AbstractStatus}
+function Base.copy(m::T, status::S) where {T<:ModelList,S<:AbstractStatus}
     ModelList(
-        l.models,
+        m.models,
         status
     )
 end

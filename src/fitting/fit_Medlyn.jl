@@ -23,9 +23,9 @@ g0, g1 = fit(Medlyn, df)
 
 # Re-simulating Gₛ using the newly fitted parameters:
 w = Weather(select(df, :T, :P, :Rh, :Cₐ, :VPD, :T => (x -> 10) => :Wind))
-leaf = LeafModels(
+leaf = ModelList(
         stomatal_conductance = Medlyn(g0, g1),
-        A = df.A, Cₛ = df.Cₐ, Dₗ = df.VPD
+        status = (A = df.A, Cₛ = df.Cₐ, Dₗ = df.VPD)
     )
 stomatal_conductance!(leaf, w)
 

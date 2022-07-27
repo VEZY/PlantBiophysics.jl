@@ -44,7 +44,7 @@ end
 Base.eltype(x::Monteith) = typeof(x).parameters[1]
 
 """
-    energy_balance!_(leaf::LeafModels{I,<:Monteith,A,Gs,S},meteo::AbstractAtmosphere,constants = Constants())
+    energy_balance!_(::Monteith, models, status, meteo::AbstractAtmosphere, constants=Constants())
 
 Leaf energy balance according to Monteith and Unsworth (2013), and corrigendum from
 Schymanski et al. (2017). The computation is close to the one from the MAESPA model (Duursma
@@ -53,11 +53,13 @@ the energy balance using the mass flux (~ Rn - λE).
 
 # Arguments
 
-- `leaf::LeafModels{.,<:Monteith,.,.,.}`: A [`LeafModels`](@ref) struct holding the parameters for
-the model with initialisations for:
+- `::Monteith`: a Monteith model, usually the leaf model (*i.e.* leaf.energy_balance)
+- `models`: A [`ModelList`](@ref) struct holding the parameters for the model with
+initialisations for:
     - `Rₛ` (W m-2): net shortwave radiation (PAR + NIR). Often computed from a light interception model
     - `sky_fraction` (0-2): view factor between the object and the sky for both faces (see details).
     - `d` (m): characteristic dimension, *e.g.* leaf width (see eq. 10.9 from Monteith and Unsworth, 2013).
+- `status`: the status of the model, usually the leaf status (*i.e.* leaf.status)
 - `meteo`: meteorology structure, see [`Atmosphere`](@ref)
 - `constants = Constants()`: physical constants. See [`Constants`](@ref) for more details
 
@@ -81,11 +83,11 @@ More information [here](https://docs.julialang.org/en/v1/stdlib/Logging/#Environ
 meteo = Atmosphere(T = 22.0, Wind = 0.8333, P = 101.325, Rh = 0.4490995)
 
 # Using a constant value for Gs:
-leaf = LeafModels(
+leaf = ModelList(
     energy_balance = Monteith(),
     photosynthesis = Fvcb(),
     stomatal_conductance = ConstantGs(0.0, 0.0011),
-    Rₛ = 13.747, sky_fraction = 1.0, d = 0.03
+    status = (Rₛ = 13.747, sky_fraction = 1.0, d = 0.03)
 )
 
 energy_balance!(leaf,meteo)
@@ -93,11 +95,11 @@ leaf.status.Rn
 julia> 12.902547446281233
 
 # Using the model from Medlyn et al. (2011) for Gs:
-leaf = LeafModels(
+leaf = ModelList(
     energy_balance = Monteith(),
     photosynthesis = Fvcb(),
     stomatal_conductance = Medlyn(0.03, 12.0),
-    Rₛ = 13.747, sky_fraction = 1.0, PPFD = 1500.0, d = 0.03
+    status = (Rₛ = 13.747, sky_fraction = 1.0, PPFD = 1500.0, d = 0.03)
 )
 
 energy_balance!(leaf,meteo)

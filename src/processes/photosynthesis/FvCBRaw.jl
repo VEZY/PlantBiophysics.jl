@@ -68,7 +68,7 @@ end
 Base.eltype(x::FvcbRaw) = typeof(x).parameters[1]
 
 """
-    photosynthesis!_(leaf::LeafModels{I,E,<:FvcbRaw,<:AbstractGsModel,S},constants = Constants())
+    photosynthesis!_(::FvcbRaw, models, status, meteo=nothing, constants=Constants())
 
 Direct implementation of the photosynthesis model for C3 photosynthesis from Farquhar–von
 Caemmerer–Berry (Farquhar et al., 1980; von Caemmerer and Farquhar, 1981).
@@ -79,13 +79,15 @@ Modify the first argument in place for A, the carbon assimilation (μmol[CO₂] 
 
 # Arguments
 
-- `leaf::LeafModels{.,.,<:FvcbRaw,<:AbstractGsModel,.}`: A [`LeafModels`](@ref) struct holding the parameters for
-the model with initialisations for:
+- `::FvcbRaw`: the Farquhar–von Caemmerer–Berry (FvCB) model (not coupled)
+- `models`: a [`ModelList`](@ref) struct holding the parameters for the model (or
+`<:AbstractComponentModel`) with initialisations for:
     - `Tₗ` (°C): leaf temperature
     - `PPFD` (μmol m-2 s-1): absorbed Photosynthetic Photon Flux Density
     - `Cₛ` (ppm): surface CO₂ concentration.
     - `Dₗ` (kPa): vapour pressure difference between the surface and the saturated
     air vapour pressure in case you're using the stomatal conductance model of [`Medlyn`](@ref).
+- `status`: A status, usually the leaf status (*i.e.* leaf.status)
 - `constants = Constants()`: physical constants. See [`Constants`](@ref) for more details
 
 # Note
@@ -98,7 +100,7 @@ balance of the leaf with the photosynthesis to get those variables. See
 # Examples
 
 ```julia
-leaf = LeafModels(photosynthesis = FvcbRaw(), Tₗ = 25.0, PPFD = 1000.0, Cᵢ = 400.0)
+leaf = ModelList(photosynthesis = FvcbRaw(), status = (Tₗ = 25.0, PPFD = 1000.0, Cᵢ = 400.0))
 # NB: we need Tₗ, PPFD and Cᵢ as inputs (see [`inputs`](@ref))
 
 photosynthesis!_(leaf)
@@ -106,7 +108,11 @@ leaf.status.A
 leaf.status.Cᵢ
 
 # using several time-steps:
-leaf = LeafModels(photosynthesis = FvcbRaw(), Tₗ = [20., 25.0], PPFD = 1000.0, Cᵢ = [380.,400.0])
+leaf =
+    ModelList(
+        photosynthesis = FvcbRaw(),
+        status = (Tₗ = [20., 25.0], PPFD = 1000.0, Cᵢ = [380.,400.0])
+    )
 # NB: we need Tₗ, PPFD and Cᵢ as inputs (see [`inputs`](@ref))
 
 photosynthesis!_(leaf)

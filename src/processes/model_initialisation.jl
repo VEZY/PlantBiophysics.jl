@@ -17,12 +17,12 @@ output from other models.
 to_initialise(Fvcb(),Medlyn(0.03,12.0))
 
 # Or using a component directly:
-leaf = LeafModels(photosynthesis = Fvcb(), stomatal_conductance = Medlyn(0.03,12.0))
+leaf = ModelList(photosynthesis = Fvcb(), stomatal_conductance = Medlyn(0.03,12.0))
 to_initialise(leaf)
 ```
 """
 function to_initialise(v::T, vars...) where {T<:AbstractModel}
-    setdiff(inputs(v, vars...), outputs(v, vars...))
+    Tuple(setdiff(inputs(v, vars...), outputs(v, vars...)))
 end
 
 function to_initialise(m::T) where {T<:AbstractComponentModel}
@@ -44,7 +44,7 @@ function to_initialise(m::T) where {T<:Dict{String,AbstractComponentModel}}
         end
     end
 
-    return toinit
+    return (; toinit...)
 end
 
 """
@@ -192,7 +192,7 @@ end
 """
     vars_not_init_(st<:Status, var_names)
 
-Get which variable is not initialized in the status struct.
+Get which variable is not properly initialized in the status struct.
 """
 function vars_not_init_(status::T, default_values) where {T<:Status}
     length(default_values) == 0 && return () # no variables
@@ -206,14 +206,17 @@ function vars_not_init_(status::T, default_values) where {T<:Status}
 end
 
 # For components with a status with multiple time-steps:
-function vars_not_init_(st::T, var_names) where {T<:TimeSteps}
-    isnotinit = fill(false, length(var_names))
-    for j in st, i in eachindex(var_names)
-        if getproperty(j, var_names[i]) == -999.99
-            isnotinit[i] = true
+function vars_not_init_(status::T, default_values) where {T<:TimeSteps}
+    length(default_values) == 0 && return () # no variables
+
+    not_init = Set{Symbol}()
+    for st in status, i in eachindex(default_values)
+        if getproperty(st, i) == getproperty(default_values, i)
+            push!(not_init, i)
         end
     end
-    return isnotinit
+
+    return Tuple(not_init)
 end
 
 """

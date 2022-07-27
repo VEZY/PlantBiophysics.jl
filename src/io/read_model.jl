@@ -12,7 +12,8 @@ Read a model file. The model file holds the choice and the parameterization of t
 # Examples
 
 ```julia
-models = read_model("path_to_a_model_file.yaml")
+file = joinpath(dirname(dirname(pathof(PlantBiophysics))), "test", "inputs", "models", "plant_coffee.yml")
+models = read_model(file)
 ```
 """
 function read_model(file)
@@ -25,14 +26,10 @@ function read_model(file)
     components = Dict{String,AbstractComponentModel}()
 
     for (i, j) in model["Type"]
-        # i = "Leaf"
-        # j = model["Type"][i]
-
+        # i = "Leaf";j = model["Type"][i]
         processes = OrderedDict{Symbol,Union{Missing,AbstractModel}}()
         for (k, l) in j
-            # k = "Interception"
-            # l = j[k]
-
+            # k = "Interception"; l = j[k]
             process = get_process(k)
             if !ismissing(process)
                 # Checking if there are several models or just one given without the "use" keyword:
@@ -59,68 +56,12 @@ function read_model(file)
         end
 
         sort!(processes)
-        processes = (; processes...)
 
-        # Get the component type based on the models used (*e.g.*, if photosynthetic, use `LeafModels`):
-        componenttype = get_component_type(processes...)
-
-        push!(components, i => componenttype(; processes...))
+        push!(components, i => ModelList(; processes...))
     end
 
     return components
 end
-
-"""
-    get_component_type(processes)
-
-Return the component type (the actual struct) given the processes passed as a named Tuple.
-It is considered a `LeafModels` if it presents models for `photosynthesis` and
-`stomatal_conductance`, and optionally for `interception` and `energy_balance`.
-"""
-function get_component_type(::E, ::I, ::A, ::Gs) where {E<:AbstractEnergyModel,
-    I<:AbstractInterceptionModel,A<:AbstractAModel,Gs<:AbstractGsModel}
-
-    return LeafModels
-end
-
-function get_component_type(::E, ::A, ::Gs) where {E<:AbstractEnergyModel,
-    I<:AbstractInterceptionModel,A<:AbstractAModel,Gs<:AbstractGsModel}
-
-    return LeafModels
-end
-
-function get_component_type(::I, ::A, ::Gs) where {I<:AbstractInterceptionModel,A<:AbstractAModel,Gs<:AbstractGsModel}
-
-    return LeafModels
-end
-
-function get_component_type(::A, ::Gs) where {A<:AbstractAModel,Gs<:AbstractGsModel}
-
-    return LeafModels
-end
-
-"""
-    get_component_type(processes)
-
-Return the component type (the actual struct) given the processes passed as a named Tuple.
-
-It is considered a `ComponentModels` if it presents models for `interception` and `energy_balance` only.
-"""
-function get_component_type(::I, ::E) where {I<:AbstractInterceptionModel,E<:AbstractEnergyModel}
-
-    return ComponentModels
-end
-
-function get_component_type(::I) where {I<:AbstractInterceptionModel}
-
-    return ComponentModels
-end
-
-# Default get_component_type if no component match the models inputed:
-function get_component_type(processes...)
-    error("Can't find any component type to hold models: $processes")
-end
-
 
 """
     get_process(x)

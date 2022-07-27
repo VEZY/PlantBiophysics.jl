@@ -26,7 +26,7 @@ end
 Base.eltype(x::ConstantA) = typeof(x).parameters[1]
 
 """
-    photosynthesis!_(leaf::LeafModels{I,E,<:ConstantA,<:AbstractGsModel,S},constants = Constants())
+    photosynthesis!_(::ConstantA; models, status, meteo, constants=Constants())
 
 Constant photosynthesis (forcing the value).
 
@@ -38,8 +38,9 @@ Modify the leaf status in place for A with a constant value:
 
 # Arguments
 
-- `leaf::LeafModels{.,.,<:ConstantA,.,.}`: A [`LeafModels`](@ref) struct holding the parameters for
-the model.
+- `::ConstantA`: a constant assimilation model
+- `models`: a [`ModelList`](@ref) struct holding the parameters for the model (or <:AbstractComponentModel).
+- `status`: A status, usually the leaf status (*i.e.* leaf.status)
 - `meteo`: meteorology structure, see [`Atmosphere`](@ref)
 - `constants = Constants()`: physical constants. See [`Constants`](@ref) for more details
 
@@ -47,7 +48,7 @@ the model.
 
 ```julia
 meteo = Atmosphere(T = 20.0, Wind = 1.0, P = 101.3, Rh = 0.65)
-leaf = LeafModels(photosynthesis = ConstantA(26.0))
+leaf = ModelList(photosynthesis = ConstantA(26.0))
 
 photosynthesis!_(leaf,meteo,Constants())
 

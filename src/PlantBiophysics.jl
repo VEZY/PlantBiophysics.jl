@@ -14,6 +14,9 @@ import DataFrames.DataFrame # For convenience transformations
 import DataFrames: Not, rename!, select!, select, dropmissing!, sort!, transform!
 import Base.show
 import Base.getindex
+import Base.length
+import Base.iterate
+import Base.keys
 import Impute.locf # For filling missing values in comments in Walz to identify curves
 import LsqFit: curve_fit
 using RecipesBase
@@ -24,32 +27,28 @@ include("Abstract_model_structs.jl")
 
 # Status
 include("component_models/Status.jl")
+include("component_models/get_status.jl")
 
 # Atmosphere
 include("climate/atmosphere.jl")
 include("climate/weather.jl")
+
+# Component models
+include("component_models/ModelList.jl")
 
 # Automatic process methods generation:
 include("processes/process_methods_generation.jl")
 include("processes/models_inputs_outputs.jl")
 include("processes/model_initialisation.jl")
 
+# Copy component models
+include("component_models/copy.jl")
+
 # Generic process methods
 include("processes/light_interception/generic_structs.jl")
 include("processes/photosynthesis/photosynthesis.jl")
 include("processes/conductances/stomatal/stomatal_conductance.jl")
 include("processes/energy/energy_balance.jl")
-
-# Component models
-include("component_models/ModelList.jl")
-include("component_models/leafmodels.jl")
-include("component_models/componentmodels.jl")
-
-# Component status
-include("component_models/component_status.jl")
-
-# Copy component models
-include("component_models/copy.jl")
 
 # Physical constants:
 include("constants.jl")
@@ -204,7 +203,6 @@ export AbstractModel
 
 # Components (structures that hold models)
 export AbstractComponentModel
-export LeafModels, ComponentModels
 
 # Parameters optimization
 export fit

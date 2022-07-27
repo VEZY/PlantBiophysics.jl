@@ -29,11 +29,11 @@ mtg = read_opf(file)
 # Declare our models:
 models = Dict(
     "Leaf" =>
-        LeafModels(
+        ModelList(
             energy_balance = Monteith(),
             photosynthesis = Fvcb(),
             stomatal_conductance = Medlyn(0.03, 12.0),
-            d = 0.03
+            status = (d = 0.03,)
         )
 )
 
@@ -86,6 +86,7 @@ function init_mtg_models!(
         # node = get_node(mtg, 2070)
         MultiScaleTreeGraph.traverse!(mtg) do node
             # If the component has models associated to it
+            # node = get_node(mtg, 816)
             if haskey(models, node.MTG.symbol)
                 # If the component needs further initialisations
                 if haskey(to_init, node.MTG.symbol)
@@ -96,16 +97,9 @@ function init_mtg_models!(
                     )
 
                     if length(attr_not_found) == 0
-                        # If not, initialise the LeafModels using attributes
+                        # If not, initialise the ModelList using attributes
                         @info "Initialising $(to_init[node.MTG.symbol]) using node attributes" maxlog = 1
                         model_node = models[node.MTG.symbol]
-                        comp_type = typeof(model_node)
-
-                        fieldnames_no_status = setdiff(fieldnames(comp_type), (:status,))
-
-                        node_models = [getfield(model_node, x) for x in fieldnames_no_status]
-                        component_constructor = getfield(parentmodule(comp_type), nameof(comp_type))
-                        # component_constructor can also be constructed using `comp_type.name.wrapper`
 
                         # New status with previous initialisations + the ones from attributes:
                         st = merge(
@@ -114,11 +108,16 @@ function init_mtg_models!(
                         )
                         #! merge keeps the attributes of the last collection. If this behavior
                         #! changes in future Julia versions, use `mergewith` instead.
+                        node_model = deepcopy(models[node.MTG.symbol])
 
-                        node[attr_name_sym] = component_constructor(;
-                            zip(fieldnames_no_status, node_models)...,
-                            st...
-                        )
+                        node[attr_name_sym] =
+                            ModelList(
+                                node_model.models,
+                                init_variables_manual(
+                                    node_model.status,
+                                    NamedTuple(j => get_attr_i(node, j, i) for j in to_init[node.MTG.symbol])
+                                )
+                            )
                         # NB: component_constructor is the generic component type, without
                         # parametrization, e.g. LeafModels instead of
                         # LeafModels{Translucent{Float64}, Monteith{Float64, Int64}...}
