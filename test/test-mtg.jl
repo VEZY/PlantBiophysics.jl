@@ -27,9 +27,9 @@ transform!(
     init_mtg_models!(mtg, models)
 
     leaf_node = get_node(mtg, 818)
-    @test leaf_node[:models].photosynthesis === photo
-    @test leaf_node[:models].energy_balance === nrj
-    @test leaf_node[:models].stomatal_conductance === Gs
+    @test leaf_node[:models].models.photosynthesis === photo
+    @test leaf_node[:models].models.energy_balance === nrj
+    @test leaf_node[:models].models.stomatal_conductance === Gs
     @test status(leaf_node[:models], :Rₛ) == leaf_node[:Rₛ]
     @test status(leaf_node[:models], :PPFD) == leaf_node[:Ra_PAR_f] * 4.57
     @test status(leaf_node[:models], :d) == 0.03
@@ -58,6 +58,7 @@ end
 
     # Now it is:
     pull_status!(leaf1)
+
     @test leaf1[:A] == leaf1[:models][:A]
 
     # Checks if we can pull only some variables:

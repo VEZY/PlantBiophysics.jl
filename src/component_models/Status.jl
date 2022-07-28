@@ -34,6 +34,11 @@ function Base.getindex(status::Status, index::T) where {T<:Integer}
     status
 end
 
+# Indexing with a Symbol extracts the variable (same as getproperty):
+function Base.getindex(status::Status, index::Symbol)
+    getproperty(status, index)
+end
+
 function Base.keys(status::Status)
     keys(getfield(status, :vars))
 end
@@ -81,6 +86,11 @@ end
 # Indexing a TimeSteps with an integer returns the ith time-step.
 function Base.getindex(status::TimeSteps, index::T) where {T<:Integer}
     getfield(status, :ts)[index]
+end
+
+# Indexing with a Symbol extracts the variable (same as getproperty):
+function Base.getindex(status::TimeSteps, index::Symbol)
+    getproperty(status, index)
 end
 
 function Base.length(A::TimeSteps)
