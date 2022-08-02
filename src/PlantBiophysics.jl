@@ -122,6 +122,7 @@ export Constants
 
 # Status
 export init_status!
+export Status, TimeSteps
 
 # ModelList
 export ModelList

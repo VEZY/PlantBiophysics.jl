@@ -7,11 +7,30 @@ abstract type AbstractStatus end
 """
     Status(vars)
 
-Status type used to store the values of the variables during simulation.
+Status type used to store the values of the variables during simulation. It is mainly used
+as the structure to store the variables in the status field of a [`ModelList`](@ref).
 
-Fields:
+# See also
 
-- `vars`: the named variables (e.g. NamedTuple, MutableNamedTuple...)
+[`TimeSteps`](@ref) for several time steps.
+
+# Examples
+
+```julia
+# A leaf with one value for all variables will make a status with one time step:
+leaf = ModelList(
+    photosynthesis = Fvcb(),
+    stomatal_conductance = Medlyn(0.03, 12.0),
+    status=(Tₗ=25.0, PPFD=1000.0, Cₛ=400.0, Dₗ=1.0)
+)
+
+# Indexing the model list with a symbol will return the value of the variable:
+leaf[:Tₗ]
+
+# Indexing the model list with an integer will always return the first time step, as there
+is only one, and because we want a similar interface with TimeSteps:
+leaf[1]
+```
 """
 struct Status <: AbstractStatus
     vars
@@ -57,12 +76,33 @@ Base.iterate(status::Status, i=1) = i > 1 ? nothing : (getfield(status, :vars), 
 """
     TimeSteps(vars)
 
-TimeSteps is the same than [`Status`](@ref) but for simulation with several time steps.
+TimeSteps is the same than [`Status`](@ref) but for simulation with several time steps. It
+is used to store the values of the variables during a simulation, and is mainly used as the
+structure in the status field of the [`ModelList`](@ref) type.
 
-Fields:
+# Examples
 
-- `ts`: the time steps (e.g. NamedTuple, MutableNamedTuple...)
+```julia
+# A leaf with several values for at least one of its variable will make a status with
+# several time steps:
+leaf = ModelList(
+    photosynthesis = Fvcb(),
+    stomatal_conductance = Medlyn(0.03, 12.0),
+    status=(Tₗ=[25.0, 26.0], PPFD=1000.0, Cₛ=400.0, Dₗ=1.0)
+)
 
+# Indexing the model list with an integer will return the first time step:
+leaf[1]
+
+# Indexing the model list with a symbol will return the variable with all time steps:
+leaf[:Tₗ]
+
+# If you need the value for one variable at one time step, prefer using this (5x faster):
+leaf[1].Tₗ
+
+# Rather than this (5x slower):
+leaf[:Tₗ][1]
+```
 """
 struct TimeSteps <: AbstractStatus
     ts
