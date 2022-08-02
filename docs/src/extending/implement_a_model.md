@@ -116,17 +116,17 @@ So if you want to implement a new photosynthesis model, you have to make your ow
 
 So in practice, the `stomatal_conductance!_` implementation is rather generic and will not be modified by developers. They will rather implement their method for `gs_closure`, that will be used automatically by `stomatal_conductance!_`.
 
-So let's do it! Here is our own implementation of the stomatal closure for a `LeafModels` component models:
+So let's do it! Here is our own implementation of the stomatal closure for a `ModelList` component models:
 
 ```julia
-function gs_closure(leaf::LeafModels{I,E,A,<:BandB,S},meteo) where {I,E,A,S}
+function gs_closure(leaf::ModelList{I,E,A,<:BandB,S},meteo) where {I,E,A,S}
     leaf.stomatal_conductance.g1 * meteo.Rh / leaf.status.Cₛ
 end
 ```
 
-There is an important bit of code to understand here: `leaf::LeafModels{I,E,A,<:BandB,S}`. The right-hand side of the `::` means that the `leaf` argument must be of `LeafModels` type, with any parameterized models for all processes, except for the stomatal conductance that must be of `BandB` type (or subtype).
+There is an important bit of code to understand here: `leaf::ModelList{I,E,A,<:BandB,S}`. The right-hand side of the `::` means that the `leaf` argument must be of `ModelList` type, with any parameterized models for all processes, except for the stomatal conductance that must be of `BandB` type (or subtype).
 
-This is important because it restricts the use of your model to one component only. But this is the right solution because component models such as `LeafModels` should implement their own models. And if a model is generic to all types of component models, not just `LeafModels`, then you must define it for each (or define a function that is called by each).
+This is important because it restricts the use of your model to one component only. But this is the right solution because component models such as `ModelList` should implement their own models. And if a model is generic to all types of component models, not just `ModelList`, then you must define it for each (or define a function that is called by each).
 
 A second important thing to note is that our variables are stored in different structures:
 
@@ -230,7 +230,7 @@ When the user calls the `photosynthesis` function, or its mutating version `phot
 Then, it calls the internal function [`photosynthesis!_`](@ref) that will dispatch the computation to the method implementing it for the given type of component models and model. This method looks like this:
 
 ```julia
-function photosynthesis!_(leaf::LeafModels{I,E,<:Fvcb,<:AbstractGsModel,S}, meteo, constants = Constants()) where {I,E,S}
+function photosynthesis!_(leaf::ModelList{I,E,<:Fvcb,<:AbstractGsModel,S}, meteo, constants = Constants()) where {I,E,S}
 
     [...]
 
@@ -239,28 +239,28 @@ end
 
 Where `[...]` represent the lines of code implementing the model (not shown here).
 
-The interesting bit is in the function declaration at the top. This is where all the magic happens. The first argument is called `leaf`, and is an instance of a [`LeafModels`](@ref) with a photosynthesis type that is a (sub-)type of `Fvcb`: `LeafModels{I,E,<:Fvcb,<:AbstractGsModel,S}`. We also note that this particular implementation needs a model for the stomatal conductance (this is the `<:AbstractGsModel` bit).
+The interesting bit is in the function declaration at the top. This is where all the magic happens. The first argument is called `leaf`, and is an instance of a [`ModelList`](@ref) with a photosynthesis type that is a (sub-)type of `Fvcb`: `ModelList{I,E,<:Fvcb,<:AbstractGsModel,S}`. We also note that this particular implementation needs a model for the stomatal conductance (this is the `<:AbstractGsModel` bit).
 
-Now if we look again at what are the fields of a [`LeafModels`](@ref):
+Now if we look again at what are the fields of a [`ModelList`](@ref):
 
 ```@example usepkg
-fieldnames(LeafModels)
+fieldnames(ModelList)
 ```
 
 we see that it holds all models used to simulate the processes of a leaf. So if we want to simulate the photosynthesis with the `Fvcb` model, our leaf would have an instance of the [`Fvcb`](@ref) structure in its `photosynthesis` field, like so:
 
 ```@example usepkg
-leaf = LeafModels(photosynthesis = Fvcb());
+leaf = ModelList(photosynthesis = Fvcb());
 leaf.photosynthesis
 ```
 
-The `photosynthesis` field is the third one in a [`LeafModels`](@ref). So what our function definition says with this:
+The `photosynthesis` field is the third one in a [`ModelList`](@ref). So what our function definition says with this:
 
 ```julia
-leaf::LeafModels{I,E,<:Fvcb,<:AbstractGsModel,S}
+leaf::ModelList{I,E,<:Fvcb,<:AbstractGsModel,S}
 ```
 
-...is simply that the leaf argument must be a [`LeafModels`](@ref) with its third field being of type [`Fvcb`](@ref). This seems perfectly right because what we are talking about here is a function that implements the [`Fvcb`](@ref) model for a `LeafModels`. Note again that the fourth field must be a subtype of [`AbstractGsModel`](@ref), hence a stomatal conductance model must be provided (whatever the model). This is because the `Fvcb` model couples the assimilation with the stomatal conductance, so we need to simulate the stomatal conductance too for the computation of the assimilation (this is made inside the function).
+...is simply that the leaf argument must be a [`ModelList`](@ref) with its third field being of type [`Fvcb`](@ref). This seems perfectly right because what we are talking about here is a function that implements the [`Fvcb`](@ref) model for a `ModelList`. Note again that the fourth field must be a subtype of [`AbstractGsModel`](@ref), hence a stomatal conductance model must be provided (whatever the model). This is because the `Fvcb` model couples the assimilation with the stomatal conductance, so we need to simulate the stomatal conductance too for the computation of the assimilation (this is made inside the function).
 
 Then we also have `I`, `E`, and `S` that are defined as `where {I,E,S}`. This means we expect something here, but we don't put any constraint on what it is. This is because we don't need explicitly a model for these processes (I: light interception, E: energy balance, S: status) to simulate the photosynthesis as soon as we have the values of some required input variables.
 
@@ -293,7 +293,7 @@ end
 Base.eltype(x::OurModel) = typeof(x).parameters[1]
 
 # Implement the photosynthesis model:
-function photosynthesis!_(leaf::LeafModels{I,E,<:OurModel,<:AbstractGsModel,S}, meteo, constants = Constants()) where {I,E,S}
+function photosynthesis!_(leaf::ModelList{I,E,<:OurModel,<:AbstractGsModel,S}, meteo, constants = Constants()) where {I,E,S}
 
     leaf.status.A =
         leaf.status.Cₛ / leaf.photosynthesis.a +
@@ -314,7 +314,7 @@ We have a new model for photosynthesis that is coupled with the stomatal conduct
 !!! note
     Notice that we compute the stomatal conductance directly using the internal function `stomatal_conductance!_`. We do this for speed, because the generic function `stomatal_conductance!` does some checks on its inputs every time it is called, while `stomatal_conductance!_` only does the computation. We don't need the extra checks because they are already made when calling `photosynthesis!`.
 
-Lastly, we note that the implementations of the models are linked to a given component models structure, here `LeafModels`. Some models -like a light interception model- are generic enough to be used for any components though. In this case we recommend to put the algorithm into a function that will be called by the generic function for each component.
+Lastly, we note that the implementations of the models are linked to a given component models structure, here `ModelList`. Some models -like a light interception model- are generic enough to be used for any components though. In this case we recommend to put the algorithm into a function that will be called by the generic function for each component.
 
 For exemple we could define the following dummy interception structure:
 
@@ -351,7 +351,7 @@ end
 So what's the procedure to implement it for all component models? Well, we call this function from all implementations, *e.g.*:
 
 ```julia
-function light_interception!_(leaf::LeafModels{<:DummyInterception,E,A,Gs,S}, meteo::AbstractAtmosphere, constants = Constants()) where {E,A,Gs,S}
+function light_interception!_(leaf::ModelList{<:DummyInterception,E,A,Gs,S}, meteo::AbstractAtmosphere, constants = Constants()) where {E,A,Gs,S}
     dummy_interception(leaf, meteo)
 end
 

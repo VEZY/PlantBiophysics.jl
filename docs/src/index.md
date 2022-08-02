@@ -67,7 +67,7 @@ example application to [CO2] × drought interactions ». Geoscientific Model De
 Farquhar, G. D., S. von von Caemmerer, et J. A. Berry. 1980. « A biochemical model of
 photosynthetic CO2 assimilation in leaves of C3 species ». Planta 149 (1): 78‑90.
 
-Leuning, R., F. M. Kelliher, DGG de Pury, et E.-D. SCHULZE. 1995. « LeafModels nitrogen,
+Leuning, R., F. M. Kelliher, DGG de Pury, et E.-D. SCHULZE. 1995. « Leaf nitrogen,
 photosynthesis, conductance and transpiration: scaling from leaves to canopies ». Plant,
 Cell & Environment 18 (10): 1183‑1200.
 

@@ -30,14 +30,14 @@ PlantBiophysics doesn't implement components *per se*, because it is more the jo
 
 Components models are structures that define which models are used to simulate the biophysical processes of a component.
 
-PlantBiophysics provides the [`LeafModels`](@ref) and the more generic [`ComponentModels`](@ref) component models. The first one is designed to represent a photosynthetic organ such as a leaf, and the second for a more generic organ such as wood for example.
+PlantBiophysics provides the [`ModelList`](@ref) and the more generic [`ComponentModels`](@ref) component models. The first one is designed to represent a photosynthetic organ such as a leaf, and the second for a more generic organ such as wood for example.
 
 !!! tip
     These are provided as defaults, but you can easily define your own component models if you want, and then implement the models for each of its processes. See the [Implement a new component models](@ref) section for more details.
 
 ### Processes
 
-A process in this package defines a biological or a physical phenomena associated to a component. For example [`LeafModels`](@ref) implements four processes:
+A process in this package defines a biological or a physical phenomena associated to a component. For example [`ModelList`](@ref) implements four processes:
 
 - radiation interception
 - energy balance
@@ -47,7 +47,7 @@ A process in this package defines a biological or a physical phenomena associate
 We can list the processes of a component models structure using `fieldnames`:
 
 ```@example usepkg
-fieldnames(LeafModels)
+fieldnames(ModelList)
 ```
 
 We can see there is a fifth field along the processes called `:status`. This one is mandatory for all component models, and is used to initialise the simulated variables and keep track of their values during the simulation.
@@ -68,14 +68,14 @@ Each model is implemented using a structure that lists the parameters of the mod
 
 To simulate a process for a component models we need to parameterize it with a given model.
 
-Let's instantiate a [`LeafModels`](@ref) with the model of Farquhar et al. (1980) for the photosynthesis and the model of Medlyn et al. (2011) for the stomatal conductance. The corresponding structures are `Fvcb()` and `Medlyn()` respectively.
+Let's instantiate a [`ModelList`](@ref) with the model of Farquhar et al. (1980) for the photosynthesis and the model of Medlyn et al. (2011) for the stomatal conductance. The corresponding structures are `Fvcb()` and `Medlyn()` respectively.
 
 ```@example usepkg
-LeafModels(photosynthesis = Fvcb(), stomatal_conductance = Medlyn(0.03, 12.0))
+ModelList(photosynthesis = Fvcb(), stomatal_conductance = Medlyn(0.03, 12.0))
 ```
 
 !!! tip
-    We see that we only instantiated the [`LeafModels`](@ref) for the photosynthesis and stomatal conductance processes. What about the radiation interception and the energy balance? Well there is no need to give models if we have no intention to simulate them. In this case they are defines as `missing` by default.
+    We see that we only instantiated the [`ModelList`](@ref) for the photosynthesis and stomatal conductance processes. What about the radiation interception and the energy balance? Well there is no need to give models if we have no intention to simulate them. In this case they are defines as `missing` by default.
 
 OK so what happened here? We provided an instance of models to the processes. But why Fvcb has no parameters and Medlyn has two? Well, models usually provide default values for their parameter. We can see that the `Fvcb` model as actually a lot of parameters:
 
@@ -112,7 +112,7 @@ to_initialise(Fvcb(),Medlyn(0.03, 12.0))
 Or directly on a component model after instantiation:
 
 ```@example usepkg
-leaf = LeafModels(
+leaf = ModelList(
     photosynthesis = Fvcb(),
     stomatal_conductance = Medlyn(0.03, 12.0)
 )
@@ -141,7 +141,7 @@ is_initialised(leaf)
 The most straightforward way of initialising a component models is by giving the initialisations as keyword arguments directly during instantiation:
 
 ```@example usepkg
-LeafModels(
+ModelList(
     photosynthesis = Fvcb(),
     stomatal_conductance = Medlyn(0.03, 12.0),
     Tₗ = 25.0, PPFD = 1000.0, Cₛ = 400.0, Dₗ = 0.82
@@ -180,7 +180,7 @@ For example we can simulate the [`photosynthesis`](@ref) like so:
 ```@example usepkg
 meteo = Atmosphere(T = 20.0, Wind = 1.0, P = 101.3, Rh = 0.65)
 
-leaf = LeafModels(
+leaf = ModelList(
     photosynthesis = Fvcb(),
     stomatal_conductance = Medlyn(0.03, 12.0),
     Tₗ = 25.0, PPFD = 1000.0, Cₛ = 400.0, Dₗ = meteo.VPD
@@ -220,7 +220,7 @@ More details are available from the [dedicated section](@ref microclimate_page).
 
 ### Outputs
 
-The `status` field of a component model (*e.g.* [`LeafModels`](@ref)) is used to keep track of the variables values during the simulation. We can extract the simulation outputs of a component models using [`status`](@ref).
+The `status` field of a component model (*e.g.* [`ModelList`](@ref)) is used to keep track of the variables values during the simulation. We can extract the simulation outputs of a component models using [`status`](@ref).
 
 !!! note
     Getting the status is only useful when using the mutating version of the function (*e.g.* [`energy_balance!`](@ref)), as the non-mutating version returns the output directly.

@@ -26,10 +26,10 @@ makedocs(;
         "Design" => "./concepts/package_design.md",
         "Variables" => "variables.md",
         "Components and methods" => [
-            "LeafModels" => "./components/leafmodels.md",
+            "ModelsList" => "./components/leafmodels.md",
             "ComponentModels" => "./components/componentmodels.md",
         ],
-        "Models for LeafModels" => [
+        "Models for ModelsList" => [
             "Photosynthesis" => "./models/photosynthesis.md",
             "Stomatal conductance" => "./models/gs.md",
             "Energy balance" => "./models/energy_balance.md",

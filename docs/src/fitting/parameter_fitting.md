@@ -45,7 +45,7 @@ Now let's re-simulate the assimilation with our optimised parameter values:
 
 ```@example usepkg
 leaf =
-    LeafModels(
+    ModelList(
         photosynthesis = FvcbRaw(VcMaxRef = VcMaxRef, JMaxRef = JMaxRef, RdRef = RdRef, TPURef = TPURef),
         Tₗ = df.Tₗ, PPFD = df.PPFD, Cᵢ = df.Cᵢ
     )
@@ -65,7 +65,7 @@ Our simulation fits very closely the observations, nice!
 There are another implementation of the FvCB model in our package. One that couples the photosynthesis with the stomatal conductance. And this one computes Cᵢ too. Let's check if it works with this one too by using dummy parameter values for the conductance model:
 
 ```@example usepkg
-leaf = LeafModels(
+leaf = ModelList(
         photosynthesis = Fvcb(VcMaxRef = VcMaxRef, JMaxRef = JMaxRef, RdRef = RdRef, Tᵣ = 25.0, TPURef = TPURef),
         stomatal_conductance = Medlyn(0.03, 12.),
         Tₗ = df.Tₗ, PPFD = df.PPFD, Cₛ = df.Cₐ, Dₗ = 0.1

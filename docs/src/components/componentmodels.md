@@ -1,7 +1,7 @@
 # ComponentModels
 
 [`ComponentModels`](@ref) is a structure used to list the processes and associated models for
-generic non-photosynthetic components. It can be any kind of component such as wood, spikelet, soil, rock, or even structures such as nets, floor, wall, roof... The name `LeafModels` was chosen not because it is generic, but because it is short, simple and self-explanatory.
+generic non-photosynthetic components. It can be any kind of component such as wood, spikelet, soil, rock, or even structures such as nets, floor, wall, roof... The name `ModelList` was chosen not because it is generic, but because it is short, simple and self-explanatory.
 
 ## Processes
 

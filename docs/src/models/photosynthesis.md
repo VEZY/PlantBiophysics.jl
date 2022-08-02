@@ -21,7 +21,7 @@ You can choose which model to use by passing a component with an assimilation mo
 For example, you can "simulate" a constant assimilation for a leaf using the following:
 
 ```@example usepkg
-leaf = LeafModels(photosynthesis = ConstantA(25.0))
+leaf = ModelList(photosynthesis = ConstantA(25.0))
 photosynthesis(leaf)
 ```
 
@@ -82,7 +82,7 @@ Here is an example usage:
 ```@example usepkg
 meteo = Atmosphere(T = 20.0, Wind = 1.0, P = 101.3, Rh = 0.65)
 
-leaf = LeafModels(
+leaf = ModelList(
     photosynthesis = Fvcb(),
     stomatal_conductance = Medlyn(0.03, 12.0),
     Tₗ = 25.0, PPFD = 1000.0, Cₛ = 400.0, Dₗ = meteo.VPD
@@ -114,7 +114,7 @@ Here is an example usage:
 ```@example usepkg
 meteo = Atmosphere(T = 20.0, Wind = 1.0, P = 101.3, Rh = 0.65)
 
-leaf = LeafModels(
+leaf = ModelList(
     photosynthesis = FvcbIter(),
     stomatal_conductance = Medlyn(0.03, 12.0),
     Tₗ = 25.0, PPFD = 1000.0, Gbc = 0.67, Dₗ = meteo.VPD
@@ -149,7 +149,7 @@ The PPFD is, again, the absorbed photosynthetically active photon flux density (
 ### [Example](@id exemple_raw)
 
 ```@example usepkg
-leaf = LeafModels(
+leaf = ModelList(
     photosynthesis = FvcbRaw(),
     Tₗ = 25.0, PPFD = 1000.0, Cᵢ = 400.0
 )
@@ -172,7 +172,7 @@ DataFrame(leaf)
 ### [Example](@id exemple_constanta)
 
 ```@example usepkg
-leaf = LeafModels(photosynthesis = ConstantA())
+leaf = ModelList(photosynthesis = ConstantA())
 
 photosynthesis!(leaf)
 DataFrame(leaf)
@@ -195,7 +195,7 @@ inputs(ConstantAGs())
 ### [Example](@id exemple_constantags)
 
 ```@example usepkg
-leaf = LeafModels(
+leaf = ModelList(
     photosynthesis = ConstantAGs(),
     stomatal_conductance = Medlyn(0.03, 12.0),
     Cₛ = 380.0, Dₗ = 2.0

@@ -17,7 +17,7 @@ You can choose which model to use by passing a component with an energy balance 
 ```@example usepkg
 meteo = Atmosphere(T = 20.0, Wind = 1.0, P = 101.3, Rh = 0.65)
 
-leaf = LeafModels(
+leaf = ModelList(
     energy_balance = Monteith(),
     photosynthesis = Fvcb(),
     stomatal_conductance = Medlyn(0.03, 12.0),
@@ -83,7 +83,7 @@ Here is an example usage:
 ```@example usepkg
 meteo = Atmosphere(T = 22.0, Wind = 0.8333, P = 101.325, Rh = 0.4490995)
 
-leaf = LeafModels(
+leaf = ModelList(
     energy_balance = Monteith(),
     photosynthesis = Fvcb(),
     stomatal_conductance = Medlyn(0.03, 12.0),

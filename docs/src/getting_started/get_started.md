@@ -20,14 +20,16 @@ meteo = read_weather(
     date_format = DateFormat("yyyy/mm/dd")
 )
 
-leaf = LeafModels(
+leaf = ModelList(
         energy_balance = Monteith(),
         photosynthesis = Fvcb(),
-        stomatal_conductance = Medlyn(0.03, 12.0),
-        Rₛ = meteo[:Ri_SW_f] .* 0.8,
-        sky_fraction = 1.0,
-        PPFD = meteo[:Ri_SW_f] .* 0.8 .* 0.48 .* 4.57,
-        d = 0.03
+        stomatal_conductance = Medlyn(0.03, 7.0),
+        status = (
+            Rₛ = meteo[:Ri_SW_f] .* 0.8,
+            sky_fraction = 1.0,
+            PPFD = meteo[:Ri_SW_f] .* 0.8 .* 0.48 .* 4.57,
+            d = 0.03
+        )
 )
 
 energy_balance!(leaf,meteo)

@@ -13,14 +13,14 @@ Now it is also very easy to run a simulation for different components by just pr
 ```@example usepkg
 meteo = Atmosphere(T = 22.0, Wind = 0.8333, P = 101.325, Rh = 0.4490995)
 
-leaf1 = LeafModels(
+leaf1 = ModelList(
         energy_balance = Monteith(),
         photosynthesis = Fvcb(),
         stomatal_conductance = Medlyn(0.03, 12.0),
         Rₛ = 13.747, sky_fraction = 1.0, PPFD = 1500.0, d = 0.03
     )
 
-leaf2 = LeafModels(
+leaf2 = ModelList(
         energy_balance = Monteith(),
         photosynthesis = Fvcb(),
         stomatal_conductance = Medlyn(0.03, 12.0),
@@ -46,7 +46,7 @@ w = Weather(
     ]
 )
 
-leaf1 = LeafModels(
+leaf1 = ModelList(
         energy_balance = Monteith(),
         photosynthesis = Fvcb(),
         stomatal_conductance = Medlyn(0.03, 12.0),
@@ -56,7 +56,7 @@ leaf1 = LeafModels(
         d = 0.03
     )
 
-leaf2 = LeafModels(
+leaf2 = ModelList(
         energy_balance = Monteith(),
         photosynthesis = Fvcb(),
         stomatal_conductance = Medlyn(0.03, 12.0),

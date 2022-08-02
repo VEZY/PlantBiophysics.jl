@@ -1,11 +1,11 @@
-# LeafModels
+# ModelList
 
-[`LeafModels`](@ref) is a structure used to list the processes and associated models for
-photosynthetic components. It can be a leaf, a leaflet, or really any kind of component that has a photosynthetic activity. The name `LeafModels` was chosen not because it is generic, but because it is short, simple and self-explanatory.
+[`ModelList`](@ref) is a structure used to list the processes and associated models for
+photosynthetic components. It can be a leaf, a leaflet, or really any kind of component that has a photosynthetic activity. The name `ModelList` was chosen not because it is generic, but because it is short, simple and self-explanatory.
 
 ## Processes
 
-[`LeafModels`](@ref) implements four processes:
+[`ModelList`](@ref) implements four processes:
 
 - `interception <: Union{Missing,AbstractInterceptionModel}`: An interception model.
 - `energy_balance <: Union{Missing,AbstractEnergyModel}`: An energy model, *e.g.* [`Monteith`](@ref).
@@ -13,7 +13,7 @@ photosynthetic components. It can be a leaf, a leaflet, or really any kind of co
 - `stomatal_conductance <: Union{Missing,AbstractGsModel}`: A stomatal conductance model,
     *e.g.* [`Medlyn`](@ref) or [`ConstantGs`](@ref)
 
-Like all other [`AbstractComponentModel`](@ref), [`LeafModels`](@ref) also has a `status` field:
+Like all other [`AbstractComponentModel`](@ref), [`ModelList`](@ref) also has a `status` field:
 
 - `status <: MutableNamedTuple`: a mutable named tuple to track the status of the component, *i.e.* the variables and their values. Values are set to `-999.99` if not provided as keywords arguments (see examples).
 
@@ -31,7 +31,7 @@ using PlantBiophysics
 ```
 
 ```@example usepkg
-leaf = LeafModels(
+leaf = ModelList(
     energy_balance = Monteith(),
     photosynthesis = Fvcb(),
     stomatal_conductance = ConstantGs(0.0, 0.0011)
@@ -54,7 +54,7 @@ The meaning and units of the variables can be found on documentation of each mod
 We can now provide values for these variables:
 
 ```@example usepkg
-leaf = LeafModels(
+leaf = ModelList(
     energy_balance = Monteith(),
     photosynthesis = Fvcb(),
     stomatal_conductance = ConstantGs(0.0, 0.0011),
@@ -67,7 +67,7 @@ stomatal conductance):
 
 ```@setup usepkgandleaf
 using PlantBiophysics
-leaf = LeafModels(
+leaf = ModelList(
     energy_balance = Monteith(),
     photosynthesis = Fvcb(),
     stomatal_conductance = ConstantGs(0.0, 0.0011),

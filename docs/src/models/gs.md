@@ -20,7 +20,7 @@ For example, you can "simulate" a constant assimilation for a leaf using the fol
 ```@example usepkg
 meteo = Atmosphere(T = 20.0, Wind = 1.0, P = 101.3, Rh = 0.65)
 
-leaf = LeafModels(stomatal_conductance = ConstantGs(Gₛ = 0.1))
+leaf = ModelList(stomatal_conductance = ConstantGs(Gₛ = 0.1))
 
 stomatal_conductance!(leaf,meteo)
 leaf[:Gₛ]
@@ -56,7 +56,7 @@ Here is an example usage:
 ```@example usepkg
 meteo = Atmosphere(T = 20.0, Wind = 1.0, P = 101.3, Rh = 0.65)
 
-leaf = LeafModels(
+leaf = ModelList(
     stomatal_conductance = Medlyn(0.03, 12.0),
     A = 20.0, Cₛ = 400.0, Dₗ = meteo.VPD
 )
@@ -97,7 +97,7 @@ Here is an example usage:
 ```@example usepkg
 meteo = Atmosphere(T = 20.0, Wind = 1.0, P = 101.3, Rh = 0.65)
 
-leaf = LeafModels(stomatal_conductance = ConstantGs(Gₛ = 0.1))
+leaf = ModelList(stomatal_conductance = ConstantGs(Gₛ = 0.1))
 
 stomatal_conductance!(leaf,meteo)
 leaf[:Gₛ]
