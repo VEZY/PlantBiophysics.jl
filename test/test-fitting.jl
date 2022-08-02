@@ -15,15 +15,6 @@
     @test TPURef ≈ 5.596 atol = 1e-2
 end
 
-# using DataFrames
-# x = Array(select(df, :Tₗ, :PPFD, :Cᵢ))
-# leaf =
-#     ModelList(
-#         photosynthesis=FvcbRaw(),
-#         status=(Tₗ=x[:, 1], PPFD=x[:, 2], Cᵢ=x[:, 3])
-#     )
-# photosynthesis!(leaf)
-
 @testset "Fitting Medlyn" begin
     file = joinpath(dirname(dirname(pathof(PlantBiophysics))), "test", "inputs", "data", "P1F20129.csv")
     df = read_walz(file)

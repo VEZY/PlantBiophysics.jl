@@ -11,7 +11,7 @@ The package provides a [`fit`](@ref) method that helps users fitting model param
 For example we provide a method to fit the parameters from the Farquhar et al. (1980) model. Here is an example usage:
 
 ```@example usepkg
-using PlantBiophysics, Plots, DataFrames
+using PlantBiophysics, DataFrames
 
 df = read_walz(joinpath(dirname(dirname(pathof(PlantBiophysics))),"test","inputs","data","P1F20129.csv"))
 # Removing the Rh and light curves for the fitting because temperature varies

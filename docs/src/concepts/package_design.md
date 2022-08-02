@@ -24,7 +24,7 @@ Those three organs we present here are what we call components.
 PlantBiophysics doesn't implement components *per se*, because it is more the job of other packages. However, it provides components models.
 
 !!! tip
-    [MultiScaleTreeGraph](https://vezy.github.io/MultiScaleTreeGraph.jl/stable/) implements a way to describe a plant as a tree data-structure. PlantBiophysics compose well with MTGs and provides methods for computing processes over such data.
+    [MultiScaleTreeGraph](https://vezy.github.io/MultiScaleTreeGraph.jl/stable/) implements a way to describe a plant as a tree data-structure. PlantBiophysics compose well with MTGs and provides methods for computing processes over such objects.
 
 ### Component models description
 
