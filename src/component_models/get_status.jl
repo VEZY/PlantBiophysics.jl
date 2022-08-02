@@ -1,7 +1,7 @@
 """
     status(m)
-    status(m::AbstractArray{<:AbstractComponentModel})
-    status(m::AbstractDict{T,<:AbstractComponentModel})
+    status(m::AbstractArray{<:ModelList})
+    status(m::AbstractDict{T,<:ModelList})
 
 Get a ModelList status, *i.e.* the state of the input (and output) variables.
 
@@ -30,8 +30,8 @@ function status(m, key::T) where {T<:Integer}
 end
 
 """
-    getindex(component<:AbstractComponentModel, key::Symbol)
-    getindex(component<:AbstractComponentModel, key)
+    getindex(component<:ModelList, key::Symbol)
+    getindex(component<:ModelList, key)
 
 Indexing a component models structure:
     - with an integer, will return the status at the ith time-step
@@ -53,6 +53,6 @@ lm[2][:Tₗ] # Returns the value of Tₗ at the second time-step
 lm[:Tₗ][2] # Equivalent of the above
 ```
 """
-function Base.getindex(component::T, key) where {T<:AbstractComponentModel}
+function Base.getindex(component::T, key) where {T<:ModelList}
     status(component, key)
 end

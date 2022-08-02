@@ -25,19 +25,19 @@ function check_status_wheather(
     return nothing
 end
 
-function check_status_wheather(component::T, w) where {T<:AbstractComponentModel}
+function check_status_wheather(component::T, w) where {T<:ModelList}
     check_status_wheather(status(component), w)
 end
 
 # for several components as an array
-function check_status_wheather(component::T, weather::Weather) where {T<:AbstractArray{<:AbstractComponentModel}}
+function check_status_wheather(component::T, weather::Weather) where {T<:AbstractArray{<:ModelList}}
     for i in component
         check_status_wheather(i, weather)
     end
 end
 
 # for several components as a Dict
-function check_status_wheather(component::T, weather::Weather) where {T<:AbstractDict{N,<:AbstractComponentModel}} where {N}
+function check_status_wheather(component::T, weather::Weather) where {T<:AbstractDict{N,<:ModelList}} where {N}
     for (key, val) in component
         check_status_wheather(val, weather)
     end

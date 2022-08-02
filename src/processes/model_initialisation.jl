@@ -1,6 +1,6 @@
 """
     to_initialise(v::T, vars...) where T <: Union{Missing,AbstractModel}
-    to_initialise(m::T)  where T <: AbstractComponentModel
+    to_initialise(m::T)  where T <: ModelList
 
 Return the variables that must be initialized providing a set of models.
 
@@ -25,7 +25,7 @@ function to_initialise(v::T, vars...) where {T<:AbstractModel}
     Tuple(setdiff(inputs(v, vars...), outputs(v, vars...)))
 end
 
-function to_initialise(m::T) where {T<:AbstractComponentModel}
+function to_initialise(m::T) where {T<:ModelList}
     # These are all the variables needed for a simulation given the models:
     default_values = init_variables(m.models...)
 
@@ -34,7 +34,7 @@ function to_initialise(m::T) where {T<:AbstractComponentModel}
     vars_not_init_(m.status, needed_variables)
 end
 
-function to_initialise(m::T) where {T<:Dict{String,AbstractComponentModel}}
+function to_initialise(m::T) where {T<:Dict{String,ModelList}}
     toinit = Dict{String,Vector{Symbol}}()
     for (key, value) in m
         toinit_ = to_initialise(value)
@@ -48,8 +48,8 @@ function to_initialise(m::T) where {T<:Dict{String,AbstractComponentModel}}
 end
 
 """
-    init_status!(object::Dict{String,AbstractComponentModel};vars...)
-    init_status!(component::AbstractComponentModel;vars...)
+    init_status!(object::Dict{String,ModelList};vars...)
+    init_status!(component::ModelList;vars...)
 
 Intialise model variables for components with user input.
 
@@ -60,7 +60,7 @@ model = read_model("a-model-file.yml")
 init_status!(model, Tₗ = 25.0, PPFD = 1000.0, Cₛ = 400.0, Dₗ = 1.2)
 ```
 """
-function init_status!(object::Dict{String,AbstractComponentModel}; vars...)
+function init_status!(object::Dict{String,ModelList}; vars...)
     new_vals = (; vars...)
 
     for (component_name, component) in object
@@ -74,7 +74,7 @@ function init_status!(object::Dict{String,AbstractComponentModel}; vars...)
     end
 end
 
-function init_status!(component::T; vars...) where {T<:AbstractComponentModel}
+function init_status!(component::T; vars...) where {T<:ModelList}
     new_vals = (; vars...)
     for j in keys(new_vals)
         if !in(j, keys(component.status))
@@ -143,8 +143,8 @@ function init_variables(; kwargs...)
 end
 
 """
-    is_initialised(m::T) where T <: AbstractComponentModel
-    is_initialised(m::T, models...) where T <: AbstractComponentModel
+    is_initialised(m::T) where T <: ModelList
+    is_initialised(m::T, models...) where T <: ModelList
 
 Check if the variables that must be initialised are, and return `true` if so, and `false` and
 an information message if not.
@@ -168,7 +168,7 @@ is_initialised(leaf,leaf.photosynthesis)
 # simulated, so its inputs must be initialised
 ```
 """
-function is_initialised(m::T; info=true) where {T<:AbstractComponentModel}
+function is_initialised(m::T; info=true) where {T<:ModelList}
     var_names = to_initialise(m)
 
     if length(var_names) > 0

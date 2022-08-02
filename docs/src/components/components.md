@@ -22,7 +22,7 @@ PlantBiophysics doesn't implement components *per se*, because it is more the jo
 
 Components models are structures that define which models are used to simulate the biophysical processes of a component.
 
-All component models are subtypes of the [`AbstractComponentModel`](@ref) abstract type. At the time, PlantBiophysics provides two component models: [`ModelList`](@ref) or photosynthetic components (*e.g.* leaves) and the more generic [`ComponentModels`](@ref) for any other components (*e.g.* wood, soil...).
+At the time, PlantBiophysics provides two component models: [`ModelList`](@ref) or photosynthetic components (*e.g.* leaves) and the more generic [`ComponentModels`](@ref) for any other components (*e.g.* wood, soil...).
 
 The component models lists the processes that can be simulated for a given component, and is used to associate a given model and its parameter values to each process for their simulation. It also has an obligatory `status` field that helps keeping track of the input ans outputs values for the models.
 

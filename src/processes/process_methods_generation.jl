@@ -99,7 +99,7 @@ macro gen_process_methods(f)
         end
 
         # If we call weather with one component only:
-        function $(esc(mutating_f))(object::T, meteo::Weather, constants=Constants()) where {T<:AbstractComponentModel}
+        function $(esc(mutating_f))(object::T, meteo::Weather, constants=Constants()) where {T<:ModelList}
 
             # Check if the meteo data and the status have the same length (or length 1)
             check_status_wheather(object, meteo)
@@ -191,7 +191,7 @@ macro gen_process_methods(f)
             object::O,
             meteo::Union{Nothing,AbstractAtmosphere,Weather}=nothing,
             constants=Constants()
-        ) where {O<:Union{AbstractComponentModel,AbstractArray,AbstractDict}}
+        ) where {O<:Union{ModelList,AbstractArray,AbstractDict}}
             object_tmp = copy(object)
             $(esc(mutating_f))(object_tmp, meteo, constants)
             return object_tmp

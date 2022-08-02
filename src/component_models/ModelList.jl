@@ -64,7 +64,7 @@ energy_balance!(leaf,meteo)
 DataFrame(leaf)
 ```
 """
-struct ModelList{M,S<:AbstractStatus} <: AbstractComponentModel
+struct ModelList{M,S<:AbstractStatus}
     models::M
     status::S
 end

@@ -10,7 +10,7 @@ generic non-photosynthetic components. It can be any kind of component such as w
 - `interception <: Union{Missing,AbstractInterceptionModel}`: A radiation interception model;
 - `energy_balance <: Union{Missing,AbstractEnergyModel}`: An energy balance model;
 
-...and like every [`AbstractComponentModel`](@ref) a `status` field:
+...and a `status` field:
 
 - `status <: MutableNamedTuple`: a mutable named tuple to track the status of the component, *i.e.* the variables and their values. Values are set to `-999.99` if not provided as keywords arguments (see examples).
 

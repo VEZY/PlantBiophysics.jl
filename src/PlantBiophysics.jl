@@ -201,9 +201,6 @@ export init_mtg_models!
 # Models
 export AbstractModel
 
-# Components (structures that hold models)
-export AbstractComponentModel
-
 # Parameters optimization
 export fit
 

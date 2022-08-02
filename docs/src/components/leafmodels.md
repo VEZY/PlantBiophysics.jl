@@ -13,7 +13,7 @@ photosynthetic components. It can be a leaf, a leaflet, or really any kind of co
 - `stomatal_conductance <: Union{Missing,AbstractGsModel}`: A stomatal conductance model,
     *e.g.* [`Medlyn`](@ref) or [`ConstantGs`](@ref)
 
-Like all other [`AbstractComponentModel`](@ref), [`ModelList`](@ref) also has a `status` field:
+[`ModelList`](@ref) also has a `status` field:
 
 - `status <: MutableNamedTuple`: a mutable named tuple to track the status of the component, *i.e.* the variables and their values. Values are set to `-999.99` if not provided as keywords arguments (see examples).
 

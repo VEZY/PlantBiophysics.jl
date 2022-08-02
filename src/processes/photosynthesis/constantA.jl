@@ -39,7 +39,7 @@ Modify the leaf status in place for A with a constant value:
 # Arguments
 
 - `::ConstantA`: a constant assimilation model
-- `models`: a [`ModelList`](@ref) struct holding the parameters for the model (or <:AbstractComponentModel).
+- `models`: a [`ModelList`](@ref) struct holding the parameters for the model.
 - `status`: A status, usually the leaf status (*i.e.* leaf.status)
 - `meteo`: meteorology structure, see [`Atmosphere`](@ref)
 - `constants = Constants()`: physical constants. See [`Constants`](@ref) for more details

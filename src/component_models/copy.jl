@@ -2,19 +2,19 @@
 #! This is just a generic copy for an array or Dict of component models.
 
 """
-    Base.copy(l::AbstractArray{<:AbstractComponentModel})
+    Base.copy(l::AbstractArray{<:ModelList})
 
-Copy an array-alike of [`AbstractComponentModel`](@ref)
+Copy an array-alike of [`ModelList`](@ref)
 """
-function Base.copy(l::T) where {T<:AbstractArray{<:AbstractComponentModel}}
+function Base.copy(l::T) where {T<:AbstractArray{<:ModelList}}
     return [copy(i) for i in l]
 end
 
 """
-    Base.copy(l::AbstractDict{N,<:AbstractComponentModel} where N)
+    Base.copy(l::AbstractDict{N,<:ModelList} where N)
 
-Copy a Dict-alike [`AbstractComponentModel`](@ref)
+Copy a Dict-alike [`ModelList`](@ref)
 """
-function Base.copy(l::T) where {T<:AbstractDict{N,<:AbstractComponentModel} where {N}}
+function Base.copy(l::T) where {T<:AbstractDict{N,<:ModelList} where {N}}
     return Dict([k => v for (k, v) in l])
 end

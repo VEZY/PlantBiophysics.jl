@@ -80,8 +80,8 @@ Modify the first argument in place for A, the carbon assimilation (μmol[CO₂] 
 # Arguments
 
 - `::FvcbRaw`: the Farquhar–von Caemmerer–Berry (FvCB) model (not coupled)
-- `models`: a [`ModelList`](@ref) struct holding the parameters for the model (or
-`<:AbstractComponentModel`) with initialisations for:
+- `models`: a [`ModelList`](@ref) struct holding the parameters for the model with
+initialisations for:
     - `Tₗ` (°C): leaf temperature
     - `PPFD` (μmol m-2 s-1): absorbed Photosynthetic Photon Flux Density
     - `Cₛ` (ppm): surface CO₂ concentration.

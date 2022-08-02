@@ -1,11 +1,11 @@
 """
-    DataFrame(components <: AbstractArray{<:AbstractComponentModel})
-    DataFrame(components <: AbstractDict{N,<:AbstractComponentModel})
+    DataFrame(components <: AbstractArray{<:ModelList})
+    DataFrame(components <: AbstractDict{N,<:ModelList})
 
-Fetch the data from a [`AbstractComponentModel`](@ref) (or an Array/Dict of) status into
+Fetch the data from a [`ModelList`](@ref) (or an Array/Dict of) status into
 a DataFrame.
 """
-function DataFrame(components::T) where {T<:Union{AbstractComponentModel,AbstractArray{<:AbstractComponentModel}}}
+function DataFrame(components::T) where {T<:Union{ModelList,AbstractArray{<:ModelList}}}
     df = DataFrame[]
     for (k, v) in enumerate(components)
         df_c = DataFrame(v)
@@ -15,7 +15,7 @@ function DataFrame(components::T) where {T<:Union{AbstractComponentModel,Abstrac
     reduce(vcat, df)
 end
 
-function DataFrame(components::T) where {T<:AbstractDict{N,<:AbstractComponentModel} where {N}}
+function DataFrame(components::T) where {T<:AbstractDict{N,<:ModelList} where {N}}
     df = DataFrame[]
     for (k, v) in components
         df_c = DataFrame(v)
@@ -29,11 +29,11 @@ end
 
 
 """
-    DataFrame(components::T) where {T<:AbstractComponentModel}
+    DataFrame(components::T) where {T<:ModelList}
 
-Generic implementation of `DataFrame` for a single `AbstractComponentModel` model.
+Generic implementation of `DataFrame` for a single `ModelList` model.
 """
-function DataFrame(components::T) where {T<:AbstractComponentModel}
+function DataFrame(components::T) where {T<:ModelList}
     st = status(components)
     if isa(st, TimeSteps)
         DataFrame([(NamedTuple(j)..., timestep=i) for (i, j) in enumerate(st)])

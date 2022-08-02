@@ -78,8 +78,8 @@ Modify the first argument in place for A, Gₛ and Cᵢ:
 # Arguments
 
 - `::FvcbIter`: Farquhar–von Caemmerer–Berry (FvCB) model with iterative resolution.
-- `models`: a [`ModelList`](@ref) struct holding the parameters for the model (or
-`<:AbstractComponentModel`) with initialisations for:
+- `models`: a [`ModelList`](@ref) struct holding the parameters for the model with
+initialisations for:
     - `Tₗ` (°C): leaf temperature
     - `PPFD` (μmol m-2 s-1): absorbed Photosynthetic Photon Flux Density
     - `Gbc` (mol m-2 s-1): boundary conductance for CO₂

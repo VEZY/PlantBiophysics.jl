@@ -21,8 +21,7 @@ At the moment, two models are implemented in the package:
 
 # Arguments
 
-- `object`: an [`AbstractComponentModel`](@ref) (*e.g.* [`ModelList`](@ref)), a Dict/Array
-of, or an MTG.
+- `object`: a [`ModelList`](@ref), a Dict/Array of [`ModelList`](@ref), or an MTG.
 - `meteo::Union{AbstractAtmosphere,Weather}`: meteorology structure, see [`Atmosphere`](@ref) or
 [`Weather`](@ref)
 - `constants = Constants()`: physical constants. See [`Constants`](@ref) for more details
