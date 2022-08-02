@@ -4,7 +4,7 @@
 using PlantBiophysics
 ```
 
-The photosynthesis is, in this package, the process of assimilation of the atmospheric CO₂ by the component.
+The photosynthesis is, in this package, the process of assimilation of the atmospheric CO₂.
 
 ## Models overview
 
@@ -16,7 +16,7 @@ Photosynthesis can be simulated using [`photosynthesis!`](@ref) or [`photosynthe
 - [`ConstantA`](@ref): a model to set the assimilation to a constant value (mainly for testing)
 - [`ConstantAGs`](@ref): a model to set the assimilation to a constant value, but coupled to a stomatal conductance model to compute Cᵢ (mainly for testing)
 
-You can choose which model to use by passing a component with an assimilation model set to one of the `structs` above.
+You can choose which model to use by passing a component with an assimilation model set to one of the `struct` above.
 
 For example, you can "simulate" a constant assimilation for a leaf using the following:
 
@@ -85,11 +85,11 @@ meteo = Atmosphere(T = 20.0, Wind = 1.0, P = 101.3, Rh = 0.65)
 leaf = ModelList(
     photosynthesis = Fvcb(),
     stomatal_conductance = Medlyn(0.03, 12.0),
-    Tₗ = 25.0, PPFD = 1000.0, Cₛ = 400.0, Dₗ = meteo.VPD
+    status = (Tₗ = 25.0, PPFD = 1000.0, Cₛ = 400.0, Dₗ = meteo.VPD)
 )
-# NB: we need to initalise Tₗ, PPFD and Cₛ for FvCB, and Dₗ for the stomatal conductance of Medlyn et al. (2011).
+# NB: we need to initialize `Tₗ`, `PPFD` and `Cₛ` for `FvCB`, and `Dₗ` for the stomatal conductance of Medlyn et al. (2011).
 
-photosynthesis!(leaf,meteo,Constants())
+photosynthesis!(leaf,meteo)
 
 DataFrame(leaf)
 ```
@@ -117,10 +117,10 @@ meteo = Atmosphere(T = 20.0, Wind = 1.0, P = 101.3, Rh = 0.65)
 leaf = ModelList(
     photosynthesis = FvcbIter(),
     stomatal_conductance = Medlyn(0.03, 12.0),
-    Tₗ = 25.0, PPFD = 1000.0, Gbc = 0.67, Dₗ = meteo.VPD
+    status = (Tₗ = 25.0, PPFD = 1000.0, Gbc = 0.67, Dₗ = meteo.VPD)
 )
 
-# NB: we need to initalise Tₗ, PPFD and Gbc for FvcbIter, and Dₗ for the stomatal conductance of Medlyn et al. (2011).
+# NB: we need to initialize `Tₗ`, `PPFD` and `Gbc` for `FvcbIter`, and `Dₗ` for the stomatal conductance of Medlyn et al. (2011).
 
 photosynthesis!(leaf,meteo,Constants())
 
@@ -141,19 +141,19 @@ The `FvcbRaw` model needs three input variables:
 inputs(FvcbRaw())
 ```
 
-The PPFD is, again, the absorbed photosynthetically active photon flux density (``μmol_{quanta} \cdot m^{-2} \cdot s^{-1}``). It is usually computed by a light interception model. Tₗ (°C) is the leaf temperature, and Cᵢ (ppm) is the intercellular CO₂ concentration, usually computed using a conductance model.
+The `PPFD` is, again, the absorbed photosynthetically active photon flux density (``μmol_{quanta} \cdot m^{-2} \cdot s^{-1}``). It is usually computed by a light interception model. `Tₗ` (°C) is the leaf temperature, and `Cᵢ` (ppm) is the intercellular CO₂ concentration, usually computed using a conductance model.
 
 !!! note
-    The three implementations of the FvCB model needs different input variables because they implement more or less coupling with other models.
+    The three implementations of the `FvCB` model needs different input variables because they implement more or less coupling with other models.
 
 ### [Example](@id exemple_raw)
 
 ```@example usepkg
 leaf = ModelList(
     photosynthesis = FvcbRaw(),
-    Tₗ = 25.0, PPFD = 1000.0, Cᵢ = 400.0
+    status = (Tₗ = 25.0, PPFD = 1000.0, Cᵢ = 400.0)
 )
-# NB: we need Tₗ, PPFD and Cᵢ as inputs (see [`inputs`](@ref))
+# NB: we need `Tₗ`, `PPFD` and `Cᵢ` as inputs (see [`inputs`](@ref))
 
 photosynthesis!(leaf)
 DataFrame(leaf)
@@ -198,7 +198,7 @@ inputs(ConstantAGs())
 leaf = ModelList(
     photosynthesis = ConstantAGs(),
     stomatal_conductance = Medlyn(0.03, 12.0),
-    Cₛ = 380.0, Dₗ = 2.0
+    status = (Cₛ = 380.0, Dₗ = 2.0)
 )
 
 photosynthesis!(leaf)
@@ -226,9 +226,9 @@ And finally we plot `J ~ PPFD` with different parameter values, with the simplif
 
 ```@example 1
 plot(x -> PlantBiophysics.get_J(x, A.JMaxRef, A.α, A.θ), PPFD, xlabel = "PPFD (μmol m⁻² s⁻¹)",
-            ylab = "J (μmol m⁻² s⁻¹)", label = "Default values", legend = :bottomright);
-plot!(x -> PlantBiophysics.get_J(x, A.JMaxRef, A.α, A.θ * 0.5), PPFD, label = "θ * 0.5");
-plot!(x -> PlantBiophysics.get_J(x, A.JMaxRef, A.α * 0.5, A.θ), PPFD, label = "α * 0.5");
+            ylab = "J (μmol m⁻² s⁻¹)", label = "Default values", legend = :bottomright)
+plot!(x -> PlantBiophysics.get_J(x, A.JMaxRef, A.α, A.θ * 0.5), PPFD, label = "θ * 0.5")
+plot!(x -> PlantBiophysics.get_J(x, A.JMaxRef, A.α * 0.5, A.θ), PPFD, label = "α * 0.5")
 savefig("f-plot.svg"); nothing # hide
 ```
 

@@ -48,9 +48,9 @@ function Base.setproperty!(status::Status, s::Symbol, x)
     setproperty!(getfield(status, :vars), s, x)
 end
 
-# Indexing a Status with an integer returns the status (for compatibility with TimeSteps).
+# Indexing a Status with an integer returns the status content (for compatibility with TimeSteps).
 function Base.getindex(status::Status, index::T) where {T<:Integer}
-    status
+    getfield(status, :vars)
 end
 
 # Indexing with a Symbol extracts the variable (same as getproperty):

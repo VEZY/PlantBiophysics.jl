@@ -7,17 +7,6 @@ using CSV
 using CairoMakie
 CairoMakie.activate!(type="svg")
 
-# Reading the parameters:
-params = read_dict("../data/schymanski_et_al_2017/vdict_6a.txt")
-
-# Some constants used in the experiment:
-maxiter = 20 # Maximum number of iterations for the algorithm to converge
-aₛᵥ = 1 # number of sides used for transpiration (hypostomatous: 1, amphistomatous: 2)
-cst = Constants(
-    Cₚ=1010.0, ε=params["epsilon"], λ₀=params["lambda_E"],
-    R=params["R_mol"], σ=params["sigm"], Mₕ₂ₒ=params["M_w"]
-)
-
 # Defining key functions:
 function read_dict(file)
     lines = readlines(file)
@@ -28,6 +17,17 @@ function read_dict(file)
     end
     params
 end
+
+# Reading the parameters:
+params = read_dict("../data/schymanski_et_al_2017/vdict_6a.txt")
+
+# Some constants used in the experiment:
+maxiter = 20 # Maximum number of iterations for the algorithm to converge
+aₛᵥ = 1 # number of sides used for transpiration (hypostomatous: 1, amphistomatous: 2)
+cst = Constants(
+    Cₚ=1010.0, ε=params["epsilon"], λ₀=params["lambda_E"],
+    R=params["R_mol"], σ=params["sigm"], Mₕ₂ₒ=params["M_w"]
+)
 
 ### Figure 6 a of the article:
 
@@ -51,18 +51,17 @@ weather = Weather(w)
 
 gs_obs = gsw_to_gsc.(ms_to_mol.(results1_6a.g_sw, results1_6a.T_a .- params["T0"], results1_6a.P_a ./ 1000))
 
-# Just a trick to avoid computing any photosynthesis in our case:
-PlantBiophysics.photosynthesis!_(leaf::ModelList, meteo, constant) = nothing
-
-leaf = ModelList(
-    energy_balance=Monteith(aₛᵥ=params["a_s"], maxiter=maxiter),
-    status=(
-        Rₛ=results1_6a.Rn_leaf,
-        sky_fraction=2.0,
-        d=results1_6a.L_l,
-        Gₛ=gs_obs
+leaf =
+    ModelList(
+        energy_balance=Monteith(aₛᵥ=params["a_s"], maxiter=maxiter),
+        photosynthesis=ConstantA(0.0),
+        status=(
+            Rₛ=results1_6a.Rn_leaf,
+            sky_fraction=2.0,
+            d=results1_6a.L_l,
+            Gₛ=gs_obs
+        )
     )
-)
 
 # NB, we use ConstantAGs and not ConstantA because Monteith calls the photosynthesis,
 # not stomatal_conductance (stomatal_conductance is called inside the photosynthesis).

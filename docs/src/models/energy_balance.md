@@ -12,7 +12,7 @@ The energy balance can be simulated using [`energy_balance!`](@ref) or [`energy_
 
 - [`Monteith`](@ref): an implementation of the Monteith et al. (2013) model
 
-You can choose which model to use by passing a component with an energy balance model set to one of the `structs` above:
+You can choose which model to use by passing a model list with an energy balance model set to one of the `structs` above:
 
 ```@example usepkg
 meteo = Atmosphere(T = 20.0, Wind = 1.0, P = 101.3, Rh = 0.65)
@@ -21,7 +21,7 @@ leaf = ModelList(
     energy_balance = Monteith(),
     photosynthesis = Fvcb(),
     stomatal_conductance = Medlyn(0.03, 12.0),
-    Rₛ = 13.747, sky_fraction = 1.0, PPFD = 1500.0, d = 0.03
+    status = (Rₛ = 13.747, sky_fraction = 1.0, PPFD = 1500.0, d = 0.03)
 )
 
 energy_balance!(leaf,meteo)
@@ -30,8 +30,7 @@ leaf[:Rn]
 
 ## Monteith
 
-Leaf energy balance according to Monteith and Unsworth (2013), and corrigendum from Schymanski et al. (2017). The computation is close to the one from the MAESPA model (Duursma et al., 2012, Vezy et al., 2018) here. The leaf temperature is computed iteratively to close
-the energy balance using the mass flux (~ Rn - λE).
+Leaf energy balance according to Monteith and Unsworth (2013), and corrigendum from Schymanski et al. (2017). The computation is close to the one from the MAESPA model (Duursma et al., 2012, Vezy et al., 2018) here. The leaf temperature is computed iteratively to close the energy balance using the mass flux (~ Rn - λE).
 
 ### [Parameters](@id param_monteith)
 
@@ -54,8 +53,7 @@ The [`Monteith`](@ref) model needs three input variables:
 inputs(Monteith())
 ```
 
-`Rₛ` (W m-2) is the net shortwave radiation (PAR + NIR), most often computed from a light interception model. `sky_fraction` (0-2) is
-the fraction of sky the object is viewing compared to everything else. It is given for the 360° viewing angle, *i.e.* for both faces. `d` (m) is the characteristic dimension, *e.g.* the leaf width (see eq. 10.9 from Monteith and Unsworth, 2013).
+`Rₛ` (W m-2) is the net shortwave radiation (PAR + NIR), most often computed from a light interception model. `sky_fraction` (0-2) is the fraction of sky the object is viewing compared to everything else. It is given for the 360° viewing angle, *i.e.* for both faces. `d` (m) is the characteristic dimension, *e.g.* the leaf width (see eq. 10.9 from Monteith and Unsworth, 2013).
 
 !!! note
     `sky_fraction` is equal to `2` if the leaf is viewing sky only (*e.g.* in a controlled chamber with lights everywhere), `1` if the leaf is *e.g.* up on the canopy where the upper side of the leaf sees sky, and the bottom side sees soil and other components, or less than 1 if it is partly shaded. `sky_fraction` is used to compute the thermal radiation exchanges. Everything except the sky is considered at the same temperature than the object. This simplification makes the computations very fast, but less precise, especially when another object has a very different temperature.
@@ -87,7 +85,7 @@ leaf = ModelList(
     energy_balance = Monteith(),
     photosynthesis = Fvcb(),
     stomatal_conductance = Medlyn(0.03, 12.0),
-    Rₛ = 13.747, sky_fraction = 1.0, PPFD = 1500.0, d = 0.03
+    status = (Rₛ = 13.747, sky_fraction = 1.0, PPFD = 1500.0, d = 0.03)
 )
 
 DataFrame(leaf)

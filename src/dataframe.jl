@@ -57,5 +57,5 @@ end
 Implementation of `DataFrame` for a `ModelList` model with one time step.
 """
 function DataFrame(components::ModelList{T,S}) where {T,S<:Status}
-    DataFrame([NamedTuple(status(components))])
+    DataFrame([NamedTuple(status(components)[1])])
 end

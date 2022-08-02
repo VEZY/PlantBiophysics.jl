@@ -25,11 +25,7 @@ makedocs(;
         ],
         "Design" => "./concepts/package_design.md",
         "Variables" => "variables.md",
-        "Components and methods" => [
-            "ModelsList" => "./components/leafmodels.md",
-            "ComponentModels" => "./components/componentmodels.md",
-        ],
-        "Models for ModelsList" => [
+        "Models" => [
             "Photosynthesis" => "./models/photosynthesis.md",
             "Stomatal conductance" => "./models/gs.md",
             "Energy balance" => "./models/energy_balance.md",
