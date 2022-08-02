@@ -80,7 +80,7 @@ function read_weather(file, ::Type{DataFrame})
         return yaml_data
     end
 
-    metadata = YAML.load(yaml_data)
+    metadata = length(yaml_data) > 0 ? YAML.load(yaml_data) : Dict()
     push!(metadata, "file" => file)
 
     met_data = CSV.read(file, DataFrame; comment="#")

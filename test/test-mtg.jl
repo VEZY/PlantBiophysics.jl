@@ -127,6 +127,9 @@ end
     # Make the computation:
     energy_balance!(mtg, models, weather)
 
+    leaf_node[:A]
+    leaf_node[:_cache_0596aa36b0bce0b33db9c24bcbf25e863a5d03e9][:A]
+
     @test leaf_node[:Ra_PAR_f] == Ra_PAR_f
     @test leaf_node[:sky_fraction] == fill(sky_fraction, length(weather))
     @test leaf_node[:sky_fraction] == fill(sky_fraction, length(weather))

@@ -94,6 +94,7 @@ For more examples, please read the documentation.
   - [ ] Make a new `submodels` function for each model that list all models that are used by a model. It can be nothing, an abstract model (e.g. `AbstractAModel`), a concrete model (e.g. `Fvcb`) or any combinations of models (e.g. photosynthesis + stomatal conductance).
   - [ ] Make a function to build a tree of models based on the `submodels` outputs.
 - [ ] Remove checks on the models when calling the processes functions, and move it to the construction of the group of models and/or to the user with a check function.
+- [ ] For the computation of MTG + Weather, give an option on which way the computation is done: compute one time-step for each node, and then the second..., or compute all time-steps for each node at once. The latter avoids visiting the tree n times, so it should be the default. But sometimes models need the result of other nodes before continuing, so the former is necessary. Add the option with a type so we use dispatch, e.g.: `TimeStepFirst` and `NodeFirst`.
 
 ## Contributing
 

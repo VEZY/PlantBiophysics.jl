@@ -117,12 +117,12 @@ macro gen_process_methods(f)
         function $(esc(mutating_f))(object, meteo::Nothing=nothing, constants=Constants())
             !is_initialised(object) && error("Some variables must be initialized before simulation (see info message for more details)")
 
-            if status(object) <: Status
+            if isa(status(object), PlantBiophysics.Status)
                 $(esc(f_))(object.models.$(f), object.models, object.status, meteo, constants)
             else
                 # We have several time-steps here, we pass each time-step after another
-                for i = eachindex(status(object))
-                    $(esc(f_))(object.models.$(f), object.models, object.status[i], meteo, constants)
+                for i in status(object)
+                    $(esc(f_))(object.models.$(f), object.models, i, meteo, constants)
                 end
             end
         end
@@ -155,6 +155,14 @@ macro gen_process_methods(f)
 
             # Init the status for the meteo step only (with an AbstractAtmosphere)
             to_init = init_mtg_models!(mtg, models, 1, attr_name=attr_name)
+            #! Here we use only one time-step for the status whatever the number of timesteps
+            #! to simulate. Then we use this status for all the meteo steps (we re-initialise
+            #! its values at each step). We do this to not replicate much data, but it is not
+            #! the best way to do it because we don't use the nice methods from above that
+            #! control the simulations for meteo / status timesteps. What we could do instead
+            #! is to have a TimeSteps status for several timesteps, and then use pointers to
+            #! the values in the node attributes. This we would avoid to replicate the data
+            #! and we could use the fancy methods from above.
 
             # Pre-allocate the node attributes based on the simulated variables and number of steps:
             nsteps = length(meteo)
@@ -171,7 +179,7 @@ macro gen_process_methods(f)
 
                 MultiScaleTreeGraph.transform!(
                     mtg,
-                    attr_name => (x -> $(mutating_f)(x, meteo_i, constants)),
+                    attr_name => (x -> Symbol($(esc(f))) in keys(x.models) && $(mutating_f)(x, meteo_i, constants)),
                     (node) -> pull_status_step!(node, i, attr_name=attr_name),
                     ignore_nothing=true
                 )

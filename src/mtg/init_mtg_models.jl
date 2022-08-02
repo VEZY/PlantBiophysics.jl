@@ -1,6 +1,6 @@
 """
     init_mtg_models!(
-        mtg::MultiScaleTreeGraph.Node, models::Dict{String,<:AbstractModel};
+        mtg::MultiScaleTreeGraph.Node, models::Dict{String,<:AbstractModel}, i=nothing;
         verbose = true, attr_name = :models
     )
 
@@ -14,6 +14,7 @@ and if not found, returns an error.
 
 - `mtg::MultiScaleTreeGraph.Node`: the MTG tree.
 - `models::Dict{String,<:AbstractModel}`: a dictionary of models named by components names
+- `i=nothing`: the time-step to initialise. If `nothing`, initialise all the time-steps.
 - `verbose = true`: return information during the processes
 - `attr_name = :models`: the node attribute name used to store the models
 
@@ -82,7 +83,7 @@ function init_mtg_models!(
 
     # If some values need initialisation, check first if they are found as MTG attributes, and if they do, use them:
     if length(to_init) > 0
-        attrs_missing = Dict(i => Set{Symbol}() for i in keys(to_init))
+        attrs_missing = Dict(key => Set{Symbol}() for key in keys(to_init))
         # node = get_node(mtg, 2070)
         MultiScaleTreeGraph.traverse!(mtg) do node
             # If the component has models associated to it
@@ -110,11 +111,6 @@ function init_mtg_models!(
                                     NamedTuple(j => get_attr_i(node, j, i) for j in to_init[node.MTG.symbol])
                                 )
                             )
-                        # NB: component_constructor is the generic component type, without
-                        # parametrization, e.g. LeafModels instead of
-                        # LeafModels{Translucent{Float64}, Monteith{Float64, Int64}...}
-                        # We use the generic type to update the status because otherwise it
-                        # would be already parameterised, and may not allow updating.
                     else
                         # If some initialisations are not available from the node attributes:
                         for i in attr_not_found

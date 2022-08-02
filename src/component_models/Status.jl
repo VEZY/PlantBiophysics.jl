@@ -106,3 +106,6 @@ Base.iterate(status::TimeSteps, i=1) = i > length(status) ? nothing : (status[i]
 function Base.keys(status::TimeSteps)
     keys(status[1])
 end
+
+# Implements eachindex to iterate over the time-steps; else it would iterate over keys.
+Base.eachindex(status::TimeSteps) = 1:length(status)

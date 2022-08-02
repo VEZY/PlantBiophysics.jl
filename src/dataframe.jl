@@ -27,11 +27,35 @@ end
 
 # NB: could use dispatch on concrete types but would enforce specific implementation for each
 
+
+"""
+    DataFrame(components::T) where {T<:AbstractComponentModel}
+
+Generic implementation of `DataFrame` for a single `AbstractComponentModel` model.
+"""
 function DataFrame(components::T) where {T<:AbstractComponentModel}
     st = status(components)
-    if typeof(st) == Vector{MutableNamedTuples.MutableNamedTuple}
-        DataFrame([(NamedTuple(j)..., timestep = i) for (i, j) in enumerate(st)])
+    if isa(st, TimeSteps)
+        DataFrame([(NamedTuple(j)..., timestep=i) for (i, j) in enumerate(st)])
     else
         DataFrame([NamedTuple(st)])
     end
+end
+
+"""
+    DataFrame(components::ModelList{T,<:TimeSteps})
+
+Implementation of `DataFrame` for a `ModelList` model with several time steps.
+"""
+function DataFrame(components::ModelList{T,S}) where {T,S<:TimeSteps}
+    DataFrame([(NamedTuple(j)..., timestep=i) for (i, j) in enumerate(status(components))])
+end
+
+"""
+    DataFrame(components::ModelList{T,S}) where {T,S<:AbstractDict}
+
+Implementation of `DataFrame` for a `ModelList` model with one time step.
+"""
+function DataFrame(components::ModelList{T,S}) where {T,S<:Status}
+    DataFrame([NamedTuple(status(components))])
 end

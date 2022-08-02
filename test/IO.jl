@@ -10,18 +10,18 @@ file = joinpath(dirname(dirname(pathof(PlantBiophysics))), "test", "inputs", "mo
     model = model["Leaf"]
     # @test typeof(model)
     @test typeof(model) <: ModelList
-    @test typeof(model.stomatal_conductance) == Medlyn{Float64}
-    @test typeof(model.interception) == Translucent{Float64}
-    @test typeof(model.photosynthesis) == Fvcb{Float64}
+    @test typeof(model.models.stomatal_conductance) == Medlyn{Float64}
+    @test typeof(model.models.interception) == Translucent{Float64}
+    @test typeof(model.models.photosynthesis) == Fvcb{Float64}
 
-    @test model.stomatal_conductance.g0 == -0.03
-    @test model.stomatal_conductance.g1 == 12.0
+    @test model.models.stomatal_conductance.g0 == -0.03
+    @test model.models.stomatal_conductance.g1 == 12.0
 
-    @test model.interception.transparency == 0.0
-    @test model.interception.optical_properties == σ(0.15, 0.9)
+    @test model.models.interception.transparency == 0.0
+    @test model.models.interception.optical_properties == σ(0.15, 0.9)
 
-    @test model.photosynthesis.VcMaxRef == 200.0 # Given in the file
-    @test model.photosynthesis.O₂ == 210.0 # Use default value
+    @test model.models.photosynthesis.VcMaxRef == 200.0 # Given in the file
+    @test model.models.photosynthesis.O₂ == 210.0 # Use default value
 end;
 
 # Test reading the meteo:
