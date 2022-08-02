@@ -6,7 +6,7 @@ using PlantBiophysics
 
 ## The fit method
 
-The package provides a generic [`fit`](@ref) function to calibrate a model to user data.
+The package provides a generic [`fit`](@ref) function to calibrate a model using user data.
 
 The generic function takes several parameters:
 
@@ -16,12 +16,12 @@ The generic function takes several parameters:
 
 ## Example with FvCB
 
-A fit method is provided by the package to calibrate the parameters of the FvCB model (Farquhar et al., 1980).
+A fit method is provided by the package to calibrate the parameters of the `FvCB` model (Farquhar et al., 1980).
 
 Here is an example usage from the documentation of the method:
 
 ```@example usepkg
-using PlantBiophysics, Plots, DataFrames
+using PlantBiophysics, DataFrames, Plots
 
 df = read_walz(joinpath(dirname(dirname(pathof(PlantBiophysics))),"test","inputs","data","P1F20129.csv"))
 # Removing the Rh and light curves for the fitting because temperature varies
@@ -41,13 +41,13 @@ filter!(x -> x.curve == "CO2 Curve", df)
 nothing # hide
 ```
 
-Now let's re-simulate the assimilation with our optimised parameter values:
+Now let's re-simulate the assimilation with our optimized parameter values:
 
 ```@example usepkg
 leaf =
     ModelList(
         photosynthesis = FvcbRaw(VcMaxRef = VcMaxRef, JMaxRef = JMaxRef, RdRef = RdRef, TPURef = TPURef),
-        Tₗ = df.Tₗ, PPFD = df.PPFD, Cᵢ = df.Cᵢ
+        status = (Tₗ = df.Tₗ, PPFD = df.PPFD, Cᵢ = df.Cᵢ)
     )
 photosynthesis!(leaf)
 df_sim = DataFrame(leaf);

@@ -13,7 +13,7 @@ The stomatal conductance (`Gₛ`, ``mol_{CO_2} \cdot m^{-2} \cdot s^{-1}``) can 
 - [`Medlyn`](@ref): an implementation of the Medlyn et al. (2011) model
 - [`ConstantGs`](@ref): a model to force a constant value for `Gₛ`
 
-You can choose which model to use by passing a component with a stomatal conductance model set to one of the `structs` above.
+You can choose which model to use by passing a component with a stomatal conductance model set to one of the `struct` above.
 
 For example, you can "simulate" a constant assimilation for a leaf using the following:
 
@@ -58,7 +58,7 @@ meteo = Atmosphere(T = 20.0, Wind = 1.0, P = 101.3, Rh = 0.65)
 
 leaf = ModelList(
     stomatal_conductance = Medlyn(0.03, 12.0),
-    A = 20.0, Cₛ = 400.0, Dₗ = meteo.VPD
+    status = (A = 20.0, Cₛ = 400.0, Dₗ = meteo.VPD)
 )
 
 stomatal_conductance!(leaf,meteo)

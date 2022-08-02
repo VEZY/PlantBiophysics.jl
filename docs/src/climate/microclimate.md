@@ -59,7 +59,7 @@ using CSV, DataFrames
 file = joinpath(dirname(dirname(pathof(PlantBiophysics))),"test","inputs","meteo.csv")
 df = CSV.read(file, DataFrame; header=5, datarow = 6)
 # Select and rename the variables:
-select!(df, :date, :VPD, :temperature => :T, :relativeHumidity => :Rh, :wind => :Wind, :atmosphereCO2_ppm => :Cₐ)
+select!(df, :date, :temperature => :T, :relativeHumidity => (x -> x ./ 100 ) => :Rh, :wind => :Wind, :atmosphereCO2_ppm => :Cₐ)
 df[!,:duration] .= 1800 # Add the time-step duration, 30min
 
 # Make the weather, and add some metadata:
