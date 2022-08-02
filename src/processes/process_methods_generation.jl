@@ -43,7 +43,7 @@ macro gen_process_methods(f)
 
         # Base method that calls the actual algorithms:
         function $(esc(mutating_f))(object::ModelList{T,Status}, meteo::AbstractAtmosphere, constants=Constants()) where {T}
-            !is_initialised(object) && error("Some variables must be initialized before simulation")
+            !is_initialized(object) && error("Some variables must be initialized before simulation")
 
             $(esc(f_))(object.models.$(f), object.models, object.status, meteo, constants)
             return nothing
@@ -51,7 +51,7 @@ macro gen_process_methods(f)
 
         # Method for a status with several TimeSteps but one meteo only:
         function $(esc(mutating_f))(object::ModelList{T,TimeSteps}, meteo::AbstractAtmosphere, constants=Constants()) where {T}
-            !is_initialised(object) && error("Some variables must be initialized before simulation")
+            !is_initialized(object) && error("Some variables must be initialized before simulation")
 
             for i in status(object)
                 $(esc(f_))(object.models.$(f), object.models, i, meteo, constants)
@@ -104,7 +104,7 @@ macro gen_process_methods(f)
             # Check if the meteo data and the status have the same length (or length 1)
             check_status_wheather(object, meteo)
 
-            !is_initialised(object) && error("Some variables must be initialized before simulation")
+            !is_initialized(object) && error("Some variables must be initialized before simulation")
 
             # Computing for each time-steps:
             for (i, meteo_i) in enumerate(meteo.data)
@@ -115,7 +115,7 @@ macro gen_process_methods(f)
         # Method for calling the process without any meteo. In this case we need to check if
         # the status has one or several time-steps.
         function $(esc(mutating_f))(object, meteo::Nothing=nothing, constants=Constants())
-            !is_initialised(object) && error("Some variables must be initialized before simulation (see info message for more details)")
+            !is_initialized(object) && error("Some variables must be initialized before simulation (see info message for more details)")
 
             if isa(status(object), PlantBiophysics.Status)
                 $(esc(f_))(object.models.$(f), object.models, object.status, meteo, constants)
@@ -137,7 +137,7 @@ macro gen_process_methods(f)
             # Define the attribute name used for the models in the nodes
             attr_name = MultiScaleTreeGraph.cache_name("PlantBiophysics models")
 
-            # Initialise the MTG nodes with the corresponding models:
+            # initialize the MTG nodes with the corresponding models:
             init_mtg_models!(mtg, models, attr_name=attr_name)
 
             MultiScaleTreeGraph.transform!(mtg, attr_name => (x -> $(mutating_f)(x, meteo, constants)), ignore_nothing=true)
@@ -156,7 +156,7 @@ macro gen_process_methods(f)
             # Init the status for the meteo step only (with an AbstractAtmosphere)
             to_init = init_mtg_models!(mtg, models, 1, attr_name=attr_name)
             #! Here we use only one time-step for the status whatever the number of timesteps
-            #! to simulate. Then we use this status for all the meteo steps (we re-initialise
+            #! to simulate. Then we use this status for all the meteo steps (we re-initialize
             #! its values at each step). We do this to not replicate much data, but it is not
             #! the best way to do it because we don't use the nice methods from above that
             #! control the simulations for meteo / status timesteps. What we could do instead

@@ -4,17 +4,17 @@
         verbose = true, attr_name = :models
     )
 
-Initialise the components of an MTG (*i.e.* nodes) with the corresponding models.
+initialize the components of an MTG (*i.e.* nodes) with the corresponding models.
 
 The function checks if the models associated to each component of the MTG are fully initialized,
-and if not, tries to initialise the variables using the MTG attributes with the exact same name,
+and if not, tries to initialize the variables using the MTG attributes with the exact same name,
 and if not found, returns an error.
 
 # Arguments
 
 - `mtg::MultiScaleTreeGraph.Node`: the MTG tree.
 - `models::Dict{String,<:AbstractModel}`: a dictionary of models named by components names
-- `i=nothing`: the time-step to initialise. If `nothing`, initialise all the time-steps.
+- `i=nothing`: the time-step to initialize. If `nothing`, initialize all the time-steps.
 - `verbose = true`: return information during the processes
 - `attr_name = :models`: the node attribute name used to store the models
 
@@ -39,8 +39,8 @@ models = Dict(
 )
 
 # Checking which variables are needed for our models:
-[component => to_initialise(model) for (component, model) in models]
-# OK we need to initialise Rₛ, sky_fraction and the PPFD
+[component => to_initialize(model) for (component, model) in models]
+# OK we need to initialize Rₛ, sky_fraction and the PPFD
 
 # We can compute them directly inside the MTG from available variables:
 transform!(
@@ -53,8 +53,8 @@ transform!(
 # Initialising all components with their corresponding models and initialisations:
 init_mtg_models!(mtg, models)
 # Note that this is possible only because the initialisation values are found in the MTG.
-# If the initialisations are constant values between components, we can directly initialise
-# them in the models definition (we initialise `:d` like this in our example).
+# If the initialisations are constant values between components, we can directly initialize
+# them in the models definition (we initialize `:d` like this in our example).
 ```
 """
 function init_mtg_models!(
@@ -72,10 +72,10 @@ function init_mtg_models!(
         @info string("No model found for component(s) ", join(component_no_models, ", ", ", and "))
     end
 
-    # Get which model has values that needs to be further initialised:
+    # Get which model has values that needs to be further initialized:
     to_init = Dict()
     for (key, value) in models
-        init = to_initialise(value)
+        init = to_initialize(value)
         if length(init) > 0
             push!(to_init, key => init)
         end
@@ -98,7 +98,7 @@ function init_mtg_models!(
                     )
 
                     if length(attr_not_found) == 0
-                        # If not, initialise the ModelList using attributes
+                        # If not, initialize the ModelList using attributes
                         @info "Initialising $(to_init[node.MTG.symbol]) using node attributes" maxlog = 1
 
                         node_model = deepcopy(models[node.MTG.symbol])
@@ -118,7 +118,7 @@ function init_mtg_models!(
                         end
                     end
                 else
-                    # Else we initialise as is
+                    # Else we initialize as is
                     node[attr_name_sym] = models[node.MTG.symbol]
                 end
             end
@@ -127,14 +127,14 @@ function init_mtg_models!(
             err_msg = [string("\n", key, ": [", join(value, ", ", " and "), "]") for (key, value) in attrs_missing]
             error(
                 string(
-                    "Some variables need to be initialised for some components before simulation:",
+                    "Some variables need to be initialized for some components before simulation:",
                     join(err_msg, ", ", " and ")
                 )
             )
         end
     elseif verbose
         @info string(
-            "All models are aleady initialised. Make a new model if you want to update the values."
+            "All models are aleady initialized. Make a new model if you want to update the values."
         )
     end
 
@@ -159,7 +159,7 @@ end
     update_mtg_models!(mtg::MultiScaleTreeGraph.Node, i, attr_name::Symbol)
 
 Update the mtg models initialisations by using the ith time-step. The mtg is considered fully
-initialised already once, so [`init_mtg_models!`](@ref) must be called before
+initialized already once, so [`init_mtg_models!`](@ref) must be called before
 `update_mtg_models!`.
 
 The values are updated only for node attributes in `to_init`. Those attributes must have

@@ -1,43 +1,43 @@
 """
-    to_initialise(v::T, vars...) where T <: Union{Missing,AbstractModel}
-    to_initialise(m::T)  where T <: ModelList
+    to_initialize(v::T, vars...) where T <: Union{Missing,AbstractModel}
+    to_initialize(m::T)  where T <: ModelList
 
 Return the variables that must be initialized providing a set of models.
 
 # Note
 
 There is no way to know before-hand which process will be simulated by the user, so if you
-have a component with a model for each process, the variables to initialise are always the
+have a component with a model for each process, the variables to initialize are always the
 smallest subset of all, meaning it is considered the variables needed for models can be
 output from other models.
 
 # Examples
 
 ```julia
-to_initialise(Fvcb(),Medlyn(0.03,12.0))
+to_initialize(Fvcb(),Medlyn(0.03,12.0))
 
 # Or using a component directly:
 leaf = ModelList(photosynthesis = Fvcb(), stomatal_conductance = Medlyn(0.03,12.0))
-to_initialise(leaf)
+to_initialize(leaf)
 ```
 """
-function to_initialise(v::T, vars...) where {T<:AbstractModel}
+function to_initialize(v::T, vars...) where {T<:AbstractModel}
     Tuple(setdiff(inputs(v, vars...), outputs(v, vars...)))
 end
 
-function to_initialise(m::T) where {T<:ModelList}
+function to_initialize(m::T) where {T<:ModelList}
     # These are all the variables needed for a simulation given the models:
     default_values = init_variables(m.models...)
 
     # These are the ones that we need to initialize before simulation:
-    needed_variables = NamedTuple(i => default_values[i] for i in to_initialise(m.models...))
+    needed_variables = NamedTuple(i => default_values[i] for i in to_initialize(m.models...))
     vars_not_init_(m.status, needed_variables)
 end
 
-function to_initialise(m::T) where {T<:Dict{String,ModelList}}
+function to_initialize(m::T) where {T<:Dict{String,ModelList}}
     toinit = Dict{String,Vector{Symbol}}()
     for (key, value) in m
-        toinit_ = to_initialise(value)
+        toinit_ = to_initialize(value)
 
         if length(toinit_) > 0
             push!(toinit, key => toinit_)
@@ -143,16 +143,16 @@ function init_variables(; kwargs...)
 end
 
 """
-    is_initialised(m::T) where T <: ModelList
-    is_initialised(m::T, models...) where T <: ModelList
+    is_initialized(m::T) where T <: ModelList
+    is_initialized(m::T, models...) where T <: ModelList
 
-Check if the variables that must be initialised are, and return `true` if so, and `false` and
+Check if the variables that must be initialized are, and return `true` if so, and `false` and
 an information message if not.
 
 # Note
 
 There is no way to know before-hand which process will be simulated by the user, so if you
-have a component with a model for each process, the variables to initialise are always the
+have a component with a model for each process, the variables to initialize are always the
 smallest subset of all, meaning it is considered the user will simulate the variables needed
 for other models.
 
@@ -160,29 +160,29 @@ for other models.
 
 ```julia
 leaf = ModelList(photosynthesis = Fvcb(), stomatal_conductance = Medlyn(0.03,12.0))
-is_initialised(leaf)
+is_initialized(leaf)
 
 # Searching for just a sub-set of models:
-is_initialised(leaf,leaf.photosynthesis)
+is_initialized(leaf,leaf.photosynthesis)
 # NB: this is usefull when the leaf is parameterised for all processes but only one is
-# simulated, so its inputs must be initialised
+# simulated, so its inputs must be initialized
 ```
 """
-function is_initialised(m::T; info=true) where {T<:ModelList}
-    var_names = to_initialise(m)
+function is_initialized(m::T; info=true) where {T<:ModelList}
+    var_names = to_initialize(m)
 
     if length(var_names) > 0
-        info && @info "Some variables must be initialised before simulation: $var_names (see `to_initialise()`)"
+        info && @info "Some variables must be initialized before simulation: $var_names (see `to_initialize()`)"
         return false
     else
         return true
     end
 end
 
-function is_initialised(models...; info=true)
-    var_names = to_initialise(models...)
+function is_initialized(models...; info=true)
+    var_names = to_initialize(models...)
     if length(var_names) > 0
-        info && @info "Some variables must be initialised before simulation: $(var_names) (see `to_initialise()`)"
+        info && @info "Some variables must be initialized before simulation: $(var_names) (see `to_initialize()`)"
         return false
     else
         return true

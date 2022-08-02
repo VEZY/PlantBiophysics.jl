@@ -23,8 +23,8 @@ end;
     st.PPFD = 15.0
     @test all(getproperty(leaf.status, i) == getproperty(st, i) for i in keys(st))
 
-    @test !is_initialised(leaf)
-    @test to_initialise(leaf) == (:Tₗ, :Cₛ, :Dₗ)
+    @test !is_initialized(leaf)
+    @test to_initialize(leaf) == (:Tₗ, :Cₛ, :Dₗ)
 end;
 
 @testset "ModelList with fully initialized status" begin
@@ -43,6 +43,6 @@ end;
     end
     @test all(getproperty(leaf.status, i) == getproperty(st, i) for i in keys(st))
 
-    @test is_initialised(leaf)
-    @test to_initialise(leaf) == ()
+    @test is_initialized(leaf)
+    @test to_initialize(leaf) == ()
 end;

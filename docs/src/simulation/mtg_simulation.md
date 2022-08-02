@@ -69,10 +69,10 @@ models = read_model(file)
 Let's check which variables we need to provide for our model configuration:
 
 ```@example usepkg
-to_initialise(models)
+to_initialize(models)
 ```
 
-OK, only the `"Leaf"` component must be initialised before computation, with Rₛ (the shortwave radiation), sky_fraction (the visible sky fraction seen by the object), d (the characteristic dimension of the object) and PPFD (the Photosynthetically active Photon Flux Density). We are in luck, we used [Archimed-ϕ](https://archimed-platform.github.io/archimed-phys-user-doc/) to compute the radiation interception of each organ in the example coffee plant we are using. So the only thing we need is to transform the variables given by Archimed-ϕ in each node to match the ones we need. We use `transform!` from the MultiScaleTreeGraph package to traverse the MTG and compute the right variable for each node:
+OK, only the `"Leaf"` component must be initialized before computation, with Rₛ (the shortwave radiation), sky_fraction (the visible sky fraction seen by the object), d (the characteristic dimension of the object) and PPFD (the Photosynthetically active Photon Flux Density). We are in luck, we used [Archimed-ϕ](https://archimed-platform.github.io/archimed-phys-user-doc/) to compute the radiation interception of each organ in the example coffee plant we are using. So the only thing we need is to transform the variables given by Archimed-ϕ in each node to match the ones we need. We use `transform!` from the MultiScaleTreeGraph package to traverse the MTG and compute the right variable for each node:
 
 ```@example usepkg
 using MultiScaleTreeGraph

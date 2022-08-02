@@ -129,7 +129,7 @@ export ModelList
 # Get models informations
 export variables, variables_typed
 export inputs, outputs, defaults
-export to_initialise, is_initialised
+export to_initialize, is_initialized
 
 # Atmosphere
 export vapor_pressure

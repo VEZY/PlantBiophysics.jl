@@ -190,7 +190,7 @@ For example one can instantiate the structure like so now:
 WoodModels(energy_balance = Monteith(), Rₛ = 13.0, sky_fraction = 1.0, d = 0.03)
 ```
 
-Our newly created structure has a model to simulate the energy balance, but no model to compute the light interception. It is completely initialised, with values for `Rₛ`, `sky_fraction` and `d`.
+Our newly created structure has a model to simulate the energy balance, but no model to compute the light interception. It is completely initialized, with values for `Rₛ`, `sky_fraction` and `d`.
 
 I think we can agree this form is way cleaner than the previous one we saw earlier:
 

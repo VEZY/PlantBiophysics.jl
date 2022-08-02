@@ -91,7 +91,7 @@ initialisations for:
 
 # Note
 
-`Tₗ`, `PPFD`, `Gbc` (and `Dₗ` if you use [`Medlyn`](@ref)) must be initialised by providing
+`Tₗ`, `PPFD`, `Gbc` (and `Dₗ` if you use [`Medlyn`](@ref)) must be initialized by providing
 them as keyword arguments (see examples). If in doubt, it is simpler to compute the energy
 balance of the leaf with the photosynthesis to get those variables. See
 [`energy_balance`](@ref) for more details.
@@ -157,7 +157,7 @@ function photosynthesis!_(::FvcbIter, models, status, meteo, constants=Constants
     # RuBP regeneration
     Vⱼ = J / 4
 
-    # First iteration to initialise the values for A and Gₛ:
+    # First iteration to initialize the values for A and Gₛ:
     # Net assimilation (μmol m-2 s-1)
     status.A = Fvcb_net_assimiliation(status.Cᵢ, Vⱼ, Γˢ, VcMax, Km, Rd)
 

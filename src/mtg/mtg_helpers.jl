@@ -105,7 +105,7 @@ function pre_allocate_attr!(node, nsteps; attr_name=:models)
                 end
             else
                 # If the value already exist but is not an array, make an array out of it.
-                # This happens when dealing with variables initialised with only one value.
+                # This happens when dealing with variables initialized with only one value.
                 node[i] = fill(node[i], nsteps)
             end
         end

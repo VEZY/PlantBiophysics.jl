@@ -30,14 +30,14 @@ end;
 end;
 
 
-@testset "Vars to initialise" begin
+@testset "Vars to initialize" begin
     leaf = ModelList(photosynthesis=A, stomatal_conductance=Gs)
-    @test to_initialise(leaf) == (:PPFD, :Tₗ, :Cₛ, :Dₗ)
-    @test to_initialise(leaf) == to_initialise(A, Gs)
-    @test to_initialise(A) == (:PPFD, :Tₗ, :Cₛ)
+    @test to_initialize(leaf) == (:PPFD, :Tₗ, :Cₛ, :Dₗ)
+    @test to_initialize(leaf) == to_initialize(A, Gs)
+    @test to_initialize(A) == (:PPFD, :Tₗ, :Cₛ)
 
     @test leaf.status.Tₗ == -999.99
-    @test is_initialised(leaf) == false
+    @test is_initialized(leaf) == false
 
     leaf =
         ModelList(
@@ -46,5 +46,5 @@ end;
             status=(Tₗ=25.0, PPFD=1000.0, Cₛ=400.0, Dₗ=1.2)
         )
 
-    @test is_initialised(leaf) == true
+    @test is_initialized(leaf) == true
 end;

@@ -5,7 +5,7 @@
 
 Get a ModelList status, *i.e.* the state of the input (and output) variables.
 
-See also [`is_initialised`](@ref) and [`to_initialise`](@ref)
+See also [`is_initialized`](@ref) and [`to_initialize`](@ref)
 """
 function status(m)
     m.status

@@ -39,13 +39,13 @@ leaf = ModelList(
 ```
 
 No variables were given as keyword arguments, that means that the status of the leaf is not
-set yet, and all variables are initialised to `-999.99`. This component cannot be simulated
+set yet, and all variables are initialized to `-999.99`. This component cannot be simulated
 yet.
 
-To know which variables we need to initialise for a simulation, we use [`to_initialise`](@ref):
+To know which variables we need to initialize for a simulation, we use [`to_initialize`](@ref):
 
 ```@example usepkg
-to_initialise(leaf)
+to_initialize(leaf)
 ```
 
 The meaning and units of the variables can be found on documentation of each model,

@@ -37,10 +37,10 @@ In our example we use the Monteith et al. (2013) model implementation for the en
 
 Each model has its own structure used to provide the parameter values. For example the stomatal conductance model of Medlyn et al. (2011) need two parameters: g0 and g1. We pass both values when calling the structure here: `Medlyn(0.03, 12.0)`. In our example, we use the default values for the two other models used, they are called without passing any argument.
 
-Then we pass different values to instantiate the input variables needed for the models: `Rₛ = 13.747, sky_fraction = 1.0, PPFD = 1500.0, d = 0.03`. The variables needed to be instantiated depends on each model used, but also on their combination because some models will compute the inputs of others. One way to know which variables should be instantiated is to use [`to_initialise`](@ref):
+Then we pass different values to instantiate the input variables needed for the models: `Rₛ = 13.747, sky_fraction = 1.0, PPFD = 1500.0, d = 0.03`. The variables needed to be instantiated depends on each model used, but also on their combination because some models will compute the inputs of others. One way to know which variables should be instantiated is to use [`to_initialize`](@ref):
 
 ```@example usepkg
-to_initialise(
+to_initialize(
     ModelList(
         energy_balance = Monteith(),
         photosynthesis = Fvcb(),

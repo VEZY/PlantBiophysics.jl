@@ -83,9 +83,9 @@ model = read_model(joinpath(dirname(dirname(pathof(PlantBiophysics))),"test","in
 # Initialising the mandatory variables:
 init_status!(model, Rₛ = 13.747, sky_fraction = 1.0, PPFD = 1500.0, Tₗ = 25.0, d = 0.03)
 
-# NB: To know which variables has to be initialised according to the models used, you can use
-# `to_initialise(ComponentModels)`, *e.g.*:
-to_initialise(model["Leaf"])
+# NB: To know which variables has to be initialized according to the models used, you can use
+# `to_initialize(ComponentModels)`, *e.g.*:
+to_initialize(model["Leaf"])
 
 # Running a simulation for all component types in the same scene:
 energy_balance!(model, meteo)
