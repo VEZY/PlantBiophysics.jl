@@ -27,14 +27,16 @@ include("Abstract_model_structs.jl")
 
 # Status
 include("component_models/Status.jl")
+
+# Component models
+include("component_models/ModelList.jl")
+
+# Status helpers
 include("component_models/get_status.jl")
 
 # Atmosphere
 include("climate/atmosphere.jl")
 include("climate/weather.jl")
-
-# Component models
-include("component_models/ModelList.jl")
 
 # Automatic process methods generation:
 include("processes/process_methods_generation.jl")
