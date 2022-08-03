@@ -57,7 +57,7 @@ This growth model uses the assimilation computed using the coupled energy balanc
 
 Let's implement this model below:
 
-```julia @example usepkg
+```@example usepkg
 # Import the functions we need so we can add our own methods:
 import PlantBiophysics: inputs_, outputs_, energy_balance!_
 
@@ -118,7 +118,7 @@ end
 
 Now we can make a simulation as usual:
 
-```julia @example usepkg
+```@example usepkg
 meteo = Atmosphere(T = 22.0, Wind = 0.8333, P = 101.325, Rh = 0.4490995)
 
 leaf = ModelList(
@@ -136,7 +136,7 @@ leaf[:leaf_biomass] # biomass in gC
 
 We can also start the simulation later when the plant already has some biomass by initializing the `leaf_biomass`:
 
-```julia @example usepkg
+```@example usepkg
 meteo = Atmosphere(T = 22.0, Wind = 0.8333, P = 101.325, Rh = 0.4490995)
 
 leaf = ModelList(

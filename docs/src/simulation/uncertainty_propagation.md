@@ -8,11 +8,13 @@ using Dates
 # Toggle the use of a comparison function (using `mean`):
 unsafe_comparisons(true)
 meteo = Atmosphere(T = 22.0 ± 0.1, Wind = 0.8333 ± 0.1, P = 101.325 ± 1., Rh = 0.4490995 ± 0.02, Cₐ = 400. ± 1.)
+
 leaf = ModelList(
         energy_balance = Monteith(),
         photosynthesis = Fvcb(),
         stomatal_conductance = Medlyn(0.03, 12.0),
-        status = (Rₛ = 13.747 ± 1., sky_fraction = 1.0, PPFD = 1500.0 ± 1., d = 0.03 ± 0.001)
+        status = (Rₛ = 13.747 ± 1., sky_fraction = 1.0, PPFD = 1500.0 ± 1., d = 0.03 ± 0.001),
+        type_promotion = Dict(Float64 => Particles{Float64,2000})
     )
 ```
 
@@ -27,9 +29,7 @@ We can very easily propagate uncertainties in all computations in PlantBiophysic
 Let's first import all packages we need:
 
 ```julia
-using PlantBiophysics
-using MonteCarloMeasurements
-using Plots
+using PlantBiophysics, MonteCarloMeasurements, Plots, Dates
 # Toggle the use of a comparison function (using `mean`):
 unsafe_comparisons(true)
 ```
@@ -76,11 +76,6 @@ It is also possible to use other types of distributions. For example the `a .. b
 Here's an example usage:
 
 ```@example usepkg
-using PlantBiophysics
-using MonteCarloMeasurements
-using Plots
-unsafe_comparisons(true)
-
 # ⊞ \boxplus
 # ⊠ \boxtimes
 

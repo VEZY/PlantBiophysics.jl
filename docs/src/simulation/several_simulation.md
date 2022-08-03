@@ -2,6 +2,7 @@
 
 ```@setup usepkg
 using PlantBiophysics
+using Dates
 ```
 
 ## Running the simulation
@@ -9,6 +10,9 @@ using PlantBiophysics
 We saw in the previous section how to run a simulation over one time step. We can also easily perform computations over several time steps from a weather file:
 
 ```@example usepkg
+using PlantBiophysics
+using Dates
+
 meteo =
     read_weather(
         joinpath(dirname(dirname(pathof(PlantBiophysics))), "test", "inputs", "meteo.csv"),

@@ -119,10 +119,7 @@ So in practice, the `stomatal_conductance!_` implementation is rather generic an
 
 !!! warning
     We need to import all the functions we need to use or extend, so Julia knows we are extending the methods from PlantBiophysics, and not defining our own functions. To do so, you can do *e.g.*:
-    ```julia
-     import PlantBiophysics: inputs_, outputs_, photosynthesis!, stomatal_conductance!
-
-```
+    `import PlantBiophysics: inputs_, outputs_, photosynthesis!, stomatal_conductance!`
 
 So let's do it! Here is our own implementation of the stomatal closure for a `ModelList` component models:
 
@@ -152,11 +149,11 @@ Here is how we actually implement our methods:
 
 ```@example usepkg
 function inputs_(::BandB)
-    (:Rh=-999.99,:Cₛ=-999.99,:A=-999.99)
+    (Rh=-999.99,Cₛ=-999.99,A=-999.99)
 end
 
 function outputs_(::BandB)
-    (:Gₛ=-999.99,)
+    (Gₛ=-999.99,)
 end
 ```
 
@@ -176,7 +173,7 @@ end
 
 This allows your user to instantiate your model parameters using different types of inputs. For example they may use this:
 
-```@example usepkg
+```julia
 BandB(0,2.0,0.001)
 ```
 

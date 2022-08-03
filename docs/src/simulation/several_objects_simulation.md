@@ -2,6 +2,7 @@
 
 ```@setup usepkg
 using PlantBiophysics
+using Dates
 ```
 
 ## Running the simulation
@@ -11,6 +12,9 @@ We saw in the previous sections how to run a simulation over one and several tim
 Now it is also very easy to run a simulation for different components by just providing an array of component instead:
 
 ```@example usepkg
+using PlantBiophysics
+using Dates
+
 meteo = Atmosphere(T = 22.0, Wind = 0.8333, P = 101.325, Rh = 0.4490995)
 
 leaf1 = ModelList(
