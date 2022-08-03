@@ -129,7 +129,8 @@ export ModelList
 
 # Get models informations
 export variables, variables_typed
-export inputs, outputs, defaults
+export inputs, outputs
+export inputs_, outputs_
 export to_initialize, is_initialized
 
 # Atmosphere

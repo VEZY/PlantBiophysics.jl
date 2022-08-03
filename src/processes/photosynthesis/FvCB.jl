@@ -196,7 +196,7 @@ leaf =
     )
 # NB: we need  to initalise Tₗ, PPFD and Cₛ
 
-photosynthesis!_(leaf,meteo,Constants())
+photosynthesis!(leaf,meteo,Constants())
 leaf.status.A
 leaf.status.Cᵢ
 ```
