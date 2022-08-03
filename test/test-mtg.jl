@@ -127,9 +127,6 @@ end
     # Make the computation:
     energy_balance!(mtg, models, weather)
 
-    leaf_node[:A]
-    leaf_node[:_cache_0596aa36b0bce0b33db9c24bcbf25e863a5d03e9][:A]
-
     @test leaf_node[:Ra_PAR_f] == Ra_PAR_f
     @test leaf_node[:sky_fraction] == fill(sky_fraction, length(weather))
     @test leaf_node[:sky_fraction] == fill(sky_fraction, length(weather))
@@ -140,15 +137,15 @@ end
     #     print("@test leaf_node[:$i] ≈ $(round.(leaf_node[i], digits= 5)) atol = 1e-4\n")
     # end
 
-    @test leaf_node[:A] ≈ [12.8822, 12.65021, 12.82599] atol = 1e-4
-    @test leaf_node[:Tₗ] ≈ [-253.77282, -226.73428, -229.87083] atol = 1e-4
-    @test leaf_node[:Rₗₗ] ≈ [-1.15294, -1.07987, -1.03496] atol = 1e-4
-    @test leaf_node[:H] ≈ [-13942.29244, -14915.99942, -15075.42555] atol = 1e-4
-    @test leaf_node[:λE] ≈ [14065.04046, 15038.8205, 15198.29154] atol = 1e-4
-    @test leaf_node[:Gₛ] ≈ [0.33472, 0.32801, 0.32619] atol = 1e-4
-    @test leaf_node[:Gbₕ] ≈ [0.02085, 0.02469, 0.02466] atol = 1e-4
-    @test leaf_node[:Gbc] ≈ [0.6457, 0.76197, 0.76276] atol = 1e-4
-    @test leaf_node[:Rn] ≈ [122.74802, 122.82109, 122.86599] atol = 1e-4
-    @test leaf_node[:Cᵢ] ≈ [341.51361, 341.43362, 340.67958] atol = 1e-4
-    @test leaf_node[:Cₛ] ≈ [360.04926, 363.39792, 363.18468] atol = 1e-4
+    @test leaf_node[:A] ≈ [13.26041, 13.06967, 13.2554] atol = 1e-4
+    @test leaf_node[:Tₗ] ≈ [23.89506, 24.90282, 24.05352] atol = 1e-4
+    @test leaf_node[:Rₗₗ] ≈ [1.02677, 1.0427, 1.15823] atol = 1e-4
+    @test leaf_node[:H] ≈ [-55.1378, -64.8336, -74.09948] atol = 1e-4
+    @test leaf_node[:λE] ≈ [180.06553, 189.77726, 199.15867] atol = 1e-4
+    @test leaf_node[:Gₛ] ≈ [0.43526, 0.42401, 0.4196] atol = 1e-4
+    @test leaf_node[:Gbₕ] ≈ [0.02076, 0.02467, 0.02476] atol = 1e-4
+    @test leaf_node[:Gbc] ≈ [0.64289, 0.76133, 0.76612] atol = 1e-4
+    @test leaf_node[:Rn] ≈ [124.92773, 124.94366, 125.05919] atol = 1e-4
+    @test leaf_node[:Cᵢ] ≈ [328.90212, 332.00617, 331.10467] atol = 1e-4
+    @test leaf_node[:Cₛ] ≈ [359.37374, 362.83304, 362.69798] atol = 1e-4
 end

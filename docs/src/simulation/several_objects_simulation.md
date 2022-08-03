@@ -17,16 +17,15 @@ leaf1 = ModelList(
         energy_balance = Monteith(),
         photosynthesis = Fvcb(),
         stomatal_conductance = Medlyn(0.03, 12.0),
-        Rₛ = 13.747, sky_fraction = 1.0, PPFD = 1500.0, d = 0.03
+        status = (Rₛ = 13.747, sky_fraction = 1.0, PPFD = 1500.0, d = 0.03)
     )
 
 leaf2 = ModelList(
         energy_balance = Monteith(),
         photosynthesis = Fvcb(),
         stomatal_conductance = Medlyn(0.03, 12.0),
-        Rₛ = 10., sky_fraction = 1.0, PPFD = 1250.0, d = 0.02
+        status = (Rₛ = 10., sky_fraction = 1.0, PPFD = 1250.0, d = 0.02)
     )
-
 
 energy_balance!([leaf1, leaf2], meteo)
 
@@ -35,42 +34,44 @@ DataFrame(Dict("leaf1" => leaf1, "leaf2" => leaf2))
 
 Note that we use a `Dict` of components in the call to `DataFrame` because it allows to get a `component` column to retrieve the component in the `DataFrame`, but we could also just use an Array instead.
 
-And the same simulation over different time-steps would give:
+A simulation over different time-steps would give:
 
 ```@example usepkg
-w = Weather(
-    [
-        Atmosphere(T = 20.0, Wind = 1.0, P = 101.3, Rh = 0.65),
-        Atmosphere(T = 23.0, Wind = 1.5, P = 101.3, Rh = 0.60),
-        Atmosphere(T = 25.0, Wind = 3.0, P = 101.3, Rh = 0.55)
-    ]
-)
+meteo =
+    read_weather(
+        joinpath(dirname(dirname(pathof(PlantBiophysics))), "test", "inputs", "meteo.csv"),
+        :temperature => :T,
+        :relativeHumidity => (x -> x ./ 100) => :Rh,
+        :wind => :Wind,
+        :atmosphereCO2_ppm => :Cₐ,
+        date_format=DateFormat("yyyy/mm/dd")
+    )
 
 leaf1 = ModelList(
         energy_balance = Monteith(),
         photosynthesis = Fvcb(),
         stomatal_conductance = Medlyn(0.03, 12.0),
-        Rₛ = [5., 10., 20.],
-        sky_fraction = 1.0,
-        PPFD = [500., 1000., 1500.0],
-        d = 0.03
+        status = (
+            Rₛ = [5., 10., 20.],
+            sky_fraction = 1.0,
+            PPFD = [500., 1000., 1500.0],
+            d = 0.03
+        )
     )
 
 leaf2 = ModelList(
         energy_balance = Monteith(),
         photosynthesis = Fvcb(),
         stomatal_conductance = Medlyn(0.03, 12.0),
-        Rₛ = [3., 7., 16.],
-        sky_fraction = 1.0,
-        PPFD = [400., 800., 1200.0],
-        d = 0.03
+        status = (
+            Rₛ = [3., 7., 16.],
+            sky_fraction = 1.0,
+            PPFD = [400., 800., 1200.0],
+            d = 0.03
+        )
     )
 
-energy_balance!([leaf1, leaf2], w)
+energy_balance!([leaf1, leaf2], meteo)
 
 DataFrame(Dict("leaf1" => leaf1, "leaf2" => leaf2))
 ```
-
-## Wrap-up
-
-Now that you learned how to run those simulations, you can head to the next section to learn more about the package design to better understand what is a process, a component or a model.

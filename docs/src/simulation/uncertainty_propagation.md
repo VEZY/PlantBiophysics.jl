@@ -12,15 +12,15 @@ leaf = ModelList(
         energy_balance = Monteith(),
         photosynthesis = Fvcb(),
         stomatal_conductance = Medlyn(0.03, 12.0),
-        Rₛ = 13.747 ± 1., sky_fraction = 1.0, PPFD = 1500.0 ± 1., d = 0.03 ± 0.001
+        status = (Rₛ = 13.747 ± 1., sky_fraction = 1.0, PPFD = 1500.0 ± 1., d = 0.03 ± 0.001)
     )
 ```
 
 ## Introduction
 
-We can very easily propagate uncertainties in all computations in PlantBiophysics using either [Measurements.jl](https://github.com/JuliaPhysics/Measurements.jl) or [MonteCarloMeasurements.jl](https://github.com/baggepinnen/MonteCarloMeasurements.jl). So instead of using classic datatypes such as `Float64` for parameter values, micro-meteorological conditions or initial values, we use a specific datatype that propagates distributions rather than scalars.
+We can very easily propagate uncertainties in all computations in PlantBiophysics using either [Measurements.jl](https://github.com/JuliaPhysics/Measurements.jl) or [MonteCarloMeasurements.jl](https://github.com/baggepinnen/MonteCarloMeasurements.jl). So instead of using classic data types such as `Float64` for parameter values, micro-meteorological conditions or initial values, we use a specific data type that propagates distributions rather than scalars.
 
-[Measurements.jl](https://github.com/JuliaPhysics/Measurements.jl) provides a very fast way to propagate errors, but is only suited for linear processes. [MonteCarloMeasurements.jl](https://github.com/baggepinnen/MonteCarloMeasurements.jl) in the other hand is slower but provides a better estimation of the propagation for non-linear processes. The main idea of Monte Carlo methods is to simulate the problem a large number `n` of times, randomly drawing inputs in their distributions, that are specified by the user. We then get distributions as outputs (and means/standard deviations).
+[Measurements.jl](https://github.com/JuliaPhysics/Measurements.jl) provides a very fast way to propagate errors, but is only suited for linear processes. [MonteCarloMeasurements.jl](https://github.com/baggepinnen/MonteCarloMeasurements.jl) in the other hand is slower but provides a better estimation of the propagation for non-linear processes. The main idea of Monte Carlo methods is to simulate the problem for a large number of times, randomly drawing inputs in the distributions specified by the user. We then get distributions as outputs (and means/standard deviations).
 
 ## Example: normal distributions
 
@@ -38,15 +38,17 @@ We can use the `μ ± σ` notation for the values of the parameters and micro-me
 
 ```julia
 meteo = Atmosphere(T = 22.0 ± 0.1, Wind = 0.8333 ± 0.1, P = 101.325 ± 1., Rh = 0.4490995 ± 0.02, Cₐ = 400. ± 1.)
+
 leaf = ModelList(
         energy_balance = Monteith(),
         photosynthesis = Fvcb(),
         stomatal_conductance = Medlyn(0.03, 12.0),
-        Rₛ = 13.747 ± 1., sky_fraction = 1.0, PPFD = 1500.0 ± 1., d = 0.03 ± 0.001
+        status = (Rₛ = 13.747 ± 1., sky_fraction = 1.0, PPFD = 1500.0 ± 1., d = 0.03 ± 0.001),
+        type_promotion = Dict(Float64 => Particles{Float64,2000})
     )
 ```
 
-Now our parameters and conditions are not scalars, but `Particles`, which are n sampled values in the `μ ± σ` distributions. By default n = 2000.
+Now our parameters and conditions are not scalars, but `Particles`, which are `n` sampled values in the `μ ± σ` distributions. By default `n = 2000`.
 
 We can now run our simulation:
 
@@ -85,11 +87,12 @@ unsafe_comparisons(true)
 meteo = Atmosphere(T = 15.0 .. 18.0, Wind = 0.8333 ± 0.1, P = 101.325 ± 1., Rh = 0.4490995 ± 0.02, Cₐ = 400. ± 1.)
 
 leaf = ModelList(
-    energy_balance = Monteith(),
-    photosynthesis = Fvcb(),
-    stomatal_conductance = Medlyn(0.03, 12.0),
-    Rₛ = 13.747 ± 1., sky_fraction = 1.0, PPFD = 1500.0 ± 1., d = 0.01 .. 0.03
-)
+        energy_balance = Monteith(),
+        photosynthesis = Fvcb(),
+        stomatal_conductance = Medlyn(0.03, 12.0),
+        status = (Rₛ = 13.747 ± 1., sky_fraction = 1.0, PPFD = 1500.0 ± 1., d = 0.01 .. 0.03),
+        type_promotion = Dict(Float64 => Particles{Float64,2000})
+    )
 
 energy_balance!(leaf,meteo)
 
@@ -105,7 +108,7 @@ savefig("distributions-example-various.svg"); nothing #hide
 
 ## Plotting
 
-Plotting values of type `MonteCarloMeasurements.jl` is allowed using `plot` as it were scalars. It will plot confidence interval too. You can also check specific `MonteCarloMeasurements.jl` function `ribbonplot` (more details in part `Plotting` on its documentation).
+Plotting values of type `MonteCarloMeasurements.jl` is allowed using `plot` as it were scalars. It will plot confidence interval too. You can also check specific `MonteCarloMeasurements.jl` function `ribbonplot` (more details in part `Plotting` of the package documentation).
 
 For example we can simulate a leaf energy balance over consecutive time-steps:
 
@@ -123,7 +126,8 @@ leaf = ModelList(
         energy_balance = Monteith(),
         photosynthesis = Fvcb(),
         stomatal_conductance = Medlyn(0.03, 12.0),
-        Rₛ = 13.747 ± 2., sky_fraction = 0.6..1.0, PPFD = 1500.0 ± 100., d = [0.03,0.03,0.03]
+        status = (Rₛ = 13.747 ± 2., sky_fraction = 0.6..1.0, PPFD = 1500.0 ± 100., d = [0.03,0.03,0.03]),
+        type_promotion = Dict(Float64 => Particles{Float64,2000})
     )
 
 energy_balance!(leaf, weather)
@@ -136,4 +140,4 @@ savefig("error-ribbon.svg"); nothing #hide
 
 ## Performance
 
-Monte Carlo results are highly dependent on the number of simulations given by the number of particles `n`. But keep in mind that the result of an uncertainty propagation with a low `n` is more unreliable than with a higher `n`, but that higher `n` takes more time to simulate.
+Monte Carlo results are highly dependent on the number of simulations given by the number of particles `n`. But keep in mind that the result of an uncertainty propagation with a low `n` is more unreliable than with a higher `n`.

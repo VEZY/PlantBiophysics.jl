@@ -1,7 +1,10 @@
 """
     init_mtg_models!(
-        mtg::MultiScaleTreeGraph.Node, models::Dict{String,ModelList}, i=nothing;
-        verbose = true, attr_name = :models
+        mtg::MultiScaleTreeGraph.Node,
+        models::Dict{String,<:ModelList},
+        i=nothing;
+        verbose=true,
+        attr_name=:models
     )
 
 initialize the components of an MTG (*i.e.* nodes) with the corresponding models.
@@ -59,7 +62,7 @@ init_mtg_models!(mtg, models)
 """
 function init_mtg_models!(
     mtg::MultiScaleTreeGraph.Node,
-    models::Dict{String,ModelList},
+    models::Dict{String,<:ModelList},
     i=nothing;
     verbose=true,
     attr_name=:models

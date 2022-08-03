@@ -42,5 +42,5 @@ var_names = Dict(:temperature => :T, :relativeHumidity => :Rh, :wind => :Wind, :
 
     @test typeof(meteo) <: Weather
     @test typeof(meteo) <: Weather
-    @test NamedTuple(meteo.metadata) == (; name="Aquiares", latitude=15.0, altitude=100.0, use=[:Rh, :clearness], file=file)
+    @test NamedTuple(meteo.metadata) == (; name="Aquiares", latitude=15.0, altitude=100.0, use=[:clearness], file=file)
 end;

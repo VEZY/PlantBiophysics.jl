@@ -96,6 +96,8 @@ For more examples, please read the documentation.
 - [ ] Remove checks on the models when calling the processes functions, and move it to the construction of the group of models and/or to the user with a check function.
 - [ ] For the computation of MTG + Weather, give an option on which way the computation is done: compute one time-step for each node, and then the second..., or compute all time-steps for each node at once. The latter avoids visiting the tree n times, so it should be the default. But sometimes models need the result of other nodes before continuing, so the former is necessary. Add the option with a type so we use dispatch, e.g.: `TimeStepFirst` and `NodeFirst`.
 - [ ] Add a nicer print method to the ModelList and to the Status / TimeSteps
+- [ ] Merge meteo variables and status variables ? In this case we could update their values, e.g. re-compute the microclimate inside the canopy and use it for the simulation.
+- [ ] Remove Status and only use TimeSteps? With Status being TimeSteps of one.
 
 ## Contributing
 

@@ -36,6 +36,33 @@ energy_balance!(leaf,meteo)
 DataFrame(leaf)
 ```
 
-The only difference is that we use the [`Weather`](@ref) structure instead of the [`Atmosphere`](@ref), and that we provide the models inputs as an Array in the status for the ones that change over time. [`Weather`](@ref) is in fact just an array of [`Atmosphere`](@ref), with some optional metadata attached to it.
+The only difference is that we use the [`Weather`](@ref) structure instead of the [`Atmosphere`](@ref), and that we provide the models inputs as an Array in the status for the ones that change over time.
 
 Then `PlantBiophysics.jl` takes care of the rest and simulate the energy balance over each time-step. Then the output DataFrame has a row for each time-step.
+
+Note that [`Weather`](@ref) is in fact just an array of [`Atmosphere`](@ref), with some optional metadata attached to it. We could declare one manually either by using an array of [`Atmosphere`](@ref) like so:
+
+```julia
+meteo = Weather(
+    [
+        Atmosphere(T = 20.0, Wind = 1.0, P = 101.3, Rh = 0.65),
+        Atmosphere(T = 23.0, Wind = 1.5, P = 101.3, Rh = 0.60),
+        Atmosphere(T = 25.0, Wind = 3.0, P = 101.3, Rh = 0.55)
+    ]
+)
+```
+
+Or by passing a `DataFrame`:
+
+```julia
+df = DataFrame(
+    T = [20.0, 23.0, 25.0],
+    Wind = [1.0, 1.5, 3.0],
+    P = [101.3, 101.3, 101.3],
+    Rh = [0.65, 0.6, 0.55]
+)
+
+meteo = Weather(df)
+```
+
+You'll have to be careful about the names and the units you are using though, they must match exactly the ones expected for [`Atmosphere`](@ref). See the documentation of the structure if in doubt.
