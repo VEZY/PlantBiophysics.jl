@@ -109,7 +109,7 @@ function compute_date!(df, date_format, hour_format)
         # There's a "date" column but it is not a DateTime
         # Trying to parse it with the user-defined format:
         try
-            df.date = Dates.DateTime.(df.date, date_format)
+            df.date = Dates.Date.(df.date, date_format)
         catch
             error(
                 "The values in the `date` column cannot be parsed.",
