@@ -1,6 +1,6 @@
 """
     init_mtg_models!(
-        mtg::MultiScaleTreeGraph.Node, models::Dict{String,<:AbstractModel}, i=nothing;
+        mtg::MultiScaleTreeGraph.Node, models::Dict{String,ModelList}, i=nothing;
         verbose = true, attr_name = :models
     )
 
@@ -13,7 +13,7 @@ and if not found, returns an error.
 # Arguments
 
 - `mtg::MultiScaleTreeGraph.Node`: the MTG tree.
-- `models::Dict{String,<:AbstractModel}`: a dictionary of models named by components names
+- `models::Dict{String,ModelList}`: a dictionary of models named by components names
 - `i=nothing`: the time-step to initialize. If `nothing`, initialize all the time-steps.
 - `verbose = true`: return information during the processes
 - `attr_name = :models`: the node attribute name used to store the models
@@ -59,7 +59,7 @@ init_mtg_models!(mtg, models)
 """
 function init_mtg_models!(
     mtg::MultiScaleTreeGraph.Node,
-    models::Dict{String,<:AbstractModel},
+    models::Dict{String,ModelList},
     i=nothing;
     verbose=true,
     attr_name=:models
