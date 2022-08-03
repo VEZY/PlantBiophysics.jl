@@ -42,7 +42,7 @@ makedocs(;
         "Tutorial: Uncertainty propagation" => "./simulation/uncertainty_propagation.md",
         "Extending PlantBiophysics" => [
             "Implement a model" => "./extending/implement_a_model.md",
-            "Implement a component" => "./extending/implement_a_component.md",
+            "Implement a process" => "./extending/implement_a_process.md",
         ],
         "API" => "functions.md"
     ]
