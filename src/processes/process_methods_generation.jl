@@ -130,7 +130,7 @@ macro gen_process_methods(f)
         # Compatibility with MTG:
         function $(esc(mutating_f))(
             mtg::MultiScaleTreeGraph.Node,
-            models::Dict{String,<:AbstractModel},
+            models::Dict{String,ModelList},
             meteo::AbstractAtmosphere,
             constants=Constants()
         )
@@ -146,7 +146,7 @@ macro gen_process_methods(f)
         # Compatibility with MTG + Weather:
         function $(esc(mutating_f))(
             mtg::MultiScaleTreeGraph.Node,
-            models::Dict{String,<:AbstractModel},
+            models::Dict{String,ModelList},
             meteo::Weather,
             constants=Constants()
         )

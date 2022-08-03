@@ -35,8 +35,9 @@ function to_initialize(m::T) where {T<:ModelList}
 end
 
 function to_initialize(m::T) where {T<:Dict{String,ModelList}}
-    toinit = Dict{String,Vector{Symbol}}()
+    toinit = Dict{String,Tuple{Vararg{Symbol}}}()
     for (key, value) in m
+        # key = "Leaf"; value = m[key]
         toinit_ = to_initialize(value)
 
         if length(toinit_) > 0
@@ -44,7 +45,7 @@ function to_initialize(m::T) where {T<:Dict{String,ModelList}}
         end
     end
 
-    return (; toinit...)
+    return toinit
 end
 
 """
@@ -101,7 +102,6 @@ init_variables(energy = Monteith(), gs = Medlyn(0.03,12.0))
 """
 function init_variables(model::T) where {T<:AbstractModel}
     # Only one model is provided:
-
     in_vars = inputs_(model)
     out_vars = outputs_(model)
     # Merge both:
@@ -121,25 +121,54 @@ function init_variables(models...)
     return vars
 end
 
-"""
-    instantiate_status_struct(::Type{MutableNamedTuple}, vars)
-    instantiate_status_struct(::Type{NamedTuple}, vars)
-
-Instantiate a struct with new values for the status of a model in an homogeneous and
-type-stable way.
-"""
-function instantiate_status_struct(::Type{MutableNamedTuple}, vars)
-    MutableNamedTuple{keys(vars)}(values(vars))
-end
-
-function instantiate_status_struct(::Type{NamedTuple}, vars)
-    NamedTuple{keys(vars)}(values(vars))
-end
-
 # Models are provided as keyword arguments:
 function init_variables(; kwargs...)
     mods = (values(kwargs)...,)
     init_variables(mods...)
+end
+
+"""
+    convert_status(T, x)
+    convert_status(::Type{MutableNamedTuple}, x)
+
+Convert a type into another type.
+
+The generic method simply uses `convert(T, x)`. This function is used to convert the status
+often given as a `NamedTuple` into the desired type, by default a `MutableNamedTuple`.
+
+We need to override this method for any other type we would need for the status.
+
+Note: we implement this function to avoid type piracy, *i.e.* implementing generic functions
+for types we don't own.
+"""
+function convert_status(::Type{T}, x) where {T}
+    convert(T, x)
+end
+
+function convert_status(::Type{MutableNamedTuple}, x::T) where {T<:NamedTuple}
+    MutableNamedTuple{keys(x)}(values(x))
+end
+
+function convert_status(::Type{NamedTuple}, x::T) where {T<:MutableNamedTuple}
+    NamedTuple{keys(x)}(values(x))
+end
+
+"""
+    merge_status(::Type{MutableNamedTuple}, x, y)
+    merge_status(::Type{NamedTuple}, x, y)
+
+Merge two status.
+
+The generic version simply uses `merge`. We use `merge_status` so we can implement merge for
+types we don't own, avoiding type piracy.
+"""
+function merge_status(x, y)
+    merge(x, y)
+end
+
+function merge_status(x::MutableNamedTuple, y::MutableNamedTuple)
+    z = merge(NamedTuple(x), NamedTuple(y))
+    return MutableNamedTuple{keys(z)}(values(z))
 end
 
 """
@@ -227,7 +256,7 @@ Return an initialisation of the model variables with given values.
 # Examples
 
 ```julia
-init_variables_manual(Monteith(); Tₗ = 20.0)
+init_variables_manual(status, (Tₗ = 20.0,))
 ```
 """
 function init_variables_manual(status, vars)

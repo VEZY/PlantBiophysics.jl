@@ -1,7 +1,12 @@
 
 """
     ModelList(models::M, status::S)
-    ModelList(; status=MutableNamedTuple(), datatype=MutableNamedTuple, kwargs...)
+    ModelList(;
+        status=MutableNamedTuple(),
+        status_type=MutableNamedTuple,
+        type_promotion=nothing,
+        kwargs...
+    )
 
 A structure used to list the models for a simulation (`models`), and the associated
 initialized variables (`status`).
@@ -10,6 +15,19 @@ initialized variables (`status`).
     The status field depends on the input models. You can get the variables needed by a model
     using [`variables`](@ref) on the instantiation of a model. You can also use [`inputs`](@ref)
     and [`outputs`](@ref) instead.
+
+
+# Arguments
+
+    - `models`: a list of models to be used in the simulation. Usually a `NamedTuple`, but
+    can be any other structure that implements `getproperty`.
+    - `status`: a structure containing the initializations for the variables for the models.
+    - `status_type`: the type of the status structure. `MutableNamedTuple` by default.
+    - `type_promotion`: optional type conversion for the variables with default values.
+    `nothing` by default, *i.e.* no conversion. Note that conversion is not applied to the
+    variables input by the user as `kwargs` (need to do it manually).
+    Should be provided as a Dict with current type as keys and new type as values.
+    - `kwargs`: the models, named after the process they simulate.
 
 ## Examples
 
@@ -63,6 +81,18 @@ energy_balance!(leaf,meteo)
 
 DataFrame(leaf)
 ```
+
+If we want to use special types for the variables, we can use the `type_promotion` argument:
+
+```@example usepkg
+leaf = ModelList(
+    energy_balance = Monteith(),
+    photosynthesis = Fvcb(),
+    stomatal_conductance = ConstantGs(0.0, 0.0011),
+    status = (Rₛ = 13.747, sky_fraction = 1.0, d = 0.03, PPFD = 1500),
+    type_promotion = Dict(Float64 => Float32)
+)
+```
 """
 struct ModelList{M,S<:AbstractStatus}
     models::M
@@ -70,9 +100,18 @@ struct ModelList{M,S<:AbstractStatus}
 end
 
 # General interface:
-function ModelList(; status=MutableNamedTuple(), datatype=MutableNamedTuple, kwargs...)
+function ModelList(;
+    status=MutableNamedTuple(),
+    status_type=MutableNamedTuple,
+    type_promotion=nothing,
+    kwargs...
+)
+    # Get all the variables needed by the models and their default values:
     ref_vars = init_variables((; kwargs...)...)
-    status = homogeneous_type_steps(ref_vars, status, datatype)
+    # Convert their type to the one required by the user:
+    ref_vars = convert_vars(type_promotion, ref_vars)
+
+    status = homogeneous_type_steps(ref_vars, status, status_type)
     ModelList((; kwargs...), status)
 end
 
@@ -103,11 +142,14 @@ function homogeneous_type_steps(ref_vars, vars, datatype=MutableNamedTuple)
         # Making a vars for each ith value in the user vars:
         vars_array = datatype[]
         for i in 1:max_length_st
+            status_i = NamedTuple{keys(vars)}(j[i] for j in vars_vals)
+            # NB: we use a NamedTuple here because MutableNamedTuple does not work with
+            # Particles.
             push!(
                 vars_array,
-                init_variables_manual(
-                    instantiate_status_struct(datatype, ref_vars),
-                    NamedTuple{keys(vars)}(j[i] for j in vars_vals)
+                merge_status(
+                    convert_status(datatype, ref_vars),
+                    convert_status(datatype, status_i)
                 )
             )
         end
@@ -115,9 +157,9 @@ function homogeneous_type_steps(ref_vars, vars, datatype=MutableNamedTuple)
         return TimeSteps(vars_array)
     else
         vars = Status(
-            init_variables_manual(
-                instantiate_status_struct(datatype, ref_vars),
-                vars
+            merge_status(
+                convert_status(datatype, ref_vars),
+                convert_status(datatype, vars)
             )
         )
         return vars
@@ -142,4 +184,43 @@ function Base.copy(m::T, status::S) where {T<:ModelList,S<:AbstractStatus}
         m.models,
         status
     )
+end
+
+
+"""
+    convert_vars(type_promotion::Dict{DataType,DataType}, ref_vars)
+    convert_vars(type_promotion::Nothing, ref_vars)
+
+Convert the status variables to the type specified in the type promotion dictionary.
+
+# Examples
+
+If we want all the variables that are Reals to be Float32, we can use:
+
+```julia
+ref_vars = init_variables(energy_balance=Monteith(), photosynthesis=Fvcb(), stomatal_conductance=Medlyn(0.03, 12.0))
+type_promotion = Dict(Real => Float32)
+
+convert_vars(type_promotion, ref_vars)
+```
+"""
+function convert_vars(type_promotion::Dict{DataType,DataType}, ref_vars)
+    dict_ref_vars = Dict{Symbol,Any}(zip(keys(ref_vars), values(ref_vars)))
+    for (suptype, newtype) in type_promotion
+        vars = []
+        for var in keys(ref_vars)
+            if isa(dict_ref_vars[var], suptype)
+                dict_ref_vars[var] = convert(newtype, dict_ref_vars[var])
+                push!(vars, var)
+            end
+        end
+        length(vars) > 1 && @info "$(join(vars, ", ")) are $suptype and were promoted to $newtype"
+    end
+
+    return NamedTuple(dict_ref_vars)
+end
+
+# This is the generic one, with no convertion:
+function convert_vars(type_promotion::Nothing, ref_vars)
+    return ref_vars
 end
