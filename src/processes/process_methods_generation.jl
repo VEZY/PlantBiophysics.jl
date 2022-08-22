@@ -42,13 +42,13 @@ macro gen_process_methods(f)
         end
 
         # Base method that calls the actual algorithms (NB: or calling it without meteo too):
-        function $(esc(mutating_f))(object::ModelList{T,Status}, meteo::M=nothing, constants=Constants()) where {T,M<:Union{AbstractAtmosphere,Nothing}}
+        function $(esc(mutating_f))(object::ModelList{T,S}, meteo::M=nothing, constants=Constants()) where {T,S<:Status,M<:Union{AbstractAtmosphere,Nothing}}
             $(esc(f_))(object.models.$(f), object.models, object.status, meteo, constants)
             return nothing
         end
 
         # Method for a status with several TimeSteps but one meteo only (or no meteo):
-        function $(esc(mutating_f))(object::ModelList{T,TimeSteps}, meteo::M=nothing, constants=Constants()) where {T,M<:Union{AbstractAtmosphere,Nothing}}
+        function $(esc(mutating_f))(object::ModelList{T,S}, meteo::M=nothing, constants=Constants()) where {T,S<:TimeSteps,M<:Union{AbstractAtmosphere,Nothing}}
 
             for i in status(object)
                 $(esc(f_))(object.models.$(f), object.models, i, meteo, constants)
@@ -108,10 +108,10 @@ macro gen_process_methods(f)
         # Compatibility with MTG:
         function $(esc(mutating_f))(
             mtg::MultiScaleTreeGraph.Node,
-            models::Dict{String,ModelList},
+            models::Dict{String,M},
             meteo::AbstractAtmosphere,
             constants=Constants()
-        )
+        ) where {M<:ModelList}
             # Define the attribute name used for the models in the nodes
             attr_name = MultiScaleTreeGraph.cache_name("PlantBiophysics models")
 
@@ -124,10 +124,10 @@ macro gen_process_methods(f)
         # Compatibility with MTG + Weather:
         function $(esc(mutating_f))(
             mtg::MultiScaleTreeGraph.Node,
-            models::Dict{String,ModelList},
+            models::Dict{String,M},
             meteo::Weather,
             constants=Constants()
-        )
+        ) where {M<:ModelList}
             # Define the attribute name used for the models in the nodes
             attr_name = Symbol(MultiScaleTreeGraph.cache_name("PlantBiophysics models"))
 

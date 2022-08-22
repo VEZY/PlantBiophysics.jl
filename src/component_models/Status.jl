@@ -32,16 +32,12 @@ is only one, and because we want a similar interface with TimeSteps:
 leaf[1]
 ```
 """
-struct Status <: AbstractStatus
-    vars
+struct Status{T} <: AbstractStatus where {T}
+    vars::T
 end
 
 function Base.getproperty(status::Status, key::Symbol)
-    getproperty(getfield(status, :vars), key::Symbol)
-end
-
-function Base.getproperty(status::Status, i::T) where {T<:Integer}
-    getindex(status, i)
+    @inline getproperty(getfield(status, :vars), key)
 end
 
 function Base.setproperty!(status::Status, s::Symbol, x)
@@ -67,7 +63,7 @@ function Base.length(A::Status)
     1
 end
 
-Base.eltype(::Type{Status}) = MutableNamedTuple
+Base.eltype(::Type{Status{T}}) where {T} = T
 
 # Iterate over the status (lenght 1 only) for compatibility with TimeSteps.
 Base.iterate(status::Status, i=1) = i > 1 ? nothing : (getfield(status, :vars), i + 1)
