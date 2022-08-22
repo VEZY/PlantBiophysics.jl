@@ -53,7 +53,7 @@ For more examples, please read the documentation.
 - [x] Rename skyFraction into sky_fraction
 - [ ] Add a new conductance model using the version from Duursma, Remko A, Christopher J Blackman, Rosana Lop, et K Martin-StPaul. 2018. « On the Minimum Leaf Conductance: Its Role in Models of Plant Water Use, and Ecological and Environmental Controls ». New Phytologist, 13.
 - [x] Make the functions compatible with an MTG, e.g. apply photosynthesis to an MTG, and use the right method for each node. NB: I think the models should be a field of the node.
-- [ ] Make the functions compatible with several meteorological time-steps
+- [x] Make the functions compatible with several meteorological time-steps
   - [x] Add a new struct for that: Weather
   - [x] Do it for energy_balance
   - [x] photosynthesis
@@ -63,7 +63,7 @@ For more examples, please read the documentation.
   - [x] Check if it works with MTGs
 - [ ] Evaluate using Schymanski et al. (2017) data + leaf measurements models (in progress)
 - [ ] Check Schymanski input: is Rs = Rnleaf ok? Because Rs is Rn - Rll.
-- [ ] Add more documentation + tutorial:
+- [x] Add more documentation + tutorial:
   - [x] add doc about the design (components, models, model values, multiple dispatch)
   - [x] add doc about input files
   - [x] add doc for each process
@@ -75,8 +75,7 @@ For more examples, please read the documentation.
   - [x] How to implement a new model -> e.g. conductance (add a `variables` method)
   - [x] How to implement a new component:
 - [ ] Use [PrettyTables.jl](https://ronisbr.github.io/PrettyTables.jl/stable/#PrettyTables.jl) for printing the Weather and simulation outputs
-- [ ] Try to make `get_component_type()` more generic? Or easily extendable?
-- [x] Use leaf[:var] in the models implementations instead of leaf.status.var. It will make the code way clearer.
+- [x] Use leaf[:var] in the models implementations instead of leaf.status.var. It will make the code way cleaner.
 - [ ] Do we have a `setindex!` method for `leaf[:var]`? Implement it if missing.
 - [ ] Make boundary layer conductances true models as for stomatal conductances, but maybe define the current ones as default when calling the function (I mean if no model is provided, use the ones currently in use).
 - [ ] Make a diagram of a leaf for gaz and energy exchanges

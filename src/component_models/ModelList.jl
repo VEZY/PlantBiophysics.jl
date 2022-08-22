@@ -27,6 +27,7 @@ initialized variables (`status`).
     `nothing` by default, *i.e.* no conversion. Note that conversion is not applied to the
     variables input by the user as `kwargs` (need to do it manually).
     Should be provided as a Dict with current type as keys and new type as values.
+    - `variables_check=true`: check that all needed variables are initialized by the user.
     - `kwargs`: the models, named after the process they simulate.
 
 ## Examples
@@ -104,6 +105,7 @@ function ModelList(;
     status=MutableNamedTuple(),
     status_type=MutableNamedTuple,
     type_promotion=nothing,
+    variables_check=true,
     kwargs...
 )
     # Get all the variables needed by the models and their default values:
@@ -112,7 +114,14 @@ function ModelList(;
     ref_vars = convert_vars(type_promotion, ref_vars)
 
     status = homogeneous_type_steps(ref_vars, status, status_type)
-    ModelList((; kwargs...), status)
+
+    model_list = ModelList((; kwargs...), status)
+
+    if variables_check && !is_initialized(model_list)
+        @info("Some variables must be initialized before simulation: $(to_initialize(model_list))")
+    end
+
+    return model_list
 end
 
 """

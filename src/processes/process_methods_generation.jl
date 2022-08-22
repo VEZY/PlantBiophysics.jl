@@ -41,17 +41,14 @@ macro gen_process_methods(f)
             )
         end
 
-        # Base method that calls the actual algorithms:
-        function $(esc(mutating_f))(object::ModelList{T,Status}, meteo::AbstractAtmosphere, constants=Constants()) where {T}
-            !is_initialized(object) && error("Some variables must be initialized before simulation")
-
+        # Base method that calls the actual algorithms (NB: or calling it without meteo too):
+        function $(esc(mutating_f))(object::ModelList{T,Status}, meteo::M=nothing, constants=Constants()) where {T,M<:Union{AbstractAtmosphere,Nothing}}
             $(esc(f_))(object.models.$(f), object.models, object.status, meteo, constants)
             return nothing
         end
 
-        # Method for a status with several TimeSteps but one meteo only:
-        function $(esc(mutating_f))(object::ModelList{T,TimeSteps}, meteo::AbstractAtmosphere, constants=Constants()) where {T}
-            !is_initialized(object) && error("Some variables must be initialized before simulation")
+        # Method for a status with several TimeSteps but one meteo only (or no meteo):
+        function $(esc(mutating_f))(object::ModelList{T,TimeSteps}, meteo::M=nothing, constants=Constants()) where {T,M<:Union{AbstractAtmosphere,Nothing}}
 
             for i in status(object)
                 $(esc(f_))(object.models.$(f), object.models, i, meteo, constants)
@@ -59,8 +56,6 @@ macro gen_process_methods(f)
 
             return nothing
         end
-
-
 
         # Process method over several objects (e.g. all leaves of a plant) in an Array
         function $(esc(mutating_f))(object::O, meteo::AbstractAtmosphere, constants=Constants()) where {O<:AbstractArray}
@@ -104,26 +99,9 @@ macro gen_process_methods(f)
             # Check if the meteo data and the status have the same length (or length 1)
             check_status_wheather(object, meteo)
 
-            !is_initialized(object) && error("Some variables must be initialized before simulation")
-
             # Computing for each time-steps:
             for (i, meteo_i) in enumerate(meteo.data)
                 $(esc(f_))(object.models.$(f), object.models, object.status[i], meteo_i, constants)
-            end
-        end
-
-        # Method for calling the process without any meteo. In this case we need to check if
-        # the status has one or several time-steps.
-        function $(esc(mutating_f))(object, meteo::Nothing=nothing, constants=Constants())
-            !is_initialized(object) && error("Some variables must be initialized before simulation (see info message for more details)")
-
-            if isa(status(object), PlantBiophysics.Status)
-                $(esc(f_))(object.models.$(f), object.models, object.status, meteo, constants)
-            else
-                # We have several time-steps here, we pass each time-step after another
-                for i in status(object)
-                    $(esc(f_))(object.models.$(f), object.models, i, meteo, constants)
-                end
             end
         end
 
