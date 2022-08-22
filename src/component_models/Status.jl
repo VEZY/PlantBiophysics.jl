@@ -37,7 +37,7 @@ struct Status{T} <: AbstractStatus where {T}
 end
 
 function Base.getproperty(status::Status, key::Symbol)
-    @inline getproperty(getfield(status, :vars), key)
+    getproperty(getfield(status, :vars), key)
 end
 
 function Base.setproperty!(status::Status, s::Symbol, x)
