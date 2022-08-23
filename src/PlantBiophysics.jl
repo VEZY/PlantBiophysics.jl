@@ -22,6 +22,10 @@ import LsqFit: curve_fit
 using RecipesBase
 import Statistics: mean
 
+function __init__()
+    println("Learn PlantBiophysics at: https://vezy.github.io/PlantBiophysics.jl/stable/")
+end
+
 # Abstract structures:
 include("Abstract_model_structs.jl")
 
