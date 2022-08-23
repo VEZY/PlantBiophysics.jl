@@ -76,7 +76,7 @@ For more examples, please read the documentation.
   - [x] How to implement a new component:
 - [ ] Use [PrettyTables.jl](https://ronisbr.github.io/PrettyTables.jl/stable/#PrettyTables.jl) for printing the Weather and simulation outputs
 - [x] Use leaf[:var] in the models implementations instead of leaf.status.var. It will make the code way cleaner.
-- [ ] Do we have a `setindex!` method for `leaf[:var]`? Implement it if missing.
+- [x] Do we have a `setindex!` method for `leaf[:var]`? Implement it if missing.
 - [ ] Make boundary layer conductances true models as for stomatal conductances, but maybe define the current ones as default when calling the function (I mean if no model is provided, use the ones currently in use).
 - [ ] Make a diagram of a leaf for gaz and energy exchanges
 - [ ] Add checks on the models provided for a simulation: for example Fvcb requires a stomatal conductance model. At the moment Julia returns an error on missing method for the particular implementation of photosynthesis!_(Fvcb,Gs) (in short). We could check before that both are needed and present, and return a more informational error if missing.

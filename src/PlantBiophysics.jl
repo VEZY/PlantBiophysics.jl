@@ -209,7 +209,7 @@ export AbstractModel
 export fit
 
 # Convenience functions
-export DataFrame, copy, getindex, status, pull_status!, length
+export DataFrame, copy, getindex, status, pull_status!, length, setindex!
 
 # Model evaluation
 export EF, RMSE, dr

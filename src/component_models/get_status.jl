@@ -56,3 +56,7 @@ lm[:Tₗ][2] # Equivalent of the above
 function Base.getindex(component::T, key) where {T<:ModelList}
     status(component, key)
 end
+
+function Base.setindex!(component::T, value, key) where {T<:ModelList}
+    setproperty!(status(component), key, value)
+end
