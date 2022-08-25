@@ -17,7 +17,6 @@ import Base.getindex
 import Base.length
 import Base.iterate
 import Base.keys
-import Impute.locf # For filling missing values in comments in Walz to identify curves
 import LsqFit: curve_fit
 using RecipesBase
 import Statistics: mean
