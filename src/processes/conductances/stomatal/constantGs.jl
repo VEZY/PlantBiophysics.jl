@@ -31,7 +31,6 @@ end
 
 Base.eltype(x::ConstantGs) = typeof(x).parameters[1]
 
-
 """
 Constant stomatal closure. Usually called from a photosynthesis model.
 
@@ -42,7 +41,6 @@ Constant stomatal closure. Usually called from a photosynthesis model.
 function gs_closure(::ConstantGs, models, status, meteo=missing)
     (models.stomatal_conductance.Gₛ - models.stomatal_conductance.g0) / status.A
 end
-
 
 """
 Constant stomatal conductance for CO₂ (mol m-2 s-1).

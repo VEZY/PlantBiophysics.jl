@@ -5,6 +5,7 @@
         status=MutableNamedTuple(),
         status_type=MutableNamedTuple,
         type_promotion=nothing,
+        variables_check=true,
         kwargs...
     )
 

@@ -7,14 +7,17 @@ conductance model for CO₂.
 - `g0`: intercept.
 - `g1`: slope.
 - `gs_min = 0.001`: residual conductance. We consider the residual conductance being different
- from `g0` because in practice `g0` can be negative when fitting real-world data.
+    from `g0` because in practice `g0` can be negative when fitting real-world data.
 
-# Useage
+# Usage
 
 Then used for example as follows:
+
+```julia
 Gs = Medlyn(0.03,0.1)
 gs_mod = stomatal_conductance(Gs,(Cₛ = 400.0, VPD = 1.5))
 Gₛ = Gs.g0 + gs_mod * A
+```
 
 # Examples
 
@@ -35,7 +38,6 @@ Medlyn, Belinda E., Remko A. Duursma, Derek Eamus, David S. Ellsworth, I. Colin 
 Craig V. M. Barton, Kristine Y. Crous, Paolo De Angelis, Michael Freeman, et Lisa Wingate.
 2011. « Reconciling the optimal and empirical approaches to modelling stomatal conductance ».
 Global Change Biology 17 (6): 2134‑44. https://doi.org/10.1111/j.1365-2486.2010.02375.x.
-
 """
 struct Medlyn{T} <: AbstractGsModel
     g0::T

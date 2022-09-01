@@ -73,7 +73,7 @@ function fit(::T, df; Tᵣ=nothing, VcMaxRef=0.0, JMaxRef=0.0, RdRef=0.0, TPURef
     function model(x, p)
         leaf =
             ModelList(
-                photosynthesis=FvcbRaw(VcMaxRef=p[1], JMaxRef=p[2], RdRef=p[3], TPURef=p[4]),
+                photosynthesis=FvcbRaw(Tᵣ=Tᵣ, VcMaxRef=p[1], JMaxRef=p[2], RdRef=p[3], TPURef=p[4]),
                 status=(Tₗ=x[:, 1], PPFD=x[:, 2], Cᵢ=x[:, 3])
             )
         photosynthesis!(leaf)
@@ -84,7 +84,7 @@ function fit(::T, df; Tᵣ=nothing, VcMaxRef=0.0, JMaxRef=0.0, RdRef=0.0, TPURef
     # fits = curve_fit(model, df.Cᵢ[ind], df.A[ind], [VcMaxRef, JMaxRef, RdRef, TPURef])
     fits = curve_fit(model, Array(select(df, :Tₗ, :PPFD, :Cᵢ)), df.A, [VcMaxRef, JMaxRef, RdRef, TPURef])
 
-    return (VcMaxRef=fits.param[1], JMaxRef=fits.param[2], RdRef=fits.param[3], TPURef=fits.param[4])
+    return (VcMaxRef=fits.param[1], JMaxRef=fits.param[2], RdRef=fits.param[3], TPURef=fits.param[4], Tᵣ=Tᵣ)
 end
 
 # Plot recipes for making A/Ci curves:
