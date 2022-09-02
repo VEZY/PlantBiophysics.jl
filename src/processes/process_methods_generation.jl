@@ -1,5 +1,5 @@
 """
-    @gen_process_methods
+    @gen_process_methods(process::String)
 
 This macro generate all standard methods for processes:
 
@@ -21,12 +21,12 @@ the function that implements the computation is assumed to be `energy_balance!_(
 # Examples
 
 ```julia
-@macroexpand @gen_process_methods dummy_process
+@gen_process_methods "dummy_process"
 ```
 """
 macro gen_process_methods(f)
 
-    non_mutating_f = f
+    non_mutating_f = Symbol(f)
     mutating_f = Symbol(string(f, "!"))
     f_ = Symbol(string(mutating_f, "_")) # The actual function implementing the process
 

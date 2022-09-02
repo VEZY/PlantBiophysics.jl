@@ -5,7 +5,7 @@ abstract type AbstractEnergyModel <: AbstractModel end
 
 # Generate all methods for the energy_balance process: several meteo time-steps, components,
 #  over an MTG, and the mutating /non-mutating versions
-@gen_process_methods energy_balance
+@gen_process_methods "energy_balance"
 
 """
     energy_balance(object, meteo, constants = Constants())

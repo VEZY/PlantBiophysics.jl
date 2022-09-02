@@ -8,7 +8,7 @@ abstract type AbstractGsModel <: AbstractModel end
 
 # Generate all methods for the stomatal conductance process: several meteo time-steps, components,
 #  over an MTG, and the mutating /non-mutating versions
-@gen_process_methods stomatal_conductance
+@gen_process_methods "stomatal_conductance"
 
 """
     stomatal_conductance(leaf::ModelList,gs_mod)
