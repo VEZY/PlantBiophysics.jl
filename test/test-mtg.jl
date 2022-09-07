@@ -54,7 +54,7 @@ end
     transform!(mtg, :models => (x -> energy_balance!(x, meteo)), ignore_nothing=true)
 
     # The output is not written in the attributes yet:
-    @test leaf1[:A] == -999.99
+    @test leaf1[:A] == -Inf
 
     # Now it is:
     pull_status!(leaf1)

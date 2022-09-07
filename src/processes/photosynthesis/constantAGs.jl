@@ -14,11 +14,11 @@ Base.@kwdef struct ConstantAGs{T} <: AbstractAModel
 end
 
 function inputs_(::ConstantAGs)
-    (Cₛ=-999.99,)
+    (Cₛ=-Inf,)
 end
 
 function outputs_(::ConstantAGs)
-    (A=-999.99, Gₛ=-999.99, Cᵢ=-999.99)
+    (A=-Inf, Gₛ=-Inf, Cᵢ=-Inf)
 end
 
 Base.eltype(x::ConstantAGs) = typeof(x).parameters[1]

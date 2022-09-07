@@ -47,9 +47,9 @@ function light_interception!_(::Beer, models, status, meteo, constants)
 end
 
 function inputs_(::Beer)
-    (LAI=-999.99,)
+    (LAI=-Inf,)
 end
 
 function outputs_(::Beer)
-    (PPFD=-999.99,)
+    (PPFD=-Inf,)
 end

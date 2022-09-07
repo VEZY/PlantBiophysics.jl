@@ -31,13 +31,13 @@ function Monteith(; aₛₕ=2, aₛᵥ=1, ε=0.955, maxiter=10, ΔT=0.01)
 end
 
 function inputs_(::Monteith)
-    (Rₛ=-999.99, sky_fraction=-999.99, d=-999.99)
+    (Rₛ=-Inf, sky_fraction=-Inf, d=-Inf)
 end
 
 function outputs_(::Monteith)
     (
-        Tₗ=-999.99, Rn=-999.99, Rₗₗ=-999.99, H=-999.99, λE=-999.99, Cₛ=-999.99, Cᵢ=-999.99,
-        A=-999.99, Gₛ=-999.99, Gbₕ=-999.99, Dₗ=-999.99, Gbc=-999.99, iter=-999
+        Tₗ=-Inf, Rn=-Inf, Rₗₗ=-Inf, H=-Inf, λE=-Inf, Cₛ=-Inf, Cᵢ=-Inf,
+        A=-Inf, Gₛ=-Inf, Gbₕ=-Inf, Dₗ=-Inf, Gbc=-Inf, iter=-999
     )
 end
 

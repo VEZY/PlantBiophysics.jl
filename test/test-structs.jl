@@ -18,7 +18,7 @@ end;
 
 @testset "init_status!" begin
     leaf = ModelList(photosynthesis=A, stomatal_conductance=Gs)
-    @test leaf.status.Tₗ == -999.99
+    @test leaf.status.Tₗ == -Inf
 
     init_status!(leaf, Tₗ=25.0)
     @test leaf.status.Tₗ == 25.0
@@ -36,7 +36,7 @@ end;
     @test to_initialize(leaf) == to_initialize(A, Gs)
     @test to_initialize(A) == (:PPFD, :Tₗ, :Cₛ)
 
-    @test leaf.status.Tₗ == -999.99
+    @test leaf.status.Tₗ == -Inf
     @test is_initialized(leaf) == false
 
     leaf =

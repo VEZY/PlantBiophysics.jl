@@ -106,11 +106,11 @@ function Fvcb(; Tᵣ=25.0, VcMaxRef=200.0, JMaxRef=250.0, RdRef=0.6, TPURef=9999
 end
 
 function inputs_(::Fvcb)
-    (PPFD=-999.99, Tₗ=-999.99, Cₛ=-999.99)
+    (PPFD=-Inf, Tₗ=-Inf, Cₛ=-Inf)
 end
 
 function outputs_(::Fvcb)
-    (A=-999.99, Gₛ=-999.99, Cᵢ=-999.99)
+    (A=-Inf, Gₛ=-Inf, Cᵢ=-Inf)
 end
 
 Base.eltype(x::Fvcb) = typeof(x).parameters[1]
