@@ -1,4 +1,9 @@
 """
+Optical properties abstract struct
+"""
+abstract type OpticalProperties <: AbstractLightModel end
+
+"""
     σ()
 σ, the scattering factor of a component.
 See [here](https://archimed-platform.github.io/archimed-phys-user-doc/3-inputs/5-models/2-models_list/#translucent)
@@ -13,7 +18,7 @@ end
 """
 Translucent model for light interception, see [here](https://archimed-platform.github.io/archimed-phys-user-doc//3-inputs/5-models/2-models_list/).
 """
-Base.@kwdef struct Translucent{T} <: AbstractInterceptionModel
+Base.@kwdef struct Translucent{T} <: AbstractLightModel
     transparency::T = 0.0
     optical_properties::σ = σ()
 end

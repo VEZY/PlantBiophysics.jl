@@ -26,7 +26,7 @@ the function that implements the computation is assumed to be `energy_balance!_(
 """
 macro gen_process_methods(f)
 
-    non_mutating_f = Symbol(f)
+    non_mutating_f = process_field = Symbol(f)
     mutating_f = Symbol(string(f, "!"))
     f_ = Symbol(string(mutating_f, "_")) # The actual function implementing the process
 
@@ -43,7 +43,7 @@ macro gen_process_methods(f)
 
         # Base method that calls the actual algorithms (NB: or calling it without meteo too):
         function $(esc(mutating_f))(object::ModelList{T,S}, meteo::M=nothing, constants=Constants()) where {T,S<:Status,M<:Union{AbstractAtmosphere,Nothing}}
-            $(esc(f_))(object.models.$(f), object.models, object.status, meteo, constants)
+            $(esc(f_))(object.models.$(process_field), object.models, object.status, meteo, constants)
             return nothing
         end
 
@@ -51,7 +51,7 @@ macro gen_process_methods(f)
         function $(esc(mutating_f))(object::ModelList{T,S}, meteo::M=nothing, constants=Constants()) where {T,S<:TimeSteps,M<:Union{AbstractAtmosphere,Nothing}}
 
             for i in status(object)
-                $(esc(f_))(object.models.$(f), object.models, i, meteo, constants)
+                $(esc(f_))(object.models.$(process_field), object.models, i, meteo, constants)
             end
 
             return nothing
@@ -87,7 +87,7 @@ macro gen_process_methods(f)
             for obj in object
                 # Computing for each time-step:
                 for (i, meteo_i) in enumerate(meteo.data)
-                    $(esc(f_))(obj.models.$(f), obj.models, obj[i], meteo_i, constants)
+                    $(esc(f_))(obj.models.$(process_field), obj.models, obj[i], meteo_i, constants)
                 end
             end
 
@@ -101,7 +101,7 @@ macro gen_process_methods(f)
 
             # Computing for each time-steps:
             for (i, meteo_i) in enumerate(meteo.data)
-                $(esc(f_))(object.models.$(f), object.models, object.status[i], meteo_i, constants)
+                $(esc(f_))(object.models.$(process_field), object.models, object.status[i], meteo_i, constants)
             end
         end
 
@@ -157,7 +157,7 @@ macro gen_process_methods(f)
 
                 MultiScaleTreeGraph.transform!(
                     mtg,
-                    attr_name => (x -> Symbol($(esc(f))) in keys(x.models) && $(mutating_f)(x, meteo_i, constants)),
+                    attr_name => (x -> Symbol($(esc(process_field))) in keys(x.models) && $(mutating_f)(x, meteo_i, constants)),
                     (node) -> pull_status_step!(node, i, attr_name=attr_name),
                     ignore_nothing=true
                 )
