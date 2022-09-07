@@ -50,8 +50,8 @@ leaf = ModelList(
 ```
 
 No variables were given as keyword arguments, that means that the status of the leaf is not
-set yet, and all variables are initialized to `-Inf`. This component cannot be simulated
-yet.
+set yet, and all variables are initialized to `typemin(Type)`, *i.e.* `-Inf` for floating
+point numbers. This component cannot be simulated yet.
 
 To know which variables we need to initialize for a simulation, we use [`to_initialize`](@ref):
 

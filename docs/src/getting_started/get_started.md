@@ -37,4 +37,4 @@ energy_balance!(leaf,meteo)
 DataFrame(leaf)
 ```
 
-Curious to understand more ? Head to the next section to learn more about parameter fitting, or to the [First simulation](@ref) section for more details about how to make simulations.
+Curious to understand more ? Head to the next section to learn more about parameter fitting, or to the [Simple simulation](@ref) section for more details about how to make simulations.

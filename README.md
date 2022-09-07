@@ -96,7 +96,7 @@ For more examples, please read the documentation.
 - [ ] Add a nicer print method to the ModelList and to the Status / TimeSteps
 - [ ] Merge meteo variables and status variables ? In this case we could update their values, e.g. re-compute the microclimate inside the canopy and use it for the simulation.
 - [ ] Remove Status and only use TimeSteps? With Status being TimeSteps of one.
-- [ ] Replace default `-999` by `missing` values ? But check the impact on performance because we can't do it easily because everything is typed using MutableNamedTuples.
+- [ ] Replace default `typemin(Type)` by `missing` values in the initializations ? But check the impact on performance because we can't do it easily because everything is typed using MutableNamedTuples.
 
 ## Contributing
 
