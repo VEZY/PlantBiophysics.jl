@@ -53,13 +53,13 @@ the energy balance using the mass flux (~ Rn - λE).
 
 # Arguments
 
-- `::Monteith`: a Monteith model, usually the leaf model (*i.e.* leaf.energy_balance)
+- `::Monteith`: a Monteith model, usually from a model list (*i.e.* m.energy_balance)
 - `models`: A [`ModelList`](@ref) struct holding the parameters for the model with
 initialisations for:
     - `Rₛ` (W m-2): net shortwave radiation (PAR + NIR). Often computed from a light interception model
     - `sky_fraction` (0-2): view factor between the object and the sky for both faces (see details).
     - `d` (m): characteristic dimension, *e.g.* leaf width (see eq. 10.9 from Monteith and Unsworth, 2013).
-- `status`: the status of the model, usually the leaf status (*i.e.* leaf.status)
+- `status`: the status of the model, usually the model list status (*i.e.* leaf.status)
 - `meteo`: meteorology structure, see [`Atmosphere`](@ref)
 - `constants = Constants()`: physical constants. See [`Constants`](@ref) for more details
 

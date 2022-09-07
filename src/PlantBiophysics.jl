@@ -50,7 +50,7 @@ include("processes/model_initialisation.jl")
 include("component_models/copy.jl")
 
 # Generic process methods
-include("processes/light_interception/generic_structs.jl")
+include("processes/light/light_interception.jl")
 include("processes/photosynthesis/photosynthesis.jl")
 include("processes/conductances/stomatal/stomatal_conductance.jl")
 include("processes/energy/energy_balance.jl")
@@ -69,8 +69,9 @@ include("conversions.jl")
 include("dataframe.jl")
 
 # Light interception
-include("processes/light_interception/Ignore.jl")
-include("processes/light_interception/Translucent.jl")
+include("processes/light/Ignore.jl")
+include("processes/light/Beer.jl")
+include("processes/light/Translucent.jl")
 
 # Photosynthesis related files:
 include("processes/photosynthesis/constantA.jl")
@@ -154,26 +155,28 @@ export gbw_to_gbh
 export gsw_to_gsc
 export gsc_to_gsw
 
+# Light interception
+export AbstractLightModel
+export light_interception, light_interception! # main interface to user
+export Beer # a struct to hold the values for the Beer-Lambert law of light extinction
+
 # Energy balance
 export AbstractEnergyModel
 export black_body
 export grey_body
 export psychrometer_constant
 export net_longwave_radiation
-export energy_balance # main interface to user
-export energy_balance! # main interface to user
+export energy_balance, energy_balance! # main interface to user
 export Monteith       # a struct to hold the values for the model of Monteith and Unsworth (2013)
-export latent_heat
-export sensible_heat
-export γ_star
-export latent_heat_vaporization
+export latent_heat, sensible_heat
+export γ_star, latent_heat_vaporization
 
 # structure for light interception
 export Translucent
 export Ignore
 export OpticalProperties
 export σ
-export AbstractInterceptionModel
+export AbstractLightModel
 
 # Photosynthesis
 export AbstractAModel

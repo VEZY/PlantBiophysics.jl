@@ -7,31 +7,35 @@ using DataFrames
 using MultiScaleTreeGraph, PlantGeom
 
 @testset "File IO" begin
-    include("IO.jl")
+    include("test-IO.jl")
 end
 
 @testset "Atmosphere" begin
-    include("atmosphere.jl")
+    include("test-atmosphere.jl")
 end
 
 @testset "Structures" begin
-    include("structs.jl")
+    include("test-structs.jl")
 end
 
 @testset "Initialisations" begin
-    include("initialisations.jl")
+    include("test-initialisations.jl")
 end
 
 @testset "Temperature dependence" begin
-    include("temp-dependence.jl")
+    include("test-temp-dependence.jl")
+end
+
+@testset "Light interception" begin
+    include("test-beer.jl")
 end
 
 @testset "Stomatal conductance" begin
-    include("gs.jl")
+    include("test-gs.jl")
 end
 
 @testset "Energy balance" begin
-    include("energy_balance.jl")
+    include("test-energy_balance.jl")
 end
 
 @testset "MTG compatibility" begin
