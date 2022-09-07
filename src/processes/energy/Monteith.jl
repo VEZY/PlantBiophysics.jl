@@ -37,7 +37,7 @@ end
 function outputs_(::Monteith)
     (
         Tₗ=-Inf, Rn=-Inf, Rₗₗ=-Inf, H=-Inf, λE=-Inf, Cₛ=-Inf, Cᵢ=-Inf,
-        A=-Inf, Gₛ=-Inf, Gbₕ=-Inf, Dₗ=-Inf, Gbc=-Inf, iter=-999
+        A=-Inf, Gₛ=-Inf, Gbₕ=-Inf, Dₗ=-Inf, Gbc=-Inf, iter=typemin(Int)
     )
 end
 
