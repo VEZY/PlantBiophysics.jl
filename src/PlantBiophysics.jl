@@ -47,6 +47,10 @@ include("climate/weather.jl")
 # Automatic process methods generation:
 include("processes/process_methods_generation.jl")
 include("processes/models_inputs_outputs.jl")
+
+# Dependency tree:
+include("processes/models_dependency.jl")
+# Initialisations:
 include("processes/model_initialisation.jl")
 
 # Copy component models
@@ -113,9 +117,6 @@ include("evaluation/statistics.jl")
 # Compatibility with MultiScaleTreeGraph.jl
 include("mtg/init_mtg_models.jl")
 include("mtg/mtg_helpers.jl")
-
-# Dependency tree:
-include("processes/models_dependency.jl")
 
 # Depreciations
 include("depreciations/models.jl")

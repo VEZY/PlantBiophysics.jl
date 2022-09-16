@@ -110,17 +110,16 @@ function ModelList(;
     kwargs...
 )
     # Get all the variables needed by the models and their default values:
-    ref_vars = init_variables((; kwargs...)...)
+    mods = (; kwargs...)
+    ref_vars = merge(init_variables(mods; verbose=false)...)
     # Convert their type to the one required by the user:
     ref_vars = convert_vars(type_promotion, ref_vars)
 
     status = homogeneous_type_steps(ref_vars, status, status_type)
 
-    model_list = ModelList((; kwargs...), status)
+    model_list = ModelList(mods, status)
 
-    if variables_check && !is_initialized(model_list)
-        @info("Some variables must be initialized before simulation: $(to_initialize(model_list))")
-    end
+    variables_check && !is_initialized(model_list)
 
     return model_list
 end

@@ -79,8 +79,12 @@ function init_mtg_models!(
     to_init = Dict()
     for (key, value) in models
         init = to_initialize(value)
-        if length(init) > 0
-            push!(to_init, key => init)
+        vars = []
+        for i in init
+            length(i) > 0 && append!(vars, i)
+        end
+        if length(vars) > 0
+            push!(to_init, key => vars)
         end
     end
 

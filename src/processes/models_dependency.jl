@@ -1,5 +1,7 @@
 mutable struct DependencyNode{T}
     value::T
+    inputs::NamedTuple
+    outputs::NamedTuple
     parent::Union{Nothing,DependencyNode}
     children::Vector{DependencyNode}
 end
@@ -14,7 +16,7 @@ struct DependencyTree{T<:Union{DependencyNode,Dict{Symbol,<:DependencyNode}}}
 end
 
 AbstractTrees.children(t::DependencyNode) = t.children
-# AbstractTrees.nodevalue(t::DependencyNode) = t.value # needs recent AbstractTrees
+AbstractTrees.nodevalue(t::DependencyNode) = t.value # needs recent AbstractTrees
 AbstractTrees.ParentLinks(::Type{<:DependencyNode}) = AbstractTrees.StoredParents()
 AbstractTrees.parent(t::DependencyNode) = t.parent
 AbstractTrees.printnode(io::IO, node::DependencyNode) = print(io, node.value)
@@ -22,9 +24,24 @@ Base.show(io::IO, t::DependencyNode) = AbstractTrees.print_tree(io, t)
 
 dep(::T) where {T<:AbstractModel} = DataType[]
 
-function dep(m::ModelList; verbose::Bool=true)
-    models = m.models
-    dep_tree = Dict(p => PlantBiophysics.DependencyNode(typeof(i)) for (p, i) in pairs(models))
+"""
+    dep(models::ModelList; verbose::Bool=true)
+
+Get the model dependency tree given a ModelList. If one tree is returned, then all models are
+coupled. If several trees are returned, then only the models inside each tree are coupled, and
+the models in different trees are not coupled.
+"""
+function dep(; verbose::Bool=true, vars...)
+    models = (; vars...)
+    dep_tree = Dict(
+        p => DependencyNode(
+            typeof(i),
+            inputs_(i),
+            outputs_(i),
+            nothing,
+            DependencyNode[]
+        ) for (p, i) in pairs(models)
+    )
     dep_not_found = Dict{Symbol,DataType}()
     for (process, i) in pairs(models) # for each model in the model list
         level_1_dep = dep(i) # we get the dependencies of the model
@@ -75,6 +92,9 @@ function dep(m::ModelList; verbose::Bool=true)
     return DependencyTree(unique_roots, dep_not_found)
 end
 
+function dep(m::ModelList; verbose::Bool=true)
+    dep(; verbose=verbose, m.models...)
+end
 
 # AbstractTrees.printnode(io::IO, node::DependencyTree) = print(io, "#", node.value)
 function Base.show(io::IO, t::DependencyTree)

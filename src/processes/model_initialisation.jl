@@ -2,40 +2,57 @@
     to_initialize(v::T, vars...) where T <: Union{Missing,AbstractModel}
     to_initialize(m::T)  where T <: ModelList
 
-Return the variables that must be initialized providing a set of models.
-
-# Note
-
-There is no way to know before-hand which process will be simulated by the user, so if you
-have a component with a model for each process, the variables to initialize are always the
-smallest subset of all, meaning it is considered the variables needed for models can be
-output from other models.
+Return the variables that must be initialized providing a set of models and processes. The
+function takes into account model coupling and only returns the variables that are needed
+considering that some variables that are outputs of some models are used as inputs of others.
 
 # Examples
 
 ```julia
-to_initialize(Fvcb(),Medlyn(0.03,12.0))
+to_initialize(photosynthesis = Fvcb(), stomatal_conductance = Medlyn(0.03,12.0))
 
 # Or using a component directly:
 leaf = ModelList(photosynthesis = Fvcb(), stomatal_conductance = Medlyn(0.03,12.0))
 to_initialize(leaf)
 ```
 """
-function to_initialize(v::T, vars...) where {T<:AbstractModel}
-    Tuple(setdiff(inputs(v, vars...), outputs(v, vars...)))
+function to_initialize(m::ModelList; verbose::Bool=true)
+    needed_variables = to_initialize(dep(m; verbose=verbose))
+    to_init = Dict{Symbol,Tuple}()
+    for (process, vars) in pairs(needed_variables)
+        not_init = vars_not_init_(m.status, vars)
+        length(not_init) > 0 && push!(to_init, process => not_init)
+    end
+    return NamedTuple(to_init)
 end
 
-function to_initialize(m::T) where {T<:ModelList}
-    # These are all the variables needed for a simulation given the models:
-    default_values = init_variables(m.models...)
+function to_initialize(m::DependencyTree)
+    dependencies = Dict{Symbol,NamedTuple}()
+    for (process, root) in m.roots
+        push!(dependencies, process => to_initialize(root))
+    end
 
-    # These are the ones that we need to initialize before simulation:
-    needed_variables = NamedTuple(i => default_values[i] for i in to_initialize(m.models...))
-    vars_not_init_(m.status, needed_variables)
+    return NamedTuple(dependencies)
+end
+
+function to_initialize(m::DependencyNode)
+    computed_above = Dict{Symbol,Any}()
+    need_initialisations = Dict{Symbol,Any}()
+    for i in AbstractTrees.PreOrderDFS(m)
+        merge!(computed_above, pairs(i.outputs))
+
+        for (k, v) in pairs(i.inputs)
+            if !in(k, keys(computed_above))
+                push!(need_initialisations, k => v)
+            end
+        end
+    end
+
+    return NamedTuple(need_initialisations)
 end
 
 function to_initialize(m::T) where {T<:Dict{String,ModelList}}
-    toinit = Dict{String,Tuple{Vararg{Symbol}}}()
+    toinit = Dict{String,NamedTuple}()
     for (key, value) in m
         # key = "Leaf"; value = m[key]
         toinit_ = to_initialize(value)
@@ -46,6 +63,17 @@ function to_initialize(m::T) where {T<:Dict{String,ModelList}}
     end
 
     return toinit
+end
+
+
+function to_initialize(; verbose=true, vars...)
+    needed_variables = to_initialize(dep(; verbose=verbose, (; vars...)...))
+    to_init = Dict{Symbol,Tuple}()
+    for (process, vars) in pairs(needed_variables)
+        not_init = keys(vars)
+        length(not_init) > 0 && push!(to_init, process => not_init)
+    end
+    return NamedTuple(to_init)
 end
 
 """
@@ -96,11 +124,10 @@ inputs and outputs of the models.
 
 ```julia
 init_variables(Monteith())
-init_variables(Monteith(), Medlyn(0.03,12.0))
-init_variables(energy = Monteith(), gs = Medlyn(0.03,12.0))
+init_variables(energy_balance = Monteith(), stomatal_conductance = Medlyn(0.03,12.0))
 ```
 """
-function init_variables(model::T) where {T<:AbstractModel}
+function init_variables(model::T; verbose::Bool=true) where {T<:AbstractModel}
     # Only one model is provided:
     in_vars = inputs_(model)
     out_vars = outputs_(model)
@@ -110,21 +137,41 @@ function init_variables(model::T) where {T<:AbstractModel}
     return vars
 end
 
-# Several models are provided:
-function init_variables(models...)
-    mods = (models...,)
-    in_vars = merge(inputs_.(mods)...)
-    out_vars = merge(outputs_.(mods)...)
-    # Merge both:
-    vars = merge(in_vars, out_vars)
+function init_variables(m::ModelList; verbose::Bool=true)
+    init_variables(dep(m; verbose=verbose))
+end
 
-    return vars
+function init_variables(m::DependencyTree)
+    dependencies = Dict{Symbol,NamedTuple}()
+    for (process, root) in m.roots
+        push!(dependencies, process => init_variables(root))
+    end
+
+    return NamedTuple(dependencies)
+end
+
+function init_variables(m::DependencyNode)
+    inputs_all = Dict{Symbol,Any}()
+    outputs_all = Dict{Symbol,Any}()
+    for i in AbstractTrees.PreOrderDFS(m)
+        merge!(outputs_all, pairs(i.outputs))
+
+        merge!(inputs_all, pairs(i.inputs))
+    end
+
+    all_vars = merge(inputs_all, outputs_all)
+    return NamedTuple(all_vars)
 end
 
 # Models are provided as keyword arguments:
-function init_variables(; kwargs...)
-    mods = (values(kwargs)...,)
-    init_variables(mods...)
+function init_variables(; verbose::Bool=true, kwargs...)
+    mods = (; kwargs...)
+    init_variables(dep(; verbose=verbose, mods...))
+end
+
+# Models are provided as a NamedTuple:
+function init_variables(models::T; verbose::Bool=true) where {T<:NamedTuple}
+    init_variables(dep(; verbose=verbose, models...))
 end
 
 """
@@ -190,28 +237,23 @@ for other models.
 ```julia
 leaf = ModelList(photosynthesis = Fvcb(), stomatal_conductance = Medlyn(0.03,12.0))
 is_initialized(leaf)
-
-# Searching for just a sub-set of models:
-is_initialized(leaf,leaf.photosynthesis)
-# NB: this is usefull when the leaf is parameterised for all processes but only one is
-# simulated, so its inputs must be initialized
 ```
 """
-function is_initialized(m::T; info=true) where {T<:ModelList}
-    var_names = to_initialize(m)
+function is_initialized(m::T; verbose=true) where {T<:ModelList}
+    var_names = to_initialize(m; verbose=verbose)
 
-    if length(var_names) > 0
-        info && @info "Some variables must be initialized before simulation: $var_names (see `to_initialize()`)"
+    if any([length(to_init) > 0 for (process, to_init) in pairs(var_names)])
+        verbose && @info "Some variables must be initialized before simulation: $var_names (see `to_initialize()`)"
         return false
     else
         return true
     end
 end
 
-function is_initialized(models...; info=true)
+function is_initialized(models...; verbose=true)
     var_names = to_initialize(models...)
     if length(var_names) > 0
-        info && @info "Some variables must be initialized before simulation: $(var_names) (see `to_initialize()`)"
+        verbose && @info "Some variables must be initialized before simulation: $(var_names) (see `to_initialize()`)"
         return false
     else
         return true

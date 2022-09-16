@@ -49,6 +49,8 @@ to_initialize(
 )
 ```
 
+It returns a list of the variables that need to be initialized for each independent process. If some processes are coupled, it only returns the ones from the root process that calls the others.
+
 When we know which parameters have to be initialized, we can get the list of the parameters for each model by looking at its field names:
 
 ```@example usepkg

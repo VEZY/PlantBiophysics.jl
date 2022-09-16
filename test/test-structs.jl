@@ -32,9 +32,9 @@ end;
 
 @testset "Vars to initialize" begin
     leaf = ModelList(photosynthesis=A, stomatal_conductance=Gs)
-    @test to_initialize(leaf) == (:PPFD, :Tₗ, :Cₛ, :Dₗ)
-    @test to_initialize(leaf) == to_initialize(A, Gs)
-    @test to_initialize(A) == (:PPFD, :Tₗ, :Cₛ)
+    @test to_initialize(leaf) == (photosynthesis=(:PPFD, :Dₗ, :Tₗ, :Cₛ),)
+    @test to_initialize(leaf) == to_initialize(photosynthesis=A, stomatal_conductance=Gs)
+    @test to_initialize(photosynthesis=A) == (photosynthesis=(:PPFD, :Tₗ, :Cₛ),)
 
     @test leaf.status.Tₗ == -Inf
     @test is_initialized(leaf) == false
