@@ -43,6 +43,8 @@ end
 
 Base.eltype(x::Monteith) = typeof(x).parameters[1]
 
+dep(::Monteith) = [AbstractAModel]
+
 """
     energy_balance!_(::Monteith, models, status, meteo::AbstractAtmosphere, constants=Constants())
 

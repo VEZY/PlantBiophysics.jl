@@ -10,6 +10,9 @@ import OrderedCollections: OrderedDict
 import MultiScaleTreeGraph
 import Dates
 
+# For tree dependency:
+import AbstractTrees
+
 import DataFrames.DataFrame # For convenience transformations
 import DataFrames: Not, rename!, select!, select, dropmissing!, sort!, transform!
 import Base.show
@@ -111,6 +114,9 @@ include("evaluation/statistics.jl")
 include("mtg/init_mtg_models.jl")
 include("mtg/mtg_helpers.jl")
 
+# Dependency tree:
+include("processes/models_dependency.jl")
+
 # Depreciations
 include("depreciations/models.jl")
 
@@ -210,6 +216,9 @@ export init_mtg_models!
 
 # Models
 export AbstractModel
+
+# Model dependency
+export dep
 
 # Parameters optimization
 export fit
