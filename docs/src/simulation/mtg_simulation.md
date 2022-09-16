@@ -74,7 +74,7 @@ Let's check which variables we need to provide for our model configuration:
 to_initialize(models)
 ```
 
-OK, only the `"Leaf"` component must be initialized before computation, with the shortwave radiation `Rₛ`, the visible sky fraction seen by the object `sky_fraction`, the characteristic dimension of the object `d` and the Photosynthetically active Photon Flux Density `PPFD`. We are in luck, we used [Archimed-ϕ](https://archimed-platform.github.io/archimed-phys-user-doc/) to compute the radiation interception of each organ in the example coffee plant we are using. So the only thing we need is to transform the variables given by Archimed-ϕ in each node to compute the ones we need. We use `transform!` from `MultiScaleTreeGraph.jl` to traverse the MTG and compute the right variable for each node:
+OK, only the `"Leaf"` component must be initialized before computation for the coupled energy balance, with the shortwave radiation `Rₛ`, the visible sky fraction seen by the object `sky_fraction`, the characteristic dimension of the object `d` and the Photosynthetically active Photon Flux Density `PPFD`. We are in luck, we used [Archimed-ϕ](https://archimed-platform.github.io/archimed-phys-user-doc/) to compute the radiation interception of each organ in the example coffee plant we are using. So the only thing we need is to transform the variables given by Archimed-ϕ in each node to compute the ones we need. We use `transform!` from `MultiScaleTreeGraph.jl` to traverse the MTG and compute the right variable for each node:
 
 ```@example usepkg
 using MultiScaleTreeGraph
