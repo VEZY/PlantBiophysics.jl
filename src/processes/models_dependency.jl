@@ -3,7 +3,7 @@ mutable struct DependencyNode{T}
     process::Symbol
     inputs::NamedTuple
     outputs::NamedTuple
-    dependency::Vector{DataType}
+    dependency::NamedTuple
     missing_dependency::Vector{Int}
     parent::Union{Nothing,DependencyNode}
     children::Vector{DependencyNode}
@@ -26,7 +26,7 @@ AbstractTrees.printnode(io::IO, node::DependencyNode) = print(io, node.value)
 Base.show(io::IO, t::DependencyNode) = AbstractTrees.print_tree(io, t)
 Base.length(t::DependencyNode) = length(collect(AbstractTrees.PreOrderDFS(t)))
 
-dep(::T) where {T<:AbstractModel} = DataType[]
+dep(::T) where {T<:AbstractModel} = NamedTuple()
 
 """
     dep(models::ModelList; verbose::Bool=true)
@@ -43,7 +43,7 @@ function dep(; verbose::Bool=true, vars...)
             p,
             inputs_(i),
             outputs_(i),
-            DataType[],
+            NamedTuple(),
             Int[],
             nothing,
             DependencyNode[]
@@ -54,38 +54,46 @@ function dep(; verbose::Bool=true, vars...)
         level_1_dep = dep(i) # we get the dependencies of the model
         length(level_1_dep) == 0 && continue # if there is no dependency we skip the iteration
         dep_tree[process].dependency = level_1_dep
-        for (ij, j) in enumerate(level_1_dep) # for each dependency of the model i
-            n_dep_found = 0
-            dep_found = Dict{Symbol,DataType}()
-            for (p, k) in pairs(models) # for each model in the model list again
-                if typeof(k) <: j # we check if the dependency is in the model list
+        for (p, depend) in pairs(level_1_dep) # for each dependency of the model i
+            if hasproperty(models, p)
+                if typeof(getfield(models, p)) <: depend
                     parent_dep = dep_tree[process]
                     push!(parent_dep.children, dep_tree[p])
                     for child in parent_dep.children
                         child.parent = parent_dep
                     end
-                    n_dep_found += 1
-                    push!(dep_found, p => j)
-                end
-            end
+                else
+                    if verbose
+                        @info string(
+                            "Model ", typeof(i).name.name, " from process ", process,
+                            " needs a model that is a subtype of ", depend, " in process ",
+                            p
+                        )
+                    end
 
-            if length(dep_found) == 0
+                    push!(dep_not_found, p => depend)
+
+                    push!(
+                        dep_tree[process].missing_dependency,
+                        findfirst(x -> x == p, keys(level_1_dep))
+                    ) # index of the missing dep
+                    # NB: we can retreive missing deps using dep_tree[process].dependency[dep_tree[process].missing_dependency]
+                end
+            else
                 if verbose
                     @info string(
                         "Model ", typeof(i).name.name, " from process ", process,
-                        " needs dependency ", j, ", but it is not found in the model list.")
+                        " needs a model that is a subtype of ", depend, " in process ",
+                        p, ", but the process is not parameterized in the ModelList."
+                    )
                 end
-                push!(dep_not_found, process => j)
-                push!(dep_tree[process].missing_dependency, ij) # index of the missing dep
-                # NB: we can retreive missing deps using dep_tree[process].dependency[dep_tree[process].missing_dependency]
-            end
+                push!(dep_not_found, p => depend)
 
-            if length(dep_found) > 1 && verbose
-                @info string(
-                    "Cannot build dependency tree properly because models from ",
-                    "different processes match dependency criteria ", j, " found in process",
-                    process, "(model:", typeof(i).name.name, "): ", join(dep_found, ", "), "."
-                )
+                push!(
+                    dep_tree[process].missing_dependency,
+                    findfirst(x -> x == p, keys(level_1_dep))
+                ) # index of the missing dep
+                # NB: we can retreive missing deps using dep_tree[process].dependency[dep_tree[process].missing_dependency]
             end
         end
     end
@@ -169,7 +177,9 @@ function draw_dependency_tree(
             "Process: $(tree.process)\n",
             "Model: $(tree.value)",
             length(tree.missing_dependency) == 0 ? "" : string(
-                "Missing dependencies:", join(tree.dependency[tree.missing_dependency], ", ")
+                "\n{red underline}Missing dependencies: ",
+                join([tree.dependency[j] for j in tree.missing_dependency], ", "),
+                "{/red underline}"
             )
         );
         fit=true,
@@ -191,14 +201,16 @@ function draw_panel(node, tree, prefix, dep_tree_guides)
     for i in AbstractTrees.children(tree)
         prefix_c_length = 8 + length(prefix)
         panel_hright = repeat(" ", prefix_c_length)
+
         panel = Term.Panel(
             title="Coupled model",
             string(
                 "Process: $(i.process)\n",
                 "Model: $(i.value)",
                 length(i.missing_dependency) == 0 ? "" : string(
-                    "Missing dependencies:",
-                    join(i.dependency[i.missing_dependency], ", ")
+                    "\n{red underline}Missing dependencies: ",
+                    join([i.dependency[j] for j in i.missing_dependency], ", "),
+                    "{/red underline}"
                 )
             );
             fit=true,

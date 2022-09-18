@@ -56,7 +56,7 @@ end
 
 Base.eltype(x::FvcbIter) = typeof(x).parameters[1]
 
-dep(::FvcbIter) = [AbstractGsModel]
+dep(::FvcbIter) = (stomatal_conductance=AbstractGsModel,)
 
 """
     photosynthesis!_(::FvcbIter, models, status, meteo, constants=Constants())

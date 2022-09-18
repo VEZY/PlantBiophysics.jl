@@ -213,6 +213,16 @@ BandB(g0 = 0.0, g1 = 2.0)
 
 This is nice, but again, completely optional.
 
+One more thing to implement is a method for the `dep` function that tells PlantBiophysics which models are needed for your model to run (*i.e.* if your model is coupled to another model).
+
+Our example model does not need any other model, so we don't need to implement it. But if you need to, you can look at *e.g.* the implementation for [`Fvcb`](@ref):
+
+```julia
+dep(::Fvcb) = [AbstractGsModel]
+```
+
+Here we say to PlantBiophysics that the `Fvcb` model needs a model of type `AbstractGsModel` to run. This is useful for the generic functions, so that they know which models to call.
+
 The last optional thing to implement is a method for the `eltype` function:
 
 ```@example usepkg
