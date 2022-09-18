@@ -58,13 +58,14 @@ end;
 
     @test to_initialize(leaf) == (energy_balance=(:d, :sky_fraction, :Rₛ), stomatal_conductance=(:A,))
 
-    @test init_variables(leaf) == (
-        energy_balance=(
-            Dₗ=-Inf, Tₗ=-Inf, Cᵢ=-Inf, Rn=-Inf, Cₛ=-Inf, d=-Inf, A=-Inf, sky_fraction=-Inf,
-            Rₛ=-Inf, λE=-Inf, Rₗₗ=-Inf, iter=-9223372036854775808, H=-Inf, Gₛ=-Inf,
-            Gbc=-Inf, Gbₕ=-Inf
-        ),
-        stomatal_conductance=(A=-Inf, Dₗ=-Inf, Gₛ=-Inf, Cₛ=-Inf)
-    )
+    # NB: decompose this test because the order of the variables change with the Julia version
+    inits = init_variables(leaf)
+    sorted_vars_energy = sort([keys(inits.energy_balance)...])
 
+    @test [getfield(inits.energy_balance, i) for i in sorted_vars_energy] ==
+          [-Inf, -Inf, -Inf, -Inf, -Inf, -Inf, -Inf, -Inf, -Inf, -Inf, -Inf, -Inf, -Inf, -9223372036854775808, -Inf, -Inf]
+
+    sorted_vars_gs = sort([keys(inits.stomatal_conductance)...])
+    @test [getfield(inits.stomatal_conductance, i) for i in sorted_vars_gs] ==
+          [-Inf, -Inf, -Inf, -Inf]
 end;
