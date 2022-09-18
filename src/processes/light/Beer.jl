@@ -36,7 +36,7 @@ meteo = Atmosphere(T=20.0, Wind=1.0, P=101.3, Rh=0.65, Ri_PAR_f=300.0)
 
 light_interception!(m, meteo)
 
-m[:aPAR]
+m[:PPFD]
 ```
 """
 function light_interception!_(::Beer, models, status, meteo, constants)

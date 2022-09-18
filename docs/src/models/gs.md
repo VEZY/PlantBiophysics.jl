@@ -63,7 +63,7 @@ leaf = ModelList(
 
 stomatal_conductance!(leaf,meteo)
 
-DataFrame(leaf)
+leaf
 ```
 
 !!! note

@@ -147,18 +147,19 @@ end
 Base.eachindex(status::TimeSteps) = 1:length(status)
 
 function Base.show(io::IO, t::Status)
+    length(getfield(t, :vars)) == 0 && return
     st_panel = Term.Panel(
         Term.highlight(join([string(k, "=", v) for (k, v) in pairs(getfield(t, :vars))], ", ")),
         title="Status",
         style="red",
         fit=true,
     )
-
     print(io, st_panel)
 end
 
 
 function Base.show(io::IO, t::TimeSteps)
+    length(t) == 0 && return
 
     ts = [
         Term.highlight("Step $i: " * join([string(k, "=", v) for (k, v) in pairs(v)], ", "))

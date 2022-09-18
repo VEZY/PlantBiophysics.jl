@@ -88,7 +88,7 @@ leaf = ModelList(
     status = (Rₛ = 13.747, sky_fraction = 1.0, PPFD = 1500.0, d = 0.03)
 )
 
-DataFrame(leaf)
+leaf
 ```
 
 The Monteith model implementation can be tested on the data provided by Schymanski et al. (2017). Here is a figure comparing our implementation and the data:

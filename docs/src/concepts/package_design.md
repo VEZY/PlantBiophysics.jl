@@ -106,8 +106,6 @@ keys(m.status)
 To know which variables should be initialized, we can use [`to_initialize`](@ref):
 
 ```@example usepkg
-
-```@example usepkg
 m = ModelList(light_extinction = Beer(0.5))
 
 to_initialize(m)

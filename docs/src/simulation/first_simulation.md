@@ -20,7 +20,7 @@ leaf = ModelList(
 
 energy_balance!(leaf,meteo)
 
-DataFrame(leaf)
+leaf
 ```
 
 Now let's describe what is happening here.
@@ -75,6 +75,12 @@ Another simpler way to get all the results at once is to use `DataFrame`:
 
 ```@example usepkg
 DataFrame(leaf)
+```
+
+Or simply by printing the object:
+
+```@example usepkg
+leaf
 ```
 
 ## Wrap-up

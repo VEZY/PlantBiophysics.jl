@@ -91,7 +91,7 @@ leaf = ModelList(
 
 photosynthesis!(leaf,meteo)
 
-DataFrame(leaf)
+leaf
 ```
 
 !!! note
@@ -124,7 +124,7 @@ leaf = ModelList(
 
 photosynthesis!(leaf,meteo,Constants())
 
-DataFrame(leaf)
+leaf
 ```
 
 ## FvcbRaw
@@ -156,7 +156,7 @@ leaf = ModelList(
 # NB: we need `Tₗ`, `PPFD` and `Cᵢ` as inputs (see [`inputs`](@ref))
 
 photosynthesis!(leaf)
-DataFrame(leaf)
+leaf
 ```
 
 ## ConstantA
@@ -175,7 +175,7 @@ DataFrame(leaf)
 leaf = ModelList(photosynthesis = ConstantA())
 
 photosynthesis!(leaf)
-DataFrame(leaf)
+leaf
 ```
 
 ## ConstantAGs
@@ -202,7 +202,7 @@ leaf = ModelList(
 )
 
 photosynthesis!(leaf)
-DataFrame(leaf)
+leaf
 ```
 
 ## Parameter effects

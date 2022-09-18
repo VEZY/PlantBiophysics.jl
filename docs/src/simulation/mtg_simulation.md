@@ -14,7 +14,7 @@ weather = read_weather(
     date_format = DateFormat("yyyy/mm/dd")
 )
 
-models = read_model(joinpath(dirname(dirname(pathof(PlantBiophysics))), "test", "inputs", "models", "plant_coffee.yml"))
+models = read_model(joinpath(dirname(dirname(pathof(PlantBiophysics))), "test", "inputs", "models", "plant_coffee.yml"));
 
 transform!(
     mtg,
