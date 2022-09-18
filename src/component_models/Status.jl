@@ -152,7 +152,7 @@ function Base.show(io::IO, t::Status)
         Term.highlight(join([string(k, "=", v) for (k, v) in pairs(getfield(t, :vars))], ", ")),
         title="Status",
         style="red",
-        fit=true,
+        fit=false,
     )
     print(io, st_panel)
 end
@@ -170,7 +170,7 @@ function Base.show(io::IO, t::TimeSteps)
         join(ts, "\n"),
         title="Status",
         style="red",
-        fit=true,
+        fit=false,
     )
 
     print(io, st_panel)
