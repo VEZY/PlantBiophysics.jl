@@ -1,14 +1,17 @@
 mutable struct DependencyNode{T}
     value::T
+    process::Symbol
     inputs::NamedTuple
     outputs::NamedTuple
+    dependency::Vector{DataType}
+    missing_dependency::Vector{Int}
     parent::Union{Nothing,DependencyNode}
     children::Vector{DependencyNode}
 end
 
-function DependencyNode(value)
-    return DependencyNode(value, nothing, DependencyNode[])
-end
+# function DependencyNode(value)
+#     return DependencyNode(value, nothing, DependencyNode[])
+# end
 
 struct DependencyTree{T<:Union{DependencyNode,Dict{Symbol,<:DependencyNode}}}
     roots::T
@@ -21,6 +24,7 @@ AbstractTrees.ParentLinks(::Type{<:DependencyNode}) = AbstractTrees.StoredParent
 AbstractTrees.parent(t::DependencyNode) = t.parent
 AbstractTrees.printnode(io::IO, node::DependencyNode) = print(io, node.value)
 Base.show(io::IO, t::DependencyNode) = AbstractTrees.print_tree(io, t)
+Base.length(t::DependencyNode) = length(collect(AbstractTrees.PreOrderDFS(t)))
 
 dep(::T) where {T<:AbstractModel} = DataType[]
 
@@ -36,8 +40,11 @@ function dep(; verbose::Bool=true, vars...)
     dep_tree = Dict(
         p => DependencyNode(
             typeof(i),
+            p,
             inputs_(i),
             outputs_(i),
+            DataType[],
+            Int[],
             nothing,
             DependencyNode[]
         ) for (p, i) in pairs(models)
@@ -46,7 +53,8 @@ function dep(; verbose::Bool=true, vars...)
     for (process, i) in pairs(models) # for each model in the model list
         level_1_dep = dep(i) # we get the dependencies of the model
         length(level_1_dep) == 0 && continue # if there is no dependency we skip the iteration
-        for j in level_1_dep # for each dependency of the model i
+        dep_tree[process].dependency = level_1_dep
+        for (ij, j) in enumerate(level_1_dep) # for each dependency of the model i
             n_dep_found = 0
             dep_found = Dict{Symbol,DataType}()
             for (p, k) in pairs(models) # for each model in the model list again
@@ -60,6 +68,7 @@ function dep(; verbose::Bool=true, vars...)
                     push!(dep_found, p => j)
                 end
             end
+
             if length(dep_found) == 0
                 if verbose
                     @info string(
@@ -67,6 +76,8 @@ function dep(; verbose::Bool=true, vars...)
                         " needs dependency ", j, ", but it is not found in the model list.")
                 end
                 push!(dep_not_found, process => j)
+                push!(dep_tree[process].missing_dependency, ij) # index of the missing dep
+                # NB: we can retreive missing deps using dep_tree[process].dependency[dep_tree[process].missing_dependency]
             end
 
             if length(dep_found) > 1 && verbose
@@ -96,18 +107,130 @@ function dep(m::ModelList; verbose::Bool=true)
     dep(; verbose=verbose, m.models...)
 end
 
-# AbstractTrees.printnode(io::IO, node::DependencyTree) = print(io, "#", node.value)
 function Base.show(io::IO, t::DependencyTree)
-    print(io, "Dependency tree:\n")
-    for (p, it) in t.roots
-        print(io, string("Process ", p, ": \n"))
-        AbstractTrees.print_tree(io, it)
-    end
+    draw_dependency_trees(io, t)
 
     if length(t.not_found) > 0
         print(io, "Dependency not found for:\n")
         for (p, dep) in t.not_found
             print(io, string("Process ", p, ": ", dep))
         end
+    end
+end
+
+function draw_dependency_trees(
+    io,
+    trees::DependencyTree;
+    title="Dependency tree",
+    title_style::String=Term.TERM_THEME[].tree_title_style,
+    guides_style::String=Term.TERM_THEME[].tree_guide_style,
+    dep_tree_guides=(space=" ", vline="│", branch="├", leaf="└", hline="─")
+)
+
+    dep_tree_guides = map((g) -> Term.apply_style("{$guides_style}$g{/$guides_style}"), dep_tree_guides)
+
+    tree_panel = []
+    for (p, tree) in trees.roots
+        node = []
+        draw_dependency_tree(tree, node, guides_style=guides_style, dep_tree_guides=dep_tree_guides)
+        push!(tree_panel, Term.Panel(node; fit=true, title=string(p), style="green dim"))
+    end
+
+    print(
+        io,
+        Term.Panel(
+            tree_panel;
+            fit=true,
+            title="{$(title_style)}$(title){/$(title_style)}",
+            style="$(title_style) dim"
+        )
+    )
+end
+
+"""
+    draw_dependency_tree(
+        tree, node;
+        guides_style::String=TERM_THEME[].tree_guide_style,
+        dep_tree_guides=(space=" ", vline="│", branch="├", leaf="└", hline="─")
+    )
+
+Draw the dependency tree.
+"""
+function draw_dependency_tree(
+    tree, node;
+    guides_style::String=Term.TERM_THEME[].tree_guide_style,
+    dep_tree_guides=(space=" ", vline="│", branch="├", leaf="└", hline="─")
+)
+
+    prefix = ""
+    panel1 = Term.Panel(
+        title="Root model",
+        string(
+            "Process: $(tree.process)\n",
+            "Model: $(tree.value)",
+            length(tree.missing_dependency) == 0 ? "" : string(
+                "Missing dependencies:", join(tree.dependency[tree.missing_dependency], ", ")
+            )
+        );
+        fit=true,
+        style="blue dim"
+    )
+
+    push!(node, prefix * panel1)
+
+    draw_panel(node, tree, prefix, dep_tree_guides)
+    return node
+end
+
+"""
+    draw_panel(node, tree, prefix, dep_tree_guides)
+
+Draw the panels for all dependencies
+"""
+function draw_panel(node, tree, prefix, dep_tree_guides)
+    for i in AbstractTrees.children(tree)
+        prefix_c_length = 8 + length(prefix)
+        panel_hright = repeat(" ", prefix_c_length)
+        panel = Term.Panel(
+            title="Coupled model",
+            string(
+                "Process: $(i.process)\n",
+                "Model: $(i.value)",
+                length(i.missing_dependency) == 0 ? "" : string(
+                    "Missing dependencies:",
+                    join(i.dependency[i.missing_dependency], ", ")
+                )
+            );
+            fit=true,
+            style="blue dim"
+        )
+
+        push!(
+            node,
+            draw_guide(
+                panel.measure.h ÷ 2,
+                3,
+                panel_hright,
+                length(AbstractTrees.children(i)) <= 1,
+                dep_tree_guides
+            ) * panel
+        )
+        draw_panel(node, i, panel_hright, dep_tree_guides)
+    end
+end
+
+"""
+    draw_guide(h, w, prefix, isleaf, guides)
+
+Draw the line guide for one node of the dependency tree.
+"""
+function draw_guide(h, w, prefix, isleaf, guides)
+
+    header_width = string(prefix, guides.vline, repeat(guides.space, w - 1), "\n")
+    header = h > 1 ? repeat(header_width, h - 1) : ""
+    if isleaf
+        return header * prefix * guides.leaf * repeat(guides.hline, w - 1)
+    else
+        return header * prefix * guides.branch * repeat(guides.hline, w - 1)
     end
 end

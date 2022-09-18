@@ -12,6 +12,7 @@ import Dates
 
 # For tree dependency:
 import AbstractTrees
+import Term
 
 import DataFrames.DataFrame # For convenience transformations
 import DataFrames: Not, rename!, select!, select, dropmissing!, sort!, transform!
