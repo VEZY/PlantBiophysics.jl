@@ -117,13 +117,6 @@ end
 
 function Base.show(io::IO, t::DependencyTree)
     draw_dependency_trees(io, t)
-
-    if length(t.not_found) > 0
-        print(io, "Dependency not found for:\n")
-        for (p, dep) in t.not_found
-            print(io, string("Process ", p, ": ", dep))
-        end
-    end
 end
 
 function draw_dependency_trees(

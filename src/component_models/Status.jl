@@ -145,3 +145,32 @@ end
 
 # Implements eachindex to iterate over the time-steps; else it would iterate over keys.
 Base.eachindex(status::TimeSteps) = 1:length(status)
+
+function Base.show(io::IO, t::Status)
+    st_panel = Term.Panel(
+        Term.highlight(join([string(k, "=", v) for (k, v) in pairs(getfield(t, :vars))], ", ")),
+        title="Status",
+        style="red",
+        fit=true,
+    )
+
+    print(io, st_panel)
+end
+
+
+function Base.show(io::IO, t::TimeSteps)
+
+    ts = [
+        Term.highlight("Step $i: " * join([string(k, "=", v) for (k, v) in pairs(v)], ", "))
+        for (i, v) in enumerate(getfield(t, :ts))
+    ]
+
+    st_panel = Term.Panel(
+        join(ts, "\n"),
+        title="Status",
+        style="red",
+        fit=true,
+    )
+
+    print(io, st_panel)
+end

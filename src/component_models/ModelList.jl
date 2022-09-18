@@ -233,3 +233,9 @@ end
 function convert_vars(type_promotion::Nothing, ref_vars)
     return ref_vars
 end
+
+
+function Base.show(io::IO, t::ModelList)
+    print(io, dep(t, verbose=false))
+    print(io, status(t))
+end
