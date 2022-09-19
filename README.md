@@ -12,10 +12,12 @@ The benefits of using this package are:
 
 - Blazing fast (μs for the whole energy balance + photosynthesis + conductances)
 - Easy to use
-- Great composability. Makes it easy to extend (add your model for any process, and it just works with the others)
+- Great composability:
+  - easy to extend, add your model for any process, and it just works, with automatic coupling with other models
+  - easy to integrate into other models or platforms thanks to Julia's great compatibility with other langages
 - Easy to read, the code implement the equations as they are written in the scientific articles (thanks Julia Unicode!)
-- Included in the Archimed platform. Will be used by other packages to simulate single leaves, voxels, canopies...
-- Error propagation
+- Compatible with other simulations platforms thanks to the MTG format
+- Error propagation using [Measurements.jl](https://juliaphysics.github.io/Measurements.jl/stable/) or [MonteCarloMeasurements.jl](https://baggepinnen.github.io/MonteCarloMeasurements.jl/stable/)
 
 ## Examples
 
@@ -38,7 +40,7 @@ leaf = ModelList(
 
 energy_balance!(leaf, meteo)
 
-leaf[:A]
+leaf
 ```
 
 For more examples, please read the documentation.
@@ -79,7 +81,7 @@ For more examples, please read the documentation.
 - [x] Do we have a `setindex!` method for `leaf[:var]`? Implement it if missing.
 - [ ] Make boundary layer conductances true models as for stomatal conductances, but maybe define the current ones as default when calling the function (I mean if no model is provided, use the ones currently in use).
 - [ ] Make a diagram of a leaf for gaz and energy exchanges
-- [ ] Add checks on the models provided for a simulation: for example Fvcb requires a stomatal conductance model. At the moment Julia returns an error on missing method for the particular implementation of photosynthesis!_(Fvcb,Gs) (in short). We could check before that both are needed and present, and return a more informational error if missing.
+- [x] Add checks on the models provided for a simulation: for example Fvcb requires a stomatal conductance model. At the moment Julia returns an error on missing method for the particular implementation of photosynthesis!_(Fvcb,Gs) (in short). We could check before that both are needed and present, and return a more informational error if missing.
 - [ ] Implement a Gm model. Cf. the [GECROS](https://models.pps.wur.nl/gecros-detailed-eco-physiological-crop-growth-simulation-model-analyse-genotype-environment) model.
 - [x] Replace component models by MutableNamedTuples ? It could alleviate the need to implement a different component model when needing a new model as it allows as many fields as we want. A call to a function would need to include the type of the model though ? *e.g.* `energy_balance!(mtnt.energy_balance, mtnt, meteo, constant)`, or we do that in the low-level functions so the use only pass the mtnt. -> solution was to make the call to the low-level functions generic for the models (no constraint on the type), but dispatch on the type of the first argument instead that is the model type for this function. This changes nothing to the high-level functions but make the possibility to provide other things than component models.
 - [x] Move the definitions of the abstract models near their processes: e.g. the definition of `AbstractAModel` should be in the `photosynthesis.jl` file.
@@ -88,12 +90,12 @@ For more examples, please read the documentation.
   - [x] The status field must be part of the struct in input of the high-level functions for easy construction, but be passed as an argument to the low-level functions so we avoid the copy(object, object[i]) in the high-level calls.
   - [x] Make a custom type for status so they are indexable? Maybe use [StaticArrays.jl](https://github.com/JuliaArrays/StaticArrays.jl) instead ? Not sure, `status[i].A = 12` does not modify the array, only `status.A[i] = 12` does, and we will provide status[i] as input to the low-level function so... Or else we get the output of the low level function, and re-assign it to the status: `status[i] = output_status`, but this is not the best solution. Use a dataframe with a view instead for several time steps ? Make a microbenchmark, dataframes should be fast.
   - [x] Make sure all functions currently applied to the status are still needed, and if so check if they work.
-  - [ ] Add a check on the combination of models + status to see if the initialization is complete, but make it optional (arg `check=true` by default).
-  - [ ] Make a new `submodels` function for each model that list all models that are used by a model. It can be nothing, an abstract model (e.g. `AbstractAModel`), a concrete model (e.g. `Fvcb`) or any combinations of models (e.g. photosynthesis + stomatal conductance).
-  - [ ] Make a function to build a tree of models based on the `submodels` outputs.
-- [ ] Remove checks on the models when calling the processes functions, and move it to the construction of the group of models and/or to the user with a check function.
+  - [x] Add a check on the combination of models + status to see if the initialization is complete, but make it optional (arg `check=true` by default).
+  - [x] Make a new `dep` function for each model that list all models that are used by a model. It can be nothing, an abstract model (e.g. `AbstractAModel`), a concrete model (e.g. `Fvcb`) or any combinations of models (e.g. photosynthesis + stomatal conductance).
+  - [x] Make a function to build a tree of models based on the `dep` outputs.
+- [x] Remove checks on the models when calling the processes functions, and move it to the construction of the group of models and/or to the user with a check function.
 - [ ] For the computation of MTG + Weather, give an option on which way the computation is done: compute one time-step for each node, and then the second..., or compute all time-steps for each node at once. The latter avoids visiting the tree n times, so it should be the default. But sometimes models need the result of other nodes before continuing, so the former is necessary. Add the option with a type so we use dispatch, e.g.: `TimeStepFirst` and `NodeFirst`.
-- [ ] Add a nicer print method to the ModelList and to the Status / TimeSteps
+- [x] Add a nicer print method to the ModelList and to the Status / TimeSteps
 - [ ] Merge meteo variables and status variables ? In this case we could update their values, e.g. re-compute the microclimate inside the canopy and use it for the simulation.
 - [ ] Remove Status and only use TimeSteps? With Status being TimeSteps of one.
 - [ ] Replace default `typemin(Type)` by `missing` values in the initializations ? But check the impact on performance because we can't do it easily because everything is typed using MutableNamedTuples.
@@ -106,11 +108,10 @@ See contributor's guide badge for more informations: [![ColPrac: Contributor's G
 
 ## Similar projects
 
-- [MAESPA](http://maespa.github.io/)
+- [MAESPA](http://maespa.github.io/) model, in FORTRAN.
 - [photosynthesis](https://github.com/cran/photosynthesis) R package
 - [plantecophys](https://bitbucket.org/remkoduursma/plantecophys/src/master/) R package
-Leuning et al. (1995)
-- [LeafGasExchange](https://github.com/TESTgroup-BNL/LeafGasExchange) R package
+- [LeafGasExchange](https://github.com/TESTgroup-BNL/LeafGasExchange) Julia package (that uses Python's SymPy library under the hood)
 
 ## References
 
