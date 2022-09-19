@@ -1,7 +1,7 @@
 name = "PlantBiophysics"
 uuid = "7ae8fcfa-76ad-4ec6-9ea7-5f8f5e2d6ec9"
 authors = ["remi.vezy <VEZY@users.noreply.github.com> and contributors"]
-version = "0.4.4"
+version = "0.5.0"
 
 [deps]
 AbstractTrees = "1520ce14-60c1-5f80-bbc7-55ef81b5835c"
