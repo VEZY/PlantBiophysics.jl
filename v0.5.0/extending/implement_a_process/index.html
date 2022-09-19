@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Implement a process · PlantBiophysics.jl</title><script data-outdated-warner src="../../assets/warner.js"></script><link rel="canonical" href="https://VEZY.github.io/PlantBiophysics.jl/extending/implement_a_process/"/><link href="https://cdnjs.cloudflare.com/ajax/libs/lato-font/3.0.0/css/lato-font.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/juliamono/0.045/juliamono.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.13.24/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL="../.."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../../assets/documenter.js"></script><script src="../../siteinfo.js"></script><script src="../../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../../assets/themeswap.js"></script></head><body><div id="documenter"><nav class="docs-sidebar"><a class="docs-logo" href="../../"><img src="../../assets/logo.svg" alt="PlantBiophysics.jl logo"/></a><div class="docs-package-name"><span class="docs-autofit"><a href="../../">PlantBiophysics.jl</a></span></div><form class="docs-search" action="../../search/"><input class="docs-search-query" id="documenter-search-query" name="q" type="text" placeholder="Search docs"/></form><ul class="docs-menu"><li><a class="tocitem" href="../../">Home</a></li><li><span class="tocitem">Getting started</span><ul><li><a class="tocitem" href="../../getting_started/get_started/">TL;DR</a></li><li><a class="tocitem" href="../../getting_started/first_fit/">Parameter fitting</a></li></ul></li><li><a class="tocitem" href="../../concepts/package_design/">Design</a></li><li><a class="tocitem" href="../../variables/">Variables</a></li><li><span class="tocitem">Models</span><ul><li><a class="tocitem" href="../../models/photosynthesis/">Photosynthesis</a></li><li><a class="tocitem" href="../../models/gs/">Stomatal conductance</a></li><li><a class="tocitem" href="../../models/energy_balance/">Energy balance</a></li><li><a class="tocitem" href="../../models/light/">Light interception</a></li></ul></li><li><a class="tocitem" href="../../climate/microclimate/">Micro-climate</a></li><li><a class="tocitem" href="../../fitting/parameter_fitting/">Tutorial: Parameter fitting</a></li><li><span class="tocitem">Tutorial: Simulation</span><ul><li><a class="tocitem" href="../../simulation/first_simulation/">Simple Simulation</a></li><li><a class="tocitem" href="../../simulation/several_simulation/">Several time steps</a></li><li><a class="tocitem" href="../../simulation/several_objects_simulation/">Several objects</a></li><li><a class="tocitem" href="../../simulation/mtg_simulation/">Whole-plant simulation</a></li></ul></li><li><a class="tocitem" href="../../simulation/uncertainty_propagation/">Tutorial: Uncertainty propagation</a></li><li><span class="tocitem">Extending PlantBiophysics</span><ul><li><a class="tocitem" href="../implement_a_model/">Implement a model</a></li><li class="is-active"><a class="tocitem" href>Implement a process</a><ul class="internal"><li><a class="tocitem" href="#Introduction"><span>Introduction</span></a></li><li><a class="tocitem" href="#Implement-a-new-process"><span>Implement a new process</span></a></li><li><a class="tocitem" href="#Implement-a-new-model-for-the-process"><span>Implement a new model for the process</span></a></li></ul></li></ul></li><li><a class="tocitem" href="../../functions/">API</a></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><nav class="breadcrumb"><ul class="is-hidden-mobile"><li><a class="is-disabled">Extending PlantBiophysics</a></li><li class="is-active"><a href>Implement a process</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>Implement a process</a></li></ul></nav><div class="docs-right"><a class="docs-edit-link" href="https://github.com/VEZY/PlantBiophysics.jl/blob/master/docs/src/extending/implement_a_process.md#L" title="Edit on GitHub"><span class="docs-icon fab"></span><span class="docs-label is-hidden-touch">Edit on GitHub</span></a><a class="docs-settings-button fas fa-cog" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-sidebar-button fa fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a></div></header><article class="content" id="documenter-page"><h1 id="Implement-a-new-component-models"><a class="docs-heading-anchor" href="#Implement-a-new-component-models">Implement a new component models</a><a id="Implement-a-new-component-models-1"></a><a class="docs-heading-anchor-permalink" href="#Implement-a-new-component-models" title="Permalink"></a></h1><h2 id="Introduction"><a class="docs-heading-anchor" href="#Introduction">Introduction</a><a id="Introduction-1"></a><a class="docs-heading-anchor-permalink" href="#Introduction" title="Permalink"></a></h2><p><code>PlantBiophysics.jl</code> was designed to make the implementation of new processes and models easy and fast. Let&#39;s learn about how to implement your own process with a simple example: implementing a growth model.</p><h2 id="Implement-a-new-process"><a class="docs-heading-anchor" href="#Implement-a-new-process">Implement a new process</a><a id="Implement-a-new-process-1"></a><a class="docs-heading-anchor-permalink" href="#Implement-a-new-process" title="Permalink"></a></h2><p>To implement a new process, we need to define the generic methods associated to it that helps run its simulation for:</p><ul><li>one or several time-steps</li><li>one or several objects</li><li>an MTG from MultiScaleTreeGraph</li></ul><p>...and all the above with a mutating function and a non-mutating one.</p><p>This is a lot of work! But fortunately PlantBiophysics provides a macro to generate all of the above: <a href="extending/@ref"><code>gen_process_methods</code></a>.</p><p>This macro takes only one argument: the name of the non-mutating function.</p><p>So for example all the photosynthesis methods are created using just this tiny line of code:</p><pre><code class="language-julia hljs">@gen_process_methods photosynthesis</code></pre><div class="admonition is-info"><header class="admonition-header">Note</header><div class="admonition-body"><p>The function is not exported by the package as it is very rarely used. To use it you&#39;ll have to prefix it by the name of the package.</p></div></div><p>So for example if we want to simulate the growth of a plant, we could add a new process called <code>growth</code>. To create the generic functions to simulate the <code>growth</code> we would do:</p><pre><code class="language-julia hljs">PlantBiophysics.@gen_process_methods growth</code></pre><p>And that&#39;s it! You created a new process called <code>growth</code>, with the following functions:</p><ul><li><code>growth!</code>: the mutating function</li><li><code>growth</code>: the non-mutating function</li><li><code>growth!_</code>: the function that actually make the computation. You&#39;ll have to implement methods for each model you need, else it will not work.</li></ul><p>Now users can call <code>growth!</code> and <code>growth</code> on any number of time steps or objects, even on MTGs, and PlantBiophysics will handle everything.</p><p>But first, we need at least one model to simulate it.</p><h2 id="Implement-a-new-model-for-the-process"><a class="docs-heading-anchor" href="#Implement-a-new-model-for-the-process">Implement a new model for the process</a><a id="Implement-a-new-model-for-the-process-1"></a><a class="docs-heading-anchor-permalink" href="#Implement-a-new-model-for-the-process" title="Permalink"></a></h2><p>To better understand how models are implemented, you can read the detailed instructions from the <a href="../implement_a_model/#model_implementation_page">previous section</a>. But for the sake of completeness, we&#39;ll implement a growth model here.</p><p>This growth model uses the assimilation computed using the coupled energy balance process. Then it removes the maintenance respiration and the growth respiration from that source of carbon, and increments the leaf biomass by the remaining carbon offer.</p><p>Let&#39;s implement this model below:</p><pre><code class="language-julia hljs"># Import the functions we need so we can add our own methods:
+import PlantBiophysics: inputs_, outputs_, energy_balance!_
+
+# Make the struct to hold the parameters:
+&quot;&quot;&quot;
+    DummyGrowth(Rm_factor, Rg_cost)
+    DummyGrowth(;Rm_factor = 0.5, Rg_cost = 1.2)
+
+Computes the leaf biomass growth of a plant.
+
+# Arguments
+
+- `Rm_factor`: the fraction of assimilation that goes into maintenance respiration
+- `Rg_cost`: the cost of growth maintenance, in gram of carbon biomass per gram of assimilate
+&quot;&quot;&quot;
+struct DummyGrowth{T} &lt;: AbstractModel
+    Rm_factor::T
+    Rg_cost::T
+end
+
+# Instantiate the struct with default values + kwargs:
+function DummyGrowth(;Rm_factor = 0.5, Rg_cost = 1.2)
+    DummyGrowth(promote(Rm_factor,Rg_cost)...)
+end
+
+# Define inputs:
+function inputs_(::DummyGrowth)
+    (A=-999.99,)
+end
+
+# Define outputs:
+function outputs_(::DummyGrowth)
+    (Rm=-999.99, Rg=-999.99, leaf_allocation=-999.99, leaf_biomass=0.0)
+end
+
+# Tells Julia what is the type of elements:
+Base.eltype(x::DummyGrowth{T}) where {T} = T
+
+# Implement the photosynthesis model:
+function growth!_(::DummyGrowth, models, status, meteo, constants=Constants())
+
+    # Compute the energy balance of the plant, coupled to the photosynthesis model:
+    energy_balance!_(models.energy_balance, models, status, meteo)
+    # Here we expect the assimilation of the plant, which is the source for Carbon
+
+    # The maintenance respiration is simply a factor of the assimilation:
+    status.Rm = status.A * models.growth.Rm_factor
+
+    # Let&#39;s say that all carbon is allocated to the leaves:
+    status.leaf_allocation = status.A - status.Rm
+
+    # And that this carbon is allocated with a cost (growth respiration Rg):
+    status.Rg = 1 - (status.leaf_allocation / models.growth.Rg_cost)
+
+    status.leaf_biomass = status.leaf_biomass + status.leaf_allocation - status.Rg
+end</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">growth!_ (generic function with 5 methods)</code></pre><p>Now we can make a simulation as usual:</p><pre><code class="language-julia hljs">meteo = Atmosphere(T = 22.0, Wind = 0.8333, P = 101.325, Rh = 0.4490995)
+
+leaf = ModelList(
+        energy_balance = Monteith(),
+        photosynthesis = Fvcb(),
+        stomatal_conductance = Medlyn(0.03, 12.0),
+        growth = DummyGrowth(),
+        status = (Rₛ = 13.747, sky_fraction = 1.0, PPFD = 1500.0, d = 0.03)
+    )
+
+growth!(leaf,meteo)
+
+leaf[:leaf_biomass] # biomass in gC</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">25.952584490732107</code></pre><p>We can also start the simulation later when the plant already has some biomass by initializing the <code>leaf_biomass</code>:</p><pre><code class="language-julia hljs">meteo = Atmosphere(T = 22.0, Wind = 0.8333, P = 101.325, Rh = 0.4490995)
+
+leaf = ModelList(
+        energy_balance = Monteith(),
+        photosynthesis = Fvcb(),
+        stomatal_conductance = Medlyn(0.03, 12.0),
+        growth = DummyGrowth(),
+        status = (Rₛ = 13.747, sky_fraction = 1.0, PPFD = 1500.0, d = 0.03, leaf_biomass = 2400.0)
+    )
+
+growth!(leaf,meteo)
+
+leaf[:leaf_biomass] # biomass in gC</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">2425.952584490732</code></pre></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../implement_a_model/">« Implement a model</a><a class="docs-footer-nextpage" href="../../functions/">API »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 0.27.23 on <span class="colophon-date" title="Monday 19 September 2022 16:36">Monday 19 September 2022</span>. Using Julia version 1.7.2.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
