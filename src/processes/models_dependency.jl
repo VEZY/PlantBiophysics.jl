@@ -133,7 +133,7 @@ function draw_dependency_trees(
     tree_panel = []
     for (p, tree) in trees.roots
         node = []
-        draw_dependency_tree(tree, node, guides_style=guides_style, dep_tree_guides=dep_tree_guides)
+        draw_dependency_tree(tree, node, dep_tree_guides=dep_tree_guides)
         push!(tree_panel, Term.Panel(node; fit=true, title=string(p), style="green dim"))
     end
 
@@ -159,7 +159,6 @@ Draw the dependency tree.
 """
 function draw_dependency_tree(
     tree, node;
-    guides_style::String=Term.TERM_THEME[].tree_guide_style,
     dep_tree_guides=(space=" ", vline="│", branch="├", leaf="└", hline="─")
 )
 
@@ -191,6 +190,10 @@ end
 Draw the panels for all dependencies
 """
 function draw_panel(node, tree, prefix, dep_tree_guides)
+    ch = AbstractTrees.children(tree)
+    length(ch) == 0 && return # If no children, return
+    is_leaf = [repeat([false], length(ch) - 1)..., true]
+
     for i in AbstractTrees.children(tree)
         prefix_c_length = 8 + length(prefix)
         panel_hright = repeat(" ", prefix_c_length)
@@ -216,7 +219,7 @@ function draw_panel(node, tree, prefix, dep_tree_guides)
                 panel.measure.h ÷ 2,
                 3,
                 panel_hright,
-                length(AbstractTrees.children(i)) <= 1,
+                popfirst!(is_leaf),
                 dep_tree_guides
             ) * panel
         )
@@ -232,10 +235,11 @@ Draw the line guide for one node of the dependency tree.
 function draw_guide(h, w, prefix, isleaf, guides)
 
     header_width = string(prefix, guides.vline, repeat(guides.space, w - 1), "\n")
-    header = h > 1 ? repeat(header_width, h - 1) : ""
+    header = h > 1 ? repeat(header_width, h) : ""
     if isleaf
         return header * prefix * guides.leaf * repeat(guides.hline, w - 1)
     else
-        return header * prefix * guides.branch * repeat(guides.hline, w - 1)
+        footer = h > 1 ? header_width[1:end-1] : "" # NB: we remove the last \n
+        return header * prefix * guides.branch * repeat(guides.hline, w - 1) * "\n" * footer
     end
 end

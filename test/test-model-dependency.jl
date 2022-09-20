@@ -49,3 +49,38 @@ end
     @test dep_tree.parent === nothing
     @test dep_tree.children[1].parent === dep_tree
 end
+
+
+@testset "ModelList dependency tree printing" begin
+    # Defining a dummy energy model that takes 2 dependencies:
+    struct dummy_E{T} <: AbstractEnergyModel
+        A::T
+    end
+    PlantBiophysics.inputs_(::dummy_E) = (PPFD=-Inf, Tₗ=-Inf, Cₛ=-Inf)
+    PlantBiophysics.outputs_(::dummy_E) = (A=-Inf, Gₛ=-Inf, Cᵢ=-Inf)
+    PlantBiophysics.dep(::dummy_E) = (light_interception=AbstractLightModel, photosynthesis=AbstractAModel)
+    function PlantBiophysics.energy_balance!_(::dummy_E, models, status, meteo, constants=Constants())
+        return nothing
+    end
+
+    dep_tree = dep(ModelList(energy_balance=dummy_E(20.0), stomatal_conductance=Medlyn(0.0, 0.0011)))
+    @test dep_tree.not_found == Dict{Symbol,DataType}(:light_interception => AbstractLightModel, :photosynthesis => AbstractAModel)
+    @test length(dep_tree.roots) == 2
+    @test dep_tree.roots[:energy_balance].missing_dependency == Int[1, 2]
+    @test dep_tree.roots[:energy_balance].dependency == (light_interception=AbstractLightModel, photosynthesis=AbstractAModel)
+
+    dep_tree_two_dep = dep(
+        ModelList(
+            light_interception=Beer(0.5),
+            energy_balance=dummy_E(20.0),
+            photosynthesis=Fvcb(),
+            stomatal_conductance=Medlyn(0.0, 0.0011)
+        )
+    )
+
+    @test dep_tree_two_dep.roots[:energy_balance].missing_dependency == Int[]
+    @test dep_tree_two_dep.roots[:energy_balance].dependency == (
+        light_interception=AbstractLightModel,
+        photosynthesis=AbstractAModel
+    )
+end
