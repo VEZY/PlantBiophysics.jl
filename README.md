@@ -122,7 +122,7 @@ stomatal conductance models ». Tree Physiology 14 (7-8‑9): 1069‑79.
 Duursma, R. A., et B. E. Medlyn. 2012. « MAESPA: a model to study interactions between water
 limitation, environmental drivers and vegetation function at tree and stand levels, with an
 example application to [CO2] × drought interactions ». Geoscientific Model Development 5
-(4): 919‑40. <https://doi.org/10.5194/gmd-5-919-2012>.
+(4): 919‑40. <https://doi.org/10.5194/gmd-5-919-2012>
 
 Farquhar, G. D., S. von von Caemmerer, et J. A. Berry. 1980. « A biochemical model of
 photosynthetic CO2 assimilation in leaves of C3 species ». Planta 149 (1): 78‑90.
