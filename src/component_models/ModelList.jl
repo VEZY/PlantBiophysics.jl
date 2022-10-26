@@ -96,7 +96,7 @@ leaf = ModelList(
 )
 ```
 """
-struct ModelList{M,S<:AbstractStatus}
+struct ModelList{M,S<:TimeStepTable}
     models::M
     status::S
 end
@@ -127,7 +127,7 @@ end
 """
     homogeneous_type_steps(ref_vars, vars, datatype=MutableNamedTuple)
 
-Return a [`Status`](@ref) or [`TimeSteps`](@ref) based on the length of the variables in
+Return a [`Status`](@ref) or [`TimeStepTable`](@ref) based on the length of the variables in
 vars. `ref_vars` is a struct with the default values of all the variables needed by the
 models. `datatype` is the type used to hold the status inside the Status.
 """
@@ -163,7 +163,7 @@ function homogeneous_type_steps(ref_vars, vars, datatype=MutableNamedTuple)
             )
         end
 
-        return TimeSteps(vars_array)
+        return TimeStepTable(vars_array)
     else
         vars = Status(
             merge_status(
@@ -188,7 +188,7 @@ function Base.copy(m::T) where {T<:ModelList}
     )
 end
 
-function Base.copy(m::T, status::S) where {T<:ModelList,S<:AbstractStatus}
+function Base.copy(m::T, status::S) where {T<:ModelList,S<:TimeStepTable}
     ModelList(
         m.models,
         status

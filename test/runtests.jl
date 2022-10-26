@@ -14,6 +14,14 @@ end
     include("test-atmosphere.jl")
 end
 
+@testset "Status" begin
+    include("test-Status.jl")
+end
+
+@testset "TimeStepRow" begin
+    include("test-TimeStepRow.jl")
+end
+
 @testset "Structures" begin
     include("test-structs.jl")
 end

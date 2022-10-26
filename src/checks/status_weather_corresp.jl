@@ -8,7 +8,7 @@ recycled (length 1).
 function check_status_wheather(
     st::T,
     weather::Weather
-) where {T<:TimeSteps}
+) where {T<:TimeStepTable}
 
     length(st) > 1 && length(st) != length(weather.data) &&
         error("Component status should have the same number of time-steps than weather (or one only)")

@@ -1,177 +1,77 @@
 """
-AbstractStatus is the abstract type used for all Status types that store the values of the
-variables during simulation.
-"""
-abstract type AbstractStatus end
-
-"""
     Status(vars)
 
 Status type used to store the values of the variables during simulation. It is mainly used
-as the structure to store the variables in the status field of a [`ModelList`](@ref).
+as the structure to store the variables in the [`TimeStepRow`](@ref) of a [`TimeStepTable`](@ref) of a [`ModelList`](@ref).
 
-# See also
-
-[`TimeSteps`](@ref) for several time steps.
+Most of the code is taken from MasonProtter/MutableNamedTuples.jl, so `Status` is a MutableNamedTuples with a few modifications,
+so in essence, it is a stuct that stores a `NamedTuple` of the references to the values of the variables, which makes it mutable.
 
 # Examples
 
 ```julia
 # A leaf with one value for all variables will make a status with one time step:
-leaf = ModelList(
-    photosynthesis = Fvcb(),
-    stomatal_conductance = Medlyn(0.03, 12.0),
-    status=(Tₗ=25.0, PPFD=1000.0, Cₛ=400.0, Dₗ=1.0)
-)
+st = Status(Rₛ=13.747, sky_fraction=1.0, d=0.03, PPFD=1500.0)
 
-# Indexing the model list with a symbol will return the value of the variable:
-leaf[:Tₗ]
+# Indexing a Status with a symbol returns the value of the variable:
+st[:Tₗ]
 
-# Indexing the model list with an integer will always return the first time step, as there
-is only one, and because we want a similar interface with TimeSteps:
-leaf[1]
+# Indexing the Status with an integer returns the value of the variable by position:
+st[1]
 ```
 """
-struct Status{T} <: AbstractStatus where {T}
-    vars::T
+struct Status{N,T<:Tuple{Vararg{<:Ref}}}
+    vars::NamedTuple{N,T}
 end
 
-function Base.getproperty(status::Status, key::Symbol)
-    getproperty(getfield(status, :vars), key)
+Status(; kwargs...) = Status(NamedTuple{keys(kwargs)}(Ref.(values(values(kwargs)))))
+function Status{names}(tuple::Tuple) where {names}
+    Status(NamedTuple{names}(Ref.(tuple)))
 end
 
-function Base.setproperty!(status::Status, s::Symbol, x)
-    setproperty!(getfield(status, :vars), s, x)
+Base.keys(::Status{names}) where {names} = names
+Base.values(st::Status) = getindex.(values(getfield(st, :vars)))
+refvalues(mnt::Status) = values(getfield(mnt, :vars))
+Base.NamedTuple(mnt::Status) = NamedTuple{keys(mnt)}(values(mnt))
+Base.Tuple(mnt::Status) = values(mnt)
+
+function Base.show(io::IO, mnt::Status{names}) where {names}
+    print(io, "Status", NamedTuple(mnt))
 end
 
-# Indexing a Status with an integer returns the status content (for compatibility with TimeSteps).
-function Base.getindex(status::Status, index::T) where {T<:Integer}
-    getfield(status, :vars)
-end
+Base.getproperty(mnt::Status, s::Symbol) = getproperty(NamedTuple(mnt), s)
+#! Shouldn't it be `getproperty(getfield(mnt, :vars), s)[]` instead ? 
 
-# Indexing with a Symbol extracts the variable (same as getproperty):
-function Base.getindex(status::Status, index::Symbol)
-    getproperty(status, index)
+function Base.setproperty!(mnt::Status, s::Symbol, x)
+    nt = getfield(mnt, :vars)
+    getfield(nt, s)[] = x
 end
+#! And if so, this one should just work with `mnt[s] = x`. 
 
-function Base.keys(status::Status)
-    keys(getfield(status, :vars))
+function Base.setproperty!(mnt::Status, i::Int, x)
+    nt = getfield(mnt, :vars)
+    getindex(nt, i)[] = x
 end
+#! And if so, this one should just work with `mnt[i] = x`. 
 
-# For compatibility with TimeSteps we say Status is length one:
-function Base.length(A::Status)
-    1
-end
-
+Base.propertynames(::Status{T,R}) where {T,R} = T
+Base.length(mnt::Status) = length(getfield(mnt, :vars))
 Base.eltype(::Type{Status{T}}) where {T} = T
 
-# Iterate over the status (lenght 1 only) for compatibility with TimeSteps.
-Base.iterate(status::Status, i=1) = i > 1 ? nothing : (getfield(status, :vars), i + 1)
+Base.iterate(mnt::Status, iter=1) = iterate(NamedTuple(mnt), iter)
+#! Idem, shouldn't it be `iterate(getfield(mnt, :vars), iter)` instead ? 
 
+Base.firstindex(mnt::Status) = 1
+Base.lastindex(mnt::Status) = lastindex(NamedTuple(mnt))
+#! Idem, shouldn't it be `lastindex(getfield(mnt, :vars))` instead ? 
 
-"""
-    TimeSteps(vars)
+Base.getindex(mnt::Status, i::Int) = getfield(NamedTuple(mnt), i)
+#! Idem, shouldn't it be `getfield(getfield(mnt, :vars), i)` instead ? 
 
-TimeSteps is the same than [`Status`](@ref) but for simulation with several time steps. It
-is used to store the values of the variables during a simulation, and is mainly used as the
-structure in the status field of the [`ModelList`](@ref) type.
+Base.getindex(mnt::Status, i::Symbol) = getfield(NamedTuple(mnt), i)
+#! Idem, shouldn't it be `getfield(getfield(mnt, :vars), i)` instead ? 
 
-# Examples
-
-```julia
-# A leaf with several values for at least one of its variable will make a status with
-# several time steps:
-leaf = ModelList(
-    photosynthesis = Fvcb(),
-    stomatal_conductance = Medlyn(0.03, 12.0),
-    status=(Tₗ=[25.0, 26.0], PPFD=1000.0, Cₛ=400.0, Dₗ=1.0)
-)
-
-# Indexing the model list with an integer will return the first time step:
-leaf[1]
-
-# Indexing the model list with a symbol will return the variable with all time steps:
-leaf[:Tₗ]
-
-# If you need the value for one variable at one time step, prefer using this (5x faster):
-leaf[1].Tₗ
-
-# Rather than this (5x slower):
-leaf[:Tₗ][1]
-```
-"""
-struct TimeSteps <: AbstractStatus
-    ts
+function Base.indexed_iterate(mnt::Status, i::Int, state=1)
+    Base.indexed_iterate(NamedTuple(mnt), i, state)
 end
-
-# Indexing a TimeSteps object with the dot syntax returns values of all time-steps for a
-# variable (e.g. `status.A`).
-function Base.getproperty(status::TimeSteps, key::Symbol)
-    [getproperty(i, key) for i in getfield(status, :ts)]
-end
-
-# Setting the values of a variable in a TimeSteps object is done by indexing the object
-# and then providing the values for the variable (must match the length).
-function Base.setproperty!(status::TimeSteps, s::Symbol, x)
-    @assert length(x) == length(getfield(status, :ts))
-    for i in getfield(status, :ts)
-        setproperty!(i, s, x)
-    end
-end
-
-# Indexing a TimeSteps with an integer returns the ith time-step.
-function Base.getindex(status::TimeSteps, index::T) where {T<:Integer}
-    getfield(status, :ts)[index]
-end
-
-# Indexing with a Symbol extracts the variable (same as getproperty):
-function Base.getindex(status::TimeSteps, index::Symbol)
-    getproperty(status, index)
-end
-
-function Base.length(A::TimeSteps)
-    length(getfield(A, :ts))
-end
-
-Base.eltype(::Type{TimeSteps}) = MutableNamedTuple
-
-# Iterate over all time-steps in a TimeSteps object.
-Base.iterate(status::TimeSteps, i=1) = i > length(status) ? nothing : (status[i], i + 1)
-
-# Keys should be the same between TimeSteps so we only need the ones from the first timestep
-function Base.keys(status::TimeSteps)
-    keys(status[1])
-end
-
-# Implements eachindex to iterate over the time-steps; else it would iterate over keys.
-Base.eachindex(status::TimeSteps) = 1:length(status)
-
-function Base.show(io::IO, t::Status)
-    length(getfield(t, :vars)) == 0 && return
-    st_panel = Term.Panel(
-        Term.highlight(join([string(k, "=", v) for (k, v) in pairs(getfield(t, :vars))], ", ")),
-        title="Status",
-        style="red",
-        fit=false,
-    )
-    print(io, st_panel)
-end
-
-
-function Base.show(io::IO, t::TimeSteps)
-    length(t) == 0 && return
-
-    ts = [
-        Term.highlight("Step $i: " * join([string(k, "=", v) for (k, v) in pairs(v)], ", "))
-        for (i, v) in enumerate(getfield(t, :ts))
-    ]
-
-    st_panel = Term.Panel(
-        join(ts, "\n"),
-        title="Status",
-        style="red",
-        fit=false,
-    )
-
-    print(io, st_panel)
-end
+#! Idem, shouldn't it be `Base.indexed_iterate(getfield(mnt, :vars), i, state)` instead ? 

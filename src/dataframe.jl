@@ -35,7 +35,7 @@ Generic implementation of `DataFrame` for a single `ModelList` model.
 """
 function DataFrame(components::T) where {T<:ModelList}
     st = status(components)
-    if isa(st, TimeSteps)
+    if isa(st, TimeStepTable)
         DataFrame([(NamedTuple(j)..., timestep=i) for (i, j) in enumerate(st)])
     else
         DataFrame([NamedTuple(st)])
@@ -43,11 +43,11 @@ function DataFrame(components::T) where {T<:ModelList}
 end
 
 """
-    DataFrame(components::ModelList{T,<:TimeSteps})
+    DataFrame(components::ModelList{T,<:TimeStepTable})
 
 Implementation of `DataFrame` for a `ModelList` model with several time steps.
 """
-function DataFrame(components::ModelList{T,S}) where {T,S<:TimeSteps}
+function DataFrame(components::ModelList{T,S}) where {T,S<:TimeStepTable}
     DataFrame([(NamedTuple(j)..., timestep=i) for (i, j) in enumerate(status(components))])
 end
 

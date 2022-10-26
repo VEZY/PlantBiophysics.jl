@@ -277,7 +277,7 @@ function vars_not_init_(status::T, default_values) where {T<:Status}
 end
 
 # For components with a status with multiple time-steps:
-function vars_not_init_(status::T, default_values) where {T<:TimeSteps}
+function vars_not_init_(status::T, default_values) where {T<:TimeStepTable}
     length(default_values) == 0 && return () # no variables
 
     not_init = Set{Symbol}()

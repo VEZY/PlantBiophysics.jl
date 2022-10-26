@@ -14,6 +14,7 @@ import Dates
 import AbstractTrees
 import Term
 
+import Tables
 import DataFrames.DataFrame # For convenience transformations
 import DataFrames: Not, rename!, select!, select, dropmissing!, sort!, transform!
 import Base.show
@@ -34,6 +35,9 @@ include("Abstract_model_structs.jl")
 
 # Status
 include("component_models/Status.jl")
+# include("component_models/TimeStepRow.jl")
+include("component_models/TimeStepTable.jl")
+
 
 # Component models
 include("component_models/ModelList.jl")
@@ -134,7 +138,8 @@ export Constants
 
 # Status
 export init_status!
-export Status, TimeSteps
+export Status, TimeStepTable
+export schema
 
 # ModelList
 export ModelList

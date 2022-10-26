@@ -96,9 +96,19 @@ For more examples, please read the documentation.
 - [x] Remove checks on the models when calling the processes functions, and move it to the construction of the group of models and/or to the user with a check function.
 - [ ] For the computation of MTG + Weather, give an option on which way the computation is done: compute one time-step for each node, and then the second..., or compute all time-steps for each node at once. The latter avoids visiting the tree n times, so it should be the default. But sometimes models need the result of other nodes before continuing, so the former is necessary. Add the option with a type so we use dispatch, e.g.: `TimeStepFirst` and `NodeFirst`.
 - [x] Add a nicer print method to the ModelList and to the Status / TimeSteps
-- [ ] Merge meteo variables and status variables ? In this case we could update their values, e.g. re-compute the microclimate inside the canopy and use it for the simulation.
+- [x] Merge meteo variables and status variables ? In this case we could update their values, e.g. re-compute the microclimate inside the canopy and use it for the simulation. -> No we can't, if we have a lot of objects in the scene, it would mean copying a lot of data for nothing. Meteo variables are forced, if a model has to modify the value, it means it is another variable (e.g. air temperature, but around the leaf)
 - [ ] Remove Status and only use TimeSteps? With Status being TimeSteps of one.
+- [ ] Interface TimeSteps with `Tables.jl`, and make the code compatible with Table-alike objects ? That would mean we can interface with e.g. DataFrames and profit of the ecosystem capabilities (e.g. future compatibility with GPU). Adding the interface is trivial, but making all functions with it may not. At least we can keep the `status.var` notation, as we will pass TableRows to the functions.
+  - [x] Implement TimeStepTable that makes the interface with Tables.jl
+  - [x] Implement TimeStepRow for managing unique time steps
+  - [x] Use Status directly as a mnt, and as the value for TimeStepRow
+  - [ ] Test if I can improve implementation of Status (see comments in code)
+  - [ ] Remove dependency to MutableNamedTuples
+  - [ ] Remove complicated code for DataFrame (thanks to Tables interface). Remove completely the dependency ? 
+  - [ ] Implement usage of TimeStepTable everywhere
+  - [ ] Use it for the meteo too ? 
 - [ ] Replace default `typemin(Type)` by `missing` values in the initializations ? But check the impact on performance because we can't do it easily because everything is typed using MutableNamedTuples.
+- [ ] Add variable boundaries in the status, and add a method for setting the values with a control on the boundary. This can be implemented in two ways: we add a new type that will be used as a value in the status, and that would have the parameter value + boundaries in two fields; or we add a new field to the status with the upper and lower boundaries of each variable. I think the first solution is better as it allows to pass this new type easily to the ModelList, and is more straightforward to get the boundaries of a particular variable (it is cleaner conceptually).
 
 ## Contributing
 
