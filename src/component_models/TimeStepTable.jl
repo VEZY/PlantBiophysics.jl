@@ -146,6 +146,7 @@ end
     return @inbounds rows[row_ind]
 end
 
+# Indexing a TimeStepTable with a colon (e.g. `ts[:,1]`) gives all values in the row.
 @inline function Base.getindex(ts::TimeStepTable, ::Colon, col_ind::Integer)
     return getproperty(Tables.columns(ts), col_ind)
 end
@@ -157,29 +158,21 @@ end
 # append!(x, rows)
 # x[i] = row
 
-function Base.show(io::IO, t::Status)
-    length(getfield(t, :vars)) == 0 && return
-    st_panel = Term.Panel(
-        Term.highlight(join([string(k, "=", v) for (k, v) in pairs(getfield(t, :vars))], ", ")),
-        title="Status",
-        style="red",
-        fit=false,
-    )
-    print(io, st_panel)
-end
-
-
-function Base.show(io::IO, t::TimeStepTable)
+function Base.show(io::IO, t::TimeStepTable, limit=true)
     length(t) == 0 && return
 
-    ts = [
-        Term.highlight("Step $i: " * join([string(k, "=", v) for (k, v) in pairs(v)], ", "))
-        for (i, v) in enumerate(getfield(t, :ts))
-    ]
+
+    ts_all = getfield(t, :ts)
+
+    ts_print = []
+    for (i, ts) in enumerate(ts_all)
+        push!(ts_print, Term.highlight("Step $i: " * show_long_format_status(ts, true)))
+        limit && i >= displaysize(io)[1] && (push!(ts_print, "…"); break)
+    end
 
     st_panel = Term.Panel(
-        join(ts, "\n"),
-        title="Status",
+        join(ts_print, "\n"),
+        title="TimeStepTable",
         style="red",
         fit=false,
     )

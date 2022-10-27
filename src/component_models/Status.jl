@@ -35,8 +35,32 @@ refvalues(mnt::Status) = values(getfield(mnt, :vars))
 Base.NamedTuple(mnt::Status) = NamedTuple{keys(mnt)}(values(mnt))
 Base.Tuple(mnt::Status) = values(mnt)
 
-function Base.show(io::IO, mnt::Status{names}) where {names}
-    print(io, "Status", NamedTuple(mnt))
+function show_long_format_status(t::Status, limit=false)
+    length(getfield(t, :vars)) == 0 && return
+    nt = NamedTuple(t)
+    if limit && length(nt) > 10
+        nt = NamedTuple{keys(nt)[1:10]}(values(nt)[1:10])
+        join([string(k, "=", v) for (k, v) in pairs(nt)], ", ") * " ..."
+    else
+        join([string(k, "=", v) for (k, v) in pairs(nt)], ", ")
+    end
+
+end
+
+function Base.show(io::IO, ::MIME"text/plain", t::Status)
+    st_panel = Term.Panel(
+        Term.highlight(show_long_format_status(t)),
+        title="Status",
+        style="red",
+        fit=false,
+    )
+    print(io, st_panel)
+end
+
+# Short form printing (e.g. inside another object)
+function Base.show(io::IO, t::Status)
+    length(getfield(t, :vars)) == 0 && return
+    print(io, "Status", NamedTuple(t))
 end
 
 Base.getproperty(mnt::Status, s::Symbol) = getproperty(NamedTuple(mnt), s)
