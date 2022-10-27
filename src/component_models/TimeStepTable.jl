@@ -134,25 +134,27 @@ end
     return @inbounds rows[row_ind][col_ind]
 end
 
-# Indexing a TimeStepTable with a colon (e.g. `ts[1,:]`) gives all values in column.
-@inline function Base.getindex(ts::TimeStepTable, row_ind::Integer, ::Colon)
+# Indexing a TimeStepTable in one dimension only gives the row (e.g. `ts[1] == ts[1,:]`)
+@inline function Base.getindex(ts::TimeStepTable, i::Integer)
     rows = Tables.rows(ts)
     @boundscheck begin
-        if row_ind < 1 || row_ind > length(ts)
-            throw(BoundsError(ts, (row_ind, col_ind)))
+        if i < 1 || i > length(ts)
+            throw(BoundsError(ts, i))
         end
     end
 
-    return @inbounds rows[row_ind]
+    return @inbounds rows[i]
+end
+
+# Indexing a TimeStepTable with a colon (e.g. `ts[1,:]`) gives all values in column.
+@inline function Base.getindex(ts::TimeStepTable, row_ind::Integer, ::Colon)
+    return getindex(ts, row_ind)
 end
 
 # Indexing a TimeStepTable with a colon (e.g. `ts[:,1]`) gives all values in the row.
 @inline function Base.getindex(ts::TimeStepTable, ::Colon, col_ind::Integer)
     return getproperty(Tables.columns(ts), col_ind)
 end
-
-# # Implements eachindex to iterate over the time-steps; else it would iterate over keys.
-# Base.eachindex(status::TimeStepTable) = 1:length(status)
 
 # push!(x, row)
 # append!(x, rows)
@@ -161,9 +163,7 @@ end
 function Base.show(io::IO, t::TimeStepTable, limit=true)
     length(t) == 0 && return
 
-
     ts_all = getfield(t, :ts)
-
     ts_print = []
     for (i, ts) in enumerate(ts_all)
         push!(ts_print, Term.highlight("Step $i: " * show_long_format_status(ts, true)))
@@ -178,4 +178,21 @@ function Base.show(io::IO, t::TimeStepTable, limit=true)
     )
 
     print(io, st_panel)
+end
+
+function Base.show(io::IO, row::TimeStepRow)
+    i = getfield(row, :row)
+    st = getfield(getfield(row, :source), :ts)[i]
+    # st_panel = Term.highlight("Step $i: " * show_long_format_status(st, true))
+    ts_print = "Step $i: " * show_long_format_status(st, true)
+
+    st_panel = Term.Panel(
+        ts_print,
+        title="TimeStepRow",
+        style="red",
+        fit=false,
+    )
+
+    print(io, Term.highlight(st_panel))
+    # print(io, "TimeStepRow", NamedTuple(t))
 end
