@@ -1,8 +1,5 @@
 module PlantBiophysics
 
-# For model parameters (efficient and still mutable!)
-using MutableNamedTuples
-
 # For IO:
 import YAML
 import CSV

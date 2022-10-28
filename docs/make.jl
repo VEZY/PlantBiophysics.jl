@@ -3,9 +3,8 @@ using Documenter
 using PlantBiophysics
 using DataFrames
 using CSV
-using MutableNamedTuples
 
-DocMeta.setdocmeta!(PlantBiophysics, :DocTestSetup, :(using PlantBiophysics, DataFrames, CSV, MutableNamedTuples); recursive=true)
+DocMeta.setdocmeta!(PlantBiophysics, :DocTestSetup, :(using PlantBiophysics, DataFrames, CSV); recursive=true)
 
 makedocs(;
     modules=[PlantBiophysics],

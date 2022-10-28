@@ -37,7 +37,9 @@ end
 
 TimeStepTable(ts::V) where {V<:Vector} = TimeStepTable(keys(ts[1]), ts)
 # Case where we instantiate the table with one time step only, not given as a vector:
-TimeStepTable(ts) = TimeStepTable(keys(ts), ts)
+TimeStepTable(ts) = TimeStepTable(keys(ts), [ts])
+# Building it using named arguments:
+TimeStepTable(; kwargs...) = TimeStepTable(kwargs)
 
 struct TimeStepRow{T} <: Tables.AbstractRow
     row::Int
@@ -196,6 +198,7 @@ function Base.show(io::IO, t::TimeStepTable, limit=true)
 
     t_mat = Tables.matrix(t)
     col_names = [:Step, getfield(t, :names)...]
+    ts_column = string.(1:size(t_mat, 1)) # TimeStep index column
 
     if limit
         # We need the values in the matrix to be Strings to perform the truncation (and it is done afterwards too so...)
@@ -204,6 +207,9 @@ function Base.show(io::IO, t::TimeStepTable, limit=true)
         disp_size = displaysize(io)
         if size(t_mat, 1) * Term.Measures.height(t_mat[1, 1]) >= disp_size[1]
             t_mat = vcat(t_mat[1:disp_size[1], :], fill("...", (1, size(t_mat, 2))))
+            # We need to add the TimeStep as the first column:
+            ts_column = ts_column[1:disp_size[1]+1]
+            ts_column[end] = "..."
         end
 
         # Header size (usually the widest):
@@ -232,7 +238,7 @@ function Base.show(io::IO, t::TimeStepTable, limit=true)
         end
     end
 
-    t_mat = Tables.table(hcat([string.(1:size(t_mat, 1)-1)..., "..."], t_mat), header=col_names)
+    t_mat = Tables.table(hcat(ts_column, t_mat), header=col_names)
 
     st_panel = Term.Tables.Table(
         t_mat;

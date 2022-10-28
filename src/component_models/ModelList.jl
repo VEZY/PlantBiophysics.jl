@@ -103,7 +103,7 @@ end
 
 # General interface:
 function ModelList(;
-    status=MutableNamedTuple(),
+    status=nothing,
     status_type=MutableNamedTuple,
     type_promotion=nothing,
     variables_check=true,

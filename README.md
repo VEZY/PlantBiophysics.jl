@@ -103,7 +103,7 @@ For more examples, please read the documentation.
   - [x] Implement TimeStepRow for managing unique time steps
   - [x] Use Status directly as a mnt, and as the value for TimeStepRow
   - [ ] Test if I can improve implementation of Status (see comments in code)
-  - [ ] Remove dependency to MutableNamedTuples
+  - [x] Remove dependency to MutableNamedTuples
   - [ ] Remove complicated code for DataFrame (thanks to Tables interface). Remove completely the dependency ? 
   - [ ] Implement usage of TimeStepTable everywhere
   - [ ] Use it for the meteo too ? 
