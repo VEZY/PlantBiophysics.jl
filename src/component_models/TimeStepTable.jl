@@ -53,7 +53,7 @@ Base.keys(ts::TimeStepTable) = getfield(ts, :names)
 names(ts::TimeStepTable) = keys(ts)
 # matrix(ts::TimeStepTable) = reduce(hcat, [[i...] for i in ts])'
 
-function Tables.schema(m::TimeStepTable{T}) where {T<:MutableNamedTuple}
+function Tables.schema(m::TimeStepTable{T}) where {T<:Status}
     # This one is complicated because the types of the variables are hidden in the Status as RefValues:
     Tables.Schema(names(m), DataType[i.types[1] for i in T.parameters[2].parameters])
 end
@@ -160,30 +160,91 @@ end
 # append!(x, rows)
 # x[i] = row
 
+# function Base.show(io::IO, t::TimeStepTable, limit=true)
+#     length(t) == 0 && return
+
+#     ts_all = getfield(t, :ts)
+#     ts_print = []
+#     for (i, ts) in enumerate(ts_all)
+#         push!(ts_print, Term.highlight("Step $i: " * show_long_format_status(ts, true)))
+#         limit && i >= displaysize(io)[1] && (push!(ts_print, "…"); break)
+#     end
+
+#     st_panel = Term.Panel(
+#         join(ts_print, "\n"),
+#         title="TimeStepTable",
+#         style="red",
+#         fit=false,
+#     )
+
+#     print(io, st_panel)
+# end
+
 function Base.show(io::IO, t::TimeStepTable, limit=true)
     length(t) == 0 && return
 
-    ts_all = getfield(t, :ts)
-    ts_print = []
-    for (i, ts) in enumerate(ts_all)
-        push!(ts_print, Term.highlight("Step $i: " * show_long_format_status(ts, true)))
-        limit && i >= displaysize(io)[1] && (push!(ts_print, "…"); break)
-    end
-
-    st_panel = Term.Panel(
-        join(ts_print, "\n"),
-        title="TimeStepTable",
-        style="red",
-        fit=false,
+    print(
+        Term.RenderableText(
+            "TimeStepTable ($(length(t)) x $(length(getfield(t,:names)))):";
+            style="red bold"
+        )
     )
 
+    #! Note: There should be a better way to add the TimeStep as the first column. 
+    # Here we transform the whole table into a matrix and pass the header manually... 
+    # Also we manually replace last columns or rows by ellipsis if the table is too long or too wide.
+
+    t_mat = Tables.matrix(t)
+    col_names = [:Step, getfield(t, :names)...]
+
+    if limit
+        # We need the values in the matrix to be Strings to perform the truncation (and it is done afterwards too so...)
+        typeof(t_mat) <: Matrix{String} || (t_mat = string.(t_mat))
+
+        disp_size = displaysize(io)
+        if size(t_mat, 1) * Term.Measures.height(t_mat[1, 1]) >= disp_size[1]
+            t_mat = vcat(t_mat[1:disp_size[1], :], fill("...", (1, size(t_mat, 2))))
+        end
+
+        # Header size (usually the widest):
+        space_around_text = 8
+        header_size = textwidth(join(col_names, join(fill(" ", space_around_text))))
+        # Maximum column size:
+        colsize = findmax(first, textwidth(join(t_mat[i, :], join(fill(" ", space_around_text)))) for i in axes(t_mat, 1))
+
+        # Find the column that goes beyond the display:
+        if header_size >= colsize[1]
+            # The header is wider
+            max_col_index = findfirst(x -> x > disp_size[2], cumsum(textwidth.(string.(col_names)) .+ space_around_text))
+        else
+            # One of the columns is wider
+            max_col_index = findfirst(x -> x > disp_size[2], cumsum(textwidth.(t_mat[colsize[2], :]) .+ space_around_text))
+        end
+
+        if max_col_index !== nothing
+            # We found a column that goes beyond the display, so we need to truncate starting from this one
+            t_mat = t_mat[:, 1:max_col_index-1]
+            # And we add an ellipsis to the last column for clarity:
+            t_mat = hcat(t_mat, repeat(["..."], size(t_mat, 1)))
+            # Add the ellipsis to the column names:
+            col_names = [col_names[1:max_col_index]..., Symbol("...")]
+            # remember that the first column is the TimeStep so we don't use max_col_index-1 here
+        end
+    end
+
+    t_mat = Tables.table(hcat([string.(1:size(t_mat, 1)-1)..., "..."], t_mat), header=col_names)
+
+    st_panel = Term.Tables.Table(
+        t_mat;
+        box=:ROUNDED, style="red", compact=false
+    )
     print(io, st_panel)
 end
+
 
 function Base.show(io::IO, row::TimeStepRow)
     i = getfield(row, :row)
     st = getfield(getfield(row, :source), :ts)[i]
-    # st_panel = Term.highlight("Step $i: " * show_long_format_status(st, true))
     ts_print = "Step $i: " * show_long_format_status(st, true)
 
     st_panel = Term.Panel(
@@ -194,5 +255,4 @@ function Base.show(io::IO, row::TimeStepRow)
     )
 
     print(io, Term.highlight(st_panel))
-    # print(io, "TimeStepRow", NamedTuple(t))
 end
