@@ -38,8 +38,6 @@ end
 TimeStepTable(ts::V) where {V<:Vector} = TimeStepTable(keys(ts[1]), ts)
 # Case where we instantiate the table with one time step only, not given as a vector:
 TimeStepTable(ts) = TimeStepTable(keys(ts), [ts])
-# Building it using named arguments:
-TimeStepTable(; kwargs...) = TimeStepTable(kwargs)
 
 struct TimeStepRow{T} <: Tables.AbstractRow
     row::Int
@@ -118,11 +116,6 @@ function Base.setproperty!(ts::TimeStepTable, s::Symbol, x)
     end
 end
 
-# # Indexing a TimeStepTable with an integer returns the ith time-step.
-# function Base.getindex(status::TimeStepTable, index::T) where {T<:Integer}
-#     getfield(status, :ts)[index]
-# end
-
 @inline function Base.getindex(ts::TimeStepTable, row_ind::Integer, col_ind::Integer)
     rows = Tables.rows(ts)
     @boundscheck begin
@@ -157,10 +150,6 @@ end
 @inline function Base.getindex(ts::TimeStepTable, ::Colon, col_ind::Integer)
     return getproperty(Tables.columns(ts), col_ind)
 end
-
-# push!(x, row)
-# append!(x, rows)
-# x[i] = row
 
 # function Base.show(io::IO, t::TimeStepTable, limit=true)
 #     length(t) == 0 && return
@@ -228,13 +217,13 @@ function Base.show(io::IO, t::TimeStepTable, limit=true)
         end
 
         if max_col_index !== nothing
-            # We found a column that goes beyond the display, so we need to truncate starting from this one
-            t_mat = t_mat[:, 1:max_col_index-1]
+            # We found a column that goes beyond the display, so we need to truncate starting from this one (also counting the extra ...)
+            t_mat = t_mat[:, 1:max_col_index-2]
             # And we add an ellipsis to the last column for clarity:
             t_mat = hcat(t_mat, repeat(["..."], size(t_mat, 1)))
             # Add the ellipsis to the column names:
-            col_names = [col_names[1:max_col_index]..., Symbol("...")]
-            # remember that the first column is the TimeStep so we don't use max_col_index-1 here
+            col_names = [col_names[1:max_col_index-1]..., Symbol("...")]
+            # remember that the first column is the TimeStep so we don't use max_col_index-2 here
         end
     end
 
@@ -262,3 +251,8 @@ function Base.show(io::IO, row::TimeStepRow)
 
     print(io, Term.highlight(st_panel))
 end
+
+
+# push!(x, row)
+# append!(x, rows)
+# x[i] = row

@@ -29,6 +29,10 @@ function Status{names}(tuple::Tuple) where {names}
     Status(NamedTuple{names}(Ref.(tuple)))
 end
 
+function Status(nt::NamedTuple{names}) where {names}
+    Status(NamedTuple{names}(Ref.(values(nt))))
+end
+
 Base.keys(::Status{names}) where {names} = names
 Base.values(st::Status) = getindex.(values(getfield(st, :vars)))
 refvalues(mnt::Status) = values(getfield(mnt, :vars))

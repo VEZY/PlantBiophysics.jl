@@ -2,34 +2,46 @@
 """
     ModelList(models::M, status::S)
     ModelList(;
-        status=MutableNamedTuple(),
-        status_type=MutableNamedTuple,
+        status=nothing,
+        init_fun::Function=init_fun_default,
         type_promotion=nothing,
         variables_check=true,
         kwargs...
     )
 
-A structure used to list the models for a simulation (`models`), and the associated
-initialized variables (`status`).
+List the models for a simulation (`models`), and does all boilerplate for variable initialization, 
+type promotion, time steps handling.
 
 !!! note
     The status field depends on the input models. You can get the variables needed by a model
     using [`variables`](@ref) on the instantiation of a model. You can also use [`inputs`](@ref)
     and [`outputs`](@ref) instead.
 
-
 # Arguments
 
-    - `models`: a list of models to be used in the simulation. Usually a `NamedTuple`, but
-    can be any other structure that implements `getproperty`.
-    - `status`: a structure containing the initializations for the variables for the models.
-    - `status_type`: the type of the status structure. `MutableNamedTuple` by default.
+    - `models`: a list of models. Usually given as a `NamedTuple`, but can be any other structure that 
+    implements `getproperty`.
+    - `status`: a structure containing the initializations for the variables of the models, usually a NamedTuple.
+    - `init_fun`: a function that initializes the status based on a vector of NamedTuples (see details).
     - `type_promotion`: optional type conversion for the variables with default values.
     `nothing` by default, *i.e.* no conversion. Note that conversion is not applied to the
     variables input by the user as `kwargs` (need to do it manually).
     Should be provided as a Dict with current type as keys and new type as values.
     - `variables_check=true`: check that all needed variables are initialized by the user.
     - `kwargs`: the models, named after the process they simulate.
+
+# Details
+
+The argument `init_fun` is set by default to `init_fun_default` which initializes the status with a `TimeStepTable`
+of `Status` structures.
+
+If you change `init_fun` by another function, make sure the type you are using (*i.e.* in place of `TimeStepTable`) 
+implements the `Tables.jl` interface (*e.g.* DataFrame does). And if you still use `TimeStepTable` but only change
+`Status`, make sure the type you give is indexable using the dot synthax (*e.g.* `x.var`).
+
+If you need to input a custom Type for the status and make your users able to only partially initialize 
+the `status` field in the input, you'll have to implement a method for `add_model_vars!`, a function that 
+adds the models variables to the type in case it is not fully initialized.
 
 ## Examples
 
@@ -104,75 +116,107 @@ end
 # General interface:
 function ModelList(;
     status=nothing,
-    status_type=MutableNamedTuple,
-    type_promotion=nothing,
-    variables_check=true,
+    init_fun::Function=init_fun_default,
+    type_promotion::Union{Nothing,Dict}=nothing,
+    variables_check::Bool=true,
     kwargs...
 )
     # Get all the variables needed by the models and their default values:
     mods = (; kwargs...)
-    ref_vars = merge(init_variables(mods; verbose=false)...)
-    # Convert their type to the one required by the user:
-    ref_vars = convert_vars(type_promotion, ref_vars)
 
-    status = homogeneous_type_steps(ref_vars, status, status_type)
+    # Make a vector of NamedTuples from the input (please implement yours if your need it)
+    ts_kwargs = homogeneous_ts_kwargs(status)
 
-    model_list = ModelList(mods, status)
+    # Add the missing variables required by the models (set to default value):
+    ts_kwargs = add_model_vars(ts_kwargs, mods, type_promotion)
+
+    model_list = ModelList(
+        mods,
+        init_fun(ts_kwargs)
+    )
 
     variables_check && !is_initialized(model_list)
 
     return model_list
 end
 
-"""
-    homogeneous_type_steps(ref_vars, vars, datatype=MutableNamedTuple)
+init_fun_default(x::Vector{T}) where {T} = TimeStepTable([Status(i) for i in x])
+init_fun_default(x::N) where {N<:NamedTuple} = TimeStepTable(Status(x))
 
-Return a [`Status`](@ref) or [`TimeStepTable`](@ref) based on the length of the variables in
-vars. `ref_vars` is a struct with the default values of all the variables needed by the
-models. `datatype` is the type used to hold the status inside the Status.
 """
-function homogeneous_type_steps(ref_vars, vars, datatype=MutableNamedTuple)
-    vars_vals = collect(values(vars))
+    add_model_vars(x)
+
+Check which variables in `x` are not initialized considering a set of models and the variables
+needed for their simulation. If some variables are unitialized, initialize them to their default values.
+
+This function needs to be implemented for each type of `x` (please do it if you need it).
+
+Careful, the function mutates `x` in place for performance. We don't put the `!` in the name
+just because it also returns it (impossible to mutate when `x` is nothing)
+"""
+function add_model_vars(x, models, type_promotion)
+    ref_vars = merge(init_variables(models; verbose=false)...)
+    length(ref_vars) == 0 && return x
+    # Convert model variables types to the one required by the user:
+    ref_vars = convert_vars(type_promotion, ref_vars)
+
+    # Making a vars for each ith value in the user vars:
+    for i in 1:length(x)
+        x[i] = merge(ref_vars, x[i])
+    end
+
+    return x
+end
+
+# If the user doesn't give any initializations, we initialize all variables to their default values:
+function add_model_vars(x::Nothing, models, type_promotion)
+    ref_vars = merge(init_variables(models; verbose=false)...)
+    length(ref_vars) == 0 && return x
+    # Convert model variables types to the one required by the user:
+    return convert_vars(type_promotion, ref_vars)
+end
+
+"""
+    homogeneous_ts_kwargs(kwargs)
+
+By default, the function returns its argument.
+"""
+homogeneous_ts_kwargs(kwargs) = kwargs
+
+"""
+    kwargs_to_timestep(kwargs::NamedTuple{N,T}) where {N,T}
+
+Takes a NamedTuple with optionnaly vector of values for each variable, and makes a 
+vector of NamedTuple, with each being a time step.
+It is used to be able to *e.g.* give constant values for all time-steps for one variable.
+
+# Examples
+
+```julia
+homogeneous_ts_kwargs((Tₗ=[25.0, 26.0], PPFD=1000.0))
+# [(Tₗ=25.0, PPFD=1000.0), (Tₗ=26.0, PPFD=1000.0)]
+```
+"""
+function homogeneous_ts_kwargs(kwargs::NamedTuple{N,T}) where {N,T}
+    vars_vals = collect(Any, values(kwargs))
     length_vars = [length(i) for i in vars_vals]
 
-    if any(length_vars .> 1)
-        # One of the variable is given as an array, meaning this is actually several
-        # time-steps. In this case we make an array of vars.
-        max_length_st = maximum(length_vars)
-        for i in eachindex(vars_vals)
-            # If the ith vars has length one, repeat its value to match the max time-steps:
-            if length_vars[i] == 1
-                vars_vals[i] = repeat([vars_vals[i]], max_length_st)
-            else
-                length_vars[i] != max_length_st && @error "$(keys(vars)[i]) should be length $max_length_st or 1"
-            end
+    # One of the variable is given as an array, meaning this is actually several
+    # time-steps. In this case we make an array of vars.
+    max_length_st = maximum(length_vars)
+    for i in eachindex(vars_vals)
+        # If the ith vars has length one, repeat its value to match the max time-steps:
+        if length_vars[i] == 1
+            vars_vals[i] = repeat([vars_vals[i]], max_length_st)
+        else
+            length_vars[i] != max_length_st && @error "$(keys(kwargs)[i]) should be length $max_length_st or 1"
         end
-
-        # Making a vars for each ith value in the user vars:
-        vars_array = datatype[]
-        for i in 1:max_length_st
-            status_i = NamedTuple{keys(vars)}(j[i] for j in vars_vals)
-            # NB: we use a NamedTuple here because MutableNamedTuple does not work with
-            # Particles.
-            push!(
-                vars_array,
-                merge_status(
-                    convert_status(datatype, ref_vars),
-                    convert_status(datatype, status_i)
-                )
-            )
-        end
-
-        return TimeStepTable(vars_array)
-    else
-        vars = Status(
-            merge_status(
-                convert_status(datatype, ref_vars),
-                convert_status(datatype, vars)
-            )
-        )
-        return vars
     end
+
+    # Making a vars for each ith value in the user vars:
+    vars_array = NamedTuple[NamedTuple{keys(kwargs)}(j[i] for j in vars_vals) for i in 1:max_length_st]
+
+    return vars_array
 end
 
 """

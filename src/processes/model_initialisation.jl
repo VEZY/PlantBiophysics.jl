@@ -175,50 +175,6 @@ function init_variables(models::T; verbose::Bool=true) where {T<:NamedTuple}
 end
 
 """
-    convert_status(T, x)
-    convert_status(::Type{MutableNamedTuple}, x)
-
-Convert a type into another type.
-
-The generic method simply uses `convert(T, x)`. This function is used to convert the status
-often given as a `NamedTuple` into the desired type, by default a `MutableNamedTuple`.
-
-We need to override this method for any other type we would need for the status.
-
-Note: we implement this function to avoid type piracy, *i.e.* implementing generic functions
-for types we don't own.
-"""
-function convert_status(::Type{T}, x) where {T}
-    convert(T, x)
-end
-
-function convert_status(::Type{MutableNamedTuple}, x::T) where {T<:NamedTuple}
-    MutableNamedTuple{keys(x)}(values(x))
-end
-
-function convert_status(::Type{NamedTuple}, x::T) where {T<:MutableNamedTuple}
-    NamedTuple{keys(x)}(values(x))
-end
-
-"""
-    merge_status(::Type{MutableNamedTuple}, x, y)
-    merge_status(::Type{NamedTuple}, x, y)
-
-Merge two status.
-
-The generic version simply uses `merge`. We use `merge_status` so we can implement merge for
-types we don't own, avoiding type piracy.
-"""
-function merge_status(x, y)
-    merge(x, y)
-end
-
-function merge_status(x::MutableNamedTuple, y::MutableNamedTuple)
-    z = merge(NamedTuple(x), NamedTuple(y))
-    return MutableNamedTuple{keys(z)}(values(z))
-end
-
-"""
     is_initialized(m::T) where T <: ModelList
     is_initialized(m::T, models...) where T <: ModelList
 
