@@ -1,7 +1,7 @@
 # This tests comes from https://github.com/MasonProtter/MutableNamedTuples.jl/blob/master/test/runtests.jl
 @testset "Testing Status" begin
     mnt = Status(a=1, b="hi")
-    @test mnt isa TimeStepRow
+    @test mnt isa Status
     mnt.a = 2
 
     @test mnt.a == 2

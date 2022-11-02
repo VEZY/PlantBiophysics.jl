@@ -30,9 +30,9 @@ transform!(
     @test leaf_node[:models].models.photosynthesis === photo
     @test leaf_node[:models].models.energy_balance === nrj
     @test leaf_node[:models].models.stomatal_conductance === Gs
-    @test status(leaf_node[:models], :Rₛ) == leaf_node[:Rₛ]
-    @test status(leaf_node[:models], :PPFD) == leaf_node[:Ra_PAR_f] * 4.57
-    @test status(leaf_node[:models], :d) == 0.03
+    @test status(leaf_node[:models], :Rₛ)[1] == leaf_node[:Rₛ]
+    @test status(leaf_node[:models], :PPFD)[1] == leaf_node[:Ra_PAR_f] * 4.57
+    @test status(leaf_node[:models], :d)[1] == 0.03
 end
 
 
@@ -40,21 +40,21 @@ end
     leaf1 = get_node(mtg, 815)
 
     # Thos are the inputs we gave earlier so they are both in the mtg attr. and the model status:
-    @test leaf1[:Rₛ] == status(leaf1[:models], :Rₛ)
-    @test leaf1[:PPFD] == leaf1[:models][:PPFD]
+    @test leaf1[:Rₛ] == status(leaf1[:models], :Rₛ)[1]
+    @test leaf1[:PPFD] == leaf1[:models][:PPFD][1]
 
     leaf1[:models].status.Rₛ = 300.0
     pull_status!(leaf1)
 
     # Modifying Rₛ and pulling it modifies the value in the attributes too:
-    @test leaf1[:Rₛ] == 300.0
+    @test leaf1[:Rₛ] == [300.0]
 
     # Make a simulation, and check the other ones:
     meteo = Atmosphere(T=22.0, Wind=0.8333, P=101.325, Rh=0.4490995)
     transform!(mtg, :models => (x -> energy_balance!(x, meteo)), ignore_nothing=true)
 
     # The output is not written in the attributes yet:
-    @test leaf1[:A] == -Inf
+    @test leaf1[:A] == [-Inf]
 
     # Now it is:
     pull_status!(leaf1)
@@ -78,6 +78,7 @@ end
     # We can compute them directly inside the MTG from available variables:
     transform!(
         mtg,
+        [:Ra_PAR_f, :Ra_NIR_f] => ((x, y) -> x + y * 1.2) => :Rᵢ, # This would be the incident radiation
         [:Ra_PAR_f, :Ra_NIR_f] => ((x, y) -> x + y) => :Rₛ,
         :Ra_PAR_f => (x -> x * 4.57) => :PPFD,
         (x -> 0.03) => :d,
@@ -111,6 +112,7 @@ end
     # We can compute them directly inside the MTG from available variables:
     transform!(
         mtg,
+        [:Ra_PAR_f, :Ra_NIR_f] => ((x, y) -> x + y * 1.2) => :Rᵢ, # This would be the incident radiation
         [:Ra_PAR_f, :Ra_NIR_f] => ((x, y) -> fill(x + y, length(weather))) => :Rₛ,
         :Ra_PAR_f => (x -> x * 4.57) => :PPFD,
         (x -> 0.03) => :d,

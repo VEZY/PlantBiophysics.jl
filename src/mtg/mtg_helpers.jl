@@ -67,18 +67,18 @@ function pull_status!(node, key::T) where {T<:Symbol}
 end
 
 """
-    pull_status_step!(node, step; attr_name = :models)
+    pull_status_one_step!(node, step; attr_name = :models)
 
 Copy the status of a node's ModelList (*i.e.* the outputs of the simulations) into the
 pre-allocated MTG attributes, i.e. one value per step.
 
 See [`pre_allocate_attr!`](@ref) for the pre-allocation step.
 """
-function pull_status_step!(node, step; attr_name=:models)
+function pull_status_one_step!(node, step; attr_name=:models)
     if node[attr_name] !== nothing
-        st = node[attr_name].status
+        st = status(node[attr_name])
         for i in keys(st)
-            node[i][step] = st[i]
+            node[i][step] = st[i][1]
         end
     end
 end
@@ -96,7 +96,7 @@ function pre_allocate_attr!(node, nsteps; attr_name=:models)
         for i in vars
             if node[i] === nothing
                 # If the attribute does not exist, create a vector of n-steps values
-                node[i] = zeros(typeof(st[i]), nsteps)
+                node[i] = zeros(eltype(st[i]), nsteps)
             elseif typeof(node[i]) <: AbstractArray
                 # If it does exist and is already an n-steps array, do nothing
                 if length(node[i]) != nsteps

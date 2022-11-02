@@ -74,13 +74,13 @@ end;
     non_mutating = energy_balance(leaf, meteo)
 
     for i in keys(ref)
-        @test non_mutating.status[i] ≈ ref[i]
+        @test non_mutating.status[i][1] ≈ ref[i]
     end
 
     # Mutating the leaf:
     energy_balance!(leaf, meteo)
     for i in keys(ref)
-        @test leaf.status[i] ≈ ref[i]
+        @test leaf.status[i][1] ≈ ref[i]
     end
 end;
 

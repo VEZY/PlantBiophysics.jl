@@ -19,6 +19,7 @@ import Base.getindex
 import Base.length
 import Base.iterate
 import Base.keys
+import DataFrames.names
 import LsqFit: curve_fit
 using RecipesBase
 import Statistics: mean

@@ -7,9 +7,8 @@
 
     inits = merge(init_variables(leaf.models)...)
     st = Status{keys(inits)}(values(inits))
-    @test all(getproperty(leaf.status, i) == getproperty(st, i) for i in keys(st))
+    @test all(getproperty(leaf.status, i)[1] == getproperty(st, i) for i in keys(st))
 end;
-
 
 @testset "ModelList with a partially initialized status" begin
     leaf = ModelList(
@@ -21,7 +20,7 @@ end;
     inits = merge(init_variables(leaf.models)...)
     st = Status{keys(inits)}(values(inits))
     st.PPFD = 15.0
-    @test all(getproperty(leaf.status, i) == getproperty(st, i) for i in keys(st))
+    @test all(getproperty(leaf.status, i)[1] == getproperty(st, i) for i in keys(st))
 
     @test !is_initialized(leaf)
     @test to_initialize(leaf) == (photosynthesis=(:Dₗ, :Tₗ, :Cₛ),)
@@ -41,7 +40,7 @@ end;
     for i in keys(vals)
         setproperty!(st, i, getproperty(vals, i))
     end
-    @test all(getproperty(leaf.status, i) == getproperty(st, i) for i in keys(st))
+    @test all(getproperty(leaf.status, i)[1] == getproperty(st, i) for i in keys(st))
 
     @test is_initialized(leaf)
     @test to_initialize(leaf) == NamedTuple()

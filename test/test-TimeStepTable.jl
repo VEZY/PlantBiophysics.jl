@@ -24,7 +24,7 @@
     # Get column value using indexing and/or the dot syntax:
     @test ts_rows[1].Rₛ == vars.Rₛ
     @test ts_rows[1][2] == vars[2]
-    @test ts_rows[1][:Rₛ] == vars[2]
+    @test ts_rows[1][:Rₛ] == vars[1]
 
     # Get column values for all rows at once:
     cols = Tables.columns(ts)

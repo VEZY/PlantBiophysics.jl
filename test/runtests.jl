@@ -2,7 +2,7 @@ using PlantBiophysics
 using OrderedCollections
 using Test
 using Dates
-using DataFrames
+using DataFrames, Tables
 using MultiScaleTreeGraph, PlantGeom
 
 @testset "File IO" begin
@@ -18,7 +18,7 @@ end
 end
 
 @testset "TimeStepRow" begin
-    include("test-TimeStepRow.jl")
+    include("test-TimeStepTable.jl")
 end
 
 @testset "Structures" begin

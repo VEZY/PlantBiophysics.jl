@@ -19,7 +19,7 @@ leaf = ModelList(
 
 @testset "Medlyn et al. (2011)" begin
     stomatal_conductance!(leaf, meteo)
-    @test status(leaf).Gₛ ≈ 0.6607197172920005 # in mol[CO₂] m-2 s-1
+    @test status(leaf).Gₛ[1] ≈ 0.6607197172920005 # in mol[CO₂] m-2 s-1
 end;
 
 

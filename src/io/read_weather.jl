@@ -66,6 +66,7 @@ function read_weather(
     compute_duration!(data, hour_format)
 
     cols = fieldnames(Atmosphere)
+    # names(data, [cols...])
     select!(data, names(data, x -> Symbol(x) in cols))
 
     Weather(data, metadata)

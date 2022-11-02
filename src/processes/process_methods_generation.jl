@@ -121,7 +121,7 @@ macro gen_process_methods(f)
             MultiScaleTreeGraph.transform!(mtg, attr_name => (x -> $(mutating_f)(x, meteo, constants)), ignore_nothing=true)
         end
 
-        # Compatibility with MTG + Weather:
+        # Compatibility with MTG + Weather, compute all nodes for one time step, then move to the next time step.
         function $(esc(mutating_f))(
             mtg::MultiScaleTreeGraph.Node,
             models::Dict{String,M},
@@ -158,7 +158,7 @@ macro gen_process_methods(f)
                 MultiScaleTreeGraph.transform!(
                     mtg,
                     attr_name => (x -> Symbol($(esc(process_field))) in keys(x.models) && $(mutating_f)(x, meteo_i, constants)),
-                    (node) -> pull_status_step!(node, i, attr_name=attr_name),
+                    (node) -> pull_status_one_step!(node, i, attr_name=attr_name),
                     ignore_nothing=true
                 )
             end
