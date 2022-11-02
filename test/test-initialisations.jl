@@ -6,7 +6,7 @@
     )
 
     inits = merge(init_variables(leaf.models)...)
-    st = MutableNamedTuple{keys(inits)}(values(inits))
+    st = Status{keys(inits)}(values(inits))
     @test all(getproperty(leaf.status, i) == getproperty(st, i) for i in keys(st))
 end;
 
@@ -19,7 +19,7 @@ end;
     )
 
     inits = merge(init_variables(leaf.models)...)
-    st = MutableNamedTuple{keys(inits)}(values(inits))
+    st = Status{keys(inits)}(values(inits))
     st.PPFD = 15.0
     @test all(getproperty(leaf.status, i) == getproperty(st, i) for i in keys(st))
 
@@ -36,7 +36,7 @@ end;
     )
 
     inits = merge(init_variables(leaf.models)...)
-    st = MutableNamedTuple{keys(inits)}(values(inits))
+    st = Status{keys(inits)}(values(inits))
 
     for i in keys(vals)
         setproperty!(st, i, getproperty(vals, i))

@@ -48,41 +48,41 @@ df[!,:duration] .= 1800 # Add the time-step duration, 30min
 Weather(df, (site = "Aquiares", file = file))
 ```
 """
-struct Weather{D<:AbstractArray{<:AbstractAtmosphere},S<:MutableNamedTuple}
+struct Weather{D<:AbstractArray{<:AbstractAtmosphere},S<:Status}
     data::D
     metadata::S
 end
 
 function Weather(df::T) where {T<:AbstractArray{<:AbstractAtmosphere}}
-    Weather(df, MutableNamedTuple())
+    Weather(df, Status())
 end
 
 function Weather(df::T, mt::S) where {T<:AbstractArray{<:AbstractAtmosphere},S<:NamedTuple}
-    Weather(df, MutableNamedTuple(; mt...))
+    Weather(df, Status(; mt...))
 end
 
-function Weather(df::DataFrame, mt::S) where {S<:MutableNamedTuple}
+function Weather(df::DataFrame, mt::S) where {S<:Status}
     Weather([Atmosphere(; i...) for i in eachrow(df)], mt)
 end
 
 function Weather(df::DataFrame, mt::S) where {S<:NamedTuple}
-    mt = MutableNamedTuple(; mt...)
+    mt = Status(; mt...)
     Weather([Atmosphere(; i...) for i in eachrow(df)], mt)
 end
 
 function Weather(df::DataFrame, dict::S) where {S<:AbstractDict}
-    # There must be a better way for transforming a Dict into a MutableNamedTuple...
-    Weather(df, MutableNamedTuple(; NamedTuple{Tuple(Symbol.(keys(dict)))}(values(dict))...))
+    # There must be a better way for transforming a Dict into a Status...
+    Weather(df, Status(; NamedTuple{Tuple(Symbol.(keys(dict)))}(values(dict))...))
 end
 
 function Weather(df::DataFrame)
-    Weather(df, MutableNamedTuple())
+    Weather(df, Status())
 end
 
 function Base.show(io::IO, n::Weather)
-    printstyled(io, "Weather data.\n", bold = true, color = :green)
-    printstyled(io, "Metadata: `$(NamedTuple(n.metadata))`.\n", color = :cyan)
-    printstyled(io, "Data:\n", color = :green)
+    printstyled(io, "Weather data.\n", bold=true, color=:green)
+    printstyled(io, "Metadata: `$(NamedTuple(n.metadata))`.\n", color=:cyan)
+    printstyled(io, "Data:\n", color=:green)
     # :normal, :default, :bold, :black, :blink, :blue, :cyan, :green, :hidden, :light_black, :light_blue, :light_cyan, :light_green, :light_magenta, :light_red, :light_yellow, :magenta, :nothing, :red,
     #   :reverse, :underline, :white, or :yellow
     print(io, DataFrame(n))
