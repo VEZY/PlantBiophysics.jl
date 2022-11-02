@@ -22,3 +22,13 @@ Base.@kwdef struct Translucent{T} <: AbstractLightModel
     transparency::T = 0.0
     optical_properties::σ = σ()
 end
+
+function inputs_(::Translucent)
+    (Rᵢ=-Inf,)
+end
+
+function outputs_(::Translucent)
+    (
+        Rₛ=-Inf, sky_fraction=-Inf
+    )
+end
