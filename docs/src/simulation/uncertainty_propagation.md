@@ -60,9 +60,9 @@ And now we can plot the resulting inputs/outputs values:
 
 ```@example usepkg
 p1 = plot(meteo.T,legend=:false,xlabel="Tₐ (°C)",ylabel="density",dpi=300,title="(a)",titlefontsize=9)
-p2 = plot(leaf.status.d,legend=:false,xlabel="d (m)",ylabel="density",dpi=300,title="(b)",titlefontsize=9)
-p3 = plot(leaf.status.Tₗ,legend=:false,xlabel="Tₗ (°C)",ylabel="density",dpi=300,title="(c)",titlefontsize=9)
-p4 = plot(leaf.status.A,legend=:false,xlabel="A",ylabel="density",dpi=300,title="(d)",titlefontsize=9)
+p2 = plot(leaf.status.d[1],legend=:false,xlabel="d (m)",ylabel="density",dpi=300,title="(b)",titlefontsize=9)
+p3 = plot(leaf.status.Tₗ[1],legend=:false,xlabel="Tₗ (°C)",ylabel="density",dpi=300,title="(c)",titlefontsize=9)
+p4 = plot(leaf.status.A[1],legend=:false,xlabel="A",ylabel="density",dpi=300,title="(d)",titlefontsize=9)
 plot(p1,p2,p3,p4,dpi=300,titleloc=:right)
 savefig("distributions-example-gaussian.svg"); nothing #hide
 ```
@@ -92,9 +92,9 @@ leaf = ModelList(
 energy_balance!(leaf,meteo)
 
 p1 = plot(meteo.T,legend=:false,xlabel="Tₐ (°C)",ylabel="density",dpi=300,title="(a)",titlefontsize=9)
-p2 = plot(leaf.status.d,legend=:false,xlabel="d (m)",ylabel="density",dpi=300,title="(b)",titlefontsize=9)
-p3 = plot(leaf.status.Tₗ,legend=:false,xlabel="Tₗ (°C)",ylabel="density",dpi=300,title="(c)",titlefontsize=9)
-p4 = plot(leaf.status.A,legend=:false,xlabel="A",ylabel="density",dpi=300,title="(d)",titlefontsize=9)
+p2 = plot(leaf.status.d[1],legend=:false,xlabel="d (m)",ylabel="density",dpi=300,title="(b)",titlefontsize=9)
+p3 = plot(leaf.status.Tₗ[1],legend=:false,xlabel="Tₗ (°C)",ylabel="density",dpi=300,title="(c)",titlefontsize=9)
+p4 = plot(leaf.status.A[1],legend=:false,xlabel="A",ylabel="density",dpi=300,title="(d)",titlefontsize=9)
 plot(p1,p2,p3,p4,dpi=300,titleloc=:right)
 savefig("distributions-example-various.svg"); nothing #hide
 ```

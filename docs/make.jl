@@ -1,6 +1,5 @@
 using PlantBiophysics
 using Documenter
-using PlantBiophysics
 using DataFrames
 using CSV
 
