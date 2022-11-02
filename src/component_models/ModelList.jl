@@ -124,7 +124,7 @@ function ModelList(;
     # Get all the variables needed by the models and their default values:
     mods = (; kwargs...)
 
-    # Make a vector of NamedTuples from the input (please implement yours if your need it)
+    # Make a vector of NamedTuples from the input (please implement yours if you need it)
     ts_kwargs = homogeneous_ts_kwargs(status)
 
     # Add the missing variables required by the models (set to default value):
@@ -279,7 +279,12 @@ function convert_vars(type_promotion::Nothing, ref_vars)
 end
 
 
-function Base.show(io::IO, t::ModelList)
+function Base.show(io::IO, ::MIME"text/plain", t::ModelList)
     print(io, dep(t, verbose=false))
     print(io, status(t))
+end
+
+# Short form printing (e.g. inside another object)
+function Base.show(io::IO, t::ModelList)
+    print(io, "ModelList", (; zip(keys(t.models), typeof.(values(t.models)))...))
 end
