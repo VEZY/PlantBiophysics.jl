@@ -171,7 +171,7 @@ end
 #     print(io, st_panel)
 # end
 
-function Base.show(io::IO, t::TimeStepTable, limit=true)
+function Base.show(io::IO, t::TimeStepTable)
     length(t) == 0 && return
 
     print(
@@ -190,7 +190,7 @@ function Base.show(io::IO, t::TimeStepTable, limit=true)
     col_names = [:Step, getfield(t, :names)...]
     ts_column = string.(1:size(t_mat, 1)) # TimeStep index column
 
-    if limit
+    if get(io, :compact, false) || get(io, :limit, true)
         # We need the values in the matrix to be Strings to perform the truncation (and it is done afterwards too so...)
         typeof(t_mat) <: Matrix{String} || (t_mat = string.(t_mat))
 
@@ -239,9 +239,10 @@ end
 
 
 function Base.show(io::IO, row::TimeStepRow)
+    limit = get(io, :limit, true)
     i = getfield(row, :row)
     st = getfield(getfield(row, :source), :ts)[i]
-    ts_print = "Step $i: " * show_long_format_status(st, true)
+    ts_print = "Step $i: " * show_long_format_status(st, limit)
 
     st_panel = Term.Panel(
         ts_print,
