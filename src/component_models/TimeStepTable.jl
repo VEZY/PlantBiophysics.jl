@@ -175,6 +175,7 @@ function Base.show(io::IO, t::TimeStepTable, limit=true)
     length(t) == 0 && return
 
     print(
+        io,
         Term.RenderableText(
             "TimeStepTable ($(length(t)) x $(length(getfield(t,:names)))):";
             style="red bold"
