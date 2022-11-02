@@ -54,7 +54,7 @@ function growth!_(::DummyGrowth, models, status, meteo, constants=Constants())
     status.Rg = 1 - (status.leaf_allocation / models.growth.Rg_cost)
 
     status.leaf_biomass = status.leaf_biomass + status.leaf_allocation - status.Rg
-end</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">growth!_ (generic function with 5 methods)</code></pre><p>Now we can make a simulation as usual:</p><pre><code class="language- hljs">meteo = Atmosphere(T = 22.0, Wind = 0.8333, P = 101.325, Rh = 0.4490995)
+end</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">growth!_ (generic function with 5 methods)</code></pre><p>Now we can make a simulation as usual:</p><pre><code class="language-julia hljs">meteo = Atmosphere(T = 22.0, Wind = 0.8333, P = 101.325, Rh = 0.4490995)
 
 leaf = ModelList(
         energy_balance = Monteith(),
@@ -66,7 +66,8 @@ leaf = ModelList(
 
 growth!(leaf,meteo)
 
-leaf[:leaf_biomass] # biomass in gC</code></pre><p>We can also start the simulation later when the plant already has some biomass by initializing the <code>leaf_biomass</code>:</p><pre><code class="language- hljs">meteo = Atmosphere(T = 22.0, Wind = 0.8333, P = 101.325, Rh = 0.4490995)
+leaf[:leaf_biomass] # biomass in gC</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">1-element Vector{Float64}:
+ 25.952584490732107</code></pre><p>We can also start the simulation later when the plant already has some biomass by initializing the <code>leaf_biomass</code>:</p><pre><code class="language-julia hljs">meteo = Atmosphere(T = 22.0, Wind = 0.8333, P = 101.325, Rh = 0.4490995)
 
 leaf = ModelList(
         energy_balance = Monteith(),
@@ -78,4 +79,5 @@ leaf = ModelList(
 
 growth!(leaf,meteo)
 
-leaf[:leaf_biomass] # biomass in gC</code></pre></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../implement_a_model/">« Implement a model</a><a class="docs-footer-nextpage" href="../../functions/">API »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 0.27.23 on <span class="colophon-date" title="Friday 28 October 2022 13:34">Friday 28 October 2022</span>. Using Julia version 1.7.2.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+leaf[:leaf_biomass] # biomass in gC</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">1-element Vector{Float64}:
+ 2425.952584490732</code></pre></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../implement_a_model/">« Implement a model</a><a class="docs-footer-nextpage" href="../../functions/">API »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 0.27.23 on <span class="colophon-date" title="Wednesday 2 November 2022 18:13">Wednesday 2 November 2022</span>. Using Julia version 1.7.2.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
