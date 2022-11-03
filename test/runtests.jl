@@ -1,9 +1,15 @@
 using PlantBiophysics
+using Test, Aqua
+
 using OrderedCollections
-using Test
 using Dates
 using DataFrames, Tables
 using MultiScaleTreeGraph, PlantGeom
+
+Aqua.test_all(
+    PlantBiophysics,
+    ambiguities=false # Removing this test as dependencies return ambiguities...
+)
 
 @testset "File IO" begin
     include("test-IO.jl")
