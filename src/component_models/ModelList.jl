@@ -21,7 +21,8 @@ type promotion, time steps handling.
 
     - `models`: a list of models. Usually given as a `NamedTuple`, but can be any other structure that 
     implements `getproperty`.
-    - `status`: a structure containing the initializations for the variables of the models, usually a NamedTuple.
+    - `status`: a structure containing the initializations for the variables of the models. Usually a NamedTuple
+    when given as a kwarg, else a structure that implements the Tables interface from `Tables.jl`.
     - `init_fun`: a function that initializes the status based on a vector of NamedTuples (see details).
     - `type_promotion`: optional type conversion for the variables with default values.
     `nothing` by default, *i.e.* no conversion. Note that conversion is not applied to the
@@ -108,7 +109,7 @@ leaf = ModelList(
 )
 ```
 """
-struct ModelList{M,S<:TimeStepTable}
+struct ModelList{M,S}
     models::M
     status::S
 end
