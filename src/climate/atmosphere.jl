@@ -69,12 +69,12 @@ struct Atmosphere{A,D1,D2} <: AbstractAtmosphere
 end
 
 function Atmosphere(;
-    date = Dates.now(), duration = 1.0, T, Wind, P = 101.325, Rh,
-    Cₐ = 400.0, e = vapor_pressure(T, Rh), eₛ = e_sat(T), VPD = eₛ - e,
-    ρ = air_density(T, P), λ = latent_heat_vaporization(T),
-    γ = psychrometer_constant(P, λ), ε = atmosphere_emissivity(T, e),
-    Δ = e_sat_slope(T), clearness = 9999.9, Ri_SW_f = 9999.9, Ri_PAR_f = 9999.9,
-    Ri_NIR_f = 9999.9, Ri_TIR_f = 9999.9, Ri_custom_f = 9999.9)
+    T, Wind, Rh, date=Dates.now(), duration=1.0, P=101.325,
+    Cₐ=400.0, e=vapor_pressure(T, Rh), eₛ=e_sat(T), VPD=eₛ - e,
+    ρ=air_density(T, P), λ=latent_heat_vaporization(T),
+    γ=psychrometer_constant(P, λ), ε=atmosphere_emissivity(T, e),
+    Δ=e_sat_slope(T), clearness=9999.9, Ri_SW_f=9999.9, Ri_PAR_f=9999.9,
+    Ri_NIR_f=9999.9, Ri_TIR_f=9999.9, Ri_custom_f=9999.9)
 
     # Checking some values:
     if Wind <= 0

@@ -151,6 +151,15 @@ end
     return getproperty(Tables.columns(ts), col_ind)
 end
 
+# Pushing and appending to a TimeStepTable object:
+function Base.push!(ts::TimeStepTable, x)
+    push!(getfield(ts, :ts), x)
+end
+
+function Base.append!(ts::TimeStepTable, x)
+    append!(getfield(ts, :ts), x)
+end
+
 # function Base.show(io::IO, t::TimeStepTable, limit=true)
 #     length(t) == 0 && return
 
@@ -253,8 +262,3 @@ function Base.show(io::IO, row::TimeStepRow)
 
     print(io, Term.highlight(st_panel))
 end
-
-
-# push!(x, row)
-# append!(x, rows)
-# x[i] = row
