@@ -48,9 +48,9 @@ macro gen_process_methods(f)
         end
 
         # Method for a status with several TimeSteps but one meteo only (or no meteo):
-        function $(esc(mutating_f))(object::ModelList{T,S}, meteo::M=nothing, constants=Constants()) where {T,S<:TimeStepTable,M<:Union{AbstractAtmosphere,Nothing}}
+        function $(esc(mutating_f))(object::ModelList{T,S}, meteo::M=nothing, constants=Constants()) where {T,S,M<:Union{AbstractAtmosphere,Nothing}}
 
-            for i in status(object)
+            for i in Tables.rows(status(object))
                 $(esc(f_))(object.models.$(process_field), object.models, i, meteo, constants)
             end
 
