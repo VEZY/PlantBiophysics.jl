@@ -48,3 +48,24 @@ end;
 
     @test is_initialized(leaf) == true
 end;
+
+
+@testset "Status as DataFrame" begin
+
+    m = ModelList(
+        energy_balance=Monteith(),
+        photosynthesis=Fvcb(),
+        stomatal_conductance=Medlyn(0.03, 12.0),
+        status=(Rₛ=[13.747, 13.8], sky_fraction=1.0, d=0.03, PPFD=1500)
+    )
+
+    m_df = ModelList(m.models, DataFrame(status(m)))
+
+    meteo = Atmosphere(T=20.0, Wind=1.0, P=101.3, Rh=0.65)
+    constants = Constants()
+
+    energy_balance!(m_df, meteo, constants) # 26.125 μs
+    energy_balance!(m, meteo, constants) # 1.525 μs
+
+    @test status(m_df) == DataFrame(status(m))
+end;
