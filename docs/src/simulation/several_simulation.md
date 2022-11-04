@@ -59,6 +59,8 @@ meteo = Weather(
 Or by passing a `DataFrame`:
 
 ```julia
+using DataFrame
+
 df = DataFrame(
     T = [20.0, 23.0, 25.0],
     Wind = [1.0, 1.5, 3.0],
@@ -70,3 +72,20 @@ meteo = Weather(df)
 ```
 
 You'll have to be careful about the names and the units you are using though, they must match exactly the ones expected for [`Atmosphere`](@ref). See the documentation of the structure if in doubt.
+
+The status argument of the ModelList can also be provided as a DataFrame, or any other type that implements the [Tables.jl](https://github.com/JuliaData/Tables.jl) interface. Here's an example using a DataFrame:
+
+```@example usepkg
+using DataFrames
+df = DataFrame(:Rₛ => [13.747, 13.8], :sky_fraction => [1.0, 1.0], :d => [0.03, 0.03], :PPFD => [1300.0, 1500.0])
+
+m = ModelList(
+    energy_balance=Monteith(),
+    photosynthesis=Fvcb(),
+    stomatal_conductance=Medlyn(0.03, 12.0),
+    status=df
+)
+```
+
+Note that computations will be slower, so if performance is an issue, use
+[`TimeStepTable`](@ref) instead (or a NamedTuple as shown in the example above).

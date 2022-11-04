@@ -11,24 +11,40 @@ A pure Julia package to simulate biophysical processes for plants such as photos
 
 The benefits of using this package are:
 
-- Blazing fast (μs for the whole energy balance + photosynthesis + conductances)
-- Easy to use
+- Blazing fast (few μs for the whole energy balance + photosynthesis + conductances)
+- Easy of use, parameter calibration and simulation on one place, works with DataFrames and MTGs
 - Great composability:
   - easy to extend, add your model for any process, and it just works, with automatic coupling with other models
-  - easy to integrate into other models or platforms thanks to Julia's great compatibility with other langages
+  - easy to integrate into other models or platforms thanks to Julia's great compatibility with other languages
 - Easy to read, the code implement the equations as they are written in the scientific articles (thanks Julia Unicode!)
 - Compatible with other simulations platforms thanks to the MTG format
 - Error propagation using [Measurements.jl](https://juliaphysics.github.io/Measurements.jl/stable/) or [MonteCarloMeasurements.jl](https://baggepinnen.github.io/MonteCarloMeasurements.jl/stable/)
+
+## Try it !
+
+Start by creating a new environment for your project using the pkg manager. To enter the package manager, just press `]` in the REPL, and it will become blue (press backspace to return to the Julia REPL). Then create the environment using this command:
+
+```julia
+activate .
+```
+
+Don't forget the "."! It is used to tell the pkg manager that you activate the project were you currently are.
+
+You can then install PlantBiophysics using this command (still from the pkg manager):
+
+```julia
+add PlantBiophysics
+```
 
 ## Examples
 
 Here is an example usage with a simulation of the energy balance and assimilation of a leaf:
 
 ```julia
-# ]add PlantBiophysics https://github.com/VEZY/PlantBiophysics.jl
+# Import the package so we can use it:
 using PlantBiophysics
 
-# Declaring the meteorology for the simulated time-step:
+# Declare the meteorology for the simulated time-step (also possible to import meteo files):
 meteo = Atmosphere(T = 22.0, Wind = 0.8333, P = 101.325, Rh = 0.4490995)
 
 # Using the model from Medlyn et al. (2011) for Gs and the model of Monteith and Unsworth (2013) for the energy balance:
@@ -36,7 +52,7 @@ leaf = ModelList(
     energy_balance = Monteith(),
     photosynthesis = Fvcb(),
     stomatal_conductance = Medlyn(0.03, 12.0),
-    status = (Rₛ = 13.747, sky_fraction = 1.0, PPFD = 1500.0, d = 0.03)
+    status = (Rₛ = [13.747, 14.5], sky_fraction = 1.0, PPFD = 1500.0, d = 0.03)
 )
 
 energy_balance!(leaf, meteo)
@@ -108,7 +124,7 @@ For more examples, please read the documentation.
   - [x] Implement usage of TimeStepTable everywhere
   - [x] Use it for the meteo too? No, it uses Atmosphere that is an immutable struct. 
   - [x] Implement methods for push!(x, row), append!(x, rows), and x[i] = row for TimeStepTable to fully meet guidelines of Tables.jl for mutable Tables.
-  - [ ] Test with a DataFrame instead of a TimeStepTable
+  - [x] Test with a DataFrame instead of a TimeStepTable
 - [ ] Replace default `typemin(Type)` by `missing` values in the initializations ? But check the impact on performance because we can't do it easily because everything is typed using MutableNamedTuples.
 - [ ] Add variable boundaries in the status, and add a method for setting the values with a control on the boundary. This can be implemented in two ways: we add a new type that will be used as a value in the status, and that would have the parameter value + boundaries in two fields; or we add a new field to the status with the upper and lower boundaries of each variable. I think the first solution is better as it allows to pass this new type easily to the ModelList, and is more straightforward to get the boundaries of a particular variable (it is cleaner conceptually).
 

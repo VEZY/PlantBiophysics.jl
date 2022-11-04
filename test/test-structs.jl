@@ -52,14 +52,13 @@ end;
 
 @testset "Status as DataFrame" begin
 
+    df = DataFrame(:Rₛ => [13.747, 13.8], :sky_fraction => [1.0, 1.0], :d => [0.03, 0.03], :PPFD => [1300.0, 1500.0])
     m = ModelList(
         energy_balance=Monteith(),
         photosynthesis=Fvcb(),
         stomatal_conductance=Medlyn(0.03, 12.0),
-        status=(Rₛ=[13.747, 13.8], sky_fraction=1.0, d=0.03, PPFD=1500)
+        status=df
     )
-
-    m_df = ModelList(m.models, DataFrame(status(m)))
 
     meteo = Atmosphere(T=20.0, Wind=1.0, P=101.3, Rh=0.65)
     constants = Constants()

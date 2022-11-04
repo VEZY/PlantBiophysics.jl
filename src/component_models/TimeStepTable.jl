@@ -9,25 +9,25 @@ structure in the status field of the [`ModelList`](@ref) type.
 # Examples
 
 ```julia
-# A leaf with several values for at least one of its variable will make a status with
-# several time steps:
+# A leaf with several values for at least one of its variable will automatically use 
+# TimeStepTable{Status} with the time steps:
 leaf = ModelList(
     photosynthesis = Fvcb(),
     stomatal_conductance = Medlyn(0.03, 12.0),
     status=(Tₗ=[25.0, 26.0], PPFD=1000.0, Cₛ=400.0, Dₗ=1.0)
 )
 
-# Indexing the model list with an integer will return the first time step:
-leaf[1]
+# The status of the leaf is a TimeStepTable:
+status(leaf)
 
-# Indexing the model list with a symbol will return the variable with all time steps:
-leaf[:Tₗ]
 
-# If you need the value for one variable at one time step, prefer using this (5x faster):
-leaf[1].Tₗ
-
-# Rather than this (5x slower):
-leaf[:Tₗ][1]
+# Of course we can also create a TimeStepTable manually:
+TimeStepTable(
+    [
+        Status(Tₗ=25.0, PPFD=1000.0, Cₛ=400.0, Dₗ=1.0),
+        Status(Tₗ=26.0, PPFD=1200.0, Cₛ=400.0, Dₗ=1.2),
+    ]
+)
 ```
 """
 struct TimeStepTable{T}

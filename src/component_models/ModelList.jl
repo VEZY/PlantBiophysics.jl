@@ -22,7 +22,7 @@ type promotion, time steps handling.
     - `models`: a list of models. Usually given as a `NamedTuple`, but can be any other structure that 
     implements `getproperty`.
     - `status`: a structure containing the initializations for the variables of the models. Usually a NamedTuple
-    when given as a kwarg, else a structure that implements the Tables interface from `Tables.jl`.
+    when given as a kwarg, or any structure that implements the Tables interface from `Tables.jl` (*e.g.* DataFrame).
     - `init_fun`: a function that initializes the status based on a vector of NamedTuples (see details).
     - `type_promotion`: optional type conversion for the variables with default values.
     `nothing` by default, *i.e.* no conversion. Note that conversion is not applied to the
@@ -108,6 +108,22 @@ leaf = ModelList(
     type_promotion = Dict(Float64 => Float32)
 )
 ```
+
+We can also use DataFrame as the status type:
+
+```@example usepkg
+using DataFrames
+df = DataFrame(:Rₛ => [13.747, 13.8], :sky_fraction => [1.0, 1.0], :d => [0.03, 0.03], :PPFD => [1300.0, 1500.0])
+m = ModelList(
+    energy_balance=Monteith(),
+    photosynthesis=Fvcb(),
+    stomatal_conductance=Medlyn(0.03, 12.0),
+    status=df
+)
+```
+
+Note that computations will be slower using DataFrame, so if performance is an issue, use
+TimeStepTable instead (or a NamedTuple as shown in the example).
 """
 struct ModelList{M,S}
     models::M
@@ -162,11 +178,12 @@ function add_model_vars(x, models, type_promotion)
     ref_vars = convert_vars(type_promotion, ref_vars)
 
     # Making a vars for each ith value in the user vars:
-    for i in 1:length(x)
-        x[i] = merge(ref_vars, x[i])
+    x_full = []
+    for r in Tables.rows(x)
+        push!(x_full, merge(ref_vars, r))
     end
 
-    return x
+    return x_full
 end
 
 # If the user doesn't give any initializations, we initialize all variables to their default values:
