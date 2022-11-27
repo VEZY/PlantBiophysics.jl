@@ -1,5 +1,6 @@
 """
     TimeStepTable(vars)
+    TimeStepTable{Status}(df::DataFrame)
 
 `TimeStepTable` stores the values of the variables for each time step of a simulation. For example, it is used as the
 structure in the status field of the [`ModelList`](@ref) type.
@@ -28,6 +29,16 @@ TimeStepTable(
         Status(Tₗ=26.0, PPFD=1200.0, Cₛ=400.0, Dₗ=1.2),
     ]
 )
+
+# We can also create a TimeStepTable from a DataFrame:
+using DataFrames
+df = DataFrame(
+    Tₗ=[25.0, 26.0],
+    PPFD=[1000.0, 1200.0],
+    Cₛ=[400.0, 400.0],
+    Dₗ=[1.0, 1.2],
+)
+TimeStepTable{Status}(df)
 ```
 """
 struct TimeStepTable{T}
@@ -38,6 +49,10 @@ end
 TimeStepTable(ts::V) where {V<:Vector} = TimeStepTable(keys(ts[1]), ts)
 # Case where we instantiate the table with one time step only, not given as a vector:
 TimeStepTable(ts) = TimeStepTable(keys(ts), [ts])
+
+# Create a TimeStepTable{Status} from a DataFrame:
+TimeStepTable{Status}(df::DataFrame) = TimeStepTable((propertynames(df)...,), [Status(NamedTuple(ts)) for ts in Tables.rows(df)])
+
 
 struct TimeStepRow{T} <: Tables.AbstractRow
     row::Int

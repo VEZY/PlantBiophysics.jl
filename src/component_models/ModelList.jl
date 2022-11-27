@@ -157,6 +157,7 @@ function ModelList(;
     return model_list
 end
 
+init_fun_default(x) = x
 init_fun_default(x::Vector{T}) where {T} = TimeStepTable([Status(i) for i in x])
 init_fun_default(x::N) where {N<:NamedTuple} = TimeStepTable(Status(x))
 
@@ -171,7 +172,7 @@ This function needs to be implemented for each type of `x` (please do it if you 
 Careful, the function mutates `x` in place for performance. We don't put the `!` in the name
 just because it also returns it (impossible to mutate when `x` is nothing)
 """
-function add_model_vars(x, models, type_promotion)
+function add_model_vars(x::T, models, type_promotion) where {T}
     ref_vars = merge(init_variables(models; verbose=false)...)
     length(ref_vars) == 0 && return x
     # Convert model variables types to the one required by the user:
@@ -183,6 +184,22 @@ function add_model_vars(x, models, type_promotion)
         push!(x_full, merge(ref_vars, r))
     end
 
+    return T(x_full)
+end
+
+function add_model_vars(x::T, models, type_promotion) where {T<:TimeStepTable{S}} where {S<:Status}
+    ref_vars = merge(init_variables(models; verbose=false)...)
+    length(ref_vars) == 0 && return x
+    # Convert model variables types to the one required by the user:
+    ref_vars = convert_vars(type_promotion, ref_vars)
+
+    # Making a vars for each ith value in the user vars:
+    x_full = []
+    for r in x
+        push!(x_full, merge(ref_vars, NamedTuple(r)))
+    end
+
+    # return TimeStepTable(x_full)
     return x_full
 end
 
