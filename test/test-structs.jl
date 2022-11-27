@@ -51,15 +51,9 @@ end;
 
 
 @testset "Status as DataFrame" begin
-
     df = DataFrame(:Rₛ => [13.747, 13.8], :sky_fraction => [1.0, 1.0], :d => [0.03, 0.03], :PPFD => [1300.0, 1500.0])
-    m_df = ModelList(
-        energy_balance=Monteith(),
-        photosynthesis=Fvcb(),
-        stomatal_conductance=Medlyn(0.03, 12.0),
-        status=df
-    )
 
+    # Reference ModelList
     m = ModelList(
         energy_balance=Monteith(),
         photosynthesis=Fvcb(),
@@ -67,42 +61,30 @@ end;
         status=TimeStepTable{Status}(df)
     )
 
+    # Automatically transform the DataFrame into a TimeStepTable{Status}:
+    m_2 = ModelList(
+        energy_balance=Monteith(),
+        photosynthesis=Fvcb(),
+        stomatal_conductance=Medlyn(0.03, 12.0),
+        status=df
+    )
+
+    # Keep the DataFrame structure:
+    m_df = ModelList(
+        energy_balance=Monteith(),
+        photosynthesis=Fvcb(),
+        stomatal_conductance=Medlyn(0.03, 12.0),
+        status=df,
+        init_fun=x -> DataFrame(x)
+    )
+
     meteo = Atmosphere(T=20.0, Wind=1.0, P=101.3, Rh=0.65)
     constants = Constants()
 
-    energy_balance!(m_df, meteo, constants) # 26.125 μs
     energy_balance!(m, meteo, constants) # 1.525 μs
+    energy_balance!(m_2, meteo, constants) # idem
+    energy_balance!(m_df, meteo, constants) # 26.125 μs
 
+    @test DataFrame(status(m_2)) == DataFrame(status(m))
     @test status(m_df) == DataFrame(status(m))
 end;
-
-
-
-mods = (energy_balance=Monteith(),
-    photosynthesis=Fvcb(),
-    stomatal_conductance=Medlyn(0.03, 12.0))
-
-# Make a vector of NamedTuples from the input (please implement yours if you need it)
-ts_kwargs = PlantBiophysics.homogeneous_ts_kwargs(st)
-
-# Add the missing variables required by the models (set to default value):
-ts_kwargs = PlantBiophysics.add_model_vars(ts_kwargs, mods, nothing)
-ref_vars = merge(init_variables(mods; verbose=false)...)
-# Convert model variables types to the one required by the user:
-ref_vars = PlantBiophysics.convert_vars(nothing, ref_vars)
-
-model_list = ModelList(
-    mods,
-    PlantBiophysics.init_fun_default(ts_kwargs)
-)
-
-is_initialized(model_list)
-to_initialize(model_list)
-needed_variables = to_initialize(dep(model_list))
-
-PlantBiophysics.vars_not_init_(model_list.status, needed_variables.energy_balance)
-
-for (process, vars) in pairs(needed_variables)
-    not_init = vars_not_init_(m.status, vars)
-    length(not_init) > 0 && push!(to_init, process => not_init)
-end

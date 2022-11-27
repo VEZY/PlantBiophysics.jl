@@ -118,8 +118,12 @@ m = ModelList(
     energy_balance=Monteith(),
     photosynthesis=Fvcb(),
     stomatal_conductance=Medlyn(0.03, 12.0),
-    status=df
+    status=df,
+    init_fun=x -> DataFrame(x)
 )
+
+# Note that we use `init_fun` to force the status into a `DataFrame`,
+# otherwise it would be automatically converted into a `TimeStepTable{Status}`.
 ```
 
 Note that computations will be slower using DataFrame, so if performance is an issue, use
@@ -172,7 +176,7 @@ This function needs to be implemented for each type of `x` (please do it if you 
 Careful, the function mutates `x` in place for performance. We don't put the `!` in the name
 just because it also returns it (impossible to mutate when `x` is nothing)
 """
-function add_model_vars(x::T, models, type_promotion) where {T}
+function add_model_vars(x, models, type_promotion)
     ref_vars = merge(init_variables(models; verbose=false)...)
     length(ref_vars) == 0 && return x
     # Convert model variables types to the one required by the user:
@@ -181,25 +185,9 @@ function add_model_vars(x::T, models, type_promotion) where {T}
     # Making a vars for each ith value in the user vars:
     x_full = []
     for r in Tables.rows(x)
-        push!(x_full, merge(ref_vars, r))
-    end
-
-    return T(x_full)
-end
-
-function add_model_vars(x::T, models, type_promotion) where {T<:TimeStepTable{S}} where {S<:Status}
-    ref_vars = merge(init_variables(models; verbose=false)...)
-    length(ref_vars) == 0 && return x
-    # Convert model variables types to the one required by the user:
-    ref_vars = convert_vars(type_promotion, ref_vars)
-
-    # Making a vars for each ith value in the user vars:
-    x_full = []
-    for r in x
         push!(x_full, merge(ref_vars, NamedTuple(r)))
     end
 
-    # return TimeStepTable(x_full)
     return x_full
 end
 
