@@ -118,8 +118,12 @@ m = ModelList(
     energy_balance=Monteith(),
     photosynthesis=Fvcb(),
     stomatal_conductance=Medlyn(0.03, 12.0),
-    status=df
+    status=df,
+    init_fun=x -> DataFrame(x)
 )
+
+# Note that we use `init_fun` to force the status into a `DataFrame`,
+# otherwise it would be automatically converted into a `TimeStepTable{Status}`.
 ```
 
 Note that computations will be slower using DataFrame, so if performance is an issue, use
@@ -157,6 +161,7 @@ function ModelList(;
     return model_list
 end
 
+init_fun_default(x) = x
 init_fun_default(x::Vector{T}) where {T} = TimeStepTable([Status(i) for i in x])
 init_fun_default(x::N) where {N<:NamedTuple} = TimeStepTable(Status(x))
 
@@ -180,7 +185,7 @@ function add_model_vars(x, models, type_promotion)
     # Making a vars for each ith value in the user vars:
     x_full = []
     for r in Tables.rows(x)
-        push!(x_full, merge(ref_vars, r))
+        push!(x_full, merge(ref_vars, NamedTuple(r)))
     end
 
     return x_full

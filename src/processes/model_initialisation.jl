@@ -233,11 +233,11 @@ function vars_not_init_(status::T, default_values) where {T<:Status}
 end
 
 # For components with a status with multiple time-steps:
-function vars_not_init_(status::T, default_values) where {T<:TimeStepTable}
+function vars_not_init_(status, default_values)
     length(default_values) == 0 && return () # no variables
 
     not_init = Set{Symbol}()
-    for st in status, i in eachindex(default_values)
+    for st in Tables.rows(status), i in eachindex(default_values)
         if getproperty(st, i) == getproperty(default_values, i)
             push!(not_init, i)
         end
