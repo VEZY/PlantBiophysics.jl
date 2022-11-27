@@ -126,6 +126,7 @@ For more examples, please read the documentation.
   - [x] Implement methods for push!(x, row), append!(x, rows), and x[i] = row for TimeStepTable to fully meet guidelines of Tables.jl for mutable Tables.
   - [x] Test with a DataFrame instead of a TimeStepTable
 - [ ] Replace default `typemin(Type)` by `missing` values in the initializations ? But check the impact on performance because we can't do it easily because everything is typed using MutableNamedTuples.
+- [ ] Review file import for LiCOR and Walz
 - [ ] Add variable boundaries in the status, and add a method for setting the values with a control on the boundary. This can be implemented in two ways: we add a new type that will be used as a value in the status, and that would have the parameter value + boundaries in two fields; or we add a new field to the status with the upper and lower boundaries of each variable. I think the first solution is better as it allows to pass this new type easily to the ModelList, and is more straightforward to get the boundaries of a particular variable (it is cleaner conceptually).
 
 ## Contributing
