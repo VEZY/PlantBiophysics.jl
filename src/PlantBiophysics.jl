@@ -7,58 +7,22 @@ import OrderedCollections: OrderedDict
 import MultiScaleTreeGraph
 import Dates
 
-# For tree dependency:
-import AbstractTrees
-import Term
-
-import Tables
 import DataFrames.DataFrame # For convenience transformations
 import DataFrames: Not, rename!, select!, select, dropmissing!, sort!, transform!
+import DataFrames.names
+
 import Base.show
 import Base.getindex
 import Base.length
 import Base.iterate
 import Base.keys
-import DataFrames.names
 import LsqFit: curve_fit
 using RecipesBase
 import Statistics: mean
 
-# function __init__()
-#     println("Learn PlantBiophysics at: https://vezy.github.io/PlantBiophysics.jl/stable/")
-#     nothing
-# end
-
-# Abstract structures:
-include("Abstract_model_structs.jl")
-
-# Status
-include("component_models/Status.jl")
-# include("component_models/TimeStepRow.jl")
-include("component_models/TimeStepTable.jl")
-
-
-# Component models
-include("component_models/ModelList.jl")
-
-# Status helpers
-include("component_models/get_status.jl")
-
 # Atmosphere
 include("climate/atmosphere.jl")
 include("climate/weather.jl")
-
-# Automatic process methods generation:
-include("processes/process_methods_generation.jl")
-include("processes/models_inputs_outputs.jl")
-
-# Dependency tree:
-include("processes/models_dependency.jl")
-# Initialisations:
-include("processes/model_initialisation.jl")
-
-# Copy component models
-include("component_models/copy.jl")
 
 # Generic process methods
 include("processes/light/light_interception.jl")
@@ -77,7 +41,6 @@ include("checks/status_weather_corresp.jl")
 
 # Conversions
 include("conversions.jl")
-include("dataframe.jl")
 
 # Light interception
 include("processes/light/Ignore.jl")
@@ -115,13 +78,6 @@ include("fitting/fit.jl")
 include("fitting/fit_FvCB.jl")
 include("fitting/fit_Medlyn.jl")
 
-# Model evaluation
-include("evaluation/statistics.jl")
-
-# Compatibility with MultiScaleTreeGraph.jl
-include("mtg/init_mtg_models.jl")
-include("mtg/mtg_helpers.jl")
-
 # Depreciations
 include("depreciations/models.jl")
 
@@ -134,19 +90,6 @@ export read_licor6400
 
 # Physical constants
 export Constants
-
-# Status
-export init_status!
-export Status, TimeStepTable
-
-# ModelList
-export ModelList
-
-# Get models informations
-export variables, variables_typed
-export inputs, outputs
-export inputs_, outputs_
-export to_initialize, is_initialized
 
 # Atmosphere
 export vapor_pressure
@@ -219,19 +162,7 @@ export init_variables_manual, init_variables, Fvcb_net_assimiliation
 export get_process, get_model, instantiate
 export init_mtg_models!
 
-# Models
-export AbstractModel
-
-# Model dependency
-export dep
-
 # Parameters optimization
 export fit
-
-# Convenience functions
-export DataFrame, copy, getindex, status, pull_status!, length, setindex!
-
-# Model evaluation
-export EF, RMSE, dr
 
 end

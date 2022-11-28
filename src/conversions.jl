@@ -66,8 +66,6 @@ function f_ms_to_mol(T, P, R, K₀)
     (P * 1000) / (R * (T - K₀))
 end
 
-
-
 """
     rh_from_vpd(VPD,eₛ)
 

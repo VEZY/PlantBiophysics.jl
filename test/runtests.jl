@@ -3,7 +3,7 @@ using Test, Aqua
 
 using OrderedCollections
 using Dates
-using DataFrames, Tables
+using DataFrames# , Tables
 using MultiScaleTreeGraph, PlantGeom
 
 Aqua.test_all(
