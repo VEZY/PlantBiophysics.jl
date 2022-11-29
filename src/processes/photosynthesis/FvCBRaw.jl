@@ -61,7 +61,7 @@ function PlantSimEngine.inputs_(::FvcbRaw)
     (PPFD=-Inf, Tₗ=-Inf, Cᵢ=-Inf)
 end
 
-function outputs_(::FvcbRaw)
+function PlantSimEngine.outputs_(::FvcbRaw)
     (A=-Inf,)
 end
 
