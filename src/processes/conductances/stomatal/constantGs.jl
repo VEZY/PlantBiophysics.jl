@@ -21,11 +21,11 @@ end
 
 ConstantGs(; g0=0.0, Gₛ) = ConstantGs(g0, Gₛ)
 
-function inputs_(::ConstantGs)
+function PlantSimEngine.inputs_(::ConstantGs)
     (Gₛ=-Inf,)
 end
 
-function outputs_(::ConstantGs)
+function PlantSimEngine.outputs_(::ConstantGs)
     (Gₛ=-Inf,)
 end
 
@@ -38,7 +38,7 @@ Constant stomatal closure. Usually called from a photosynthesis model.
 
 `meteo` is just declared here for compatibility with other formats of calls.
 """
-function gs_closure(::ConstantGs, models, status, meteo=missing)
+function gs_closure(::ConstantGs, models, status, meteo=missing, constants=nothing, extra=nothing)
     (models.stomatal_conductance.Gₛ - models.stomatal_conductance.g0) / status.A
 end
 
@@ -54,6 +54,6 @@ function stomatal_conductance!_(::ConstantGs, models, status, gs_closure)
     status.Gₛ = models.stomatal_conductance.Gₛ
 end
 
-function stomatal_conductance!_(::ConstantGs, models, status, meteo::M, constants=Constants()) where {M<:AbstractAtmosphere}
+function stomatal_conductance!_(::ConstantGs, models, status, meteo::M, constants=PlantMeteo.Constants(), extra=nothing) where {M<:PlantMeteo.AbstractAtmosphere}
     status.Gₛ = models.stomatal_conductance.Gₛ
 end

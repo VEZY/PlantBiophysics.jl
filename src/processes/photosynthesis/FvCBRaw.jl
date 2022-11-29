@@ -57,7 +57,7 @@ function FvcbRaw(; Tᵣ=25.0, VcMaxRef=200.0, JMaxRef=250.0, RdRef=0.6, TPURef=9
     FvcbRaw(promote(Tᵣ, VcMaxRef, JMaxRef, RdRef, TPURef, Eₐᵣ, O₂, Eₐⱼ, Hdⱼ, Δₛⱼ, Eₐᵥ, Hdᵥ, Δₛᵥ, α, θ)...)
 end
 
-function inputs_(::FvcbRaw)
+function PlantSimEngine.inputs_(::FvcbRaw)
     (PPFD=-Inf, Tₗ=-Inf, Cᵢ=-Inf)
 end
 
@@ -88,7 +88,7 @@ initialisations for:
     - `Dₗ` (kPa): vapour pressure difference between the surface and the saturated
     air vapour pressure in case you're using the stomatal conductance model of [`Medlyn`](@ref).
 - `status`: A status, usually the leaf status (*i.e.* leaf.status)
-- `constants = Constants()`: physical constants. See [`Constants`](@ref) for more details
+- `constants = PlantMeteo.Constants()`: physical constants. See [`Constants`](@ref) for more details
 
 # Note
 
@@ -141,7 +141,7 @@ Lombardozzi, L. D. et al. 2018.« Triose phosphate limitation in photosynthesis 
 reduces leaf photosynthesis and global terrestrial carbon storage ». Environmental Research
 Letters 13.7: 1748-9326. https://doi.org/10.1088/1748-9326/aacf68.
 """
-function photosynthesis!_(::FvcbRaw, models, status, meteo=nothing, constants=Constants())
+function photosynthesis!_(::FvcbRaw, models, status, meteo=nothing, constants=PlantMeteo.Constants(), extra=nothing)
 
     Tₖ = status.Tₗ - constants.K₀
     Tᵣₖ = models.photosynthesis.Tᵣ - constants.K₀

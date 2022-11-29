@@ -46,17 +46,17 @@ function FvcbIter(; Tᵣ=25.0, VcMaxRef=200.0, JMaxRef=250.0, RdRef=0.6, Eₐᵣ
     )
 end
 
-function inputs_(::FvcbIter)
+function PlantSimEngine.inputs_(::FvcbIter)
     (PPFD=-Inf, Tₗ=-Inf, Gbc=-Inf)
 end
 
-function outputs_(::FvcbIter)
+function PlantSimEngine.outputs_(::FvcbIter)
     (A=-Inf, Gₛ=-Inf, Cᵢ=-Inf, Cₛ=-Inf)
 end
 
 Base.eltype(x::FvcbIter) = typeof(x).parameters[1]
 
-dep(::FvcbIter) = (stomatal_conductance=AbstractGsModel,)
+PlantSimEngine.dep(::FvcbIter) = (stomatal_conductance=AbstractGsModel,)
 
 """
     photosynthesis!_(::FvcbIter, models, status, meteo, constants=Constants())
@@ -89,7 +89,7 @@ initialisations for:
     saturated air vapour pressure in case you're using the stomatal conductance model of [`Medlyn`](@ref).
 - `status`: A status, usually the leaf status (*i.e.* leaf.status)
 - `meteo`: meteorology structure, see [`Atmosphere`](@ref)
-- `constants = Constants()`: physical constants. See [`Constants`](@ref) for more details
+- `constants = PlantMeteo.Constants()`: physical constants. See [`Constants`](@ref) for more details
 
 # Note
 
@@ -101,6 +101,7 @@ balance of the leaf with the photosynthesis to get those variables. See
 # Examples
 
 ```julia
+using PlantBiophysics, PlantMeteo
 meteo = Atmosphere(T = 20.0, Wind = 1.0, P = 101.3, Rh = 0.65)
 
 leaf =
@@ -111,7 +112,7 @@ leaf =
     )
 # NB: we need  to initalise Tₗ, PPFD and Gbc.
 
-photosynthesis!_(leaf,meteo,Constants())
+photosynthesis!_(leaf,meteo,PlantMeteo.Constants())
 leaf.status.A
 leaf.status.Cᵢ
 ```
@@ -129,7 +130,7 @@ Leuning, R., F. M. Kelliher, DGG de Pury, et E.D. Schulze. 1995. Leaf nitrogen,
 photosynthesis, conductance and transpiration: scaling from leaves to canopies ». Plant,
 Cell & Environment 18 (10): 1183‑1200.
 """
-function photosynthesis!_(::FvcbIter, models, status, meteo, constants=Constants())
+function photosynthesis!_(::FvcbIter, models, status, meteo, constants=PlantMeteo.Constants(), extra=nothing)
 
     # Start with a probable value for Cₛ and Cᵢ:
     status.Cₛ = meteo.Cₐ
@@ -168,7 +169,7 @@ function photosynthesis!_(::FvcbIter, models, status, meteo, constants=Constants
 
     while iter
         # Stomatal conductance (mol[CO₂] m-2 s-1)
-        stomatal_conductance!_(models.stomatal_conductance, models, status, meteo)
+        stomatal_conductance!_(models.stomatal_conductance, models, status, meteo, extra)
         # Surface CO₂ concentration (ppm):
         status.Cₛ = min(meteo.Cₐ, meteo.Cₐ - status.A / status.Gbc)
         # Intercellular CO₂ concentration (ppm):

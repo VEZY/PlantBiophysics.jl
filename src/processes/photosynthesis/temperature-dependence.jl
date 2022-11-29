@@ -1,5 +1,5 @@
 """
-    arrhenius(A,Eₐ,Tₖ,Tᵣₖ,R = Constants().R)
+    arrhenius(A,Eₐ,Tₖ,Tᵣₖ,R = PlantMeteo.Constants().R)
 
 The Arrhenius function for dependence of the rate constant of a chemical reaction.
 
@@ -14,8 +14,9 @@ The Arrhenius function for dependence of the rate constant of a chemical reactio
 # Examples
 
 ```julia
+using PlantBiophysics, PlantMeteo
 # Importing physical constants
-constants = Constants()
+constants = PlantMeteo.Constants()
 # Using default values for the model:
 A = Fvcb()
 
@@ -27,7 +28,7 @@ arrhenius(A.JMaxRef,A.Eₐⱼ,28.0-constants.K₀,A.Tᵣ-constants.K₀,constant
 arrhenius(A.VcMaxRef,A.Eₐᵥ,28.0-constants.K₀,A.Tᵣ-constants.K₀,constants.R)
 ```
 """
-function arrhenius(A,Eₐ,Tₖ,Tᵣₖ,R = Constants().R)
+function arrhenius(A, Eₐ, Tₖ, Tᵣₖ, R=PlantMeteo.Constants().R)
     A * exp(Eₐ * (Tₖ - Tᵣₖ) / (R * Tₖ * Tᵣₖ))
 end
 
@@ -62,6 +63,7 @@ https://doi.org/10.1046/j.1365-3040.2002.00891.x.
 # Examples
 
 ```julia
+using PlantBiophysics, PlantMeteo
 # Importing physical constants
 constants = Constants()
 # Using default values for the model:
@@ -76,9 +78,9 @@ PlantBiophysics.arrhenius(A.VcMaxRef,A.Eₐᵥ,28.0-constants.K₀,A.Tᵣ-consta
 
 ```
 """
-function arrhenius(A,Eₐ,Tₖ,Tᵣₖ,Hd,Δₛ,R = Constants().R)
+function arrhenius(A, Eₐ, Tₖ, Tᵣₖ, Hd, Δₛ, R=PlantMeteo.Constants().R)
     # Equation split in 3 parts for readability:
-    ftk1 = arrhenius(A,Eₐ,Tₖ,Tᵣₖ,R)
+    ftk1 = arrhenius(A, Eₐ, Tₖ, Tᵣₖ, R)
     ftk2 = (1.0 + exp((Tᵣₖ * Δₛ - Hd) / (Tᵣₖ * R)))
     ftk3 = (1.0 + exp((Tₖ * Δₛ - Hd) / (Tₖ * R)))
 
@@ -88,7 +90,7 @@ function arrhenius(A,Eₐ,Tₖ,Tᵣₖ,Hd,Δₛ,R = Constants().R)
 end
 
 """
-    Γ_star(Tₖ,Tᵣₖ,R = Constants().R)
+    Γ_star(Tₖ,Tᵣₖ,R = PlantMeteo.Constants().R)
 
 CO₂ compensation point ``Γ^⋆`` (``μ mol\\ mol^{-1}``) according to equation (12)
 from Medlyn et al. (2002).
@@ -111,6 +113,7 @@ states that ``Γ^⋆`` as a relatively low effect on the model outputs.
 # Examples
 
 ```julia
+using PlantBiophysics, PlantMeteo
 # Importing the physical constants:
 constants = Constants()
 # computing the temperature dependence of γˢ:
@@ -132,8 +135,8 @@ Sharkey, Thomas D., Carl J. Bernacchi, Graham D. Farquhar, et Eric L. Singsaas. 
 Environment 30 (9): 1035‑40. https://doi.org/10.1111/j.1365-3040.2007.01710.x.
 
 """
-function Γ_star(Tₖ,Tᵣₖ,R = Constants().R)
-    arrhenius(oftype(Tₖ,42.75),oftype(Tₖ,37830.0),Tₖ,Tᵣₖ,R)
+function Γ_star(Tₖ, Tᵣₖ, R=PlantMeteo.Constants().R)
+    arrhenius(oftype(Tₖ, 42.75), oftype(Tₖ, 37830.0), Tₖ, Tᵣₖ, R)
 end
 
 """
@@ -156,8 +159,8 @@ https://doi.org/10.1046/j.1365-3040.2002.00891.x.
 get_km(28,25,210.0)
 ```
 """
-function get_km(Tₖ,Tᵣₖ,O₂,R = Constants().R)
-    KC = arrhenius(oftype(Tₖ,404.9),oftype(Tₖ,79430.0),Tₖ,Tᵣₖ,R)
-    KO = arrhenius(oftype(Tₖ,278.4),oftype(Tₖ,36380.0),Tₖ,Tᵣₖ,R)
-    return KC * (1.0 + O₂/KO)
+function get_km(Tₖ, Tᵣₖ, O₂, R=PlantMeteo.Constants().R)
+    KC = arrhenius(oftype(Tₖ, 404.9), oftype(Tₖ, 79430.0), Tₖ, Tᵣₖ, R)
+    KO = arrhenius(oftype(Tₖ, 278.4), oftype(Tₖ, 36380.0), Tₖ, Tᵣₖ, R)
+    return KC * (1.0 + O₂ / KO)
 end

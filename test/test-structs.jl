@@ -20,12 +20,12 @@ end;
     leaf = ModelList(photosynthesis=A, stomatal_conductance=Gs)
     @test leaf.status.Tₗ == [-Inf]
 
-    init_status!(leaf, Tₗ=25.0)
+    PlantSimEngine.init_status!(leaf, Tₗ=25.0)
     @test leaf.status.Tₗ == [25.0]
 
     file = joinpath(dirname(dirname(pathof(PlantBiophysics))), "test", "inputs", "models", "plant_coffee.yml")
     model = read_model(file)
-    init_status!(model, Tₗ=25.0)
+    PlantSimEngine.init_status!(model, Tₗ=25.0)
     @test model["Leaf"].status.Tₗ == [25.0]
 end;
 
@@ -81,7 +81,7 @@ end;
     meteo = Atmosphere(T=20.0, Wind=1.0, P=101.3, Rh=0.65)
     constants = Constants()
 
-    energy_balance!(m, meteo, constants) # 1.525 μs
+    energy_balance!(m, meteo, constants, nothing) # 1.525 μs
     energy_balance!(m_2, meteo, constants) # idem
     energy_balance!(m_df, meteo, constants) # 26.125 μs
 

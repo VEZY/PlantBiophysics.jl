@@ -30,11 +30,11 @@ function Monteith(; aₛₕ=2, aₛᵥ=1, ε=0.955, maxiter=10, ΔT=0.01)
     Monteith(param_int[1], param_int[2], param_float[1], param_int[3], param_float[2])
 end
 
-function inputs_(::Monteith)
+function PlantSimEngine.inputs_(::Monteith)
     (Rₛ=-Inf, sky_fraction=-Inf, d=-Inf)
 end
 
-function outputs_(::Monteith)
+function PlantSimEngine.outputs_(::Monteith)
     (
         Tₗ=-Inf, Rn=-Inf, Rₗₗ=-Inf, H=-Inf, λE=-Inf, Cₛ=-Inf, Cᵢ=-Inf,
         A=-Inf, Gₛ=-Inf, Gbₕ=-Inf, Dₗ=-Inf, Gbc=-Inf, iter=typemin(Int)
@@ -43,10 +43,10 @@ end
 
 Base.eltype(x::Monteith) = typeof(x).parameters[1]
 
-dep(::Monteith) = (photosynthesis=AbstractAModel,)
+PlantSimEngine.dep(::Monteith) = (photosynthesis=AbstractAModel,)
 
 """
-    energy_balance!_(::Monteith, models, status, meteo::AbstractAtmosphere, constants=Constants())
+    energy_balance!_(::Monteith, models, status, meteo::PlantMeteo.AbstractAtmosphere, constants=Constants())
 
 Leaf energy balance according to Monteith and Unsworth (2013), and corrigendum from
 Schymanski et al. (2017). The computation is close to the one from the MAESPA model (Duursma
@@ -63,7 +63,7 @@ initialisations for:
     - `d` (m): characteristic dimension, *e.g.* leaf width (see eq. 10.9 from Monteith and Unsworth, 2013).
 - `status`: the status of the model, usually the model list status (*i.e.* leaf.status)
 - `meteo`: meteorology structure, see [`Atmosphere`](@ref)
-- `constants = Constants()`: physical constants. See [`Constants`](@ref) for more details
+- `constants = PlantMeteo.Constants()`: physical constants. See [`Constants`](@ref) for more details
 
 # Details
 
@@ -132,7 +132,7 @@ Maxime Soma, et al. 2018. « Measuring and modelling energy partitioning in can
 complexity using MAESPA model ». Agricultural and Forest Meteorology 253‑254 (printemps): 203‑17.
 https://doi.org/10.1016/j.agrformet.2018.02.005.
 """
-function energy_balance!_(::Monteith, models, status, meteo::AbstractAtmosphere, constants=Constants())
+function energy_balance!_(::Monteith, models, status, meteo::PlantMeteo.AbstractAtmosphere, constants=PlantMeteo.Constants(), extra=nothing)
 
     # Initialisations
     status.Tₗ = meteo.T - 0.2
@@ -149,7 +149,7 @@ function energy_balance!_(::Monteith, models, status, meteo::AbstractAtmosphere,
     for i in 1:models.energy_balance.maxiter
 
         # Update A, Gₛ, Cᵢ from models.status:
-        photosynthesis!_(models.photosynthesis, models, status, meteo, constants)
+        photosynthesis!_(models.photosynthesis, models, status, meteo, constants, extra)
 
         # Stomatal resistance to water vapor
         Rsᵥ = 1.0 / (gsc_to_gsw(mol_to_ms(status.Gₛ, meteo.T, meteo.P, constants.R, constants.K₀),
@@ -186,7 +186,7 @@ function energy_balance!_(::Monteith, models, status, meteo::AbstractAtmosphere,
         status.Cₛ = min(meteo.Cₐ, meteo.Cₐ - status.A / (status.Gbc * models.energy_balance.aₛᵥ))
 
         # Apparent value of psychrometer constant (kPa K−1)
-        γˢ = γ_star(meteo.γ, models.energy_balance.aₛₕ, models.energy_balance.aₛᵥ, Rbᵥ, Rsᵥ, Rbₕ)
+        γˢ = PlantMeteo.γ_star(meteo.γ, models.energy_balance.aₛₕ, models.energy_balance.aₛᵥ, Rbᵥ, Rsᵥ, Rbₕ)
 
         status.λE = latent_heat(status.Rn, meteo.VPD, γˢ, Rbₕ, meteo.Δ, meteo.ρ,
             models.energy_balance.aₛₕ, constants.Cₚ)
@@ -205,7 +205,7 @@ function energy_balance!_(::Monteith, models, status, meteo::AbstractAtmosphere,
         status.Tₗ = Tₗ_new
 
         # Vapour pressure difference between the surface and the saturation vapour pressure:
-        status.Dₗ = e_sat(status.Tₗ) - e_sat(meteo.T) * meteo.Rh
+        status.Dₗ = PlantMeteo.e_sat(status.Tₗ) - PlantMeteo.e_sat(meteo.T) * meteo.Rh
 
         iter += 1
     end
@@ -266,7 +266,7 @@ function latent_heat(Rn, VPD, γˢ, Rbₕ, Δ, ρ, aₛₕ, Cₚ)
 end
 
 function latent_heat(Rn, VPD, γˢ, Rbₕ, Δ, ρ, aₛₕ)
-    latent_heat(Rn, VPD, γˢ, Rbₕ, Δ, ρ, aₛₕ, Constants().Cₚ)
+    latent_heat(Rn, VPD, γˢ, Rbₕ, Δ, ρ, aₛₕ, PlantMeteo.Constants().Cₚ)
 end
 
 
@@ -308,5 +308,5 @@ function sensible_heat(Rn, VPD, γˢ, Rbₕ, Δ, ρ, aₛₕ, Cₚ)
 end
 
 function sensible_heat(Rn, VPD, γˢ, Rbₕ, Δ, ρ, aₛₕ)
-    sensible_heat(Rn, VPD, γˢ, Rbₕ, Δ, ρ, aₛₕ, Constants().Cₚ)
+    sensible_heat(Rn, VPD, γˢ, Rbₕ, Δ, ρ, aₛₕ, PlantMeteo.Constants().Cₚ)
 end

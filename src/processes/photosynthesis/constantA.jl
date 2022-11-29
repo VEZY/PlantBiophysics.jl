@@ -15,11 +15,11 @@ Base.@kwdef struct ConstantA{T} <: AbstractAModel
     A::T = 25.0
 end
 
-function inputs_(::ConstantA)
+function PlantSimEngine.inputs_(::ConstantA)
     (A=-Inf,)
 end
 
-function outputs_(::ConstantA)
+function PlantSimEngine.outputs_(::ConstantA)
     (A=-Inf,)
 end
 
@@ -42,7 +42,7 @@ Modify the leaf status in place for A with a constant value:
 - `models`: a [`ModelList`](@ref) struct holding the parameters for the model.
 - `status`: A status, usually the leaf status (*i.e.* leaf.status)
 - `meteo`: meteorology structure, see [`Atmosphere`](@ref)
-- `constants = Constants()`: physical constants. See [`Constants`](@ref) for more details
+- `constants = PlantMeteo.Constants()`: physical constants. See [`Constants`](@ref) for more details
 
 # Examples
 
@@ -55,7 +55,7 @@ photosynthesis!(leaf,meteo,Constants())
 leaf.status.A
 ```
 """
-function photosynthesis!_(::ConstantA, models, status, meteo, constants=Constants())
+function photosynthesis!_(::ConstantA, models, status, meteo, constants=PlantMeteo.Constants(), extra=nothing)
 
     # Net assimilation (μmol m-2 s-1)
     status.A = models.photosynthesis.A

@@ -12,7 +12,7 @@ abstract type AbstractGsModel <: AbstractModel end
 
 """
     stomatal_conductance(leaf::ModelList,gs_mod)
-    stomatal_conductance(leaf::ModelList,meteo<:AbstractAtmosphere)
+    stomatal_conductance(leaf::ModelList,meteo<:PlantMeteo.AbstractAtmosphere)
 
 Default method to compute the stomatal conductance for CO₂ (mol m-2 s-1), it takes the form:
 
@@ -30,7 +30,7 @@ allowed to go below `leaf.stomatal_conductance.gs_min`.
 - `status::Status`: A status, usually the leaf status (*i.e.* leaf.status)
 - `gs_mod`: the output from a [`gs_closure`](@ref) implementation (the conductance models
 generally only implement this function)
-- `meteo<:AbstractAtmosphere`: meteo data, see [`Atmosphere`](@ref)
+- `meteo<:PlantMeteo.AbstractAtmosphere`: meteo data, see [`Atmosphere`](@ref)
 
 # Examples
 
@@ -53,16 +53,16 @@ stomatal_conductance, stomatal_conductance!
 
 # Gs is used a little bit differently compared to the other processes. We use two forms:
 # the stomatal closure and the full computation of Gs
-function stomatal_conductance!_(Gs::Gsm, models, status, gs_closure) where {Gsm<:AbstractGsModel}
+function stomatal_conductance!_(Gs::Gsm, models, status, gs_closure, extra) where {Gsm<:AbstractGsModel}
     status.Gₛ = max(
         models.stomatal_conductance.gs_min,
         models.stomatal_conductance.g0 + gs_closure * status.A
     )
 end
 
-function stomatal_conductance!_(Gs::Gsm, models, status, meteo::M, constants=Constants()) where {Gsm<:AbstractGsModel,M<:Union{AbstractAtmosphere,Nothing}}
+function stomatal_conductance!_(Gs::Gsm, models, status, meteo::M, constants=PlantMeteo.Constants(), extra=nothing) where {Gsm<:AbstractGsModel,M<:Union{PlantMeteo.AbstractAtmosphere,Nothing}}
     status.Gₛ = max(
         models.stomatal_conductance.gs_min,
-        models.stomatal_conductance.g0 + gs_closure(models.stomatal_conductance, models, status, meteo) * status.A
+        models.stomatal_conductance.g0 + gs_closure(models.stomatal_conductance, models, status, meteo, constants, extra) * status.A
     )
 end

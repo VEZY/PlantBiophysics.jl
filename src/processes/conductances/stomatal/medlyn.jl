@@ -53,11 +53,11 @@ Medlyn(g0, g1) = Medlyn(g0, g1, oftype(g0, 0.001))
 
 Medlyn(; g0, g1) = Medlyn(g0, g1, oftype(g0, 0.001))
 
-function inputs_(::Medlyn)
+function PlantSimEngine.inputs_(::Medlyn)
     (Dₗ=-Inf, Cₛ=-Inf, A=-Inf)
 end
 
-function outputs_(::Medlyn)
+function PlantSimEngine.outputs_(::Medlyn)
     (Gₛ=-Inf,)
 end
 
@@ -136,6 +136,6 @@ Craig V. M. Barton, Kristine Y. Crous, Paolo De Angelis, Michael Freeman, et Lis
 2011. « Reconciling the optimal and empirical approaches to modelling stomatal conductance ».
 Global Change Biology 17 (6): 2134‑44. https://doi.org/10.1111/j.1365-2486.2010.02375.x.
 """
-function gs_closure(::Medlyn, models, status, meteo)
+function gs_closure(::Medlyn, models, status, meteo, constants=nothing, extra=nothing)
     (1.0 + models.stomatal_conductance.g1 / sqrt(max(1e-9, status.Dₗ))) / status.Cₛ
 end

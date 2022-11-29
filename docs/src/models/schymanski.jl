@@ -1,7 +1,7 @@
 # Compare simulations with measurements from Schymanski et al. (2017) extracted from this
 # Github [repository](https://github.com/schymans/Schymanski_leaf-scale_2016).
 
-using PlantBiophysics
+using PlantBiophysics, PlantMeteo
 using DataFrames
 using CSV
 using CairoMakie
@@ -24,7 +24,7 @@ params = read_dict("../data/schymanski_et_al_2017/vdict_6a.txt")
 # Some constants used in the experiment:
 maxiter = 20 # Maximum number of iterations for the algorithm to converge
 aₛᵥ = 1 # number of sides used for transpiration (hypostomatous: 1, amphistomatous: 2)
-cst = Constants(
+cst = PlantMeteo.Constants(
     Cₚ=1010.0, ε=params["epsilon"], λ₀=params["lambda_E"],
     R=params["R_mol"], σ=params["sigm"], Mₕ₂ₒ=params["M_w"]
 )

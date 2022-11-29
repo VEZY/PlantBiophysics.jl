@@ -21,7 +21,7 @@ function ms_to_mol(G, T, P, R, K₀)
 end
 
 function ms_to_mol(G, T, P)
-    constants = Constants()
+    constants = PlantMeteo.Constants()
     ms_to_mol(G, T, P, constants.R, constants.K₀)
 end
 
@@ -48,7 +48,7 @@ function mol_to_ms(G, T, P, R, K₀)
 end
 
 function mol_to_ms(G, T, P)
-    constants = Constants()
+    constants = PlantMeteo.Constants()
     mol_to_ms(G, T, P, constants.R, constants.K₀)
 end
 
@@ -117,8 +117,8 @@ end
 
 
 """
-    gbh_to_gbw(gbh, Gbₕ_to_Gbₕ₂ₒ = Constants().Gbₕ_to_Gbₕ₂ₒ)
-    gbw_to_gbh(gbh, Gbₕ_to_Gbₕ₂ₒ = Constants().Gbₕ_to_Gbₕ₂ₒ)
+    gbh_to_gbw(gbh, Gbₕ_to_Gbₕ₂ₒ = PlantMeteo.Constants().Gbₕ_to_Gbₕ₂ₒ)
+    gbw_to_gbh(gbh, Gbₕ_to_Gbₕ₂ₒ = PlantMeteo.Constants().Gbₕ_to_Gbₕ₂ₒ)
 
 Boundary layer conductance for water vapor from boundary layer conductance for heat.
 
@@ -131,37 +131,37 @@ Boundary layer conductance for water vapor from boundary layer conductance for h
 
 Gbₕ is the sum of free and forced convection. See [`gbₕ_free`](@ref) and [`gbₕ_forced`](@ref).
 """
-function gbh_to_gbw(gbh, Gbₕ_to_Gbₕ₂ₒ=Constants().Gbₕ_to_Gbₕ₂ₒ)
+function gbh_to_gbw(gbh, Gbₕ_to_Gbₕ₂ₒ=PlantMeteo.Constants().Gbₕ_to_Gbₕ₂ₒ)
     gbh * Gbₕ_to_Gbₕ₂ₒ
 end
 
-function gbw_to_gbh(gbh, Gbₕ_to_Gbₕ₂ₒ=Constants().Gbₕ_to_Gbₕ₂ₒ)
+function gbw_to_gbh(gbh, Gbₕ_to_Gbₕ₂ₒ=PlantMeteo.Constants().Gbₕ_to_Gbₕ₂ₒ)
     gbh / Gbₕ_to_Gbₕ₂ₒ
 end
 
 
 """
-    gsc_to_gsw(Gₛ, Gsc_to_Gsw = Constants().Gsc_to_Gsw)
+    gsc_to_gsw(Gₛ, Gsc_to_Gsw = PlantMeteo.Constants().Gsc_to_Gsw)
 
 Conversion of a stomatal conductance for CO₂ into stomatal conductance for H₂O.
 """
-function gsc_to_gsw(Gₛ, Gsc_to_Gsw=Constants().Gsc_to_Gsw)
+function gsc_to_gsw(Gₛ, Gsc_to_Gsw=PlantMeteo.Constants().Gsc_to_Gsw)
     Gₛ * Gsc_to_Gsw
 end
 
 """
-    gsw_to_gsc(Gₛ, Gsc_to_Gsw = Constants().Gsc_to_Gsw)
+    gsw_to_gsc(Gₛ, Gsc_to_Gsw = PlantMeteo.Constants().Gsc_to_Gsw)
 
 Conversion of a stomatal conductance for H₂O into stomatal conductance for CO₂.
 """
-function gsw_to_gsc(Gₛ, Gsc_to_Gsw=Constants().Gsc_to_Gsw)
+function gsw_to_gsc(Gₛ, Gsc_to_Gsw=PlantMeteo.Constants().Gsc_to_Gsw)
     Gₛ / Gsc_to_Gsw
 end
 
 
 """
-    λE_to_E(λE, λ, Mₕ₂ₒ=Constants().Mₕ₂ₒ)
-    E_to_λE(E, λ, Mₕ₂ₒ=Constants().Mₕ₂ₒ)
+    λE_to_E(λE, λ, Mₕ₂ₒ=PlantMeteo.Constants().Mₕ₂ₒ)
+    E_to_λE(E, λ, Mₕ₂ₒ=PlantMeteo.Constants().Mₕ₂ₒ)
 
 Conversion from latent heat (W m-2) to evaporation (mol[H₂O] m-2 s-1) or the
 opposite (`E_to_λE`).
@@ -188,10 +188,10 @@ To convert E from mol[H₂O] m-2 s-1 to mm s-1 you can simply do:
 mm[H₂O] s-1 is equivalent to kg[H₂O] m-2 s-1, wich is equivalent to l[H₂O] m-2 s-1.
 
 """
-function λE_to_E(λE, λ, Mₕ₂ₒ=Constants().Mₕ₂ₒ)
+function λE_to_E(λE, λ, Mₕ₂ₒ=PlantMeteo.Constants().Mₕ₂ₒ)
     λE / λ * Mₕ₂ₒ
 end
 
-function E_to_λE(E, λ, Mₕ₂ₒ=Constants().Mₕ₂ₒ)
+function E_to_λE(E, λ, Mₕ₂ₒ=PlantMeteo.Constants().Mₕ₂ₒ)
     E / Mₕ₂ₒ * λ
 end

@@ -6,7 +6,7 @@ that are not visible anyway (e.g. inside others).
 struct Ignore <: AbstractLightModel end
 
 """
-    light_interception!_(::Ignore, models::ModelList, status, meteo::AbstractAtmosphere,constants = Constants())
+    light_interception!_(::Ignore, models::ModelList, status, meteo::PlantMeteo.AbstractAtmosphere,constants = Constants())
 
 Method for when light interception should be explicitely ignored (do nothing).
 
@@ -16,9 +16,9 @@ Method for when light interception should be explicitely ignored (do nothing).
 - `models`: a [`ModelList`](@ref) struct with a missing energy model.
 - `status`: the status of the model, usually the one from the models (*i.e.* models.status)
 - `meteo`: meteorology structure, see [`Atmosphere`](@ref)
-- `constants = Constants()`: physical constants. See [`Constants`](@ref) for more details
+- `constants = PlantMeteo.Constants()`: physical constants. See [`Constants`](@ref) for more details
 
 """
-function energy_balance!_(::Ignore, models, status, meteo::AbstractAtmosphere, constants=Constants())
+function energy_balance!_(::Ignore, models, status, meteo::PlantMeteo.AbstractAtmosphere, constants=PlantMeteo.Constants(), extra=nothing)
     nothing
 end

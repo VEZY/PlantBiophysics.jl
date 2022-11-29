@@ -13,11 +13,11 @@ Base.@kwdef struct ConstantAGs{T} <: AbstractAModel
     A::T = 25.0
 end
 
-function inputs_(::ConstantAGs)
+function PlantSimEngine.inputs_(::ConstantAGs)
     (Cₛ=-Inf,)
 end
 
-function outputs_(::ConstantAGs)
+function PlantSimEngine.outputs_(::ConstantAGs)
     (A=-Inf, Gₛ=-Inf, Cᵢ=-Inf)
 end
 
@@ -45,11 +45,12 @@ initialisations for:
     - any other value needed by the stomatal conductance model.
 - `status`: A status, usually the leaf status (*i.e.* leaf.status)
 - `meteo`: meteorology structure, see [`Atmosphere`](@ref)
-- `constants = Constants()`: physical constants. See [`Constants`](@ref) for more details
+- `constants = PlantMeteo.Constants()`: physical constants. See [`Constants`](@ref) for more details
 
 # Examples
 
 ```julia
+using PlantBiophysics, PlantMeteo
 meteo = Atmosphere(T = 20.0, Wind = 1.0, P = 101.3, Rh = 0.65)
 leaf = ModelList(
     photosynthesis = ConstantAGs(),
@@ -57,19 +58,19 @@ leaf = ModelList(
     status = (Cₛ = 400.0, Dₗ = 2.0)
 )
 
-photosynthesis!(leaf,meteo,Constants())
+photosynthesis!(leaf,meteo,PlantMeteo.Constants())
 
 status(leaf, :A)
 status(leaf, :Cᵢ)
 ```
 """
-function photosynthesis!_(::ConstantAGs, models, status, meteo, constants=Constants())
+function photosynthesis!_(::ConstantAGs, models, status, meteo, constants=PlantMeteo.Constants(), extra=nothing)
 
     # Net assimilation (μmol m-2 s-1)
     status.A = models.photosynthesis.A
 
     # Stomatal conductance (mol[CO₂] m-2 s-1)
-    stomatal_conductance!_(models.stomatal_conductance, models, status, meteo)
+    stomatal_conductance!_(models.stomatal_conductance, models, status, meteo, extra)
 
     # Intercellular CO₂ concentration (Cᵢ, μmol mol)
     status.Cᵢ = min(status.Cₛ, status.Cₛ - status.A / status.Gₛ)

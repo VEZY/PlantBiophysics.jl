@@ -25,7 +25,7 @@ Computes the light interception of an object using the Beer-Lambert law.
 initialisations for `LAI` (m² m⁻²): the leaf area index.
 - `status`: the status of the model, usually the model list status (*i.e.* m.status)
 - `meteo`: meteorology structure, see [`Atmosphere`](@ref)
-- `constants = Constants()`: physical constants. See [`Constants`](@ref) for more details
+- `constants = PlantMeteo.Constants()`: physical constants. See [`Constants`](@ref) for more details
 
 # Examples
 
@@ -39,17 +39,17 @@ light_interception!(m, meteo)
 m[:PPFD]
 ```
 """
-function light_interception!_(::Beer, models, status, meteo, constants)
+function light_interception!_(::Beer, models, status, meteo, constants, extra=nothing)
     status.PPFD =
         meteo.Ri_PAR_f *
         exp(-models.light_interception.k * status.LAI) *
         constants.J_to_umol
 end
 
-function inputs_(::Beer)
+function PlantSimEngine.inputs_(::Beer)
     (LAI=-Inf,)
 end
 
-function outputs_(::Beer)
+function PlantSimEngine.outputs_(::Beer)
     (PPFD=-Inf,)
 end

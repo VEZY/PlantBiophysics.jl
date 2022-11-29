@@ -65,7 +65,7 @@ function read_weather(
     compute_date!(data, date_format, hour_format)
     compute_duration!(data, hour_format)
 
-    cols = fieldnames(Atmosphere)
+    cols = fieldnames(PlantMeteo.Atmosphere)
     # names(data, [cols...])
     select!(data, names(data, x -> Symbol(x) in cols))
 

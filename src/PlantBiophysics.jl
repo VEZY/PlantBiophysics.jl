@@ -1,10 +1,16 @@
 module PlantBiophysics
 
+import PlantSimEngine
+import PlantSimEngine: @gen_process_methods, AbstractModel, TimeStepTable
+import PlantSimEngine: Status, ModelList
+
+import PlantMeteo
+import PlantMeteo: Weather, AbstractAtmosphere
+
 # For IO:
 import YAML
 import CSV
 import OrderedCollections: OrderedDict
-import MultiScaleTreeGraph
 import Dates
 
 import DataFrames.DataFrame # For convenience transformations
@@ -20,21 +26,11 @@ import LsqFit: curve_fit
 using RecipesBase
 import Statistics: mean
 
-# Atmosphere
-include("climate/atmosphere.jl")
-include("climate/weather.jl")
-
 # Generic process methods
 include("processes/light/light_interception.jl")
 include("processes/photosynthesis/photosynthesis.jl")
 include("processes/conductances/stomatal/stomatal_conductance.jl")
 include("processes/energy/energy_balance.jl")
-
-# Physical constants:
-include("constants.jl")
-
-# Atmosphere computations (vapor pressure...)
-include("climate/variables_computations.jl")
 
 # Checks for status and weather (same length):
 include("checks/status_weather_corresp.jl")
@@ -88,17 +84,6 @@ export read_weather
 export read_walz
 export read_licor6400
 
-# Physical constants
-export Constants
-
-# Atmosphere
-export vapor_pressure
-export e_sat
-export e_sat_slope
-export air_density
-export Atmosphere
-export Weather
-
 # Conversions
 export rh_from_vpd
 export rh_from_e
@@ -118,12 +103,10 @@ export Beer # a struct to hold the values for the Beer-Lambert law of light exti
 export AbstractEnergyModel
 export black_body
 export grey_body
-export psychrometer_constant
 export net_longwave_radiation
 export energy_balance, energy_balance! # main interface to user
 export Monteith       # a struct to hold the values for the model of Monteith and Unsworth (2013)
 export latent_heat, sensible_heat
-export γ_star, latent_heat_vaporization
 
 # structure for light interception
 export Translucent
@@ -138,7 +121,6 @@ export ConstantA, ConstantAGs
 export Fvcb # Parameters for the coupled Farquhar et al. (1980) model
 export FvcbIter # To update...
 export FvcbRaw # Parameters for the original Farquhar et al. (1980) model
-export Constants
 export photosynthesis!
 export photosynthesis
 export photosynthesis!_
@@ -158,11 +140,13 @@ export Ignore
 
 # Model helpers
 export get_km, Γ_star, arrhenius, get_J, gs_closure, get_Cᵢⱼ, get_Cᵢᵥ, get_Dₕ
-export init_variables_manual, init_variables, Fvcb_net_assimiliation
+export Fvcb_net_assimiliation
 export get_process, get_model, instantiate
-export init_mtg_models!
 
 # Parameters optimization
 export fit
+
+# Re-exporting the ModelList from PlantSimEngine
+export ModelList
 
 end

@@ -3,8 +3,17 @@ using Test, Aqua
 
 using OrderedCollections
 using Dates
-using DataFrames# , Tables
-using MultiScaleTreeGraph, PlantGeom
+using DataFrames
+using MultiScaleTreeGraph
+using PlantBiophysics
+
+#! Re-use this when new packages are registered (and uncomment mtg tests below): 
+# using PlantSimEngine
+# using PlantMeteo
+# using PlantGeom
+# Workaround to use "dev"ed PlantMeteo
+using PlantBiophysics.PlantMeteo
+using PlantBiophysics.PlantSimEngine
 
 Aqua.test_all(
     PlantBiophysics,
@@ -15,24 +24,8 @@ Aqua.test_all(
     include("test-IO.jl")
 end
 
-@testset "Atmosphere" begin
-    include("test-atmosphere.jl")
-end
-
-@testset "Status" begin
-    include("test-Status.jl")
-end
-
-@testset "TimeStepRow" begin
-    include("test-TimeStepTable.jl")
-end
-
 @testset "Structures" begin
     include("test-structs.jl")
-end
-
-@testset "Initialisations" begin
-    include("test-initialisations.jl")
 end
 
 @testset "Temperature dependence" begin
@@ -51,9 +44,9 @@ end
     include("test-energy_balance.jl")
 end
 
-@testset "MTG compatibility" begin
-    include("test-mtg.jl")
-end
+# @testset "MTG compatibility" begin
+#     include("test-mtg.jl")
+# end
 
 @testset "Fitting" begin
     include("test-fitting.jl")

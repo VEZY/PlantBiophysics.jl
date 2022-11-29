@@ -23,11 +23,11 @@ Base.@kwdef struct Translucent{T} <: AbstractLightModel
     optical_properties::σ = σ()
 end
 
-function inputs_(::Translucent)
+function PlantSimEngine.inputs_(::Translucent)
     (Rᵢ=-Inf,)
 end
 
-function outputs_(::Translucent)
+function PlantSimEngine.outputs_(::Translucent)
     (
         Rₛ=-Inf, sky_fraction=-Inf
     )

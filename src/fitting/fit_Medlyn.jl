@@ -11,7 +11,7 @@ names should match exactly.
 # Examples
 
 ```julia
-using PlantBiophysics, Plots, DataFrames
+using PlantBiophysics, PlantMeteo, Plots, DataFrames
 
 file = joinpath(dirname(dirname(pathof(PlantBiophysics))),"test","inputs","data","P1F20129.csv")
 df = read_walz(file)

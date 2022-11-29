@@ -105,17 +105,17 @@ function Fvcb(; Tᵣ=25.0, VcMaxRef=200.0, JMaxRef=250.0, RdRef=0.6, TPURef=9999
     Fvcb(promote(Tᵣ, VcMaxRef, JMaxRef, RdRef, TPURef, Eₐᵣ, O₂, Eₐⱼ, Hdⱼ, Δₛⱼ, Eₐᵥ, Hdᵥ, Δₛᵥ, α, θ)...)
 end
 
-function inputs_(::Fvcb)
+function PlantSimEngine.inputs_(::Fvcb)
     (PPFD=-Inf, Tₗ=-Inf, Cₛ=-Inf)
 end
 
-function outputs_(::Fvcb)
+function PlantSimEngine.outputs_(::Fvcb)
     (A=-Inf, Gₛ=-Inf, Cᵢ=-Inf)
 end
 
 Base.eltype(x::Fvcb) = typeof(x).parameters[1]
 
-dep(::Fvcb) = (stomatal_conductance=AbstractGsModel,)
+PlantSimEngine.dep(::Fvcb) = (stomatal_conductance=AbstractGsModel,)
 
 """
     photosynthesis!_(::Fvcb, models, status, meteo, constants=Constants())
@@ -176,7 +176,7 @@ initialisations for:
     air vapour pressure in case you're using the stomatal conductance model of [`Medlyn`](@ref).
 - `status`: A status, usually the leaf status (*i.e.* leaf.status)
 - `meteo`: meteorology structure, see [`Atmosphere`](@ref)
-- `constants = Constants()`: physical constants. See [`Constants`](@ref) for more details
+- `constants = PlantMeteo.Constants()`: physical constants. See [`Constants`](@ref) for more details
 
 # Note
 
@@ -188,6 +188,7 @@ balance of the leaf with the photosynthesis to get those variables. See
 # Examples
 
 ```julia
+using PlantBiophysics, PlantMeteo
 meteo = Atmosphere(T = 20.0, Wind = 1.0, P = 101.3, Rh = 0.65)
 
 leaf =
@@ -198,7 +199,7 @@ leaf =
     )
 # NB: we need  to initalise Tₗ, PPFD and Cₛ
 
-photosynthesis!(leaf,meteo,Constants())
+photosynthesis!(leaf,meteo,PlantMeteo.Constants())
 leaf.status.A
 leaf.status.Cᵢ
 ```
@@ -225,7 +226,7 @@ Lombardozzi, L. D. et al. 2018.« Triose phosphate limitation in photosynthesis 
 reduces leaf photosynthesis and global terrestrial carbon storage ». Environmental Research
 Letters 13.7: 1748-9326. https://doi.org/10.1088/1748-9326/aacf68.
 """
-function photosynthesis!_(::Fvcb, models, status, meteo, constants=Constants())
+function photosynthesis!_(::Fvcb, models, status, meteo, constants=PlantMeteo.Constants(), extra=nothing)
 
     # Tranform Celsius temperatures in Kelvin:
     Tₖ = status.Tₗ - constants.K₀
@@ -252,7 +253,7 @@ function photosynthesis!_(::Fvcb, models, status, meteo, constants=Constants())
     Vⱼ = J / 4
 
     # Stomatal conductance (mol[CO₂] m-2 s-1), dispatched on type of first argument (gs_closure):
-    st_closure = gs_closure(models.stomatal_conductance, models, status, meteo)
+    st_closure = gs_closure(models.stomatal_conductance, models, status, meteo, extra)
 
     Cᵢⱼ = get_Cᵢⱼ(Vⱼ, Γˢ, status.Cₛ, Rd, models.stomatal_conductance.g0, st_closure)
 
@@ -281,7 +282,7 @@ function photosynthesis!_(::Fvcb, models, status, meteo, constants=Constants())
     status.A = min(Wᵥ, Wⱼ, 3 * models.photosynthesis.TPURef) - Rd
 
     # Stomatal conductance (mol[CO₂] m-2 s-1)
-    stomatal_conductance!_(models.stomatal_conductance, models, status, st_closure)
+    stomatal_conductance!_(models.stomatal_conductance, models, status, st_closure, extra)
     # NB: `stomatal_conductance!_(` is the function that implements the computation directly. If you want to
     # call the stomatal conductance interactively, use `stomatal_conductance!()` or `stomatal_conductance()` instead.
 

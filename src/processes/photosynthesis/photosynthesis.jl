@@ -24,9 +24,9 @@ fields of `leaf`. For exemple to use the implementation of the Farquhar–von Ca
 # Arguments
 
 - `object`: a [`ModelList`](@ref), a Dict/Array of [`ModelList`](@ref), or an MTG.
-- `meteo::Union{AbstractAtmosphere,Weather}`: meteorology structure, see [`Atmosphere`](@ref) or
+- `meteo::Union{PlantMeteo.AbstractAtmosphere,Weather}`: meteorology structure, see [`Atmosphere`](@ref) or
 [`Weather`](@ref)
-- `constants = Constants()`: physical constants. See [`Constants`](@ref) for more details
+- `constants = PlantMeteo.Constants()`: physical constants. See [`Constants`](@ref) for more details
 
 # Examples
 

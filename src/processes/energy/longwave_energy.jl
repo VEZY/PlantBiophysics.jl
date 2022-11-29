@@ -19,7 +19,7 @@ function black_body(T, K₀, σ)
 end
 
 function black_body(T)
-    constants = Constants()
+    constants = PlantMeteo.Constants()
     black_body(T, constants.K₀, constants.σ)
 end
 
@@ -49,7 +49,7 @@ function grey_body(T, ε, K₀, σ)
 end
 
 function grey_body(T, ε)
-    constants = Constants()
+    constants = PlantMeteo.Constants()
     grey_body(T, ε, constants.K₀, constants.σ)
 end
 
@@ -119,6 +119,6 @@ function net_longwave_radiation(T₁, T₂, ε₁, ε₂, F₁, K₀, σ)
 end
 
 function net_longwave_radiation(T₁, T₂, ε₁, ε₂, F₁)
-    constants = Constants()
+    constants = PlantMeteo.Constants()
     net_longwave_radiation(T₁, T₂, ε₁, ε₂, F₁, constants.K₀, constants.σ)
 end
