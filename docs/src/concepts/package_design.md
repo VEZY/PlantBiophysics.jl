@@ -39,7 +39,7 @@ Let's instantiate a [`ModelList`](@ref) with the Beer-Lambert model of light ext
 ModelList(light_extinction = Beer(0.5))
 ```
 
-What happened here? We provided an instance of a model to the process it simulates. The model is provided as a keyword argument to the [`ModelList`](@ref), with the process name given as the keyword, and the instantiated model as the value. The keyword must match **exactly** the name of the process it simulates, *e.g.* `photosynthesis` for the photosynthesis process, because it is used to match the models to the function than run its simulation. The four processes provided by default are implement with the following functions: `light_interception`, `energy_balance`, `photosynthesis` and `stomatal_conductance`.
+What happened here? We provided an instance of a model to the process it simulates. The model is provided as a keyword argument to the [`ModelList`](@ref), with the process name given as the keyword, and the instantiated model as the value. The keyword must match **exactly** the name of the process it simulates, *e.g.* `photosynthesis` for the photosynthesis process, because it is used to match the models to the function than run its simulation. The four processes provided by default are implemented with the following functions: `light_interception`, `energy_balance`, `photosynthesis` and `stomatal_conductance`.
 
 !!! tip
     We see that we only instantiated the [`ModelList`](@ref) for the light extinction process. What about the others like photosynthesis or energy balance ? Well there is no need to give models if we have no intention to simulate them.
