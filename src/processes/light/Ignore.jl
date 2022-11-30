@@ -3,7 +3,7 @@ Ignore model for light interception, see [here](https://archimed-platform.github
 Make the mesh invisible, and not computed. Can save a lot of time for the computations when there are components types
 that are not visible anyway (e.g. inside others).
 """
-struct Ignore <: AbstractLightModel end
+struct Ignore <: AbstractLight_InterceptionModel end
 
 """
     light_interception!_(::Ignore, models::ModelList, status, meteo::PlantMeteo.AbstractAtmosphere,constants = Constants())

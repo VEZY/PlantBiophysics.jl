@@ -1,11 +1,3 @@
-"""
-Stomatal conductance abstract model. All stomatal conductance models must be a subtype of
-this type.
-
-An AbstractGsModel subtype struct must implement at least a g0 field.
-"""
-abstract type AbstractGsModel <: AbstractModel end
-
 # Generate all methods for the stomatal conductance process: several meteo time-steps, components,
 #  over an MTG, and the mutating /non-mutating versions
 @gen_process_methods "stomatal_conductance"
@@ -53,14 +45,14 @@ stomatal_conductance, stomatal_conductance!
 
 # Gs is used a little bit differently compared to the other processes. We use two forms:
 # the stomatal closure and the full computation of Gs
-function stomatal_conductance!_(Gs::Gsm, models, status, gs_closure, extra) where {Gsm<:AbstractGsModel}
+function stomatal_conductance!_(Gs::Gsm, models, status, gs_closure, extra) where {Gsm<:AbstractStomatal_ConductanceModel}
     status.Gₛ = max(
         models.stomatal_conductance.gs_min,
         models.stomatal_conductance.g0 + gs_closure * status.A
     )
 end
 
-function stomatal_conductance!_(Gs::Gsm, models, status, meteo::M, constants=PlantMeteo.Constants(), extra=nothing) where {Gsm<:AbstractGsModel,M<:Union{PlantMeteo.AbstractAtmosphere,Nothing}}
+function stomatal_conductance!_(Gs::Gsm, models, status, meteo::M, constants=PlantMeteo.Constants(), extra=nothing) where {Gsm<:AbstractStomatal_ConductanceModel,M<:Union{PlantMeteo.AbstractAtmosphere,Nothing}}
     status.Gₛ = max(
         models.stomatal_conductance.gs_min,
         models.stomatal_conductance.g0 + gs_closure(models.stomatal_conductance, models, status, meteo, constants, extra) * status.A

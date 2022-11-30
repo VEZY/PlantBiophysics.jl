@@ -1,18 +1,9 @@
-"""
-Assimilation (photosynthesis) abstract model. All photosynthesis models must be a subtype of
-this type.
-"""
-abstract type AbstractAModel <: AbstractModel end
-
 # Generate all methods for the photosynthesis process: several meteo time-steps, components,
 #  over an MTG, and the mutating /non-mutating versions
 @gen_process_methods "photosynthesis"
 
 
 """
-    photosynthesis(object, meteo, constants = Constants())
-    photosynthesis!(object, meteo, constants = Constants())
-
 Generic photosynthesis model for photosynthetic organs. Computes the assimilation and
 stomatal conductance according to the models set in (or each component in) `object`.
 
@@ -20,13 +11,6 @@ The models used are defined by the types of the `photosynthesis` and `stomatal_c
 fields of `leaf`. For exemple to use the implementation of the Farquhar–von Caemmerer–Berry
 (FvCB) model (see [`photosynthesis`](@ref)), the `leaf.photosynthesis` field should be of type
 [`Fvcb`](@ref).
-
-# Arguments
-
-- `object`: a [`ModelList`](@ref), a Dict/Array of [`ModelList`](@ref), or an MTG.
-- `meteo::Union{PlantMeteo.AbstractAtmosphere,Weather}`: meteorology structure, see [`Atmosphere`](@ref) or
-[`Weather`](@ref)
-- `constants = PlantMeteo.Constants()`: physical constants. See [`Constants`](@ref) for more details
 
 # Examples
 

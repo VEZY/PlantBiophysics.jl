@@ -95,12 +95,12 @@ export gsw_to_gsc
 export gsc_to_gsw
 
 # Light interception
-export AbstractLightModel
+export AbstractLight_InterceptionModel
 export light_interception, light_interception! # main interface to user
 export Beer # a struct to hold the values for the Beer-Lambert law of light extinction
 
 # Energy balance
-export AbstractEnergyModel
+export AbstractEnergy_BalanceModel
 export black_body
 export grey_body
 export net_longwave_radiation
@@ -113,10 +113,10 @@ export Translucent
 export Ignore
 export OpticalProperties
 export σ
-export AbstractLightModel
+export AbstractLight_InterceptionModel
 
 # Photosynthesis
-export AbstractAModel
+export AbstractPhotosynthesisModel
 export ConstantA, ConstantAGs
 export Fvcb # Parameters for the coupled Farquhar et al. (1980) model
 export FvcbIter # To update...
@@ -126,7 +126,7 @@ export photosynthesis
 export photosynthesis!_
 
 # Conductances
-export AbstractGsModel
+export AbstractStomatal_ConductanceModel
 export gbh_to_gbw
 export gbₕ_free
 export gbₕ_forced

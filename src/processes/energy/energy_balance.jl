@@ -1,30 +1,12 @@
-"""
-Energy balance abstract struct. All energy balance models must be a subtype of this type.
-"""
-abstract type AbstractEnergyModel <: AbstractModel end
-
 # Generate all methods for the energy_balance process: several meteo time-steps, components,
 #  over an MTG, and the mutating /non-mutating versions
 @gen_process_methods "energy_balance"
 
 """
-    energy_balance(object, meteo, constants = Constants())
-    energy_balance!(object, meteo, constants = Constants())
-
-Computes the energy balance of one or several components based on the type of the model it was
-parameterized with in `object.energy_balance`, and on one or several meteorology time-steps.
-
 At the moment, two models are implemented in the package:
 
 - [`Monteith`](@ref): the model found in Monteith and Unsworth (2013)
 - `Missing`: if no computation of the energy balance is needed
-
-# Arguments
-
-- `object`: a [`ModelList`](@ref), a Dict/Array of [`ModelList`](@ref), or an MTG.
-- `meteo::Union{PlantMeteo.AbstractAtmosphere,Weather}`: meteorology structure, see [`Atmosphere`](@ref) or
-[`Weather`](@ref)
-- `constants = PlantMeteo.Constants()`: physical constants. See [`Constants`](@ref) for more details
 
 # Note
 

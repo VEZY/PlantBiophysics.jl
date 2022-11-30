@@ -13,7 +13,7 @@ This structure has several more parameters:
 percent of change, *i.e.* 1% means that two successive assimilations with less than 1%
 difference in value are considered the same value.
 """
-struct FvcbIter{T} <: AbstractAModel
+struct FvcbIter{T} <: AbstractPhotosynthesisModel
     Tᵣ::T
     VcMaxRef::T
     JMaxRef::T
@@ -56,7 +56,7 @@ end
 
 Base.eltype(x::FvcbIter) = typeof(x).parameters[1]
 
-PlantSimEngine.dep(::FvcbIter) = (stomatal_conductance=AbstractGsModel,)
+PlantSimEngine.dep(::FvcbIter) = (stomatal_conductance=AbstractStomatal_ConductanceModel,)
 
 """
     photosynthesis!_(::FvcbIter, models, status, meteo, constants=Constants())

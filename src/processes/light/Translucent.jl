@@ -1,7 +1,7 @@
 """
 Optical properties abstract struct
 """
-abstract type OpticalProperties <: AbstractLightModel end
+abstract type OpticalProperties <: AbstractLight_InterceptionModel end
 
 """
     σ()
@@ -18,7 +18,7 @@ end
 """
 Translucent model for light interception, see [here](https://archimed-platform.github.io/archimed-phys-user-doc//3-inputs/5-models/2-models_list/).
 """
-Base.@kwdef struct Translucent{T} <: AbstractLightModel
+Base.@kwdef struct Translucent{T} <: AbstractLight_InterceptionModel
     transparency::T = 0.0
     optical_properties::σ = σ()
 end

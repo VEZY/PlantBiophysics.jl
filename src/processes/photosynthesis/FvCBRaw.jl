@@ -32,7 +32,7 @@ A = FvcbRaw()
 A.Eₐᵥ
 ```
 """
-struct FvcbRaw{T} <: AbstractAModel
+struct FvcbRaw{T} <: AbstractPhotosynthesisModel
     Tᵣ::T
     VcMaxRef::T
     JMaxRef::T

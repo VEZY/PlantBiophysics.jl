@@ -9,7 +9,7 @@ coupled with a stomatal conductance model that helps computing Cᵢ.
 ConstantAGs(30.0)
 ```
 """
-Base.@kwdef struct ConstantAGs{T} <: AbstractAModel
+Base.@kwdef struct ConstantAGs{T} <: AbstractPhotosynthesisModel
     A::T = 25.0
 end
 

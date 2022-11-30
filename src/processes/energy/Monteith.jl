@@ -16,7 +16,7 @@ Monteith and Unsworth (2013)
 energy_model = Monteith() # a leaf in an illuminated chamber
 ```
 """
-struct Monteith{T,S} <: AbstractEnergyModel
+struct Monteith{T,S} <: AbstractEnergy_BalanceModel
     aₛₕ::S
     aₛᵥ::S
     ε::T
@@ -43,7 +43,7 @@ end
 
 Base.eltype(x::Monteith) = typeof(x).parameters[1]
 
-PlantSimEngine.dep(::Monteith) = (photosynthesis=AbstractAModel,)
+PlantSimEngine.dep(::Monteith) = (photosynthesis=AbstractPhotosynthesisModel,)
 
 """
     energy_balance!_(::Monteith, models, status, meteo::PlantMeteo.AbstractAtmosphere, constants=Constants())

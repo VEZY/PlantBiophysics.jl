@@ -11,7 +11,7 @@ See also [`ConstantAGs`](@ref).
 ConstantA(30.0)
 ```
 """
-Base.@kwdef struct ConstantA{T} <: AbstractAModel
+Base.@kwdef struct ConstantA{T} <: AbstractPhotosynthesisModel
     A::T = 25.0
 end
 

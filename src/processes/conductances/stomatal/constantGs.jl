@@ -10,7 +10,7 @@ Constant stomatal conductance for CO₂ struct.
 Then used as follows:
 Gs = ConstantGs(0.0,0.1)
 """
-struct ConstantGs{T} <: AbstractGsModel
+struct ConstantGs{T} <: AbstractStomatal_ConductanceModel
     g0::T
     Gₛ::T
 end

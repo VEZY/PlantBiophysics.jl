@@ -80,7 +80,7 @@ A = Fvcb()
 A.Eₐᵥ
 ```
 """
-struct Fvcb{T} <: AbstractAModel
+struct Fvcb{T} <: AbstractPhotosynthesisModel
     Tᵣ::T
     VcMaxRef::T
     JMaxRef::T
@@ -115,7 +115,7 @@ end
 
 Base.eltype(x::Fvcb) = typeof(x).parameters[1]
 
-PlantSimEngine.dep(::Fvcb) = (stomatal_conductance=AbstractGsModel,)
+PlantSimEngine.dep(::Fvcb) = (stomatal_conductance=AbstractStomatal_ConductanceModel,)
 
 """
     photosynthesis!_(::Fvcb, models, status, meteo, constants=Constants())
