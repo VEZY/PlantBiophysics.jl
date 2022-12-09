@@ -12,12 +12,13 @@ A pure Julia package to simulate biophysical processes for plants such as photos
 The benefits of using this package are:
 
 - Blazing fast (few μs for the whole energy balance + photosynthesis + conductances)
-- Easy of use, parameter calibration and simulation on one place, works with DataFrames and MTGs
+- Easy to use and interactive
+- Parameter calibration and simulation in one place, works with DataFrames and MTGs
 - Great composability:
   - easy to extend, add your model for any process, and it just works, with automatic coupling with other models
   - easy to integrate into other models or platforms thanks to Julia's great compatibility with other languages
-- Easy to read, the code implement the equations as they are written in the scientific articles (thanks Julia Unicode!)
-- Compatible with other simulations platforms thanks to the MTG format
+- Easy to read, the code implements the equations close to how they are written in the scientific articles (thanks Julia Unicode!)
+- Compatible with other simulation platforms thanks to the MTG format (OpenAlea, ARCHIMED, AMAPStudio...)
 - Error propagation using [Measurements.jl](https://juliaphysics.github.io/Measurements.jl/stable/) or [MonteCarloMeasurements.jl](https://baggepinnen.github.io/MonteCarloMeasurements.jl/stable/)
 
 ## Try it !
@@ -41,8 +42,8 @@ add PlantBiophysics
 Here is an example usage with a simulation of the energy balance and assimilation of a leaf:
 
 ```julia
-# Import the package so we can use it:
-using PlantBiophysics
+# Import the packages (we also installed PlantMeteo for conveniance here):
+using PlantBiophysics, PlantMeteo
 
 # Declare the meteorology for the simulated time-step (also possible to import meteo files):
 meteo = Atmosphere(T = 22.0, Wind = 0.8333, P = 101.325, Rh = 0.4490995)
@@ -59,6 +60,11 @@ energy_balance!(leaf, meteo)
 
 leaf
 ```
+
+And the output would be:
+
+![](docs/src/assets/output.png)
+
 
 For more examples, please read the documentation.
 
