@@ -1,9 +1,6 @@
 # Generate all methods for the photosynthesis process: several meteo time-steps, components,
 #  over an MTG, and the mutating /non-mutating versions
-@gen_process_methods "photosynthesis"
-
-
-"""
+@gen_process_methods "photosynthesis" """
 Generic photosynthesis model for photosynthetic organs. Computes the assimilation and
 stomatal conductance according to the models set in (or each component in) `object`.
 
@@ -63,4 +60,3 @@ model["Leaf"].status.A
 
 ```
 """
-photosynthesis, photosynthesis!

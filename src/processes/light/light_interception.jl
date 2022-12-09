@@ -1,6 +1,4 @@
-@gen_process_methods "light_interception"
-
-"""
+@gen_process_methods "light_interception" """
 Computes the light interception of one or several objects based on the type of the model it was
 parameterized with in `object.light_interception`, and on one or several meteorology time-steps.
 
@@ -22,4 +20,3 @@ light_interception!(m, meteo)
 m[:aPAR]
 ```
 """
-light_interception!, light_interception

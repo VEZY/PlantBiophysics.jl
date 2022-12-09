@@ -1,8 +1,6 @@
 # Generate all methods for the energy_balance process: several meteo time-steps, components,
 #  over an MTG, and the mutating /non-mutating versions
-@gen_process_methods "energy_balance"
-
-"""
+@gen_process_methods "energy_balance" """
 At the moment, two models are implemented in the package:
 
 - [`Monteith`](@ref): the model found in Monteith and Unsworth (2013)
@@ -153,4 +151,3 @@ Maxime Soma, et al. 2018. « Measuring and modelling energy partitioning in can
 complexity using MAESPA model ». Agricultural and Forest Meteorology 253‑254 (printemps): 203‑17.
 https://doi.org/10.1016/j.agrformet.2018.02.005.
 """
-energy_balance!, energy_balance

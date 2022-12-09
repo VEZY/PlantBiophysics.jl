@@ -1,8 +1,6 @@
 # Generate all methods for the stomatal conductance process: several meteo time-steps, components,
 #  over an MTG, and the mutating /non-mutating versions
-@gen_process_methods "stomatal_conductance"
-
-"""
+@gen_process_methods "stomatal_conductance" """
     stomatal_conductance(leaf::ModelList,gs_mod)
     stomatal_conductance(leaf::ModelList,meteo<:PlantMeteo.AbstractAtmosphere)
 
@@ -41,7 +39,6 @@ leaf =
 stomatal_conductance(leaf,meteo)
 ```
 """
-stomatal_conductance, stomatal_conductance!
 
 # Gs is used a little bit differently compared to the other processes. We use two forms:
 # the stomatal closure and the full computation of Gs
