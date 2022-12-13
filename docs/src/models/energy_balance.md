@@ -1,7 +1,7 @@
 # [Energy balance](@id nrj_page)
 
 ```@setup usepkg
-using PlantBiophysics
+using PlantBiophysics, PlantSimEngine
 ```
 
 The energy balance is the process of computing the balance between influx and outflux of energy in all its form: latent and sensible heat, thermal radiation...
@@ -15,6 +15,8 @@ The energy balance can be simulated using [`energy_balance!`](@ref) or [`energy_
 You can choose which model to use by passing a model list with an energy balance model set to one of the `structs` above:
 
 ```@example usepkg
+using PlantBiophysics, PlantSimEngine
+
 meteo = Atmosphere(T = 20.0, Wind = 1.0, P = 101.3, Rh = 0.65)
 
 leaf = ModelList(

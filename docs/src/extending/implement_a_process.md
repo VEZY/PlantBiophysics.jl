@@ -1,8 +1,7 @@
 # Implement a new component models
 
 ```@setup usepkg
-using PlantSimEngine, PlantBiophysics
-import PlantBiophysics: inputs_, outputs_, energy_balance!_
+using PlantSimEngine, PlantBiophysics, PlantMeteo
 PlantSimEngine.@gen_process_methods growth
 ```
 
@@ -102,7 +101,7 @@ Base.eltype(x::DummyGrowth{T}) where {T} = T
 function growth!_(::DummyGrowth, models, status, meteo, constants, extra)
 
     # Compute the energy balance of the plant, coupled to the photosynthesis model:
-    energy_balance!_(models.energy_balance, models, status, meteo, constants, extra)
+    PlantBiophysics.energy_balance!_(models.energy_balance, models, status, meteo, constants, extra)
     # Here we expect the assimilation of the plant, which is the source for Carbon
 
     # The maintenance respiration is simply a factor of the assimilation:
@@ -121,6 +120,7 @@ end
 Now we can make a simulation as usual:
 
 ```@example usepkg
+using PlantMeteo
 meteo = Atmosphere(T = 22.0, Wind = 0.8333, P = 101.325, Rh = 0.4490995)
 
 leaf = ModelList(
@@ -139,6 +139,7 @@ leaf[:leaf_biomass] # biomass in gC
 We can also start the simulation later when the plant already has some biomass by initializing the `leaf_biomass`:
 
 ```@example usepkg
+using PlantMeteo
 meteo = Atmosphere(T = 22.0, Wind = 0.8333, P = 101.325, Rh = 0.4490995)
 
 leaf = ModelList(

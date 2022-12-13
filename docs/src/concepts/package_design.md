@@ -1,16 +1,17 @@
 # Package design
 
-`PlantBiophysics.jl` is designed to ease the computations of biophysical processes in plants and other objects. It is part of the [Archimed platform](https://archimed-platform.github.io/), so it shares the same ontology (same concepts and terms).
+`PlantBiophysics.jl` is designed to ease the computations of biophysical processes in plants and other objects. It uses `PlantSimEngine.jl`, so it shares the same ontology (same concepts and terms).
 
 ```@setup usepkg
-using PlantBiophysics
+using PlantBiophysics, PlantSimEngine, PlantMeteo
+using DataFrames
 ```
 
 ## Definitions
 
 ### Processes
 
-A process in this package defines a biological or a physical phenomena. At this time `PlantBiophysics.jl` implements four processes:
+A process is defined in PlantSimEngine as a biological or a physical phenomena. At this time `PlantBiophysics.jl` implements four processes:
 
 - light interception
 - energy balance
@@ -23,7 +24,7 @@ A process is simulated using a particular implementation of a model. Each model 
 
 You can see the list of available models for each process in the sections about the models, *e.g.* [here for photosynthesis](@ref photosynthesis_page).
 
-Models can use three types of entries in `PlantBiophysics.jl`:
+Models can use three types of entries:
 
 - Parameters
 - Meteorological information
@@ -31,18 +32,19 @@ Models can use three types of entries in `PlantBiophysics.jl`:
 
 Parameters are constant values that are used by the model to compute its outputs. Meteorological information are values that are provided by the user and are used as inputs to the model. Variables are computed by the model and can optionally be initialized before the simulation.
 
-Users can choose which model is used to simulate a process using the [`ModelList`](@ref) structure. `ModelList` is also used to store the values of the parameters, and to initialize variables.
+Users can choose which model is used to simulate a process using the `ModelList` structure from PlantSimEngine. `ModelList` is also used to store the values of the parameters, and to initialize variables.
 
-Let's instantiate a [`ModelList`](@ref) with the Beer-Lambert model of light extinction. The model is implemented with the [`Beer`](@ref) structure and has only one parameter: the extinction coefficient (`k`).
+Let's instantiate a `ModelList` with the Beer-Lambert model of light extinction. The model is implemented with the [`Beer`](@ref) structure and has only one parameter: the extinction coefficient (`k`).
 
 ```@example usepkg
+using PlantSimEngine, PlantBiophysics
 ModelList(light_extinction = Beer(0.5))
 ```
 
-What happened here? We provided an instance of a model to the process it simulates. The model is provided as a keyword argument to the [`ModelList`](@ref), with the process name given as the keyword, and the instantiated model as the value. The keyword must match **exactly** the name of the process it simulates, *e.g.* `photosynthesis` for the photosynthesis process, because it is used to match the models to the function than run its simulation. The four processes provided by default are implemented with the following functions: `light_interception`, `energy_balance`, `photosynthesis` and `stomatal_conductance`.
+What happened here? We provided an instance of a model to the process it simulates. The model is provided as a keyword argument to the `ModelList`, with the process name given as the keyword, and the instantiated model as the value. The keyword must match **exactly** the name of the process it simulates, *e.g.* `photosynthesis` for the photosynthesis process, because it is used to match the models to the function than run its simulation. The four processes provided by default are implemented with the following functions: `light_interception`, `energy_balance`, `photosynthesis` and `stomatal_conductance`.
 
 !!! tip
-    We see that we only instantiated the [`ModelList`](@ref) for the light extinction process. What about the others like photosynthesis or energy balance ? Well there is no need to give models if we have no intention to simulate them.
+    We see that we only instantiated the `ModelList` for the light extinction process. What about the others like photosynthesis or energy balance ? Well there is no need to give models if we have no intention to simulate them.
 
 ## Parameters
 
@@ -74,9 +76,9 @@ Perfect! Now is that all we need to make a simulation? Well, usually no. Models 
 
 ## Variables (inputs, outputs)
 
-Variables are computed by models, and can optionally be initialized before the simulation. Variables and their values are stored in the [`ModelList`](@ref), and are initialized automatically or manually.
+Variables are computed by models, and can optionally be initialized before the simulation. Variables and their values are stored in the `ModelList`, and are initialized automatically or manually.
 
-Hence, [`ModelList`](@ref) objects store two fields:
+Hence, `ModelList` objects store two fields:
 
 ```@example usepkg
 fieldnames(ModelList)
@@ -84,26 +86,29 @@ fieldnames(ModelList)
 
 The first field is a list of models associated to the processes they simulate. The second, `:status`, is used to hold all inputs and outputs of our models, called variables. For example the [`Beer`](@ref) model needs the leaf area index (`LAI`, m^{2} \cdot m^{-2}) to run.
 
-We can see which variables are needed as inputs using [`inputs`](@ref):
+We can see which variables are needed as inputs using `inputs` from PlantSimEngine:
 
 ```@example usepkg
+using PlantSimEngine
 inputs(Beer(0.5))
 ```
 
-We can also see the outputs of the model using [`outputs`](@ref):
+We can also see the outputs of the model using `outputs` from PlantSimEngine:
 
 ```@example usepkg
+using PlantSimEngine
 outputs(Beer(0.5))
 ```
 
-If we instantiate a [`ModelList`](@ref) with the Beer-Lambert model, we can see that the `:status` field has two variables: `LAI` and `PPDF`. The first is an input, the second an output.
+If we instantiate a `ModelList` with the Beer-Lambert model, we can see that the `:status` field has two variables: `LAI` and `PPDF`. The first is an input, the second an output.
 
 ```@example usepkg
+using PlantSimEngine, PlantBiophysics
 m = ModelList(light_extinction = Beer(0.5))
 keys(m.status)
 ```
 
-To know which variables should be initialized, we can use [`to_initialize`](@ref):
+To know which variables should be initialized, we can use `to_initialize` from PlantSimEngine:
 
 ```@example usepkg
 m = ModelList(light_extinction = Beer(0.5))
@@ -132,7 +137,7 @@ We can initialize the variables by providing their values to the status at insta
 m = ModelList(light_extinction = Beer(0.5), status = (LAI = 2.0,))
 ```
 
-Or after instantiation using [`init_status!`](@ref):
+Or after instantiation using `init_status!` (from PlantSimEngine):
 
 ```@example usepkg
 m = ModelList(light_extinction = Beer(0.5))
@@ -140,7 +145,7 @@ m = ModelList(light_extinction = Beer(0.5))
 init_status!(m, LAI = 2.0)
 ```
 
-We can check if a component is correctly initialized using [`is_initialized`](@ref):
+We can check if a component is correctly initialized using `is_initialized` (from PlantSimEngine):
 
 ```@example usepkg
 is_initialized(m)
@@ -152,11 +157,12 @@ Some variables are inputs of models, but outputs of other models. When we couple
 
 To make a simulation, we usually need the climatic/meteorological conditions measured close to the object or component.
 
-The package provides its own data structures to declare those conditions, and to pre-compute other required variables. The most basic data structure is a type called [`Atmosphere`](@ref), which defines the conditions for a steady-state, *i.e.* the conditions are considered at equilibrium. Another structure is available to define different consecutive time-steps: [`Weather`](@ref).
+The `PlantMeteo.jl` package provides a data structure to declare those conditions, and to pre-compute other required variables. The most basic data structure is a type called `Atmosphere`, which defines the conditions for a steady-state, *i.e.* the conditions are considered at equilibrium. Another structure is available to define different consecutive time-steps: `Weather`.
 
-The mandatory variables to provide for an [`Atmosphere`](@ref) are: `T` (air temperature in °C), `Rh` (relative humidity, 0-1), `Wind` (the wind speed in m s-1) and `P` (the air pressure in kPa). We can declare such conditions like so:
+The mandatory variables to provide for an `Atmosphere` are: `T` (air temperature in °C), `Rh` (relative humidity, 0-1), `Wind` (the wind speed in m s-1) and `P` (the air pressure in kPa). We can declare such conditions like so:
 
 ```@example usepkg
+using PlantMeteo
 meteo = Atmosphere(T = 20.0, Wind = 1.0, P = 101.3, Rh = 0.65)
 ```
 
@@ -185,7 +191,7 @@ energy_balance(model_list, meteo)
 light_interception(model_list, meteo)
 ```
 
-The first argument is the model list (see [`ModelList`](@ref)), and the second defines the micro-climatic conditions (more details below in [Climate forcing](@ref)).
+The first argument is the model list (see `ModelList` from PlantSimEngine), and the second defines the micro-climatic conditions (more details below in [Climate forcing](@ref)).
 
 The `ModelList` should be initialized for the given process before calling the function. See [Variables (inputs, outputs)](@ref) for more details.
 
@@ -194,6 +200,7 @@ The `ModelList` should be initialized for the given process before calling the f
 For example we can simulate the [`stomatal_conductance`](@ref) of a leaf like so:
 
 ```@example usepkg
+using PlantMeteo, PlantSimEngine, PlantBiophysics
 meteo = Atmosphere(T = 20.0, Wind = 1.0, P = 101.3, Rh = 0.65)
 
 leaf = ModelList(
@@ -221,12 +228,12 @@ If you want to implement your own models, please read this section in full first
 
 ### Outputs
 
-The `status` field of a [`ModelList`](@ref) is used to initialize the variables before simulation and then to keep track of their values during and after the simulation. We can extract the simulation outputs of a model list using the [`status`](@ref) function.
+The `status` field of a `ModelList` is used to initialize the variables before simulation and then to keep track of their values during and after the simulation. We can extract the simulation outputs of a model list using the `status` function (from PlantSimEngine).
 
 !!! note
     Getting the status is only useful when using the mutating version of the function (*e.g.* [`energy_balance!`](@ref)), as the non-mutating version returns the output directly.
 
-The status can either be a [`Status`](@ref) if simulating only one time-step, or a [`TimeSteps`](@ref) if several.
+The status can either be a `Status` if simulating only one time-step, or a `TimeSteps` (from PlantSimEngine) if several.
 
 Let's look at the status of our previous simulated leaf:
 
@@ -255,6 +262,7 @@ leaf[:Gₛ]
 Another simple way to get the results is to transform the outputs into a `DataFrame`:
 
 ```@example usepkg
+using DataFrames
 DataFrame(leaf)
 ```
 

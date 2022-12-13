@@ -1,7 +1,7 @@
 # [Stomatal conductance](@id gs_page)
 
 ```@setup usepkg
-using PlantBiophysics
+using PlantBiophysics, PlantSimEngine
 ```
 
 The stomatal conductance defines the conductance **for CO₂** between the atmosphere (the air around the leaf) and the air inside the stomata. The stomatal conductance to CO₂ and H₂O are related by a constant (see [`gsc_to_gsw`](@ref)).
@@ -18,6 +18,8 @@ You can choose which model to use by passing a component with a stomatal conduct
 For example, you can "simulate" a constant assimilation for a leaf using the following:
 
 ```@example usepkg
+using PlantBiophysics, PlantSimEngine
+
 meteo = Atmosphere(T = 20.0, Wind = 1.0, P = 101.3, Rh = 0.65)
 
 leaf = ModelList(stomatal_conductance = ConstantGs(Gₛ = 0.1))

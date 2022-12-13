@@ -74,9 +74,9 @@ GsAVPD(g0, g1, gs_meas, VPD_meas, A_meas, Cₐ_meas) = GsAVPD(g0, g1, gs_meas, V
     xguide --> "A/(Cₐ√VPD) (ppm)"
     yguide --> "gₛ (mol m⁻² s⁻¹)"
 
-    EF_ = round(EF(y, y2), digits=3)
-    dr_ = round(dr(y, y2), digits=3)
-    RMSE_ = round(RMSE(y, y2), digits=3)
+    EF_ = round(PlantSimEngine.EF(y, y2), digits=3)
+    dr_ = round(PlantSimEngine.dr(y, y2), digits=3)
+    RMSE_ = round(PlantSimEngine.RMSE(y, y2), digits=3)
 
     m(t, p) = p[1] .+ t .* p[2]
     p0 = [0.1, 1.0]

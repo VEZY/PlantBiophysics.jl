@@ -24,16 +24,13 @@ import Base.iterate
 import Base.keys
 import LsqFit: curve_fit
 using RecipesBase
-import Statistics: mean
+import Statistics
 
 # Generic process methods
 include("processes/light/light_interception.jl")
 include("processes/photosynthesis/photosynthesis.jl")
 include("processes/conductances/stomatal/stomatal_conductance.jl")
 include("processes/energy/energy_balance.jl")
-
-# Checks for status and weather (same length):
-include("checks/status_weather_corresp.jl")
 
 # Conversions
 include("conversions.jl")
@@ -85,8 +82,6 @@ export read_walz
 export read_licor6400
 
 # Conversions
-export rh_from_vpd
-export rh_from_e
 export ms_to_mol
 export mol_to_ms
 export gbh_to_gbw

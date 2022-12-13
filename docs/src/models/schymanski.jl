@@ -1,7 +1,7 @@
 # Compare simulations with measurements from Schymanski et al. (2017) extracted from this
 # Github [repository](https://github.com/schymans/Schymanski_leaf-scale_2016).
 
-using PlantBiophysics, PlantMeteo
+using PlantBiophysics, PlantSimEngine, PlantMeteo
 using DataFrames
 using CSV
 using CairoMakie
@@ -47,7 +47,7 @@ w = select(
     :P_wa => (x -> x ./ 1000.0) => :e
 )
 
-weather = Weather(w)
+weather = PlantMeteo.Weather(w)
 
 gs_obs = gsw_to_gsc.(ms_to_mol.(results1_6a.g_sw, results1_6a.T_a .- params["T0"], results1_6a.P_a ./ 1000))
 

@@ -39,11 +39,13 @@ add PlantBiophysics
 
 ## Examples
 
-Here is an example usage with a simulation of the energy balance and assimilation of a leaf:
+Here is an example usage with a simulation of the energy balance and assimilation of a leaf. 
+
+> Note that PlantBiophysics is an extension of PlantSimEngine, so we must import both to make a simulation
 
 ```julia
-# Import the packages (we also installed PlantMeteo for conveniance here):
-using PlantBiophysics, PlantMeteo
+# Import the packages (you need to install PlantSimEngine first):
+using PlantBiophysics, PlantSimEngine
 
 # Declare the meteorology for the simulated time-step (also possible to import meteo files):
 meteo = Atmosphere(T = 22.0, Wind = 0.8333, P = 101.325, Rh = 0.4490995)

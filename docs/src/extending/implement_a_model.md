@@ -2,7 +2,8 @@
 
 ```@setup usepkg
 using PlantBiophysics
-import PlantBiophysics: inputs_, outputs_, photosynthesis!, stomatal_conductance!
+import PlantSimEngine
+using PlantMeteo
 ```
 
 ## Introduction
@@ -156,6 +157,7 @@ OK ! So that's it ? Almost. One last thing to do is to define a method for input
 Here is how we actually implement our methods:
 
 ```@example usepkg
+import PlantSimEngine
 function PlantSimEngine.inputs_(::BandB)
     (Rh=-999.99,Cₛ=-999.99,A=-999.99)
 end
@@ -251,7 +253,7 @@ When the user calls the `photosynthesis` function, or its mutating version `phot
 Then, it calls the internal function [`photosynthesis!_`](@ref) that will dispatch the computation to the method that implements the model. This method looks like this:
 
 ```julia
-function photosynthesis!_(::Fvcb, models, status, meteo, constants=Constants(), extras=nothing)
+function PlantBiophysics.photosynthesis!_(::Fvcb, models, status, meteo, constants=Constants(), extras=nothing)
 
     [...]
 
@@ -262,7 +264,7 @@ Where `[...]` represent the lines of code implementing the model (not shown here
 
 The interesting bit is in the function declaration at the top. This is where all the magic happens. The first argument let Julia know that this is the method for computing the photosynthesis using the `Fvcb` model.
 
-Now if we look again at what are the fields of a [`ModelList`](@ref):
+Now if we look again at what are the fields of a `ModelList`:
 
 ```@example usepkg
 fieldnames(ModelList)
@@ -330,6 +332,7 @@ We have a new model for photosynthesis that is coupled with the stomatal conduct
 Now if we want to make a simulation, we can simply do:
 
 ```@example usepkg
+using PlantMeteo
 meteo = Atmosphere(T = 20.0, Wind = 1.0, P = 101.3, Rh = 0.65)
 
 leaf =

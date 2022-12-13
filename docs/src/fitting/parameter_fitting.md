@@ -1,7 +1,7 @@
 # Parameter fitting
 
 ```@setup usepkg
-using PlantBiophysics
+using PlantBiophysics, PlantSimEngine
 ```
 
 ## The fit method
@@ -21,7 +21,8 @@ A fit method is provided by the package to calibrate the parameters of the `FvCB
 Here is an example usage from the documentation of the method:
 
 ```@example usepkg
-using PlantBiophysics, DataFrames, Plots
+using PlantBiophysics, PlantSimEngine
+using DataFrames, Plots
 
 df = read_walz(joinpath(dirname(dirname(pathof(PlantBiophysics))),"test","inputs","data","P1F20129.csv"))
 # Removing the Rh and light curves for the fitting because temperature varies

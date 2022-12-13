@@ -1,7 +1,7 @@
 # [Photosynthesis](@id photosynthesis_page)
 
 ```@setup usepkg
-using PlantBiophysics
+using PlantBiophysics, PlantSimEngine
 ```
 
 The photosynthesis is, in this package, the process of assimilation of the atmospheric CO₂.
@@ -21,6 +21,7 @@ You can choose which model to use by passing a component with an assimilation mo
 For example, you can "simulate" a constant assimilation for a leaf using the following:
 
 ```@example usepkg
+using PlantBiophysics, PlantSimEngine
 leaf = ModelList(photosynthesis = ConstantA(25.0))
 photosynthesis(leaf)
 ```
@@ -213,7 +214,7 @@ First we import the packages needed:
 
 ```@example 1
 using Plots
-using PlantBiophysics
+using PlantBiophysics, PlantSimEngine
 ```
 
 Then we set up our models and their parameter values:

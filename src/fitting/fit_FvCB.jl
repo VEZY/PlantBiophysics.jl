@@ -67,7 +67,7 @@ plot(ACi_struct_full,leg=:bottomright)
 """
 function fit(::T, df; Tᵣ=nothing, VcMaxRef=0.0, JMaxRef=0.0, RdRef=0.0, TPURef=0.0) where {T<:Union{Type{Fvcb},Type{FvcbIter},Type{FvcbRaw}}}
     if Tᵣ === nothing
-        Tᵣ = mean(df.Tₗ)
+        Tᵣ = Statistics.mean(df.Tₗ)
     end
 
     function model(x, p)
@@ -109,9 +109,9 @@ ACi(VcMaxRef, JMaxRef, RdRef, A_meas, A_sim, Cᵢ_meas) = ACi(VcMaxRef, JMaxRef,
     xguide --> "Cᵢ (ppm)"
     yguide --> "A (μmol m⁻² s⁻¹)"
 
-    EF_ = round(EF(y, y2), digits=3)
-    dr_ = round(dr(y, y2), digits=3)
-    RMSE_ = round(RMSE(y, y2), digits=3)
+    EF_ = round(PlantSimEngine.EF(y, y2), digits=3)
+    dr_ = round(PlantSimEngine.dr(y, y2), digits=3)
+    RMSE_ = round(PlantSimEngine.RMSE(y, y2), digits=3)
 
     @series begin
         seriestype := :scatter

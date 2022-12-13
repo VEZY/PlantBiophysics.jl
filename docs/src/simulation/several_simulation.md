@@ -1,7 +1,7 @@
 # Simulation over several time-steps
 
 ```@setup usepkg
-using PlantBiophysics
+using PlantBiophysics, PlantSimEngine
 using Dates
 ```
 
@@ -10,7 +10,7 @@ using Dates
 We saw in the previous section how to run a simulation over one time step. We can also easily perform computations over several time steps from a weather file:
 
 ```@example usepkg
-using PlantBiophysics
+using PlantBiophysics, PlantSimEngine
 using Dates
 
 meteo =
