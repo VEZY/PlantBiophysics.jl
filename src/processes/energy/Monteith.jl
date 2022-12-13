@@ -56,14 +56,14 @@ the energy balance using the mass flux (~ Rn - λE).
 # Arguments
 
 - `::Monteith`: a Monteith model, usually from a model list (*i.e.* m.energy_balance)
-- `models`: A [`ModelList`](@ref) struct holding the parameters for the model with
+- `models`: A `ModelList` struct holding the parameters for the model with
 initialisations for:
     - `Rₛ` (W m-2): net shortwave radiation (PAR + NIR). Often computed from a light interception model
     - `sky_fraction` (0-2): view factor between the object and the sky for both faces (see details).
     - `d` (m): characteristic dimension, *e.g.* leaf width (see eq. 10.9 from Monteith and Unsworth, 2013).
 - `status`: the status of the model, usually the model list status (*i.e.* leaf.status)
 - `meteo`: meteorology structure, see [`Atmosphere`](@ref)
-- `constants = PlantMeteo.Constants()`: physical constants. See [`Constants`](@ref) for more details
+- `constants = PlantMeteo.Constants()`: physical constants. See `PlantMeteo.Constants` for more details
 
 # Details
 
@@ -237,9 +237,9 @@ Schymanski et al. (2017), eq.22.
 
 - `Rn` (W m-2): net radiation. Carefull: not the isothermal net radiation
 - `VPD` (kPa): air vapor pressure deficit
-- `γˢ` (kPa K−1): apparent value of psychrometer constant (see [`γ_star`](@ref))
+- `γˢ` (kPa K−1): apparent value of psychrometer constant (see `PlantMeteo.γ_star`)
 - `Rbₕ` (s m-1): resistance for heat transfer by convection, i.e. resistance to sensible heat
-- `Δ` (KPa K-1): rate of change of saturation vapor pressure with temperature (see [`e_sat_slope`](@ref))
+- `Δ` (KPa K-1): rate of change of saturation vapor pressure with temperature (see `PlantMeteo.e_sat_slope`)
 - `ρ` (kg m-3): air density of moist air.
 - `aₛₕ` (1,2): number of sides that exchange energy for heat (2 for leaves)
 - `Cₚ` (J K-1 kg-1): specific heat of air for constant pressure
@@ -279,9 +279,9 @@ Schymanski et al. (2017), eq.22.
 
 - `Rn` (W m-2): net radiation. Carefull: not the isothermal net radiation
 - `VPD` (kPa): air vapor pressure deficit
-- `γˢ` (kPa K−1): apparent value of psychrometer constant (see [`γ_star`](@ref))
+- `γˢ` (kPa K−1): apparent value of psychrometer constant (see `PlantMeteo.γ_star`)
 - `Rbₕ` (s m-1): resistance for heat transfer by convection, i.e. resistance to sensible heat
-- `Δ` (KPa K-1): rate of change of saturation vapor pressure with temperature (see [`e_sat_slope`](@ref))
+- `Δ` (KPa K-1): rate of change of saturation vapor pressure with temperature (see `PlantMeteo.e_sat_slope`)
 - `ρ` (kg m-3): air density of moist air.
 - `aₛₕ` (1,2): number of sides that exchange energy for heat (2 for leaves)
 - `Cₚ` (J K-1 kg-1): specific heat of air for constant pressure

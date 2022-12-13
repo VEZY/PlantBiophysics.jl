@@ -2,7 +2,7 @@
 
 ```@setup usepkg
 using PlantBiophysics, PlantSimEngine
-using Dates
+using Dates, DataFrames
 ```
 
 ## Running the simulation
@@ -13,7 +13,7 @@ Now it is also very easy to run a simulation for different components by just pr
 
 ```@example usepkg
 using PlantBiophysics, PlantSimEngine
-using Dates
+using Dates, DataFrames
 
 meteo = Atmosphere(T = 22.0, Wind = 0.8333, P = 101.325, Rh = 0.4490995)
 

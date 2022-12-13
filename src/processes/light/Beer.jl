@@ -21,11 +21,11 @@ Computes the light interception of an object using the Beer-Lambert law.
 # Arguments
 
 - `::Beer`: a Beer model, from the model list (*i.e.* m.light_interception)
-- `models`: A [`ModelList`](@ref) struct holding the parameters for the model with
+- `models`: A `ModelList` struct holding the parameters for the model with
 initialisations for `LAI` (m² m⁻²): the leaf area index.
 - `status`: the status of the model, usually the model list status (*i.e.* m.status)
 - `meteo`: meteorology structure, see [`Atmosphere`](@ref)
-- `constants = PlantMeteo.Constants()`: physical constants. See [`Constants`](@ref) for more details
+- `constants = PlantMeteo.Constants()`: physical constants. See `PlantMeteo.Constants` for more details
 
 # Examples
 

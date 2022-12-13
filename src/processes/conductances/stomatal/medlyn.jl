@@ -80,7 +80,7 @@ The result of this function is then used as:
 # Arguments
 
 - `::Medlyn`: a medlyn model, usually the leaf model (*i.e.* leaf.stomatal_conductance)
-- `leaf::ModelList`: A [`ModelList`](@ref) struct holding the parameters for
+- `leaf::ModelList`: A `ModelList` struct holding the parameters for
 the model.
 - `status`: A status, usually the leaf status (*i.e.* leaf.status)
 - `meteo`: meteorology structure, see [`Atmosphere`](@ref). Is not used in this model.

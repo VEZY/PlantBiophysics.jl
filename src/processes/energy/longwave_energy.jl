@@ -10,7 +10,7 @@ Thermal infrared, *i.e.* longwave radiation emitted from a black body at tempera
 
 # Note
 
-`K₀` and `σ` are taken from [`Constants`](@ref) if not provided.
+`K₀` and `σ` are taken from `PlantMeteo.Constants` if not provided.
 
 """
 function black_body(T, K₀, σ)
@@ -29,13 +29,13 @@ Thermal infrared, *i.e.* longwave radiation emitted from an object at temperatur
 
 - `T`: temperature of the object in Celsius degree
 - `ε` object [emissivity](https://en.wikipedia.org/wiki/Emissivity) (not to confuse with ε the
-ratio of molecular weights from [`Constants`](@ref)). A typical value for a leaf is 0.955.
+ratio of molecular weights from `PlantMeteo.Constants`). A typical value for a leaf is 0.955.
 - `K₀`: absolute zero (°C)
 - `σ` (``W\\ m^{-2}\\ K^{-4}``) [Stefan-Boltzmann constant](https://en.wikipedia.org/wiki/Stefan%E2%80%93Boltzmann_law)
 
 # Note
 
-`K₀` and `σ` are taken from [`Constants`](@ref) if not provided.
+`K₀` and `σ` are taken from `PlantMeteo.Constants` if not provided.
 
 # Examples
 

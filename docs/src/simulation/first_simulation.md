@@ -33,11 +33,11 @@ PlantBiophysics is nothing but an extension of [PlantSimEngine.jl](https://vezy.
 
 ## Meteorology
 
-The first line of the simulation is calling [`Atmosphere`](@ref). [`Atmosphere`](@ref) is a structure used to describe what are the meteorological conditions in the atmosphere surrounding the leaf, such as the air temperature and humidity, the wind speed or the pressure. It comes from the [PlantMeteo.jl](https://palmstudio.github.io/PlantMeteo.jl/stable/) package, but it is also exported by PlantSimEngine.
+The first line of the simulation is calling `Atmosphere`. `Atmosphere` is a structure used to describe what are the meteorological conditions in the atmosphere surrounding the leaf, such as the air temperature and humidity, the wind speed or the pressure. It comes from the [PlantMeteo.jl](https://palmstudio.github.io/PlantMeteo.jl/stable/) package, but it is also exported by PlantSimEngine.
 
 ## ModelList
 
-The next command is using [`ModelList`](@ref) (from PlantSimEngine), which helps us associate models (*e.g.* `Monteith()`) to processes (*e.g.* `energy_balance`). Currently `PlantBiophysics.jl` implements three processes: the energy balance, the photosynthesis, and the stomatal conductance. For each of these processes, we can choose a model that will be used for its simulation. The package provides processes and models, but you can also implement your own by following the [tutorial here](@ref model_implementation_page).
+The next command is using `ModelList` (from PlantSimEngine), which helps us associate models (*e.g.* `Monteith()`) to processes (*e.g.* `energy_balance`). Currently `PlantBiophysics.jl` implements three processes: the energy balance, the photosynthesis, and the stomatal conductance. For each of these processes, we can choose a model that will be used for its simulation. The package provides processes and models, but you can also implement your own by following the [tutorial here](@ref model_implementation_page).
 
 In our example we use the Monteith et al. (2013) model implementation for the energy balance (`energy_balance = Monteith()`), the Farquhar et al. (1980) model for the photosynthesis (`photosynthesis = Fvcb()`), and the Medlyn et al. (2011) model for the stomatal conductance (`stomatal_conductance = Medlyn(0.03, 12.0)`). All are available from `PlantBiophysics.jl`.
 

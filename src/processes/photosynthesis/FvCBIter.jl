@@ -80,7 +80,7 @@ Modify the first argument in place for A, Gₛ and Cᵢ:
 # Arguments
 
 - `::FvcbIter`: Farquhar–von Caemmerer–Berry (FvCB) model with iterative resolution.
-- `models`: a [`ModelList`](@ref) struct holding the parameters for the model with
+- `models`: a `ModelList` struct holding the parameters for the model with
 initialisations for:
     - `Tₗ` (°C): leaf temperature
     - `PPFD` (μmol m-2 s-1): absorbed Photosynthetic Photon Flux Density
@@ -89,7 +89,7 @@ initialisations for:
     saturated air vapour pressure in case you're using the stomatal conductance model of [`Medlyn`](@ref).
 - `status`: A status, usually the leaf status (*i.e.* leaf.status)
 - `meteo`: meteorology structure, see [`Atmosphere`](@ref)
-- `constants = PlantMeteo.Constants()`: physical constants. See [`Constants`](@ref) for more details
+- `constants = PlantMeteo.Constants()`: physical constants. See `PlantMeteo.Constants` for more details
 
 # Note
 

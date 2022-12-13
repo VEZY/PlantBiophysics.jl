@@ -10,7 +10,7 @@ At the moment, two models are implemented in the package:
 
 Some models need input values for some variables. For example [`Monteith`](@ref) requires a
 value for `Rₛ`, `d` and `sky_fraction`. If you read the models from a file, you can
-use [`init_status!`](@ref) (see examples).
+use `init_status!` (see examples).
 
 # Examples
 

@@ -296,7 +296,7 @@ And the [`Medlyn`](@ref) model requires the following variables:
 inputs(Medlyn(0.03, 12.0))
 ```
 
-We see that `A` is needed as input of `Medlyn`, but we also know that it is an output of `Fvcb`. This is why we prefer using [`to_initialize`](@ref) instead of [`inputs`](@ref), because it returns only the variables that need to be initialized, considering that some inputs are duplicated between models, and some are computed by other models (they are outputs of a model):
+We see that `A` is needed as input of `Medlyn`, but we also know that it is an output of `Fvcb`. This is why we prefer using [`to_initialize`](@ref) instead of `inputs`, because it returns only the variables that need to be initialized, considering that some inputs are duplicated between models, and some are computed by other models (they are outputs of a model):
 
 ```@example usepkg
 to_initialize(photosynthesis = Fvcb(), stomatal_conductance = Medlyn(0.03, 12.0))

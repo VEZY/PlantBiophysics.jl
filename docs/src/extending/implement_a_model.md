@@ -167,7 +167,7 @@ function PlantSimEngine.outputs_(::BandB)
 end
 ```
 
-Note that both function end with an "_". This is because these functions are internal, they will not be called by the users directly. Users will use [`inputs`](@ref) and [`outputs`](@ref) instead, which call `inputs_` and `outputs_`, but stripping out the default values.
+Note that both function end with an "_". This is because these functions are internal, they will not be called by the users directly. Users will use `inputs` and [`outputs`](@ref) instead, which call `inputs_` and `outputs_`, but stripping out the default values.
 
 ### The utility functions
 
@@ -270,7 +270,7 @@ Now if we look again at what are the fields of a `ModelList`:
 fieldnames(ModelList)
 ```
 
-we see that it has two fields: `models` and `status`. The first one is a list of models named after the process they simulate. So if we want to simulate the photosynthesis with the `Fvcb` model, our [`ModelList`](@ref) needs an instance of the [`Fvcb`](@ref) structure for the `photosynthesis` process, like so:
+we see that it has two fields: `models` and `status`. The first one is a list of models named after the process they simulate. So if we want to simulate the photosynthesis with the `Fvcb` model, our `ModelList` needs an instance of the [`Fvcb`](@ref) structure for the `photosynthesis` process, like so:
 
 ```@example usepkg
 leaf = ModelList(photosynthesis = Fvcb());

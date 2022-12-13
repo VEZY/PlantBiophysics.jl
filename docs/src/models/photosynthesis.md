@@ -96,7 +96,7 @@ leaf
 ```
 
 !!! note
-    You can use [`inputs`](@ref) to get the variables needed for a given model, *e.g.*: `inputs(Fvcb())`, `inputs(Medlyn(0.03, 12.0))`, or better: `inputs(Fvcb(), Medlyn(0.03, 12.0))`
+    You can use `inputs` to get the variables needed for a given model, *e.g.*: `inputs(Fvcb())`, `inputs(Medlyn(0.03, 12.0))`, or better: `inputs(Fvcb(), Medlyn(0.03, 12.0))`
 
 ## FvcbIter
 
@@ -154,7 +154,7 @@ leaf = ModelList(
     photosynthesis = FvcbRaw(),
     status = (Tₗ = 25.0, PPFD = 1000.0, Cᵢ = 400.0)
 )
-# NB: we need `Tₗ`, `PPFD` and `Cᵢ` as inputs (see [`inputs`](@ref))
+# NB: we need `Tₗ`, `PPFD` and `Cᵢ` as inputs (see `inputs`)
 
 photosynthesis!(leaf)
 leaf

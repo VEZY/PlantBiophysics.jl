@@ -40,11 +40,11 @@ energy_balance!(leaf,meteo)
 DataFrame(leaf)
 ```
 
-The only difference is that we use the [`Weather`](@ref) structure instead of the [`Atmosphere`](@ref), and that we provide the models inputs as an Array in the status for the ones that change over time.
+The only difference is that we use the `Weather` structure instead of the `Atmosphere`, and that we provide the models inputs as an Array in the status for the ones that change over time.
 
 Then `PlantBiophysics.jl` takes care of the rest and simulate the energy balance over each time-step. Then the output DataFrame has a row for each time-step.
 
-Note that [`Weather`](@ref) is in fact just an array of [`Atmosphere`](@ref), with some optional metadata attached to it. We could declare one manually either by using an array of [`Atmosphere`](@ref) like so:
+Note that `Weather` is in fact just an array of `Atmosphere`, with some optional metadata attached to it. We could declare one manually either by using an array of `Atmosphere` like so:
 
 ```julia
 meteo = Weather(
@@ -71,7 +71,7 @@ df = DataFrame(
 meteo = Weather(df)
 ```
 
-You'll have to be careful about the names and the units you are using though, they must match exactly the ones expected for [`Atmosphere`](@ref). See the documentation of the structure if in doubt.
+You'll have to be careful about the names and the units you are using though, they must match exactly the ones expected for `Atmosphere`. See the documentation of the structure if in doubt.
 
 The status argument of the ModelList can also be provided as a DataFrame, or any other type that implements the [Tables.jl](https://github.com/JuliaData/Tables.jl) interface. Here's an example using a DataFrame:
 
@@ -88,4 +88,4 @@ m = ModelList(
 ```
 
 Note that computations will be slower, so if performance is an issue, use
-[`TimeStepTable`](@ref) instead (or a NamedTuple as shown in the example above).
+`TimeStepTable` instead (or a NamedTuple as shown in the example above).

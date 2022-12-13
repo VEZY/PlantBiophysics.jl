@@ -39,13 +39,13 @@ Modify the leaf status in place for A, Gₛ and Cᵢ:
 # Arguments
 
 - `::ConstantAGs`: a constant assimilation model coupled to a stomatal conductance model
-- `models`: a [`ModelList`](@ref) struct holding the parameters for the model with
+- `models`: a `ModelList` struct holding the parameters for the model with
 initialisations for:
     - `Cₛ` (mol m-2 s-1): surface CO₂ concentration.
     - any other value needed by the stomatal conductance model.
 - `status`: A status, usually the leaf status (*i.e.* leaf.status)
 - `meteo`: meteorology structure, see [`Atmosphere`](@ref)
-- `constants = PlantMeteo.Constants()`: physical constants. See [`Constants`](@ref) for more details
+- `constants = PlantMeteo.Constants()`: physical constants. See `PlantMeteo.Constants` for more details
 
 # Examples
 

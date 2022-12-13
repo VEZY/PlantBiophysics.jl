@@ -69,7 +69,7 @@ leaf
 ```
 
 !!! note
-    You can use [`inputs`](@ref) to get the variables needed for a given model, e.g.: `inputs(Medlyn(0.03, 12.0))`
+    You can use `inputs` to get the variables needed for a given model, e.g.: `inputs(Medlyn(0.03, 12.0))`
 
 ## ConstantGs
 

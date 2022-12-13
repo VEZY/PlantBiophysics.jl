@@ -13,10 +13,10 @@ Method for when light interception should be explicitely ignored (do nothing).
 # Arguments
 
 - `::Ignore`: an `Ignore` model.
-- `models`: a [`ModelList`](@ref) struct with a missing energy model.
+- `models`: a `ModelList` struct with a missing energy model.
 - `status`: the status of the model, usually the one from the models (*i.e.* models.status)
 - `meteo`: meteorology structure, see [`Atmosphere`](@ref)
-- `constants = PlantMeteo.Constants()`: physical constants. See [`Constants`](@ref) for more details
+- `constants = PlantMeteo.Constants()`: physical constants. See `PlantMeteo.Constants` for more details
 
 """
 function energy_balance!_(::Ignore, models, status, meteo::PlantMeteo.AbstractAtmosphere, constants=PlantMeteo.Constants(), extra=nothing)

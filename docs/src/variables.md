@@ -2,9 +2,9 @@
 
 There are so many variables in PlantBiophysics that it can be difficult to remember what is their name, what are they describing or what is their unit.
 
-To get all variables used in PlantBiophysics, you can use [`variables`](@ref) without any argument:
+Fortunately, PlantBiophysics implements a method for the `variables` function from PlantSimEngine, which helps us get all variables used in PlantBiophysics:
 
 ```@example
-using PlantBiophysics
-variables()
+using PlantBiophysics, PlantSimEngine
+variables(PlantBiophysics)
 ```

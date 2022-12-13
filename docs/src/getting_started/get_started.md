@@ -2,13 +2,14 @@
 
 ```@setup usepkg
 using PlantBiophysics, PlantSimEngine
-using Dates
+using Dates, DataFrames
 ```
 
 Make your first simulation for a leaf energy balance, photosynthesis and stomatal conductance altogether with few lines of codes:
 
 ```@example usepkg
-using PlantBiophysics, PlantSimEngine, Dates
+using PlantBiophysics, PlantSimEngine
+using Dates, DataFrames
 
 meteo = read_weather(
     joinpath(dirname(dirname(pathof(PlantBiophysics))),"test","inputs","meteo.csv"),
