@@ -15,7 +15,7 @@ Method for when light interception should be explicitely ignored (do nothing).
 - `::Ignore`: an `Ignore` model.
 - `models`: a `ModelList` struct with a missing energy model.
 - `status`: the status of the model, usually the one from the models (*i.e.* models.status)
-- `meteo`: meteorology structure, see [`Atmosphere`](@ref)
+- `meteo`: meteorology structure, see [`Atmosphere`](https://palmstudio.github.io/PlantMeteo.jl/stable/#PlantMeteo.Atmosphere)
 - `constants = PlantMeteo.Constants()`: physical constants. See `PlantMeteo.Constants` for more details
 
 """

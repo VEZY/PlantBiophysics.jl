@@ -41,7 +41,7 @@ Modify the leaf status in place for A with a constant value:
 - `::ConstantA`: a constant assimilation model
 - `models`: a `ModelList` struct holding the parameters for the model.
 - `status`: A status, usually the leaf status (*i.e.* leaf.status)
-- `meteo`: meteorology structure, see [`Atmosphere`](@ref)
+- `meteo`: meteorology structure, see [`Atmosphere`](https://palmstudio.github.io/PlantMeteo.jl/stable/#PlantMeteo.Atmosphere)
 - `constants = PlantMeteo.Constants()`: physical constants. See `PlantMeteo.Constants` for more details
 
 # Examples

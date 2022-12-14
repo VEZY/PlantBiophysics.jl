@@ -62,7 +62,7 @@ initialisations for:
     - `sky_fraction` (0-2): view factor between the object and the sky for both faces (see details).
     - `d` (m): characteristic dimension, *e.g.* leaf width (see eq. 10.9 from Monteith and Unsworth, 2013).
 - `status`: the status of the model, usually the model list status (*i.e.* leaf.status)
-- `meteo`: meteorology structure, see [`Atmosphere`](@ref)
+- `meteo`: meteorology structure, see [`Atmosphere`](https://palmstudio.github.io/PlantMeteo.jl/stable/#PlantMeteo.Atmosphere)
 - `constants = PlantMeteo.Constants()`: physical constants. See `PlantMeteo.Constants` for more details
 
 # Details

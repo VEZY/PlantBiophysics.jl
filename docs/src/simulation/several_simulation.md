@@ -2,7 +2,8 @@
 
 ```@setup usepkg
 using PlantBiophysics, PlantSimEngine
-using Dates
+using Dates, DataFrames
+
 ```
 
 ## Running the simulation
@@ -11,7 +12,7 @@ We saw in the previous section how to run a simulation over one time step. We ca
 
 ```@example usepkg
 using PlantBiophysics, PlantSimEngine
-using Dates
+using Dates, DataFrames
 
 meteo =
     read_weather(
@@ -59,7 +60,7 @@ meteo = Weather(
 Or by passing a `DataFrame`:
 
 ```julia
-using DataFrame
+using DataFrames
 
 df = DataFrame(
     T = [20.0, 23.0, 25.0],

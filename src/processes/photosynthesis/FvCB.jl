@@ -175,7 +175,7 @@ initialisations for:
     - `Dₗ` (kPa): vapour pressure difference between the surface and the saturated
     air vapour pressure in case you're using the stomatal conductance model of [`Medlyn`](@ref).
 - `status`: A status, usually the leaf status (*i.e.* leaf.status)
-- `meteo`: meteorology structure, see [`Atmosphere`](@ref)
+- `meteo`: meteorology structure, see [`Atmosphere`](https://palmstudio.github.io/PlantMeteo.jl/stable/#PlantMeteo.Atmosphere)
 - `constants = PlantMeteo.Constants()`: physical constants. See `PlantMeteo.Constants` for more details
 
 # Note

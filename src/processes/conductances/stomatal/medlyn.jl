@@ -83,7 +83,7 @@ The result of this function is then used as:
 - `leaf::ModelList`: A `ModelList` struct holding the parameters for
 the model.
 - `status`: A status, usually the leaf status (*i.e.* leaf.status)
-- `meteo`: meteorology structure, see [`Atmosphere`](@ref). Is not used in this model.
+- `meteo`: meteorology structure, see [`Atmosphere`](https://palmstudio.github.io/PlantMeteo.jl/stable/#PlantMeteo.Atmosphere). Is not used in this model.
 
 # Details
 

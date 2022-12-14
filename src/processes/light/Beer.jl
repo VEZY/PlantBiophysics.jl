@@ -24,7 +24,7 @@ Computes the light interception of an object using the Beer-Lambert law.
 - `models`: A `ModelList` struct holding the parameters for the model with
 initialisations for `LAI` (m² m⁻²): the leaf area index.
 - `status`: the status of the model, usually the model list status (*i.e.* m.status)
-- `meteo`: meteorology structure, see [`Atmosphere`](@ref)
+- `meteo`: meteorology structure, see [`Atmosphere`](https://palmstudio.github.io/PlantMeteo.jl/stable/#PlantMeteo.Atmosphere)
 - `constants = PlantMeteo.Constants()`: physical constants. See `PlantMeteo.Constants` for more details
 
 # Examples

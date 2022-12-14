@@ -20,7 +20,7 @@ allowed to go below `leaf.stomatal_conductance.gs_min`.
 - `status::Status`: A status, usually the leaf status (*i.e.* leaf.status)
 - `gs_mod`: the output from a [`gs_closure`](@ref) implementation (the conductance models
 generally only implement this function)
-- `meteo<:PlantMeteo.AbstractAtmosphere`: meteo data, see [`Atmosphere`](@ref)
+- `meteo<:PlantMeteo.AbstractAtmosphere`: meteo data, see [`Atmosphere`](https://palmstudio.github.io/PlantMeteo.jl/stable/#PlantMeteo.Atmosphere)
 
 # Examples
 

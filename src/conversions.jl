@@ -129,7 +129,7 @@ opposite (`E_to_λE`).
 
     λ = latent_heat_vaporization(T, constants.λ₀)
 
-It is also directly available from the [`Atmosphere`](@ref) structure, and by extention in [`Weather`](@ref).
+It is also directly available from the [`Atmosphere`](https://palmstudio.github.io/PlantMeteo.jl/stable/#PlantMeteo.Atmosphere) structure, and by extention in [`Weather`](https://palmstudio.github.io/PlantMeteo.jl/stable/#PlantMeteo.Weather).
 
 To convert E from mol[H₂O] m-2 s-1 to mm s-1 you can simply do:
 

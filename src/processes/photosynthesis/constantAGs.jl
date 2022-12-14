@@ -44,7 +44,7 @@ initialisations for:
     - `Cₛ` (mol m-2 s-1): surface CO₂ concentration.
     - any other value needed by the stomatal conductance model.
 - `status`: A status, usually the leaf status (*i.e.* leaf.status)
-- `meteo`: meteorology structure, see [`Atmosphere`](@ref)
+- `meteo`: meteorology structure, see [`Atmosphere`](https://palmstudio.github.io/PlantMeteo.jl/stable/#PlantMeteo.Atmosphere)
 - `constants = PlantMeteo.Constants()`: physical constants. See `PlantMeteo.Constants` for more details
 
 # Examples

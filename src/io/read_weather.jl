@@ -6,14 +6,14 @@
 
 Read a meteo file. The meteo file is a CSV, and optionnaly with metadata in a header formatted
 as a commented YAML. The column names **and units** should match exactly the fields of
-[`Atmosphere`](@ref), or the user should provide their transformation as arguments (`args`)
+[`Atmosphere`](https://palmstudio.github.io/PlantMeteo.jl/stable/#PlantMeteo.Atmosphere), or the user should provide their transformation as arguments (`args`)
 to help mapping the two. The transformations are given as for `DataFrames`.
 
 # Note
 
 The variables found in the file will be used as is if not transformed, and not recomputed
 from the other variables. Please check that all variables have the same units as in the
-[`Atmosphere`](@ref) structure.
+[`Atmosphere`](https://palmstudio.github.io/PlantMeteo.jl/stable/#PlantMeteo.Atmosphere) structure.
 
 # Arguments
 
