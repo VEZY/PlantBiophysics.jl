@@ -139,7 +139,4 @@ export get_process, get_model, instantiate
 # Parameters optimization
 export fit
 
-# Re-exporting the ModelList from PlantSimEngine
-export ModelList
-
 end
