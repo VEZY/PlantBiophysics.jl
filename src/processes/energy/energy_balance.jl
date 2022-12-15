@@ -76,15 +76,16 @@ model["Leaf"].status.Cᵢ
 
 # ---Simulation on a full plant using an MTG---
 
-
-using PlantBiophysics, MultiScaleTreeGraph, PlantGeom, GLMakie, Dates
+using PlantBiophysics, MultiScaleTreeGraph, PlantGeom, GLMakie, Dates, PlantMeteo
 
 file = joinpath(dirname(dirname(pathof(PlantBiophysics))), "test", "inputs", "scene", "opf", "coffee.opf")
 mtg = read_opf(file)
 
 # Import the meteorology:
+met_file = joinpath(dirname(dirname(pathof(PlantMeteo))), "test", "data", "meteo.csv")
+
 meteo = read_weather(
-    "archimed/meteo.csv",
+    met_file,
     :temperature => :T,
     :relativeHumidity => (x -> x ./ 100) => :Rh,
     :wind => :Wind,

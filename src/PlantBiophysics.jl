@@ -62,7 +62,6 @@ include("processes/energy/Monteith.jl")
 
 # File IO
 include("io/read_model.jl")
-include("io/read_weather.jl")
 include("io/read_licor6400.jl")
 include("io/read_walz.jl")
 
@@ -77,7 +76,6 @@ include("depreciations/models.jl")
 # File IO:
 export read_model
 export is_model
-export read_weather
 export read_walz
 export read_licor6400
 

@@ -23,23 +23,3 @@ file = joinpath(dirname(dirname(pathof(PlantBiophysics))), "test", "inputs", "mo
     @test model.models.photosynthesis.VcMaxRef == 200.0 # Given in the file
     @test model.models.photosynthesis.O₂ == 210.0 # Use default value
 end;
-
-# Test reading the meteo:
-
-file = joinpath(dirname(dirname(pathof(PlantBiophysics))), "test", "inputs", "meteo.csv")
-var_names = Dict(:temperature => :T, :relativeHumidity => :Rh, :wind => :Wind, :atmosphereCO2_ppm => :Cₐ)
-
-@testset "read_weather()" begin
-    meteo = read_weather(
-        file,
-        :temperature => :T,
-        :relativeHumidity => (x -> x ./ 100) => :Rh,
-        :wind => :Wind,
-        :atmosphereCO2_ppm => :Cₐ,
-        :Re_SW_f => :Ri_SW_f,
-        date_format=DateFormat("yyyy/mm/dd")
-    )
-
-    @test typeof(meteo) <: Weather
-    @test NamedTuple(meteo.metadata) == (; name="Aquiares", latitude=15.0, altitude=100.0, use=[:clearness], file=file)
-end;

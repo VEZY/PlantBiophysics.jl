@@ -101,7 +101,7 @@ end
     models = read_model(file)
     mtg = read_opf(joinpath(dirname(dirname(pathof(PlantBiophysics))), "test", "inputs", "scene", "opf", "coffee.opf"))
     weather = read_weather(
-        joinpath(dirname(dirname(pathof(PlantBiophysics))), "test", "inputs", "meteo.csv"),
+        joinpath(dirname(dirname(pathof(PlantMeteo))), "test", "data", "meteo.csv"),
         :temperature => :T,
         :relativeHumidity => (x -> x ./ 100) => :Rh,
         :wind => :Wind,
