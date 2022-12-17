@@ -24,26 +24,29 @@ mtg = read_opf(joinpath(dirname(dirname(pathof(PlantBiophysics))), &quot;test&qu
    │     │  │     └─ &lt; 803: Metamer
    │     │  │        └─ &lt; 926: Metamer
    │     │  │           └─ &lt; 936: Metamer
-…</code></pre><p>The result is an MTG defining the plant at several scales using a tree graph. You can read the introduction to the MTG from <a href="https://vezy.github.io/MultiScaleTreeGraph.jl/stable/the_mtg/mtg_concept/">MultiScaleTreeGraph.jl</a>&#39;s documentation if you want to understand how it works.</p><p>Now let&#39;s import the weather data:</p><pre><code class="language-julia hljs">using PlantBiophysics, PlantSimEngine
+…</code></pre><p>The result is an MTG defining the plant at several scales using a tree graph. You can read the introduction to the MTG from <a href="https://vezy.github.io/MultiScaleTreeGraph.jl/stable/the_mtg/mtg_concept/">MultiScaleTreeGraph.jl</a>&#39;s documentation if you want to understand how it works.</p><p>Now let&#39;s import the weather data:</p><pre><code class="language-julia hljs">using PlantBiophysics, PlantSimEngine, PlantMeteo
 
 weather = read_weather(
-    joinpath(dirname(dirname(pathof(PlantBiophysics))), &quot;test&quot;, &quot;inputs&quot;, &quot;meteo.csv&quot;),
+    joinpath(dirname(dirname(pathof(PlantMeteo))), &quot;test&quot;, &quot;data&quot;, &quot;meteo.csv&quot;),
     :temperature =&gt; :T,
     :relativeHumidity =&gt; (x -&gt; x ./ 100) =&gt; :Rh,
     :wind =&gt; :Wind,
     :atmosphereCO2_ppm =&gt; :Cₐ,
     date_format = DateFormat(&quot;yyyy/mm/dd&quot;)
-)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">Weather data.
-Metadata: `(name = &quot;Aquiares&quot;, latitude = 15.0, altitude = 100.0, use = [:clearness], file = &quot;/home/runner/work/PlantBiophysics.jl/PlantBiophysics.jl/test/inputs/meteo.csv&quot;)`.
-Data:
-3×22 DataFrame
- Row │ date                 duration    T        Wind     P        Rh       Pr ⋯
-     │ DateTime             Minute      Float64  Float64  Float64  Float64  Fl ⋯
-─────┼──────────────────────────────────────────────────────────────────────────
-   1 │ 2016-06-12T12:00:00  30 minutes     25.0      1.0  101.325     0.6      ⋯
-   2 │ 2016-06-12T12:30:00  30 minutes     26.0      1.5  101.325     0.62
-   3 │ 2016-06-12T13:00:00  30 minutes     25.3      1.5  101.325     0.58
-                                                              16 columns omitted</code></pre><p>And read the models associated to the MTG from a YAML file:</p><pre><code class="language-julia hljs">file = joinpath(dirname(dirname(pathof(PlantBiophysics))), &quot;test&quot;, &quot;inputs&quot;, &quot;models&quot;, &quot;plant_coffee.yml&quot;)
+)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi"><span class="sgr31"><span class="sgr1">TimeStepTable (3 x 29):</span></span>
+<span class="sgr31">╭────────┬───────────────────────┬──────────────┬────────┬───────╮</span>
+<span class="sgr31">│</span><span class="sgr37"><span class="sgr1">  Step  </span></span><span class="sgr31">│</span><span class="sgr37"><span class="sgr1">         date          </span></span><span class="sgr31">│</span><span class="sgr37"><span class="sgr1">   duration   </span></span><span class="sgr31">│</span><span class="sgr37"><span class="sgr1">   T    </span></span><span class="sgr31">│</span><span class="sgr37"><span class="sgr1">  ...  </span></span><span class="sgr31">│</span>
+<span class="sgr31">├────────┼───────────────────────┼──────────────┼────────┼───────┤</span>
+<span class="sgr31">│</span>   1    <span class="sgr31">│</span>  2016-06-12T12:00:00  <span class="sgr31">│</span>  30 minutes  <span class="sgr31">│</span>  25.0  <span class="sgr31">│</span>  ...  <span class="sgr31">│</span>
+<span class="sgr31">├────────┼───────────────────────┼──────────────┼────────┼───────┤</span>
+<span class="sgr31">│</span>   2    <span class="sgr31">│</span>  2016-06-12T12:30:00  <span class="sgr31">│</span>  30 minutes  <span class="sgr31">│</span>  26.0  <span class="sgr31">│</span>  ...  <span class="sgr31">│</span>
+<span class="sgr31">├────────┼───────────────────────┼──────────────┼────────┼───────┤</span>
+<span class="sgr31">│</span>   3    <span class="sgr31">│</span>  2016-06-12T13:00:00  <span class="sgr31">│</span>  30 minutes  <span class="sgr31">│</span>  25.3  <span class="sgr31">│</span>  ...  <span class="sgr31">│</span>
+<span class="sgr31">╰────────┴───────────────────────┴──────────────┴────────┴───────╯</span>
+<span class="sgr1">Metadata: `(name = &quot;Aquiares&quot;, latitude = 15.0, altitude = 100.0, use = [:clear </span>
+<span class="sgr1">ness], file = &quot;/home/runner/.julia/packages/PlantMeteo/4ncu1/test/data/meteo.cs </span>
+<span class="sgr1">v&quot;)`                                                                            </span>
+</code></pre><p>And read the models associated to the MTG from a YAML file:</p><pre><code class="language-julia hljs">file = joinpath(dirname(dirname(pathof(PlantBiophysics))), &quot;test&quot;, &quot;inputs&quot;, &quot;models&quot;, &quot;plant_coffee.yml&quot;)
 models = read_model(file)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">Dict{String, ModelList} with 2 entries:
   &quot;Metamer&quot; =&gt; ModelList(interception = Translucent{Float64},)
   &quot;Leaf&quot;    =&gt; ModelList(energy_balance = Monteith{Float64, Int64}, interceptio…</code></pre><p>Let&#39;s check which variables we need to provide for our model configuration:</p><pre><code class="language-julia hljs">to_initialize(models)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">Dict{String, NamedTuple} with 2 entries:
@@ -73,4 +76,4 @@ f</code></pre><img src='data:image/svg+xml;utf-8,<?xml version="1.0" encoding="U
 <use xlink:href="%23image16-Uil7OYj+" transform="matrix(0.24,0,0,0.24,0,0)"/>
 </g>
 </svg>
-'/></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../several_objects_simulation/">« Several objects</a><a class="docs-footer-nextpage" href="../uncertainty_propagation/">Tutorial: Uncertainty propagation »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 0.27.23 on <span class="colophon-date" title="Wednesday 14 December 2022 15:54">Wednesday 14 December 2022</span>. Using Julia version 1.7.2.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+'/></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../several_objects_simulation/">« Several objects</a><a class="docs-footer-nextpage" href="../uncertainty_propagation/">Tutorial: Uncertainty propagation »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 0.27.23 on <span class="colophon-date" title="Saturday 17 December 2022 21:41">Saturday 17 December 2022</span>. Using Julia version 1.7.2.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
