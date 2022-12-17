@@ -2,7 +2,7 @@
 
 ```@setup usepkg
 using PlantBiophysics
-import PlantSimEngine
+using PlantSimEngine
 using PlantMeteo
 ```
 
@@ -167,7 +167,7 @@ function PlantSimEngine.outputs_(::BandB)
 end
 ```
 
-Note that both function end with an "_". This is because these functions are internal, they will not be called by the users directly. Users will use `inputs` and [`outputs`](@ref) instead, which call `inputs_` and `outputs_`, but stripping out the default values.
+Note that both function end with an "_". This is because these functions are internal, they will not be called by the users directly. Users will use `inputs` and `outputs` instead, which call `inputs_` and `outputs_`, but stripping out the default values.
 
 ### The utility functions
 
@@ -315,7 +315,7 @@ function PlantBiophysics.photosynthesis!_(::OurModel, models, status, meteo, con
         status.PPFD / models.photosynthesis.b +
         status.Tₗ / models.photosynthesis.c
 
-    PlantBiophysics.stomatal_conductance!_(models.stomatal_conductance, models, status, meteo, extras)
+    PlantBiophysics.stomatal_conductance!_(models.stomatal_conductance, models, status, meteo, constants, extras)
 end
 ```
 

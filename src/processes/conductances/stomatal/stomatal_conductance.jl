@@ -49,7 +49,7 @@ function stomatal_conductance!_(Gs::Gsm, models, status, gs_closure, extra) wher
     )
 end
 
-function stomatal_conductance!_(Gs::Gsm, models, status, meteo::M, constants=PlantMeteo.Constants(), extra=nothing) where {Gsm<:AbstractStomatal_ConductanceModel,M<:Union{PlantMeteo.AbstractAtmosphere,Nothing}}
+function stomatal_conductance!_(Gs::Gsm, models, status, meteo, constants, extra) where {Gsm<:AbstractStomatal_ConductanceModel}
     status.Gₛ = max(
         models.stomatal_conductance.gs_min,
         models.stomatal_conductance.g0 + gs_closure(models.stomatal_conductance, models, status, meteo, constants, extra) * status.A

@@ -9,8 +9,8 @@ PAR, in W m[soil]⁻² (== J m[soil]⁻² s⁻¹).
 
 Output: PPFD, the absorbed Photosynthetic Photon Flux Density in μmol[PAR] m[leaf]⁻² s⁻¹.
 """
-struct Beer <: AbstractLight_InterceptionModel
-    k::Float64
+struct Beer{T} <: AbstractLight_InterceptionModel
+    k::T
 end
 
 """

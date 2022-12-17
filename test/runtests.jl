@@ -7,13 +7,9 @@ using DataFrames
 using MultiScaleTreeGraph
 using PlantBiophysics
 
-#! Re-use this when new packages are registered (and uncomment mtg tests below): 
-using PlantSimEngine
-using PlantMeteo
-# using PlantGeom
-# Workaround to use "dev"ed PlantMeteo
-# using PlantBiophysics.PlantMeteo
-# using PlantBiophysics.PlantSimEngine
+# We use the ones from PlantBiophysics so it works even with "dev"ed versions:
+using PlantBiophysics.PlantMeteo
+using PlantBiophysics.PlantSimEngine
 
 Aqua.test_all(
     PlantBiophysics,

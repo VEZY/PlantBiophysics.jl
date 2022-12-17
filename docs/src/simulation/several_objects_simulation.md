@@ -1,7 +1,7 @@
 # Simulation over several components
 
 ```@setup usepkg
-using PlantBiophysics, PlantSimEngine
+using PlantBiophysics, PlantSimEngine, PlantMeteo
 using Dates, DataFrames
 ```
 
@@ -12,7 +12,7 @@ We saw in the previous sections how to run a simulation over one and several tim
 Now it is also very easy to run a simulation for different components by just providing an array of component instead:
 
 ```@example usepkg
-using PlantBiophysics, PlantSimEngine
+using PlantBiophysics, PlantSimEngine, PlantMeteo
 using Dates, DataFrames
 
 meteo = Atmosphere(T = 22.0, Wind = 0.8333, P = 101.325, Rh = 0.4490995)
@@ -43,7 +43,7 @@ A simulation over different time-steps would give:
 ```@example usepkg
 meteo =
     read_weather(
-        joinpath(dirname(dirname(pathof(PlantBiophysics))), "test", "inputs", "meteo.csv"),
+        joinpath(dirname(dirname(pathof(PlantMeteo))), "test", "data", "meteo.csv"),
         :temperature => :T,
         :relativeHumidity => (x -> x ./ 100) => :Rh,
         :wind => :Wind,

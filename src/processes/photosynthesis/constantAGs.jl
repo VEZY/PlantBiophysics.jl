@@ -70,8 +70,7 @@ function photosynthesis!_(::ConstantAGs, models, status, meteo, constants=PlantM
     status.A = models.photosynthesis.A
 
     # Stomatal conductance (mol[CO₂] m-2 s-1)
-    stomatal_conductance!_(models.stomatal_conductance, models, status, meteo, extra)
-
+    stomatal_conductance!_(models.stomatal_conductance, models, status, meteo, constants, extra)
     # Intercellular CO₂ concentration (Cᵢ, μmol mol)
     status.Cᵢ = min(status.Cₛ, status.Cₛ - status.A / status.Gₛ)
 

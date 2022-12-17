@@ -5,6 +5,6 @@ There are so many variables in PlantBiophysics that it can be difficult to remem
 Fortunately, PlantBiophysics implements a method for the `variables` function from PlantSimEngine, which helps us get all variables used in PlantBiophysics:
 
 ```@example
-using PlantBiophysics, PlantSimEngine
+using PlantBiophysics, PlantSimEngine, DataFrame
 variables(PlantBiophysics)
 ```

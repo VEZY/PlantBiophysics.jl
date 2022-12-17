@@ -1,7 +1,7 @@
 # [Uncertainty propagation](@id uncertainty_propagation_page)
 
 ```@setup usepkg
-using PlantBiophysics, PlantSimEngine
+using PlantBiophysics, PlantSimEngine, PlantMeteo
 using MonteCarloMeasurements
 using Plots
 using Dates
@@ -29,7 +29,7 @@ We can very easily propagate uncertainties in all computations in PlantBiophysic
 Let's first import all packages we need:
 
 ```julia
-using PlantBiophysics, PlantSimEngine, MonteCarloMeasurements, Plots, Dates
+using PlantBiophysics, PlantSimEngine, PlantMeteo, MonteCarloMeasurements, Plots, Dates
 # Toggle the use of a comparison function (using `mean`):
 unsafe_comparisons(true)
 ```
@@ -109,7 +109,7 @@ For example we can simulate a leaf energy balance over consecutive time-steps:
 
 ```@example usepkg
 weather = read_weather(
-    joinpath(dirname(dirname(pathof(PlantBiophysics))), "test", "inputs", "meteo.csv"),
+    joinpath(dirname(dirname(pathof(PlantMeteo))), "test", "data", "meteo.csv"),
     :temperature => :T,
     :relativeHumidity => (x -> x ./ 100) => :Rh,
     :wind => :Wind,

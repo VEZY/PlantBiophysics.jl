@@ -1,7 +1,7 @@
 # Simulation over several time-steps
 
 ```@setup usepkg
-using PlantBiophysics, PlantSimEngine
+using PlantBiophysics, PlantSimEngine, PlantMeteo
 using Dates, DataFrames
 
 ```
@@ -11,12 +11,12 @@ using Dates, DataFrames
 We saw in the previous section how to run a simulation over one time step. We can also easily perform computations over several time steps from a weather file:
 
 ```@example usepkg
-using PlantBiophysics, PlantSimEngine
+using PlantBiophysics, PlantSimEngine, PlantMeteo
 using Dates, DataFrames
 
 meteo =
     read_weather(
-        joinpath(dirname(dirname(pathof(PlantBiophysics))), "test", "inputs", "meteo.csv"),
+        joinpath(dirname(dirname(pathof(PlantMeteo))), "test", "data", "meteo.csv"),
         :temperature => :T,
         :relativeHumidity => (x -> x ./ 100) => :Rh,
         :wind => :Wind,

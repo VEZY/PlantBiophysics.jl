@@ -1,12 +1,13 @@
 # Simulation on a plant (MTG)
 
 ```@setup usepkg
-using PlantBiophysics, PlantSimEngine, MultiScaleTreeGraph, PlantGeom, CairoMakie, Dates
+using PlantBiophysics, PlantSimEngine, PlantMeteo, MultiScaleTreeGraph, PlantGeom
+using CairoMakie, Dates
 
 mtg = read_opf(joinpath(dirname(dirname(pathof(PlantBiophysics))), "test", "inputs", "scene", "opf", "coffee.opf"))
 
 weather = read_weather(
-    joinpath(dirname(dirname(pathof(PlantBiophysics))), "test", "inputs", "meteo.csv"),
+    joinpath(dirname(dirname(pathof(PlantMeteo))), "test", "data", "meteo.csv"),
     :temperature => :T,
     :relativeHumidity => (x -> x ./ 100) => :Rh,
     :wind => :Wind,
@@ -50,10 +51,10 @@ The result is an MTG defining the plant at several scales using a tree graph. Yo
 Now let's import the weather data:
 
 ```@example usepkg
-using PlantBiophysics, PlantSimEngine
+using PlantBiophysics, PlantSimEngine, PlantMeteo
 
 weather = read_weather(
-    joinpath(dirname(dirname(pathof(PlantBiophysics))), "test", "inputs", "meteo.csv"),
+    joinpath(dirname(dirname(pathof(PlantMeteo))), "test", "data", "meteo.csv"),
     :temperature => :T,
     :relativeHumidity => (x -> x ./ 100) => :Rh,
     :wind => :Wind,

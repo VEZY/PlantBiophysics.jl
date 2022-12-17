@@ -54,6 +54,6 @@ function stomatal_conductance!_(::ConstantGs, models, status, gs_closure)
     status.Gₛ = models.stomatal_conductance.Gₛ
 end
 
-function stomatal_conductance!_(::ConstantGs, models, status, meteo::M, constants=PlantMeteo.Constants(), extra=nothing) where {M<:PlantMeteo.AbstractAtmosphere}
+function stomatal_conductance!_(::ConstantGs, models, status, meteo, constants, extra=nothing)
     status.Gₛ = models.stomatal_conductance.Gₛ
 end

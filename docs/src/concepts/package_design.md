@@ -48,7 +48,7 @@ What happened here? We provided an instance of a model to the process it simulat
 
 ## Parameters
 
-A parameter is a constant value that is used by a model to compute its outputs. For example, the Beer-Lambert model uses the extinction coefficient (`k`) to compute the light extinction. The Beer-Lambert model is implemented with the [`Beer`](@ref) structure, which has only one field: `k`. We can see that using [`fieldnames`](@ref):
+A parameter is a constant value that is used by a model to compute its outputs. For example, the Beer-Lambert model uses the extinction coefficient (`k`) to compute the light extinction. The Beer-Lambert model is implemented with the [`Beer`](@ref) structure, which has only one field: `k`. We can see that using `fieldnames`:
 
 ```@example usepkg
 fieldnames(Beer)
@@ -296,7 +296,7 @@ And the [`Medlyn`](@ref) model requires the following variables:
 inputs(Medlyn(0.03, 12.0))
 ```
 
-We see that `A` is needed as input of `Medlyn`, but we also know that it is an output of `Fvcb`. This is why we prefer using [`to_initialize`](@ref) instead of `inputs`, because it returns only the variables that need to be initialized, considering that some inputs are duplicated between models, and some are computed by other models (they are outputs of a model):
+We see that `A` is needed as input of `Medlyn`, but we also know that it is an output of `Fvcb`. This is why we prefer using `to_initialize` from `PlantSimEngine.jl` instead of `inputs`, because it returns only the variables that need to be initialized, considering that some inputs are duplicated between models, and some are computed by other models (they are outputs of a model):
 
 ```@example usepkg
 to_initialize(photosynthesis = Fvcb(), stomatal_conductance = Medlyn(0.03, 12.0))

@@ -46,7 +46,7 @@ Base.eltype(x::Monteith) = typeof(x).parameters[1]
 PlantSimEngine.dep(::Monteith) = (photosynthesis=AbstractPhotosynthesisModel,)
 
 """
-    energy_balance!_(::Monteith, models, status, meteo::PlantMeteo.AbstractAtmosphere, constants=Constants())
+    energy_balance!_(::Monteith, models, status, meteo, constants=Constants())
 
 Leaf energy balance according to Monteith and Unsworth (2013), and corrigendum from
 Schymanski et al. (2017). The computation is close to the one from the MAESPA model (Duursma
@@ -132,7 +132,7 @@ Maxime Soma, et al. 2018. « Measuring and modelling energy partitioning in can
 complexity using MAESPA model ». Agricultural and Forest Meteorology 253‑254 (printemps): 203‑17.
 https://doi.org/10.1016/j.agrformet.2018.02.005.
 """
-function energy_balance!_(::Monteith, models, status, meteo::PlantMeteo.AbstractAtmosphere, constants=PlantMeteo.Constants(), extra=nothing)
+function energy_balance!_(::Monteith, models, status, meteo, constants=PlantMeteo.Constants(), extra=nothing)
 
     # Initialisations
     status.Tₗ = meteo.T - 0.2

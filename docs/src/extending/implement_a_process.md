@@ -19,7 +19,7 @@ To implement a new process, we need to define the generic methods used for its s
 
 ...and all the above with a mutating function and a non-mutating one.
 
-This is a lot of work! But fortunately PlantSimEngine provides a macro to generate all of the above: [`gen_process_methods`](@ref).
+This is a lot of work! But fortunately PlantSimEngine provides a macro to generate all of the above: `gen_process_methods`.
 
 This macro takes only one argument: the name of the process.
 

@@ -59,7 +59,7 @@ Here's an example of using a DataFrame as input:
 
 ```@example usepkg
 using CSV, DataFrames, PlantMeteo
-file = joinpath(dirname(dirname(pathof(PlantBiophysics))),"test","inputs","meteo.csv")
+file = joinpath(dirname(dirname(pathof(PlantMeteo))),"test","data","meteo.csv")
 df = CSV.read(file, DataFrame; header=5, datarow = 6)
 # Select and rename the variables:
 select!(df, :date, :temperature => :T, :relativeHumidity => (x -> x ./ 100 ) => :Rh, :wind => :Wind, :atmosphereCO2_ppm => :Cₐ)
@@ -75,7 +75,7 @@ One can also directly import the Weather from an [Archimed-ϕ](https://archimed-
 using Dates, PlantMeteo
 
 meteo = read_weather(
-    joinpath(dirname(dirname(pathof(PlantBiophysics))),"test","inputs","meteo.csv"),
+    joinpath(dirname(dirname(pathof(PlantMeteo))),"test","data","meteo.csv"),
     :temperature => :T,
     :relativeHumidity => (x -> x ./100) => :Rh,
     :wind => :Wind,

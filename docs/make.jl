@@ -2,8 +2,11 @@ using PlantBiophysics
 using Documenter
 using DataFrames
 using CSV
+# We use the ones from PlantBiophysics so it works even with "dev"ed versions:
+using PlantMeteo
+using PlantSimEngine
 
-DocMeta.setdocmeta!(PlantBiophysics, :DocTestSetup, :(using PlantBiophysics, DataFrames, CSV); recursive=true)
+DocMeta.setdocmeta!(PlantBiophysics, :DocTestSetup, :(using PlantBiophysics, DataFrames, CSV, PlantMeteo, PlantSimEngine); recursive=true)
 
 makedocs(;
     modules=[PlantBiophysics],

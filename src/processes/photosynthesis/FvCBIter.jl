@@ -169,7 +169,8 @@ function photosynthesis!_(::FvcbIter, models, status, meteo, constants=PlantMete
 
     while iter
         # Stomatal conductance (mol[CO₂] m-2 s-1)
-        stomatal_conductance!_(models.stomatal_conductance, models, status, meteo, extra)
+        stomatal_conductance!_(models.stomatal_conductance, models, status, meteo, constants, extra)
+
         # Surface CO₂ concentration (ppm):
         status.Cₛ = min(meteo.Cₐ, meteo.Cₐ - status.A / status.Gbc)
         # Intercellular CO₂ concentration (ppm):
