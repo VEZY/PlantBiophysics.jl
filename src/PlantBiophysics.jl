@@ -35,6 +35,9 @@ include("processes/energy/energy_balance.jl")
 # Conversions
 include("conversions.jl")
 
+# γ_star
+include("processes/γ_star.jl")
+
 # Light interception
 include("processes/light/Ignore.jl")
 include("processes/light/Beer.jl")
