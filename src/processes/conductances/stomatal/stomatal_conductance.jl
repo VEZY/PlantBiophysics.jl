@@ -16,9 +16,9 @@ allowed to go below `leaf.stomatal_conductance.gs_min`.
 
 - `Gs::Gsm`: a stomatal conductance model, usually the leaf model (*i.e.* leaf.stomatal_conductance)
 - `models::ModelList`: A leaf struct holding the parameters for the model. See
-`ModelList`, and [`Medlyn`](@ref) or [`ConstantGs`](@ref) for the conductance models.
+`ModelList`, and `Medlyn` or `ConstantGs` for the conductance models.
 - `status::Status`: A status, usually the leaf status (*i.e.* leaf.status)
-- `gs_mod`: the output from a [`gs_closure`](@ref) implementation (the conductance models
+- `gs_mod`: the output from a `gs_closure` implementation (the conductance models
 generally only implement this function)
 - `meteo<:PlantMeteo.AbstractAtmosphere`: meteo data, see [`Atmosphere`](https://palmstudio.github.io/PlantMeteo.jl/stable/#PlantMeteo.Atmosphere)
 

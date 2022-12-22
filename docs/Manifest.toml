@@ -1215,9 +1215,9 @@ version = "0.1.2"
 
 [[deps.PlantSimEngine]]
 deps = ["AbstractTrees", "CSV", "DataFrames", "Markdown", "MultiScaleTreeGraph", "PlantMeteo", "Statistics", "Tables", "Term"]
-git-tree-sha1 = "98e44194a80d157af729a783f1befbcf9065e444"
+git-tree-sha1 = "76b05029b5618c5fafb3bf0d45a681d35cd61cdc"
 uuid = "9a576370-710b-4269-adf9-4f603a9c6423"
-version = "0.1.7"
+version = "0.1.9"
 
 [[deps.PlotThemes]]
 deps = ["PlotUtils", "Statistics"]

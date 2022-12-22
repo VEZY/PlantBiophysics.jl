@@ -6,8 +6,8 @@ stomatal conductance according to the models set in (or each component in) `obje
 
 The models used are defined by the types of the `photosynthesis` and `stomatal_conductance`
 fields of `leaf`. For exemple to use the implementation of the Farquhar–von Caemmerer–Berry
-(FvCB) model (see [`photosynthesis`](@ref)), the `leaf.photosynthesis` field should be of type
-[`Fvcb`](@ref).
+(FvCB) model (see `photosynthesis`), the `leaf.photosynthesis` field should be of type
+`Fvcb`.
 
 # Examples
 

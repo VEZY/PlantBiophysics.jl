@@ -3,12 +3,12 @@
 @gen_process_methods "energy_balance" """
 At the moment, two models are implemented in the package:
 
-- [`Monteith`](@ref): the model found in Monteith and Unsworth (2013)
+- `Monteith`: the model found in Monteith and Unsworth (2013)
 - `Missing`: if no computation of the energy balance is needed
 
 # Note
 
-Some models need input values for some variables. For example [`Monteith`](@ref) requires a
+Some models need input values for some variables. For example `Monteith` requires a
 value for `Rₛ`, `d` and `sky_fraction`. If you read the models from a file, you can
 use `init_status!` (see examples).
 
