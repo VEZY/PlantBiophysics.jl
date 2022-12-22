@@ -1,5 +1,6 @@
 using PlantBiophysics
 using Test, Aqua
+using Documenter # for doctests
 
 using OrderedCollections
 using Dates
@@ -49,4 +50,12 @@ using PlantBiophysics.PlantSimEngine
     @testset "Fitting" begin
         include("test-fitting.jl")
     end
+
+    @testset "Doctests" begin
+        DocMeta.setdocmeta!(PlantBiophysics, :DocTestSetup, :(using PlantBiophysics, DataFrames, CSV, PlantMeteo, PlantSimEngine); recursive=true)
+
+        # Testing the doctests, i.e. the examples in the docstrings marked with jldoctest:
+        doctest(PlantBiophysics; manual=false)
+    end
+
 end
