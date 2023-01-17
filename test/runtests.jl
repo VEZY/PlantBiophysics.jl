@@ -52,7 +52,7 @@ using PlantBiophysics.PlantSimEngine
     end
 
     @testset "Doctests" begin
-        DocMeta.setdocmeta!(PlantBiophysics, :DocTestSetup, :(using PlantBiophysics, DataFrames, CSV, PlantMeteo, PlantSimEngine); recursive=true)
+        DocMeta.setdocmeta!(PlantBiophysics, :DocTestSetup, :(using PlantBiophysics, DataFrames, CSV, PlantBiophysics.PlantMeteo, PlantBiophysics.PlantSimEngine); recursive=true)
 
         # Testing the doctests, i.e. the examples in the docstrings marked with jldoctest:
         doctest(PlantBiophysics; manual=false)
