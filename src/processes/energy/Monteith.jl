@@ -186,7 +186,7 @@ function energy_balance!_(::Monteith, models, status, meteo, constants=PlantMete
         status.Cₛ = min(meteo.Cₐ, meteo.Cₐ - status.A / (status.Gbc * models.energy_balance.aₛᵥ))
 
         # Apparent value of psychrometer constant (kPa K−1)
-        γˢ = PlantMeteo.γ_star(meteo.γ, models.energy_balance.aₛₕ, models.energy_balance.aₛᵥ, Rbᵥ, Rsᵥ, Rbₕ)
+        γˢ = γ_star(meteo.γ, models.energy_balance.aₛₕ, models.energy_balance.aₛᵥ, Rbᵥ, Rsᵥ, Rbₕ)
 
         status.λE = latent_heat(status.Rn, meteo.VPD, γˢ, Rbₕ, meteo.Δ, meteo.ρ,
             models.energy_balance.aₛₕ, constants.Cₚ)
