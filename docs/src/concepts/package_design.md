@@ -186,8 +186,8 @@ The call to the function is the same whatever the model you choose for simulatin
 
 ```julia
 stomatal_conductance(model_list, meteo)
-photosynthesis(model_list, meteo)
-energy_balance(model_list, meteo)
+run!(model_list, meteo)
+run!(model_list, meteo)
 light_interception(model_list, meteo)
 ```
 
@@ -208,7 +208,7 @@ leaf = ModelList(
     status = (A = 20.0, Cₛ = 400.0, Dₗ = meteo.VPD)
 )
 
-stomatal_conductance!(leaf, meteo)
+run!(leaf, meteo)
 
 leaf[:Gₛ]
 ```
@@ -219,7 +219,7 @@ Each function has three forms. For example [`energy_balance`](@ref) has:
 
 - `energy_balance`: the generic function that makes a copy of the `modelList` and return the status (not very efficient but easy to use)
 - `energy_balance!`: the faster generic function. But we need to extract the outputs from the component models after the simulation (note the `!` at the end of the name)
-- `energy_balance!_`: the internal implementation with a method for each model. PlantBiophysics then uses multiple dispatch to choose the right method based on the model type. If you don't plan to make your own models, you'll never have to use it 🙂
+- `run!`: the internal implementation with a method for each model. PlantBiophysics then uses multiple dispatch to choose the right method based on the model type. If you don't plan to make your own models, you'll never have to use it 🙂
 
 If you want to implement your own models, please read this section in full first, and then [Model implementation](@ref model_implementation_page).
 
@@ -328,7 +328,7 @@ Our component models structure is now fully parameterized and initialized for a 
 Let's simulate it:
 
 ```@example usepkg
-photosynthesis(m)
+run!(m)
 ```
 
 !!! tip

@@ -3,7 +3,7 @@
 Farquhar–von Caemmerer–Berry (FvCB) model for C3 photosynthesis (Farquhar et al., 1980;
 von Caemmerer and Farquhar, 1981).
 
-Iterative implementation, i.e. the assimilation is computed iteratively over Cᵢ.
+Iterative implementation, *i.e.* the assimilation is computed iteratively over Cᵢ.
 
 For more details on arguments, see [`Fvcb`](@ref).
 This structure has several more parameters:
@@ -59,7 +59,7 @@ Base.eltype(x::FvcbIter) = typeof(x).parameters[1]
 PlantSimEngine.dep(::FvcbIter) = (stomatal_conductance=AbstractStomatal_ConductanceModel,)
 
 """
-    photosynthesis!_(::FvcbIter, models, status, meteo, constants=Constants())
+    run!(::FvcbIter, models, status, meteo, constants=Constants())
 
 Photosynthesis using the Farquhar–von Caemmerer–Berry (FvCB) model for C3 photosynthesis
  (Farquhar et al., 1980; von Caemmerer and Farquhar, 1981).
@@ -112,7 +112,7 @@ leaf =
     )
 # NB: we need  to initalise Tₗ, PPFD and Gbc.
 
-photosynthesis!_(leaf,meteo,PlantMeteo.Constants())
+run!(leaf,meteo,PlantMeteo.Constants())
 leaf.status.A
 leaf.status.Cᵢ
 ```
@@ -130,7 +130,7 @@ Leuning, R., F. M. Kelliher, DGG de Pury, et E.D. Schulze. 1995. Leaf nitrogen,
 photosynthesis, conductance and transpiration: scaling from leaves to canopies ». Plant,
 Cell & Environment 18 (10): 1183‑1200.
 """
-function photosynthesis!_(::FvcbIter, models, status, meteo, constants=PlantMeteo.Constants(), extra=nothing)
+function PlantSimEngine.run!(::FvcbIter, models, status, meteo, constants=PlantMeteo.Constants(), extra=nothing)
 
     # Start with a probable value for Cₛ and Cᵢ:
     status.Cₛ = meteo.Cₐ
@@ -145,11 +145,15 @@ function photosynthesis!_(::FvcbIter, models, status, meteo, constants=PlantMete
     Km = get_km(Tₖ, Tᵣₖ, models.photosynthesis.O₂, constants.R) # effective Michaelis–Menten coefficient for CO2
 
     # Maximum electron transport rate at the given leaf temperature (μmol m-2 s-1):
-    JMax = arrhenius(models.photosynthesis.JMaxRef, models.photosynthesis.Eₐⱼ, Tₖ, Tᵣₖ,
-        models.photosynthesis.Hdⱼ, models.photosynthesis.Δₛⱼ, constants.R)
+    JMax = arrhenius(
+        models.photosynthesis.JMaxRef, models.photosynthesis.Eₐⱼ, Tₖ, Tᵣₖ,
+        models.photosynthesis.Hdⱼ, models.photosynthesis.Δₛⱼ, constants.R
+    )
     # Maximum rate of Rubisco activity at the given leaf temperature (μmol m-2 s-1):
-    VcMax = arrhenius(models.photosynthesis.VcMaxRef, models.photosynthesis.Eₐᵥ, Tₖ, Tᵣₖ,
-        models.photosynthesis.Hdᵥ, models.photosynthesis.Δₛᵥ, constants.R)
+    VcMax = arrhenius(
+        models.photosynthesis.VcMaxRef, models.photosynthesis.Eₐᵥ, Tₖ, Tᵣₖ,
+        models.photosynthesis.Hdᵥ, models.photosynthesis.Δₛᵥ, constants.R
+    )
     # Rate of mitochondrial respiration at the given leaf temperature (μmol m-2 s-1):
     Rd = arrhenius(models.photosynthesis.RdRef, models.photosynthesis.Eₐᵣ, Tₖ, Tᵣₖ, constants.R)
     # Rd is also described as the CO2 release in the light by processes other than the PCO
@@ -169,7 +173,7 @@ function photosynthesis!_(::FvcbIter, models, status, meteo, constants=PlantMete
 
     while iter
         # Stomatal conductance (mol[CO₂] m-2 s-1)
-        stomatal_conductance!_(models.stomatal_conductance, models, status, meteo, constants, extra)
+        PlantSimEngine.run!(models.stomatal_conductance, models, status, meteo, constants, extra)
 
         # Surface CO₂ concentration (ppm):
         status.Cₛ = min(meteo.Cₐ, meteo.Cₐ - status.A / status.Gbc)

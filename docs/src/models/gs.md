@@ -8,7 +8,7 @@ The stomatal conductance defines the conductance **for CO₂** between the atmos
 
 ## Models overview
 
-The stomatal conductance (`Gₛ`, ``mol_{CO_2} \cdot m^{-2} \cdot s^{-1}``) can be simulated using [`stomatal_conductance!`](@ref) or [`stomatal_conductance`](@ref). Several models are available to simulate it:
+The stomatal conductance (`Gₛ`, ``mol_{CO_2} \cdot m^{-2} \cdot s^{-1}``) can be simulated using [`run!`](@ref) or [`stomatal_conductance`](@ref). Several models are available to simulate it:
 
 - [`Medlyn`](@ref): an implementation of the Medlyn et al. (2011) model
 - [`ConstantGs`](@ref): a model to force a constant value for `Gₛ`
@@ -24,7 +24,7 @@ meteo = Atmosphere(T = 20.0, Wind = 1.0, P = 101.3, Rh = 0.65)
 
 leaf = ModelList(stomatal_conductance = ConstantGs(Gₛ = 0.1))
 
-stomatal_conductance!(leaf,meteo)
+run!(leaf,meteo)
 leaf[:Gₛ]
 ```
 
@@ -63,7 +63,7 @@ leaf = ModelList(
     status = (A = 20.0, Cₛ = 400.0, Dₗ = meteo.VPD)
 )
 
-stomatal_conductance!(leaf,meteo)
+run!(leaf,meteo)
 
 leaf
 ```
@@ -101,7 +101,7 @@ meteo = Atmosphere(T = 20.0, Wind = 1.0, P = 101.3, Rh = 0.65)
 
 leaf = ModelList(stomatal_conductance = ConstantGs(Gₛ = 0.1))
 
-stomatal_conductance!(leaf,meteo)
+run!(leaf,meteo)
 leaf[:Gₛ]
 ```
 

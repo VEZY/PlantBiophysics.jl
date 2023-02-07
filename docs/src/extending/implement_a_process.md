@@ -2,7 +2,7 @@
 
 ```@setup usepkg
 using PlantSimEngine, PlantBiophysics, PlantMeteo
-PlantSimEngine.@gen_process_methods growth
+PlantSimEngine.@process growth
 ```
 
 ## Introduction
@@ -27,14 +27,14 @@ So for example all the photosynthesis methods are created using just this tiny l
 
 ```julia
 using PlantSimEngine
-@gen_process_methods photosynthesis
+@process photosynthesis
 ```
 
 So for example if we want to simulate the growth of a plant, we could add a new process called `growth`. To create the generic functions to simulate the `growth` we would do:
 
 ```julia
 using PlantSimEngine
-@gen_process_methods growth
+@process growth
 ```
 
 And that's it! You created a new process called `growth`, with the following functions:
@@ -45,7 +45,7 @@ And that's it! You created a new process called `growth`, with the following fun
 
 Now users can call `growth!` and `growth` on any number of time steps or objects, even on MTGs, and PlantSimEngine will handle everything. 
 
-`@gen_process_methods` also created an abstract struct called `AbstractGrowthModel` that is used as a supertype for our model structs. This helps PlantSimEngine identify which process a model is implemented for.
+`@process` also created an abstract struct called `AbstractGrowthModel` that is used as a supertype for our model structs. This helps PlantSimEngine identify which process a model is implemented for.
 
 But first, we need at least one model to simulate it.
 
@@ -101,7 +101,7 @@ Base.eltype(x::DummyGrowth{T}) where {T} = T
 function growth!_(::DummyGrowth, models, status, meteo, constants, extra)
 
     # Compute the energy balance of the plant, coupled to the photosynthesis model:
-    PlantBiophysics.energy_balance!_(models.energy_balance, models, status, meteo, constants, extra)
+    PlantBiophysics.run!(models.energy_balance, models, status, meteo, constants, extra)
     # Here we expect the assimilation of the plant, which is the source for Carbon
 
     # The maintenance respiration is simply a factor of the assimilation:

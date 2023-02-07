@@ -118,7 +118,7 @@ Base.eltype(x::Fvcb) = typeof(x).parameters[1]
 PlantSimEngine.dep(::Fvcb) = (stomatal_conductance=AbstractStomatal_ConductanceModel,)
 
 """
-    photosynthesis!_(::Fvcb, models, status, meteo, constants=Constants())
+    run!(::Fvcb, models, status, meteo, constants=Constants())
 
 Coupled photosynthesis and conductance model using the Farquhar–von Caemmerer–Berry (FvCB) model
 for C3 photosynthesis (Farquhar et al., 1980; von Caemmerer and Farquhar, 1981) that models
@@ -197,9 +197,10 @@ leaf =
         stomatal_conductance = Medlyn(0.03, 12.0),
         status = (Tₗ = 25.0, PPFD = 1000.0, Cₛ = 400.0, Dₗ = meteo.VPD)
     )
-# NB: we need  to initalise Tₗ, PPFD and Cₛ
+# NB: we need to initalise Tₗ, PPFD and Cₛ.
+# NB2: we provide the name of the process before the model but it is not mandatory.
 
-photosynthesis!(leaf,meteo,PlantMeteo.Constants())
+run!(leaf,meteo,PlantMeteo.Constants())
 leaf.status.A
 leaf.status.Cᵢ
 ```
@@ -226,7 +227,7 @@ Lombardozzi, L. D. et al. 2018.« Triose phosphate limitation in photosynthesis 
 reduces leaf photosynthesis and global terrestrial carbon storage ». Environmental Research
 Letters 13.7: 1748-9326. https://doi.org/10.1088/1748-9326/aacf68.
 """
-function photosynthesis!_(::Fvcb, models, status, meteo, constants=PlantMeteo.Constants(), extra=nothing)
+function PlantSimEngine.run!(::Fvcb, models, status, meteo, constants=PlantMeteo.Constants(), extra=nothing)
 
     # Tranform Celsius temperatures in Kelvin:
     Tₖ = status.Tₗ - constants.K₀
@@ -237,11 +238,15 @@ function photosynthesis!_(::Fvcb, models, status, meteo, constants=PlantMeteo.Co
     Km = get_km(Tₖ, Tᵣₖ, models.photosynthesis.O₂, constants.R) # effective Michaelis–Menten coefficient for CO2
 
     # Maximum electron transport rate at the given leaf temperature (μmol m-2 s-1):
-    JMax = arrhenius(models.photosynthesis.JMaxRef, models.photosynthesis.Eₐⱼ, Tₖ, Tᵣₖ,
-        models.photosynthesis.Hdⱼ, models.photosynthesis.Δₛⱼ, constants.R)
+    JMax = arrhenius(
+        models.photosynthesis.JMaxRef, models.photosynthesis.Eₐⱼ, Tₖ, Tᵣₖ,
+        models.photosynthesis.Hdⱼ, models.photosynthesis.Δₛⱼ, constants.R
+    )
     # Maximum rate of Rubisco activity at the given models temperature (μmol m-2 s-1):
-    VcMax = arrhenius(models.photosynthesis.VcMaxRef, models.photosynthesis.Eₐᵥ, Tₖ, Tᵣₖ,
-        models.photosynthesis.Hdᵥ, models.photosynthesis.Δₛᵥ, constants.R)
+    VcMax = arrhenius(
+        models.photosynthesis.VcMaxRef, models.photosynthesis.Eₐᵥ, Tₖ, Tᵣₖ,
+        models.photosynthesis.Hdᵥ, models.photosynthesis.Δₛᵥ, constants.R
+    )
     # Rate of mitochondrial respiration at the given leaf temperature (μmol m-2 s-1):
     Rd = arrhenius(models.photosynthesis.RdRef, models.photosynthesis.Eₐᵣ, Tₖ, Tᵣₖ, constants.R)
     # Rd is also described as the CO2 release in the light by processes other than the PCO
@@ -282,9 +287,9 @@ function photosynthesis!_(::Fvcb, models, status, meteo, constants=PlantMeteo.Co
     status.A = min(Wᵥ, Wⱼ, 3 * models.photosynthesis.TPURef) - Rd
 
     # Stomatal conductance (mol[CO₂] m-2 s-1)
-    stomatal_conductance!_(models.stomatal_conductance, models, status, st_closure, extra)
-    # NB: `stomatal_conductance!_(` is the function that implements the computation directly. If you want to
-    # call the stomatal conductance interactively, use `stomatal_conductance!()` or `stomatal_conductance()` instead.
+    PlantSimEngine.run!(models.stomatal_conductance, models, status, st_closure, extra)
+    # NB: `run!(` is the function that implements the computation directly. If you want to
+    # call the stomatal conductance interactively, use `run!()` or `stomatal_conductance()` instead.
 
     # Intercellular CO₂ concentration (Cᵢ, μmol mol)
     status.Cᵢ = min(status.Cₛ, status.Cₛ - status.A / status.Gₛ)

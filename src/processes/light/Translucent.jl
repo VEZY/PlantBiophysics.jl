@@ -32,3 +32,7 @@ function PlantSimEngine.outputs_(::Translucent)
         Rₛ=-Inf, sky_fraction=-Inf
     )
 end
+
+function PlantSimEngine.run!(::Translucent, models, status, meteo, constants, extra=nothing)
+    return nothing
+end

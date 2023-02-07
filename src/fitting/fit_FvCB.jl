@@ -37,7 +37,7 @@ leaf =
         photosynthesis = FvcbRaw(VcMaxRef = VcMaxRef, JMaxRef = JMaxRef, RdRef = RdRef, TPURef = TPURef),
         status = (Tₗ = df.Tₗ, PPFD = df.PPFD, Cᵢ = df.Cᵢ)
     )
-photosynthesis!(leaf)
+run!(leaf)
 df_sim = DataFrame(leaf)
 
 # Visualising the results:
@@ -56,7 +56,7 @@ leaf = ModelList(
     )
 
 w = Weather(select(df, :T, :P, :Rh, :Cₐ, :T => (x -> 10) => :Wind))
-photosynthesis!(leaf, w)
+run!(leaf, w)
 df_sim2 = DataFrame(leaf)
 
 # And finally we plot the results:
@@ -76,7 +76,7 @@ function fit(::T, df; Tᵣ=nothing, VcMaxRef=0.0, JMaxRef=0.0, RdRef=0.0, TPURef
                 photosynthesis=FvcbRaw(Tᵣ=Tᵣ, VcMaxRef=p[1], JMaxRef=p[2], RdRef=p[3], TPURef=p[4]),
                 status=(Tₗ=x[:, 1], PPFD=x[:, 2], Cᵢ=x[:, 3])
             )
-        photosynthesis!(leaf)
+        PlantSimEngine.run!(leaf)
         DataFrame(leaf).A
     end
 

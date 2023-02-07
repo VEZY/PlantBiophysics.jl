@@ -67,7 +67,7 @@ Or look into the documentation of the structure (e.g. `?Fvcb`) or the implementa
 
 ## energy_balance
 
-We use [`energy_balance!`](@ref) to simulate the energy balance. Then Julia chooses the right implementation for each model using multiple dispatch. In our case it uses the `Monteith` implementation for [`PlantBiophysics.energy_balance!_`](@ref), `Fvcb` for [`PlantBiophysics.photosynthesis!_`](@ref) and `Medlyn` for [`PlantBiophysics.gs_closure`](@ref). The photosynthesis and the stomatal conductance models are called directly from the energy balance function.
+We use [`energy_balance!`](@ref) to simulate the energy balance. Then Julia chooses the right implementation for each model using multiple dispatch. In our case it uses the `Monteith` implementation for [`PlantBiophysics.run!`](@ref), `Fvcb` for [`PlantBiophysics.run!`](@ref) and `Medlyn` for [`PlantBiophysics.gs_closure`](@ref). The photosynthesis and the stomatal conductance models are called directly from the energy balance function.
 
 ## Results
 

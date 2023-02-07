@@ -1,6 +1,11 @@
 # Generate all methods for the energy_balance process: several meteo time-steps, components,
 #  over an MTG, and the mutating /non-mutating versions
-@gen_process_methods "energy_balance" """
+@process "energy_balance" """
+Energy balance process. This process computes the energy balance of objects, 
+meaning that it computes the net radiation, the sensible heat flux, and the 
+latent heat flux if necessary. It can be coupled with a photosynthesis 
+model in the case of plants leaves.
+
 At the moment, two models are implemented in the package:
 
 - `Monteith`: the model found in Monteith and Unsworth (2013)
@@ -15,6 +20,8 @@ use `init_status!` (see examples).
 # Examples
 
 ```julia
+using PlantMeteo, PlantSimEngine, PlantBiophysics
+
 # ---Simple example---
 
 meteo = Atmosphere(T = 20.0, Wind = 1.0, P = 101.3, Rh = 0.65)
@@ -29,29 +36,49 @@ leaf =
         status = (Rₛ = 13.747, sky_fraction = 1.0, PPFD = 1500.0, d = 0.03)
     )
 
-energy_balance(leaf,meteo)
+run!(leaf,meteo)
 
 # ---Using several components---
 
 leaf2 = copy(leaf)
-leaf2.status.PPFD = 800.0
+leaf2[:PPFD] = 800.0
 
-energy_balance([leaf,leaf2],meteo)
+run!([leaf,leaf2],meteo)
 
 # You can use a Dict if you'd like to keep track of the leaf in the returned DataFrame:
-energy_balance(Dict(:leaf1 => leaf, :leaf2 => leaf2), meteo)
+run!(Dict(:leaf1 => leaf, :leaf2 => leaf2), meteo)
 
 # ---Using several meteo time-steps---
 
-w = Weather([Atmosphere(T = 20.0, Wind = 1.0, P = 101.3, Rh = 0.65),
-             Atmosphere(T = 25.0, Wind = 1.5, P = 101.3, Rh = 0.55)],
-             (site = "Test site",))
+w = Weather(
+    [
+        Atmosphere(T = 20.0, Wind = 1.0, P = 101.3, Rh = 0.65),
+        Atmosphere(T = 25.0, Wind = 1.5, P = 101.3, Rh = 0.55)
+    ],
+    (site = "Test site",)
+)
 
-energy_balance(leaf, w)
+leaf =
+    ModelList(
+        energy_balance = Monteith(),
+        photosynthesis = Fvcb(),
+        stomatal_conductance = Medlyn(0.03, 12.0),
+        status = (Rₛ = [12.0,13.747], sky_fraction = 1.0, PPFD = 1500.0, d = 0.03)
+    )
+
+run!(leaf, w)
 
 # ---Using several meteo time-steps and several components---
 
-energy_balance(Dict(:leaf1 => leaf, :leaf2 => leaf2), w)
+leaf2 =
+    ModelList(
+        energy_balance = Monteith(),
+        photosynthesis = Fvcb(),
+        stomatal_conductance = Medlyn(0.03, 12.0),
+        status = (Rₛ = [12.0,13.747], sky_fraction = 1.0, PPFD = 1500.0, d = 0.01)
+    )
+
+run!(Dict(:leaf1 => leaf, :leaf2 => leaf2), w)
 
 # ---Using a model file---
 
@@ -68,7 +95,7 @@ init_status!(model, Rₛ = 13.747, sky_fraction = 1.0, PPFD = 1500.0, Tₗ = 25.
 to_initialize(model["Leaf"])
 
 # Running a simulation for all component types in the same scene:
-energy_balance!(model, meteo)
+run!(model, meteo)
 
 model["Leaf"].status.Rn
 model["Leaf"].status.A
@@ -119,7 +146,7 @@ transform!(
 )
 
 # Making the simulation:
-energy_balance!(mtg, models, status, meteo)
+run!(mtg, models, meteo)
 
 # Pull the leaf temperature of the first step:
 transform!(

@@ -51,7 +51,7 @@ end
 
 The first line defines the name of the model (`Medlyn`), with the types that will be used for the parameters. Then it defines the structure as a subtype of [`AbstractStomatal_ConductanceModel`](@ref). This step is very important as it tells to the package what kind of process the model simulates. In this case, it is a stomatal conductance model, that's why we use [`AbstractStomatal_ConductanceModel`](@ref). We would use [`AbstractPhotosynthesisModel`](@ref) instead for a photosynthesis model, [`AbstractEnergy_BalanceModel`](@ref) for an energy balance model, and [`AbstractLight_InterceptionModel`](@ref) for a light interception model.
 
-These abstract structures are automatically defined when defining a process using the `@gen_process_methods` macro from `PlantSimEngine.jl` (which PlantBiophysics is built upon). 
+These abstract structures are automatically defined when defining a process using the `@process` macro from `PlantSimEngine.jl` (which PlantBiophysics is built upon). 
 
 For another example, the [`Fvcb`](@ref) model is a subtype of [`AbstractPhotosynthesisModel`](@ref). You can check this using:
 
@@ -114,17 +114,17 @@ Remember that PlantBiophysics only exports the generic functions of the processe
 
 However, you have to remember that if your model calls another one, you'll have to use the internal implementation directly to avoid the overheads of the generic functions (you don't want all these checks).
 
-So if you want to implement a new photosynthesis model, you have to make your own method for the `photosynthesis!_` function. But here we are trying to implement a new stomatal conductance model. Well, this one is the most complicated process to implement actually, because it is computed on two steps: `stomatal_conductance!_` and `gs_closure`.
+So if you want to implement a new photosynthesis model, you have to make your own method for the `run!` function. But here we are trying to implement a new stomatal conductance model. Well, this one is the most complicated process to implement actually, because it is computed on two steps: `run!` and `gs_closure`.
 
-`gs_closure` is the function that actually implements the conductance model, but only the stomatal closure part. This one does not modify its input, it computes the result and returns it. Then `stomatal_conductance!_` uses this output to compute the stomatal conductance. But why not implementing just `stomatal_conductance!_`? Because `gs_closure` is used elsewhere, usually in the photosynthesis model, before actually computing the stomatal conductance.
+`gs_closure` is the function that actually implements the conductance model, but only the stomatal closure part. This one does not modify its input, it computes the result and returns it. Then `run!` uses this output to compute the stomatal conductance. But why not implementing just `run!`? Because `gs_closure` is used elsewhere, usually in the photosynthesis model, before actually computing the stomatal conductance.
 
-So in practice, the `stomatal_conductance!_` implementation is rather generic and will not be modified by developers. They will rather implement their method for `gs_closure`, that will be used automatically by `stomatal_conductance!_`.
+So in practice, the `run!` implementation is rather generic and will not be modified by developers. They will rather implement their method for `gs_closure`, that will be used automatically by `run!`.
 
 !!! warning
     We need to import all the functions we need to use or extend, so Julia knows we are extending the methods from PlantSimEngine, and not defining our own functions. To do so, you can prefix the functions by the package name, or import them once *e.g.*:
     ```
         import PlantSimEngine: inputs_, outputs_
-        import PlantBiohysics: photosynthesis!, stomatal_conductance!
+        import PlantBiohysics: run!, run!
     ```
 
 
@@ -149,10 +149,10 @@ An important thing to note is that our variables are stored in different structu
 !!! note
     The micro-meteorological conditions are always given for one time-step inside the models methods. The conditions with several time-steps are handled earlier by the generic functions.
 
-OK ! So that's it ? Almost. One last thing to do is to define a method for inputs/outputs so that PlantSimEngine knows which variables are needed for our model, and which it computes. Remember that the actual model is implemented for `stomatal_conductance!_`, so we have to tell PlantSimEngine which ones are needed, and what are their default value:
+OK ! So that's it ? Almost. One last thing to do is to define a method for inputs/outputs so that PlantSimEngine knows which variables are needed for our model, and which it computes. Remember that the actual model is implemented for `run!`, so we have to tell PlantSimEngine which ones are needed, and what are their default value:
 
-- Inputs: `:Rh` and `:Cₛ` for our specific implementation, and `:A` for `stomatal_conductance!_`
-- Outputs: our model does not compute any new variable, and `stomatal_conductance!_` computes, well, `:Gₛ`
+- Inputs: `:Rh` and `:Cₛ` for our specific implementation, and `:A` for `run!`
+- Outputs: our model does not compute any new variable, and `run!` computes, well, `:Gₛ`
 
 Here is how we actually implement our methods:
 
@@ -248,12 +248,12 @@ OK that's it! Now you have a full new implementation of the stomatal conductance
 Here is another example with a different approach in case you need it. So let's change our example from the stomatal conductance to the photosynthesis.
 For example [`Fvcb`](@ref) implements the model or Farquhar et al. (1980) to simulate the [`photosynthesis`](@ref) of C3 plants.
 
-When the user calls the `photosynthesis` function, or its mutating version `photosynthesis!`, PlantBiophysics looks into the component models type, and the type of the model implemented for the photosynthesis, in this case, [`Fvcb`](@ref).
+When the user calls the `photosynthesis` function, or its mutating version `run!`, PlantBiophysics looks into the component models type, and the type of the model implemented for the photosynthesis, in this case, [`Fvcb`](@ref).
 
-Then, it calls the internal function [`photosynthesis!_`](@ref) that will dispatch the computation to the method that implements the model. This method looks like this:
+Then, it calls the internal function [`run!`](@ref) that will dispatch the computation to the method that implements the model. This method looks like this:
 
 ```julia
-function PlantBiophysics.photosynthesis!_(::Fvcb, models, status, meteo, constants=Constants(), extras=nothing)
+function PlantBiophysics.run!(::Fvcb, models, status, meteo, constants=Constants(), extras=nothing)
 
     [...]
 
@@ -277,7 +277,7 @@ leaf = ModelList(photosynthesis = Fvcb());
 leaf.models.photosynthesis
 ```
 
-The `photosynthesis` field is then used as the first argument to the call to the internal function `photosynthesis!_`, which will call the method that implements [`Fvcb`](@ref), because our `photosynthesis` field is of type [`Fvcb`](@ref).
+The `photosynthesis` field is then used as the first argument to the call to the internal function `run!`, which will call the method that implements [`Fvcb`](@ref), because our `photosynthesis` field is of type [`Fvcb`](@ref).
 
 So if we want to implement our own model for the photosynthesis, we could do:
 
@@ -308,14 +308,14 @@ end
 Base.eltype(x::OurModel{T}) where {T} = T
 
 # Implement the photosynthesis model:
-function PlantBiophysics.photosynthesis!_(::OurModel, models, status, meteo, constants=Constants(), extras=nothing)
+function PlantBiophysics.run!(::OurModel, models, status, meteo, constants=Constants(), extras=nothing)
 
     status.A =
         status.Cₛ / models.photosynthesis.a +
         status.PPFD / models.photosynthesis.b +
         status.Tₗ / models.photosynthesis.c
 
-    PlantBiophysics.stomatal_conductance!_(models.stomatal_conductance, models, status, meteo, constants, extras)
+    PlantBiophysics.run!(models.stomatal_conductance, models, status, meteo, constants, extras)
 end
 ```
 
@@ -327,7 +327,7 @@ We have a new model for photosynthesis that is coupled with the stomatal conduct
     This is a dummy photosynthesis model. Don't use it, it is very wrong biologically speaking!
 
 !!! note
-    Notice that we compute the stomatal conductance directly using the internal function `stomatal_conductance!_`. We do this for speed, because the generic function `stomatal_conductance!` does some checks on its inputs every time it is called, while `stomatal_conductance!_` only does the computation. We don't need the extra checks because they are already made when calling `photosynthesis!`.
+    Notice that we compute the stomatal conductance directly using the internal function `run!`. We do this for speed, because the generic function `run!` does some checks on its inputs every time it is called, while `run!` only does the computation. We don't need the extra checks because they are already made when calling `run!`.
 
 Now if we want to make a simulation, we can simply do:
 
@@ -343,6 +343,6 @@ leaf =
     )
 # NB: we need  to initalise Tₗ, PPFD and Cₛ
 
-photosynthesis!(leaf,meteo,Constants())
+run!(leaf,meteo,Constants())
 leaf[:A]
 ```

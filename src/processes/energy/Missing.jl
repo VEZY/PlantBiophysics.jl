@@ -1,5 +1,5 @@
 """
-    energy_balance!_(::Missing, models::ModelList, status, meteo,constants = Constants())
+    run!(::Missing, models::ModelList, status, meteo,constants = Constants())
 
 Method for when energy balance is missing (do nothing).
 
@@ -12,6 +12,6 @@ Method for when energy balance is missing (do nothing).
 - `constants = PlantMeteo.Constants()`: physical constants. See `PlantMeteo.Constants` for more details
 
 """
-function energy_balance!_(::Missing, models, status, meteo, constants=PlantMeteo.Constants(), extra=nothing)
+function PlantSimEngine.run!(::Missing, models, status, meteo, constants=PlantMeteo.Constants(), extra=nothing)
     nothing
 end

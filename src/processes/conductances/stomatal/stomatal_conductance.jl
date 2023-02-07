@@ -1,10 +1,7 @@
 # Generate all methods for the stomatal conductance process: several meteo time-steps, components,
 #  over an MTG, and the mutating /non-mutating versions
-@gen_process_methods "stomatal_conductance" """
-    stomatal_conductance(leaf::ModelList,gs_mod)
-    stomatal_conductance(leaf::ModelList,meteo<:PlantMeteo.AbstractAtmosphere)
-
-Default method to compute the stomatal conductance for CO₂ (mol m-2 s-1), it takes the form:
+@process "stomatal_conductance" """
+Process for the stomatal conductance for CO₂ (mol m⁻² s⁻¹), it takes the form:
 
 `leaf.stomatal_conductance.g0 + gs_closure(leaf,meteo) * leaf.status.A`
 
@@ -25,6 +22,7 @@ generally only implement this function)
 # Examples
 
 ```julia
+using PlantMeteo, PlantSimEngine, PlantBiophysics
 meteo = Atmosphere(T = 22.0, Wind = 0.8333, P = 101.325, Rh = 0.4490995)
 
 # Using a constant value for Gs:
@@ -36,20 +34,20 @@ leaf =
     )
 
 # Computing the stomatal conductance using the Medlyn et al. (2011) model:
-stomatal_conductance(leaf,meteo)
+run!(leaf,meteo)
 ```
 """
 
 # Gs is used a little bit differently compared to the other processes. We use two forms:
 # the stomatal closure and the full computation of Gs
-function stomatal_conductance!_(Gs::Gsm, models, status, gs_closure, extra) where {Gsm<:AbstractStomatal_ConductanceModel}
+function PlantSimEngine.run!(Gs::Gsm, models, status, gs_closure, extra) where {Gsm<:AbstractStomatal_ConductanceModel}
     status.Gₛ = max(
         models.stomatal_conductance.gs_min,
         models.stomatal_conductance.g0 + gs_closure * status.A
     )
 end
 
-function stomatal_conductance!_(Gs::Gsm, models, status, meteo, constants, extra) where {Gsm<:AbstractStomatal_ConductanceModel}
+function PlantSimEngine.run!(Gs::Gsm, models, status, meteo, constants, extra) where {Gsm<:AbstractStomatal_ConductanceModel}
     status.Gₛ = max(
         models.stomatal_conductance.gs_min,
         models.stomatal_conductance.g0 + gs_closure(models.stomatal_conductance, models, status, meteo, constants, extra) * status.A

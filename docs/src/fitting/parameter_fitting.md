@@ -50,7 +50,7 @@ leaf =
         photosynthesis = FvcbRaw(VcMaxRef = VcMaxRef, JMaxRef = JMaxRef, RdRef = RdRef, TPURef = TPURef),
         status = (Tₗ = df.Tₗ, PPFD = df.PPFD, Cᵢ = df.Cᵢ)
     )
-photosynthesis!(leaf)
+run!(leaf)
 df_sim = DataFrame(leaf);
 ```
 
@@ -73,7 +73,7 @@ leaf = ModelList(
     )
 
 w = Weather(select(df, :T, :P, :Rh, :Cₐ, :T => (x -> 10) => :Wind))
-photosynthesis!(leaf, w)
+run!(leaf, w)
 df_sim2 = DataFrame(leaf)
 
 aci2 = PlantBiophysics.ACi(VcMaxRef, JMaxRef, RdRef, df[:,:A], df_sim2[:,:A], df[:,:Cᵢ], df_sim2[:,:Cᵢ])
