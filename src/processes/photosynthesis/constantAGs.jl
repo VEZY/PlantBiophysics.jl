@@ -70,7 +70,7 @@ function PlantSimEngine.run!(::ConstantAGs, models, status, meteo, constants=Pla
     status.A = models.photosynthesis.A
 
     # Stomatal conductance (mol[CO₂] m-2 s-1)
-    run!(models.stomatal_conductance, models, status, meteo, constants, extra)
+    PlantSimEngine.run!(models.stomatal_conductance, models, status, meteo, constants, extra)
     # Intercellular CO₂ concentration (Cᵢ, μmol mol)
     status.Cᵢ = min(status.Cₛ, status.Cₛ - status.A / status.Gₛ)
 

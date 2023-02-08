@@ -96,7 +96,7 @@ initialisations for:
 `Tₗ`, `PPFD`, `Gbc` (and `Dₗ` if you use [`Medlyn`](@ref)) must be initialized by providing
 them as keyword arguments (see examples). If in doubt, it is simpler to compute the energy
 balance of the leaf with the photosynthesis to get those variables. See
-[`energy_balance`](@ref) for more details.
+[`AbstractEnergy_BalanceModel`](@ref) for more details.
 
 # Examples
 
