@@ -28,9 +28,9 @@ function PlantSimEngine.inputs_(::Translucent)
 end
 
 function PlantSimEngine.outputs_(::Translucent)
-    (
-        Rₛ=-Inf, sky_fraction=-Inf
-    )
+    # (Rₛ=-Inf, sky_fraction=-Inf)
+    # NB, it is not implemented yet so it computes nothing
+    NamedTuple()
 end
 
 function PlantSimEngine.run!(::Translucent, models, status, meteo, constants, extra=nothing)

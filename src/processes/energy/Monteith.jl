@@ -92,7 +92,7 @@ leaf = ModelList(
     status = (Rₛ = 13.747, sky_fraction = 1.0, d = 0.03)
 )
 
-energy_balance!(leaf,meteo)
+run!(leaf,meteo)
 leaf.status.Rn
 julia> 12.902547446281233
 
@@ -104,7 +104,7 @@ leaf = ModelList(
     status = (Rₛ = 13.747, sky_fraction = 1.0, PPFD = 1500.0, d = 0.03)
 )
 
-energy_balance!(leaf,meteo)
+run!(leaf,meteo)
 leaf[:Rn]
 leaf[:Rₗₗ]
 leaf[:A]

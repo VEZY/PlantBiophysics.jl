@@ -37,7 +37,7 @@ end
         status=(Rₛ=13.747, sky_fraction=1.0, PPFD=1500.0, d=0.03)
     )
 
-    energy_balance!(leaf, meteo)
+    run!(leaf, meteo)
     for i in keys(ref)
         @test leaf[i] ≈ ref[i][1]
     end
@@ -73,7 +73,7 @@ end
         status=(Rₛ=13.747, sky_fraction=[0.5, 1.0], PPFD=1500.0, d=0.03)
     )
 
-    energy_balance!(leaf, meteo)
+    run!(leaf, meteo)
 
     for i in keys(ref)
         @test all(isapprox.(leaf[i], ref[i], rtol=1e-10))
@@ -118,7 +118,7 @@ end
         status=(Rₛ=13.747, sky_fraction=[0.5, 1.0], PPFD=1500.0, d=0.03)
     )
 
-    energy_balance!(leaf, meteo)
+    run!(leaf, meteo)
 
     for i in keys(ref)
         @test all(isapprox.(leaf[i], ref[i], rtol=1e-10))

@@ -41,7 +41,7 @@ end;
 
 
 
-@testset "energy_balance!" begin
+@testset "run!" begin
     # Reference value:
     ref = (
         Rₛ=13.747,
@@ -91,7 +91,7 @@ end;
 # res = DataFrame(:PPFD => Float64[], :A => Float64[])
 # for i in 1:10:1500
 #     leaf.status.PPFD = i
-#     energy_balance!(leaf, meteo)
+#     run!(leaf, meteo)
 #     push!(res, (PPFD = leaf.status.PPFD, A = leaf.status.A))
 # end
 
