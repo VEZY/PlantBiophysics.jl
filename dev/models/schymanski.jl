@@ -53,8 +53,8 @@ gs_obs = gsw_to_gsc.(ms_to_mol.(results1_6a.g_sw, results1_6a.T_a .- params["T0"
 
 leaf =
     ModelList(
-        energy_balance=Monteith(aₛᵥ=params["a_s"], maxiter=maxiter),
-        photosynthesis=ConstantA(0.0),
+        Monteith(aₛᵥ=params["a_s"], maxiter=maxiter),
+        ConstantA(0.0),
         status=(
             Rₛ=results1_6a.Rn_leaf,
             sky_fraction=2.0,
@@ -65,7 +65,7 @@ leaf =
 
 # NB, we use ConstantAGs and not ConstantA because Monteith calls the photosynthesis,
 # not stomatal_conductance (stomatal_conductance is called inside the photosynthesis).
-energy_balance!(leaf, weather, cst)
+run!(leaf, weather, cst)
 
 # Running the simulation:
 size_inches = (8, 6)

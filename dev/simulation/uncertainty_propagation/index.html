@@ -4,12 +4,12 @@
 unsafe_comparisons(true)</code></pre><p>We can use the <code>μ ± σ</code> notation for the values of the parameters and micro-meteorological conditions to create a Gaussian distribution (of mean μ and standard deviation σ):</p><pre><code class="language-julia hljs">meteo = Atmosphere(T = 22.0 ± 0.1, Wind = 0.8333 ± 0.1, P = 101.325 ± 1., Rh = 0.4490995 ± 0.02, Cₐ = 400. ± 1.)
 
 leaf = ModelList(
-        energy_balance = Monteith(),
-        photosynthesis = Fvcb(),
-        stomatal_conductance = Medlyn(0.03, 12.0),
+        Monteith(),
+        Fvcb(),
+        Medlyn(0.03, 12.0),
         status = (Rₛ = 13.747 ± 1., sky_fraction = 1.0, PPFD = 1500.0 ± 1., d = 0.03 ± 0.001),
         type_promotion = Dict(Float64 =&gt; Particles{Float64,2000})
-    )</code></pre><p>Now our parameters and conditions are not scalars, but <code>Particles</code>, which are <code>n</code> sampled values in the <code>μ ± σ</code> distributions. By default <code>n = 2000</code>.</p><p>We can now run our simulation:</p><pre><code class="language-julia hljs">energy_balance!(leaf,meteo)</code></pre><p>And now we can plot the resulting inputs/outputs values:</p><pre><code class="language-julia hljs">p1 = plot(meteo.T,legend=:false,xlabel=&quot;Tₐ (°C)&quot;,ylabel=&quot;density&quot;,dpi=300,title=&quot;(a)&quot;,titlefontsize=9)
+    )</code></pre><p>Now our parameters and conditions are not scalars, but <code>Particles</code>, which are <code>n</code> sampled values in the <code>μ ± σ</code> distributions. By default <code>n = 2000</code>.</p><p>We can now run our simulation:</p><pre><code class="language-julia hljs">run!(leaf,meteo)</code></pre><p>And now we can plot the resulting inputs/outputs values:</p><pre><code class="language-julia hljs">p1 = plot(meteo.T,legend=:false,xlabel=&quot;Tₐ (°C)&quot;,ylabel=&quot;density&quot;,dpi=300,title=&quot;(a)&quot;,titlefontsize=9)
 p2 = plot(leaf.status.d[1],legend=:false,xlabel=&quot;d (m)&quot;,ylabel=&quot;density&quot;,dpi=300,title=&quot;(b)&quot;,titlefontsize=9)
 p3 = plot(leaf.status.Tₗ[1],legend=:false,xlabel=&quot;Tₗ (°C)&quot;,ylabel=&quot;density&quot;,dpi=300,title=&quot;(c)&quot;,titlefontsize=9)
 p4 = plot(leaf.status.A[1],legend=:false,xlabel=&quot;A&quot;,ylabel=&quot;density&quot;,dpi=300,title=&quot;(d)&quot;,titlefontsize=9)
@@ -19,20 +19,20 @@ plot(p1,p2,p3,p4,dpi=300,titleloc=:right)</code></pre><p><img src="../distributi
 meteo = Atmosphere(T = 15.0 .. 18.0, Wind = 0.8333 ± 0.1, P = 101.325 ± 1., Rh = 0.4490995 ± 0.02, Cₐ = 400. ± 1.)
 
 leaf = ModelList(
-        energy_balance = Monteith(),
-        photosynthesis = Fvcb(),
-        stomatal_conductance = Medlyn(0.03, 12.0),
+        Monteith(),
+        Fvcb(),
+        Medlyn(0.03, 12.0),
         status = (Rₛ = 13.747 ± 1., sky_fraction = 1.0, PPFD = 1500.0 ± 1., d = 0.01 .. 0.03),
         type_promotion = Dict(Float64 =&gt; Particles{Float64,2000})
     )
 
-energy_balance!(leaf,meteo)
+run!(leaf,meteo)
 
 p1 = plot(meteo.T,legend=:false,xlabel=&quot;Tₐ (°C)&quot;,ylabel=&quot;density&quot;,dpi=300,title=&quot;(a)&quot;,titlefontsize=9)
 p2 = plot(leaf.status.d[1],legend=:false,xlabel=&quot;d (m)&quot;,ylabel=&quot;density&quot;,dpi=300,title=&quot;(b)&quot;,titlefontsize=9)
 p3 = plot(leaf.status.Tₗ[1],legend=:false,xlabel=&quot;Tₗ (°C)&quot;,ylabel=&quot;density&quot;,dpi=300,title=&quot;(c)&quot;,titlefontsize=9)
 p4 = plot(leaf.status.A[1],legend=:false,xlabel=&quot;A&quot;,ylabel=&quot;density&quot;,dpi=300,title=&quot;(d)&quot;,titlefontsize=9)
-plot(p1,p2,p3,p4,dpi=300,titleloc=:right)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">[ Info: Dₗ, Tₗ, Cᵢ, Rn, Cₛ, d, PPFD, A, sky_fraction, Rₛ, λE, Rₗₗ, H, Gₛ, Gbc, Gbₕ are Float64 and were promoted to MonteCarloMeasurements.Particles{Float64, 2000}</code></pre><p><img src="../distributions-example-various.svg" alt/></p><h2 id="Plotting"><a class="docs-heading-anchor" href="#Plotting">Plotting</a><a id="Plotting-1"></a><a class="docs-heading-anchor-permalink" href="#Plotting" title="Permalink"></a></h2><p>Plotting values of type <code>MonteCarloMeasurements.jl</code> is allowed using <code>plot</code> as it were scalars. It will plot confidence interval too. You can also check specific <code>MonteCarloMeasurements.jl</code> function <code>ribbonplot</code> (more details in part <code>Plotting</code> of the package documentation).</p><p>For example we can simulate a leaf energy balance over consecutive time-steps:</p><pre><code class="language-julia hljs">weather = read_weather(
+plot(p1,p2,p3,p4,dpi=300,titleloc=:right)</code></pre><p><img src="../distributions-example-various.svg" alt/></p><h2 id="Plotting"><a class="docs-heading-anchor" href="#Plotting">Plotting</a><a id="Plotting-1"></a><a class="docs-heading-anchor-permalink" href="#Plotting" title="Permalink"></a></h2><p>Plotting values of type <code>MonteCarloMeasurements.jl</code> is allowed using <code>plot</code> as it were scalars. It will plot confidence interval too. You can also check specific <code>MonteCarloMeasurements.jl</code> function <code>ribbonplot</code> (more details in part <code>Plotting</code> of the package documentation).</p><p>For example we can simulate a leaf energy balance over consecutive time-steps:</p><pre><code class="language-julia hljs">weather = read_weather(
     joinpath(dirname(dirname(pathof(PlantMeteo))), &quot;test&quot;, &quot;data&quot;, &quot;meteo.csv&quot;),
     :temperature =&gt; :T,
     :relativeHumidity =&gt; (x -&gt; x ./ 100) =&gt; :Rh,
@@ -42,13 +42,13 @@ plot(p1,p2,p3,p4,dpi=300,titleloc=:right)</code></pre><pre class="documenter-exa
 )
 
 leaf = ModelList(
-        energy_balance = Monteith(),
-        photosynthesis = Fvcb(),
-        stomatal_conductance = Medlyn(0.03, 12.0),
+        Monteith(),
+        Fvcb(),
+        Medlyn(0.03, 12.0),
         status = (Rₛ = 13.747 ± 2., sky_fraction = 0.6..1.0, PPFD = 1500.0 ± 100., d = [0.03,0.03,0.03]),
         type_promotion = Dict(Float64 =&gt; Particles{Float64,2000})
     )
 
-energy_balance!(leaf, weather)
+run!(leaf, weather)
 
-ribbonplot(weather[:date], leaf[:Tₗ], alpha = 0.2, ylab = &quot;Leaf Temperature&quot;, xlab = &quot;Time&quot;)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">[ Info: Dₗ, Tₗ, Cᵢ, Rn, Cₛ, d, PPFD, A, sky_fraction, Rₛ, λE, Rₗₗ, H, Gₛ, Gbc, Gbₕ are Float64 and were promoted to MonteCarloMeasurements.Particles{Float64, 2000}</code></pre><p><img src="../error-ribbon.svg" alt/></p><h2 id="Performance"><a class="docs-heading-anchor" href="#Performance">Performance</a><a id="Performance-1"></a><a class="docs-heading-anchor-permalink" href="#Performance" title="Permalink"></a></h2><p>Monte Carlo results are highly dependent on the number of simulations given by the number of particles <code>n</code>. But keep in mind that the result of an uncertainty propagation with a low <code>n</code> is more unreliable than with a higher <code>n</code>.</p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../mtg_simulation/">« Whole-plant simulation</a><a class="docs-footer-nextpage" href="../../extending/implement_a_model/">Implement a model »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 0.27.23 on <span class="colophon-date" title="Tuesday 17 January 2023 17:14">Tuesday 17 January 2023</span>. Using Julia version 1.7.2.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+ribbonplot(weather[:date], leaf[:Tₗ], alpha = 0.2, ylab = &quot;Leaf Temperature&quot;, xlab = &quot;Time&quot;)</code></pre><p><img src="../error-ribbon.svg" alt/></p><h2 id="Performance"><a class="docs-heading-anchor" href="#Performance">Performance</a><a id="Performance-1"></a><a class="docs-heading-anchor-permalink" href="#Performance" title="Permalink"></a></h2><p>Monte Carlo results are highly dependent on the number of simulations given by the number of particles <code>n</code>. But keep in mind that the result of an uncertainty propagation with a low <code>n</code> is more unreliable than with a higher <code>n</code>.</p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../mtg_simulation/">« Whole-plant simulation</a><a class="docs-footer-nextpage" href="../../extending/implement_a_model/">Implement a model »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 0.27.24 on <span class="colophon-date" title="Wednesday 8 February 2023 11:03">Wednesday 8 February 2023</span>. Using Julia version 1.7.2.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>

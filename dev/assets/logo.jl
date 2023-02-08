@@ -19,7 +19,7 @@ transform!(
     ignore_nothing=true
 )
 
-energy_balance!(mtg, models, weather)
+run!(mtg, models, weather)
 
 transform!(
     mtg,
