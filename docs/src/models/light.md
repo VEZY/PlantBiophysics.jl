@@ -11,7 +11,7 @@ There is only one simple light interception model implemented in PlantBiophysics
 ```@example usepkg
 using PlantBiophysics, PlantSimEngine
 
-m = ModelList(light_interception=Beer(0.5), status=(LAI=2.0,))
+m = ModelList(Beer(0.5), status=(LAI=2.0,))
 
 meteo = Atmosphere(T=20.0, Wind=1.0, P=101.3, Rh=0.65, Ri_PAR_f=300.0)
 

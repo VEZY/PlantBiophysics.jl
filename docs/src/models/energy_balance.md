@@ -8,7 +8,7 @@ The energy balance is the process of computing the balance between influx and ou
 
 ## Models overview
 
-The energy balance can be simulated using [`energy_balance!`](@ref) or [`energy_balance`](@ref). Only one model is available to-date:
+Only one model is available to-date:
 
 - [`Monteith`](@ref): an implementation of the Monteith et al. (2013) model
 
@@ -20,13 +20,13 @@ using PlantBiophysics, PlantSimEngine
 meteo = Atmosphere(T = 20.0, Wind = 1.0, P = 101.3, Rh = 0.65)
 
 leaf = ModelList(
-    energy_balance = Monteith(),
-    photosynthesis = Fvcb(),
-    stomatal_conductance = Medlyn(0.03, 12.0),
+    Monteith(),
+    Fvcb(),
+    Medlyn(0.03, 12.0),
     status = (Rₛ = 13.747, sky_fraction = 1.0, PPFD = 1500.0, d = 0.03)
 )
 
-energy_balance!(leaf,meteo)
+run!(leaf,meteo)
 leaf[:Rn]
 ```
 
@@ -84,9 +84,9 @@ Here is an example usage:
 meteo = Atmosphere(T = 22.0, Wind = 0.8333, P = 101.325, Rh = 0.4490995)
 
 leaf = ModelList(
-    energy_balance = Monteith(),
-    photosynthesis = Fvcb(),
-    stomatal_conductance = Medlyn(0.03, 12.0),
+    Monteith(),
+    Fvcb(),
+    Medlyn(0.03, 12.0),
     status = (Rₛ = 13.747, sky_fraction = 1.0, PPFD = 1500.0, d = 0.03)
 )
 

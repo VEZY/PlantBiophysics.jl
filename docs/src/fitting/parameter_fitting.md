@@ -47,7 +47,7 @@ Now let's re-simulate the assimilation with our optimized parameter values:
 ```@example usepkg
 leaf =
     ModelList(
-        photosynthesis = FvcbRaw(VcMaxRef = VcMaxRef, JMaxRef = JMaxRef, RdRef = RdRef, TPURef = TPURef),
+        FvcbRaw(VcMaxRef = VcMaxRef, JMaxRef = JMaxRef, RdRef = RdRef, TPURef = TPURef),
         status = (Tₗ = df.Tₗ, PPFD = df.PPFD, Cᵢ = df.Cᵢ)
     )
 run!(leaf)
@@ -67,8 +67,8 @@ There are another implementation of the FvCB model in our package. One that coup
 
 ```@example usepkg
 leaf = ModelList(
-        photosynthesis = Fvcb(VcMaxRef = VcMaxRef, JMaxRef = JMaxRef, RdRef = RdRef, Tᵣ = 25.0, TPURef = TPURef),
-        stomatal_conductance = Medlyn(0.03, 12.),
+        Fvcb(VcMaxRef = VcMaxRef, JMaxRef = JMaxRef, RdRef = RdRef, Tᵣ = 25.0, TPURef = TPURef),
+        Medlyn(0.03, 12.),
         status = (Tₗ = df.Tₗ, PPFD = df.PPFD, Cₛ = df.Cₐ, Dₗ = 0.1)
     )
 

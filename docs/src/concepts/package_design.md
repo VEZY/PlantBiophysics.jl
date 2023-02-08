@@ -38,10 +38,10 @@ Let's instantiate a `ModelList` with the Beer-Lambert model of light extinction.
 
 ```@example usepkg
 using PlantSimEngine, PlantBiophysics
-ModelList(light_extinction = Beer(0.5))
+ModelList(Beer(0.5))
 ```
 
-What happened here? We provided an instance of a model to the process it simulates. The model is provided as a keyword argument to the `ModelList`, with the process name given as the keyword, and the instantiated model as the value. The keyword must match **exactly** the name of the process it simulates, *e.g.* `photosynthesis` for the photosynthesis process, because it is used to match the models to the function than run its simulation. The four processes provided by default are implemented with the following functions: `light_interception`, `energy_balance`, `photosynthesis` and `stomatal_conductance`.
+What happened here? We provided an instance of a model to a `ModelList` that automatically associates it to the process it simulates (*i.e.* the light interception).
 
 !!! tip
     We see that we only instantiated the `ModelList` for the light extinction process. What about the others like photosynthesis or energy balance ? Well there is no need to give models if we have no intention to simulate them.
@@ -104,14 +104,14 @@ If we instantiate a `ModelList` with the Beer-Lambert model, we can see that the
 
 ```@example usepkg
 using PlantSimEngine, PlantBiophysics
-m = ModelList(light_extinction = Beer(0.5))
+m = ModelList(Beer(0.5))
 keys(m.status)
 ```
 
 To know which variables should be initialized, we can use `to_initialize` from PlantSimEngine:
 
 ```@example usepkg
-m = ModelList(light_extinction = Beer(0.5))
+m = ModelList(Beer(0.5))
 
 to_initialize(m)
 ```
@@ -122,7 +122,7 @@ Their values are uninitialized though (hence the warnings):
 (m[:LAI], m[:PPFD])
 ```
 
-Uninitialized variables have the value returned by `typemin()`, *e.g.* `-Inf` for `Float64`:
+Uninitialized variables have often the value returned by `typemin()`, *e.g.* `-Inf` for `Float64`:
 
 ```@example usepkg
 typemin(Float64)
@@ -134,13 +134,13 @@ typemin(Float64)
 We can initialize the variables by providing their values to the status at instantiation:
 
 ```@example usepkg
-m = ModelList(light_extinction = Beer(0.5), status = (LAI = 2.0,))
+m = ModelList(Beer(0.5), status = (LAI = 2.0,))
 ```
 
 Or after instantiation using `init_status!` (from PlantSimEngine):
 
 ```@example usepkg
-m = ModelList(light_extinction = Beer(0.5))
+m = ModelList(Beer(0.5))
 
 init_status!(m, LAI = 2.0)
 ```
@@ -172,40 +172,27 @@ More details are available from the [dedicated section](@ref microclimate_page).
 
 ### Simulation of processes
 
-Making a simulation is rather simple, we simply use the function with the name of the process we want to simulate:
-
-- [`stomatal_conductance`](@ref) for the stomatal conductance
-- [`photosynthesis`](@ref) for the photosynthesis
-- [`energy_balance`](@ref) for the energy balance
-- [`light_interception`](@ref) for the energy balance
-
-!!! note
-    All functions exist in a mutating and a non-mutating form. Just add `!` at the end of the name of the function (*e.g.* `energy_balance!`) to use the mutating form for speed! 🚀
-
-The call to the function is the same whatever the model you choose for simulating the process. This is some magic allowed by Julia! A call to a function is made as follows:
+Making a simulation is rather simple, we simply use the `run!` function provided by `PlantSimEngine`:
 
 ```julia
-stomatal_conductance(model_list, meteo)
 run!(model_list, meteo)
-run!(model_list, meteo)
-light_interception(model_list, meteo)
 ```
 
-The first argument is the model list (see `ModelList` from PlantSimEngine), and the second defines the micro-climatic conditions (more details below in [Climate forcing](@ref)).
+The first argument is the model list (see `ModelList` from `PlantSimEngine`), and the second defines the micro-climatic conditions (more details below in [Climate forcing](@ref)).
 
-The `ModelList` should be initialized for the given process before calling the function. See [Variables (inputs, outputs)](@ref) for more details.
+The `ModelList` should be initialized for the given process before calling `run!`. See [Variables (inputs, outputs)](@ref) for more details.
 
 ### Example simulation
 
-For example we can simulate the [`stomatal_conductance`](@ref) of a leaf like so:
+For example we can simulate the `stomatal_conductance` of a leaf like so:
 
 ```@example usepkg
 using PlantMeteo, PlantSimEngine, PlantBiophysics
 meteo = Atmosphere(T = 20.0, Wind = 1.0, P = 101.3, Rh = 0.65)
 
 leaf = ModelList(
-    stomatal_conductance = Medlyn(0.03, 12.0),
-    status = (A = 20.0, Cₛ = 400.0, Dₗ = meteo.VPD)
+    Medlyn(0.03, 12.0),
+    status = (A = 20.0, Dₗ = meteo.VPD, Cₛ = 400.0)
 )
 
 run!(leaf, meteo)
@@ -213,27 +200,11 @@ run!(leaf, meteo)
 leaf[:Gₛ]
 ```
 
-### Functions forms
-
-Each function has three forms. For example [`energy_balance`](@ref) has:
-
-- `energy_balance`: the generic function that makes a copy of the `modelList` and return the status (not very efficient but easy to use)
-- `energy_balance!`: the faster generic function. But we need to extract the outputs from the component models after the simulation (note the `!` at the end of the name)
-- `run!`: the internal implementation with a method for each model. PlantBiophysics then uses multiple dispatch to choose the right method based on the model type. If you don't plan to make your own models, you'll never have to use it 🙂
-
-If you want to implement your own models, please read this section in full first, and then [Model implementation](@ref model_implementation_page).
-
-!!! note
-    The functions can be applied on a model list only if there is a model parameterized for its corresponding process.
-
 ### Outputs
 
 The `status` field of a `ModelList` is used to initialize the variables before simulation and then to keep track of their values during and after the simulation. We can extract the simulation outputs of a model list using the `status` function (from PlantSimEngine).
 
-!!! note
-    Getting the status is only useful when using the mutating version of the function (*e.g.* [`energy_balance!`](@ref)), as the non-mutating version returns the output directly.
-
-The status can either be a `Status` if simulating only one time-step, or a `TimeSteps` (from PlantSimEngine) if several.
+The status can either be a `Status` type if simulating only one time-step, or a `TimeStepTable` (from `PlantMeteo`) if several.
 
 Let's look at the status of our previous simulated leaf:
 
@@ -241,7 +212,7 @@ Let's look at the status of our previous simulated leaf:
 status(leaf)
 ```
 
-We can extract the value of one variable using the `status` function, *e.g.* for the assimilation:
+We can extract the value of one variable using the `status` function, *e.g.* for the stomatal conductance:
 
 ```@example usepkg
 status(leaf, :Gₛ)
@@ -274,12 +245,12 @@ DataFrame(leaf)
 
 A model can work either independently or in conjunction with other models. For example a stomatal conductance model is often associated with a photosynthesis model, *i.e.* it is called from the photosynthesis model.
 
-Several models proposed in `PlantBiophysics.jl` are coupled models. For example, the [`Fvcb`](@ref) structure is the implementation of the Farquhar–von Caemmerer–Berry model for C3 photosynthesis (Farquhar et al., 1980; von Caemmerer and Farquhar, 1981) that is coupled to a stomatal conductance model. Hence, using [`Fvcb`](@ref) requires a stomatal conductance model in the `ModelList` to compute Gₛ.
+Several models proposed in `PlantBiophysics.jl` are hard-coupled models, *i.e.* one model calls another. For example, the [`Fvcb`](@ref) structure is the implementation of the Farquhar–von Caemmerer–Berry model for C3 photosynthesis (Farquhar et al., 1980; von Caemmerer and Farquhar, 1981) calls a stomatal conductance model. Hence, using [`Fvcb`](@ref) requires a stomatal conductance model in the `ModelList` to compute Gₛ.
 
 We can use the stomatal conductance model of Medlyn et al. (2011) as an example to compute it. It is implemented with the [`Medlyn`](@ref) structure. We can then create a `ModelList` with the two models:
 
 ```@example usepkg
-ModelList(photosynthesis = Fvcb(), stomatal_conductance = Medlyn(0.03, 12.0))
+ModelList(Fvcb(), Medlyn(0.03, 12.0))
 ```
 
 Now this instantiation returns some warnings saying we need to initialize some variables.
@@ -299,26 +270,15 @@ inputs(Medlyn(0.03, 12.0))
 We see that `A` is needed as input of `Medlyn`, but we also know that it is an output of `Fvcb`. This is why we prefer using `to_initialize` from `PlantSimEngine.jl` instead of `inputs`, because it returns only the variables that need to be initialized, considering that some inputs are duplicated between models, and some are computed by other models (they are outputs of a model):
 
 ```@example usepkg
-to_initialize(photosynthesis = Fvcb(), stomatal_conductance = Medlyn(0.03, 12.0))
-```
-
-We can also use it directly on a model list after instantiation:
-
-```@example usepkg
-m = ModelList(
-    photosynthesis = Fvcb(),
-    stomatal_conductance = Medlyn(0.03, 12.0)
-)
-
-to_initialize(m)
+to_initialize(ModelList(Fvcb(), Medlyn(0.03, 12.0)))
 ```
 
 The most straightforward way of initializing a model list is by giving the initializations to the `status` keyword argument during instantiation:
 
 ```@example usepkg
 m = ModelList(
-    photosynthesis = Fvcb(),
-    stomatal_conductance = Medlyn(0.03, 12.0),
+    Fvcb(),
+    Medlyn(0.03, 12.0),
     status = (Tₗ = 25.0, PPFD = 1000.0, Cₛ = 400.0, Dₗ = 0.82)
 )
 ```
@@ -332,4 +292,4 @@ run!(m)
 ```
 
 !!! tip
-    The models included in the package are listed in their own section, *i.e.* [here for photosynthesis](@ref photosynthesis_page). Users are also encouraged to develop their own models by following the instructions in the [corresponding section](@ref model_implementation_page).
+    The models included in the package are listed in their own section, *i.e.* [here for photosynthesis](@ref photosynthesis_page).

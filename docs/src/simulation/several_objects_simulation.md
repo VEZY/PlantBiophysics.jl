@@ -18,20 +18,20 @@ using Dates, DataFrames
 meteo = Atmosphere(T = 22.0, Wind = 0.8333, P = 101.325, Rh = 0.4490995)
 
 leaf1 = ModelList(
-        energy_balance = Monteith(),
-        photosynthesis = Fvcb(),
-        stomatal_conductance = Medlyn(0.03, 12.0),
+        Monteith(),
+        Fvcb(),
+        Medlyn(0.03, 12.0),
         status = (Rₛ = 13.747, sky_fraction = 1.0, PPFD = 1500.0, d = 0.03)
     )
 
 leaf2 = ModelList(
-        energy_balance = Monteith(),
-        photosynthesis = Fvcb(),
-        stomatal_conductance = Medlyn(0.03, 12.0),
+        Monteith(),
+        Fvcb(),
+        Medlyn(0.03, 12.0),
         status = (Rₛ = 10., sky_fraction = 1.0, PPFD = 1250.0, d = 0.02)
     )
 
-energy_balance!([leaf1, leaf2], meteo)
+run!([leaf1, leaf2], meteo)
 
 DataFrame(Dict("leaf1" => leaf1, "leaf2" => leaf2))
 ```
@@ -52,9 +52,9 @@ meteo =
     )
 
 leaf1 = ModelList(
-        energy_balance = Monteith(),
-        photosynthesis = Fvcb(),
-        stomatal_conductance = Medlyn(0.03, 12.0),
+        Monteith(),
+        Fvcb(),
+        Medlyn(0.03, 12.0),
         status = (
             Rₛ = [5., 10., 20.],
             sky_fraction = 1.0,
@@ -64,9 +64,9 @@ leaf1 = ModelList(
     )
 
 leaf2 = ModelList(
-        energy_balance = Monteith(),
-        photosynthesis = Fvcb(),
-        stomatal_conductance = Medlyn(0.03, 12.0),
+        Monteith(),
+        Fvcb(),
+        Medlyn(0.03, 12.0),
         status = (
             Rₛ = [3., 7., 16.],
             sky_fraction = 1.0,
@@ -75,7 +75,7 @@ leaf2 = ModelList(
         )
     )
 
-energy_balance!([leaf1, leaf2], meteo)
+run!([leaf1, leaf2], meteo)
 
 DataFrame(Dict("leaf1" => leaf1, "leaf2" => leaf2))
 ```
