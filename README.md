@@ -60,7 +60,7 @@ leaf = ModelList(
     status = (Rₛ = [13.747, 14.5], sky_fraction = 1.0, PPFD = 1500.0, d = 0.03)
 )
 
-energy_balance!(leaf, meteo)
+run!(leaf, meteo)
 
 leaf
 ```
@@ -108,9 +108,9 @@ For more examples, please read the documentation.
 - [x] Do we have a `setindex!` method for `leaf[:var]`? Implement it if missing.
 - [ ] Make boundary layer conductances true models as for stomatal conductances, but maybe define the current ones as default when calling the function (I mean if no model is provided, use the ones currently in use).
 - [ ] Make a diagram of a leaf for gaz and energy exchanges
-- [x] Add checks on the models provided for a simulation: for example Fvcb requires a stomatal conductance model. At the moment Julia returns an error on missing method for the particular implementation of photosynthesis!_(Fvcb,Gs) (in short). We could check before that both are needed and present, and return a more informational error if missing.
+- [x] Add checks on the models provided for a simulation: for example Fvcb requires a stomatal conductance model. At the moment Julia returns an error on missing method for the particular implementation of run!(Fvcb,Gs) (in short). We could check before that both are needed and present, and return a more informational error if missing.
 - [ ] Implement a Gm model. Cf. the [GECROS](https://models.pps.wur.nl/gecros-detailed-eco-physiological-crop-growth-simulation-model-analyse-genotype-environment) model.
-- [x] Replace component models by MutableNamedTuples ? It could alleviate the need to implement a different component model when needing a new model as it allows as many fields as we want. A call to a function would need to include the type of the model though ? *e.g.* `energy_balance!(mtnt.energy_balance, mtnt, meteo, constant)`, or we do that in the low-level functions so the use only pass the mtnt. -> solution was to make the call to the low-level functions generic for the models (no constraint on the type), but dispatch on the type of the first argument instead that is the model type for this function. This changes nothing to the high-level functions but make the possibility to provide other things than component models.
+- [x] Replace component models by MutableNamedTuples ? It could alleviate the need to implement a different component model when needing a new model as it allows as many fields as we want. A call to a function would need to include the type of the model though ? *e.g.* `run!(mtnt.energy_balance, mtnt, meteo, constant)`, or we do that in the low-level functions so the use only pass the mtnt. -> solution was to make the call to the low-level functions generic for the models (no constraint on the type), but dispatch on the type of the first argument instead that is the model type for this function. This changes nothing to the high-level functions but make the possibility to provide other things than component models.
 - [x] Move the definitions of the abstract models near their processes: e.g. the definition of `AbstractPhotosynthesisModel` should be in the `photosynthesis.jl` file.
 - [x] Change the way we store parameters, models and status:
   - [x] Add a new struct for the list of models, with two fields: models and status.

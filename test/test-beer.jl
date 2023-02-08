@@ -10,6 +10,6 @@ meteo = Atmosphere(T=20.0, Wind=1.0, P=101.3, Rh=0.65, Ri_PAR_f=300.0)
 # Computing the light interception using the Beer-Lambert law:
 @testset "Beer-Lambert" begin
     @test Beer <: AbstractLight_InterceptionModel
-    light_interception!(m, meteo, constants)
+    run!(m, meteo, constants)
     @test status(m).PPFD[1] ≈ 504.3627138460475 # in μmol[PAR] m[leaf]⁻² s⁻¹
 end;

@@ -6,7 +6,7 @@ using OrderedCollections
 using Dates
 using DataFrames
 using MultiScaleTreeGraph
-using PlantBiophysics
+using PlantGeom
 
 # We use the ones from PlantBiophysics so it works even with "dev"ed versions:
 using PlantBiophysics.PlantMeteo
@@ -43,9 +43,9 @@ using PlantBiophysics.PlantSimEngine
         include("test-energy_balance.jl")
     end
 
-    # @testset "MTG compatibility" begin
-    #     include("test-mtg.jl")
-    # end
+    @testset "MTG compatibility" begin
+        include("test-mtg.jl")
+    end
 
     @testset "Fitting" begin
         include("test-fitting.jl")

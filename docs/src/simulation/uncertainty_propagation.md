@@ -10,9 +10,9 @@ unsafe_comparisons(true)
 meteo = Atmosphere(T = 22.0 ± 0.1, Wind = 0.8333 ± 0.1, P = 101.325 ± 1., Rh = 0.4490995 ± 0.02, Cₐ = 400. ± 1.)
 
 leaf = ModelList(
-        energy_balance = Monteith(),
-        photosynthesis = Fvcb(),
-        stomatal_conductance = Medlyn(0.03, 12.0),
+        Monteith(),
+        Fvcb(),
+        Medlyn(0.03, 12.0),
         status = (Rₛ = 13.747 ± 1., sky_fraction = 1.0, PPFD = 1500.0 ± 1., d = 0.03 ± 0.001),
         type_promotion = Dict(Float64 => Particles{Float64,2000})
     )
@@ -40,9 +40,9 @@ We can use the `μ ± σ` notation for the values of the parameters and micro-me
 meteo = Atmosphere(T = 22.0 ± 0.1, Wind = 0.8333 ± 0.1, P = 101.325 ± 1., Rh = 0.4490995 ± 0.02, Cₐ = 400. ± 1.)
 
 leaf = ModelList(
-        energy_balance = Monteith(),
-        photosynthesis = Fvcb(),
-        stomatal_conductance = Medlyn(0.03, 12.0),
+        Monteith(),
+        Fvcb(),
+        Medlyn(0.03, 12.0),
         status = (Rₛ = 13.747 ± 1., sky_fraction = 1.0, PPFD = 1500.0 ± 1., d = 0.03 ± 0.001),
         type_promotion = Dict(Float64 => Particles{Float64,2000})
     )
@@ -53,7 +53,7 @@ Now our parameters and conditions are not scalars, but `Particles`, which are `n
 We can now run our simulation:
 
 ```@example usepkg
-energy_balance!(leaf,meteo)
+run!(leaf,meteo)
 ```
 
 And now we can plot the resulting inputs/outputs values:
@@ -82,14 +82,14 @@ Here's an example usage:
 meteo = Atmosphere(T = 15.0 .. 18.0, Wind = 0.8333 ± 0.1, P = 101.325 ± 1., Rh = 0.4490995 ± 0.02, Cₐ = 400. ± 1.)
 
 leaf = ModelList(
-        energy_balance = Monteith(),
-        photosynthesis = Fvcb(),
-        stomatal_conductance = Medlyn(0.03, 12.0),
+        Monteith(),
+        Fvcb(),
+        Medlyn(0.03, 12.0),
         status = (Rₛ = 13.747 ± 1., sky_fraction = 1.0, PPFD = 1500.0 ± 1., d = 0.01 .. 0.03),
         type_promotion = Dict(Float64 => Particles{Float64,2000})
     )
 
-energy_balance!(leaf,meteo)
+run!(leaf,meteo)
 
 p1 = plot(meteo.T,legend=:false,xlabel="Tₐ (°C)",ylabel="density",dpi=300,title="(a)",titlefontsize=9)
 p2 = plot(leaf.status.d[1],legend=:false,xlabel="d (m)",ylabel="density",dpi=300,title="(b)",titlefontsize=9)
@@ -118,14 +118,14 @@ weather = read_weather(
 )
 
 leaf = ModelList(
-        energy_balance = Monteith(),
-        photosynthesis = Fvcb(),
-        stomatal_conductance = Medlyn(0.03, 12.0),
+        Monteith(),
+        Fvcb(),
+        Medlyn(0.03, 12.0),
         status = (Rₛ = 13.747 ± 2., sky_fraction = 0.6..1.0, PPFD = 1500.0 ± 100., d = [0.03,0.03,0.03]),
         type_promotion = Dict(Float64 => Particles{Float64,2000})
     )
 
-energy_balance!(leaf, weather)
+run!(leaf, weather)
 
 ribbonplot(weather[:date], leaf[:Tₗ], alpha = 0.2, ylab = "Leaf Temperature", xlab = "Time")
 savefig("error-ribbon.svg"); nothing #hide

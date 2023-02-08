@@ -97,14 +97,14 @@ function get_model(x, process)
     process = lowercase(process)
     if process == "photosynthesis"
         dict = Dict("farquharenbalance" => Fvcb, "fvcb" => Fvcb,
-            "fvcbiter" => FvcbIter, "ignore" => Ignore)
+            "fvcbiter" => FvcbIter, "ignore" => Missing)
         # NB: dict keys all in lowercase because we transform x into lowercase too to avoid mismatches
     elseif process == "stomatalconductance" || process == "stomatal_conductance"
         dict = Dict("medlyn" => Medlyn)
     elseif process == "interception"
-        dict = Dict("translucent" => Translucent, "ignore" => Ignore)
+        dict = Dict("translucent" => Translucent, "ignore" => LightIgnore)
     elseif process == "energy" || process == "energy_balance"
-        dict = Dict("monteith" => Monteith, "ignore" => Ignore)
+        dict = Dict("monteith" => Monteith, "ignore" => Missing)
     end
 
     x_lc = lowercase(x)
@@ -198,7 +198,7 @@ function instantiate(model::Type{Translucent}, param)
 end
 
 
-function instantiate(model::Type{Ignore}, param)
+function instantiate(model::Type{LightIgnore}, param)
     missing
 end
 

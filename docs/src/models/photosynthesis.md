@@ -8,7 +8,7 @@ The photosynthesis is, in this package, the process of assimilation of the atmos
 
 ## Models overview
 
-Photosynthesis can be simulated using [`photosynthesis!`](@ref) or [`photosynthesis`](@ref). Several models are available to simulate it:
+Several models are available to simulate it:
 
 - [`Fvcb`](@ref): an implementation of the Farquhar–von Caemmerer–Berry (FvCB) model for C3 photosynthesis (Farquhar et al., 1980; von Caemmerer and Farquhar, 1981) using an analytical resolution
 - [`FvcbIter`](@ref): the same model but implemented using an iterative computation over Cᵢ
@@ -22,8 +22,8 @@ For example, you can "simulate" a constant assimilation for a leaf using the fol
 
 ```@example usepkg
 using PlantBiophysics, PlantSimEngine
-leaf = ModelList(photosynthesis = ConstantA(25.0))
-photosynthesis(leaf)
+leaf = ModelList(ConstantA(25.0))
+run!(leaf)
 ```
 
 This model does one thing only: force the photosynthesis to the value given as a parameter in the model, here 25.0 ``μmol \cdot m^{-2} \cdot s^{-1}``.
@@ -84,13 +84,13 @@ Here is an example usage:
 meteo = Atmosphere(T = 20.0, Wind = 1.0, P = 101.3, Rh = 0.65)
 
 leaf = ModelList(
-    photosynthesis = Fvcb(),
-    stomatal_conductance = Medlyn(0.03, 12.0),
+    Fvcb(),
+    Medlyn(0.03, 12.0),
     status = (Tₗ = 25.0, PPFD = 1000.0, Cₛ = 400.0, Dₗ = meteo.VPD)
 )
 # NB: we need to initialize `Tₗ`, `PPFD` and `Cₛ` for `FvCB`, and `Dₗ` for the stomatal conductance of Medlyn et al. (2011).
 
-photosynthesis!(leaf,meteo)
+run!(leaf,meteo)
 
 leaf
 ```
@@ -116,14 +116,14 @@ Here is an example usage:
 meteo = Atmosphere(T = 20.0, Wind = 1.0, P = 101.3, Rh = 0.65)
 
 leaf = ModelList(
-    photosynthesis = FvcbIter(),
-    stomatal_conductance = Medlyn(0.03, 12.0),
+    FvcbIter(),
+    Medlyn(0.03, 12.0),
     status = (Tₗ = 25.0, PPFD = 1000.0, Gbc = 0.67, Dₗ = meteo.VPD)
 )
 
 # NB: we need to initialize `Tₗ`, `PPFD` and `Gbc` for `FvcbIter`, and `Dₗ` for the stomatal conductance of Medlyn et al. (2011).
 
-photosynthesis!(leaf,meteo,Constants())
+run!(leaf,meteo,Constants())
 
 leaf
 ```
@@ -151,12 +151,12 @@ The `PPFD` is, again, the absorbed photosynthetically active photon flux density
 
 ```@example usepkg
 leaf = ModelList(
-    photosynthesis = FvcbRaw(),
+    FvcbRaw(),
     status = (Tₗ = 25.0, PPFD = 1000.0, Cᵢ = 400.0)
 )
 # NB: we need `Tₗ`, `PPFD` and `Cᵢ` as inputs (see `inputs`)
 
-photosynthesis!(leaf)
+run!(leaf)
 leaf
 ```
 
@@ -173,9 +173,9 @@ leaf
 ### [Example](@id exemple_constanta)
 
 ```@example usepkg
-leaf = ModelList(photosynthesis = ConstantA())
+leaf = ModelList(ConstantA())
 
-photosynthesis!(leaf)
+run!(leaf)
 leaf
 ```
 
@@ -197,12 +197,12 @@ inputs(ConstantAGs())
 
 ```@example usepkg
 leaf = ModelList(
-    photosynthesis = ConstantAGs(),
-    stomatal_conductance = Medlyn(0.03, 12.0),
+    ConstantAGs(),
+    Medlyn(0.03, 12.0),
     status = (Cₛ = 380.0, Dₗ = 2.0)
 )
 
-photosynthesis!(leaf)
+run!(leaf)
 leaf
 ```
 

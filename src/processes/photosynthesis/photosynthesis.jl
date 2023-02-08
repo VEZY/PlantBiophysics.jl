@@ -1,17 +1,18 @@
 # Generate all methods for the photosynthesis process: several meteo time-steps, components,
 #  over an MTG, and the mutating /non-mutating versions
-@gen_process_methods "photosynthesis" """
-Generic photosynthesis model for photosynthetic organs. Computes the assimilation and
-stomatal conductance according to the models set in (or each component in) `object`.
+@process "photosynthesis" """
+Photosynthesis process to compute the CO₂ assimilation, and potentially
+hard-coupled with a stomatal conductance process.
 
 The models used are defined by the types of the `photosynthesis` and `stomatal_conductance`
-fields of `leaf`. For exemple to use the implementation of the Farquhar–von Caemmerer–Berry
-(FvCB) model (see `photosynthesis`), the `leaf.photosynthesis` field should be of type
-`Fvcb`.
+fields of the `ModelList`. For exemple to use the implementation of the Farquhar–von Caemmerer–Berry
+(FvCB) model, use the type `Fvcb` (see example below).
 
 # Examples
 
 ```julia
+using PlantSimEngine, PlantMeteo, PlantBiophysics
+
 meteo = Atmosphere(T = 20.0, Wind = 1.0, P = 101.3, Rh = 0.65)
 
 # Using Fvcb model:
@@ -22,14 +23,14 @@ leaf =
         status = (Tₗ = 25.0, PPFD = 1000.0, Cₛ = 400.0, Dₗ = meteo.VPD)
     )
 
-photosynthesis(leaf, meteo)
+run!(leaf, meteo)
 
 # ---Using several components---
 
 leaf2 = copy(leaf)
 leaf2.status.PPFD = 800.0
 
-photosynthesis([leaf,leaf2],meteo)
+run!([leaf,leaf2],meteo)
 
 # ---Using several meteo time-steps---
 
@@ -41,11 +42,11 @@ w = Weather(
         (site = "Test site,)
     )
 
-photosynthesis(leaf, w)
+run!(leaf, w)
 
 # ---Using several meteo time-steps and several components---
 
-photosynthesis(Dict(:leaf1 => leaf, :leaf2 => leaf2), w)
+run!(Dict(:leaf1 => leaf, :leaf2 => leaf2), w)
 
 # Using a model file:
 
@@ -55,7 +56,7 @@ model = read_model("a-model-file.yml")
 init_status!(model, Tₗ = 25.0, PPFD = 1000.0, Cₛ = 400.0, Dₗ = meteo.VPD)
 
 # Running a simulation for all component types in the same scene:
-photosynthesis!(model, meteo)
+run!(model, meteo)
 model["Leaf"].status.A
 
 ```

@@ -59,7 +59,7 @@ end
     PlantBiophysics.inputs_(::dummy_E) = (PPFD=-Inf, Tₗ=-Inf, Cₛ=-Inf)
     PlantBiophysics.outputs_(::dummy_E) = (A=-Inf, Gₛ=-Inf, Cᵢ=-Inf)
     PlantBiophysics.dep(::dummy_E) = (light_interception=AbstractLight_InterceptionModel, photosynthesis=AbstractPhotosynthesisModel)
-    function PlantBiophysics.energy_balance!_(::dummy_E, models, status, meteo, constants=Constants())
+    function PlantSimEngine.run!(::dummy_E, models, status, meteo, constants=Constants())
         return nothing
     end
 

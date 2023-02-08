@@ -25,9 +25,9 @@ meteo =
     )
 
 leaf = ModelList(
-        energy_balance = Monteith(),
-        photosynthesis = Fvcb(),
-        stomatal_conductance = Medlyn(0.03, 12.0),
+        Monteith(),
+        Fvcb(),
+        Medlyn(0.03, 12.0),
         status = (
             Rₛ = [5., 10., 20.],
             sky_fraction = 1.0,
@@ -36,7 +36,7 @@ leaf = ModelList(
         )
     )
 
-energy_balance!(leaf,meteo)
+run!(leaf,meteo)
 
 DataFrame(leaf)
 ```
@@ -80,12 +80,7 @@ The status argument of the ModelList can also be provided as a DataFrame, or any
 using DataFrames
 df = DataFrame(:Rₛ => [13.747, 13.8], :sky_fraction => [1.0, 1.0], :d => [0.03, 0.03], :PPFD => [1300.0, 1500.0])
 
-m = ModelList(
-    energy_balance=Monteith(),
-    photosynthesis=Fvcb(),
-    stomatal_conductance=Medlyn(0.03, 12.0),
-    status=df
-)
+m = ModelList(Monteith(), Fvcb(), Medlyn(0.03, 12.0), status=df)
 ```
 
 Note that computations will be slower, so if performance is an issue, use

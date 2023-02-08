@@ -1,6 +1,5 @@
 """
-struct to hold the parameters for Medlyn et al. (2011) stomatal
-conductance model for CO₂.
+Medlyn et al. (2011) stomatal conductance model for CO₂.
 
 # Arguments
 
@@ -9,19 +8,10 @@ conductance model for CO₂.
 - `gs_min = 0.001`: residual conductance. We consider the residual conductance being different
     from `g0` because in practice `g0` can be negative when fitting real-world data.
 
-# Usage
-
-Then used for example as follows:
-
-```julia
-Gs = Medlyn(0.03,0.1)
-gs_mod = stomatal_conductance(Gs,(Cₛ = 400.0, VPD = 1.5))
-Gₛ = Gs.g0 + gs_mod * A
-```
-
 # Examples
 
 ```julia
+using PlantMeteo, PlantSimEngine, PlantBiophysics
 meteo = Atmosphere(T = 20.0, Wind = 1.0, P = 101.3, Rh = 0.65)
 
 leaf =
@@ -29,7 +19,7 @@ leaf =
         stomatal_conductance = Medlyn(0.03, 12.0),
         status = (A = A, Cₛ = 380.0, Dₗ = meteo.VPD)
     )
-stomatal_conductance(leaf,meteo)
+run!(leaf,meteo)
 ```
 
 # References
@@ -119,14 +109,14 @@ gs_mod = gs_closure(leaf, meteo)
 A = 20 # example assimilation (μmol m-2 s-1)
 Gs = leaf.stomatal_conductance.g0 + gs_mod * A
 
-# Or more directly using `stomatal_conductance()`:
+# Or more directly using `run!()`:
 
 leaf =
     ModelList(
         stomatal_conductance = Medlyn(0.03, 12.0),
         status = (A = A, Cₛ = 380.0, Dₗ = meteo.VPD)
     )
-stomatal_conductance(leaf,meteo)
+run!(leaf,meteo)
 ```
 
 # References

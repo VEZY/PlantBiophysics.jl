@@ -26,7 +26,7 @@ end
 Base.eltype(x::ConstantA) = typeof(x).parameters[1]
 
 """
-    photosynthesis!_(::ConstantA; models, status, meteo, constants=Constants())
+    run!(::ConstantA; models, status, meteo, constants=Constants())
 
 Constant photosynthesis (forcing the value).
 
@@ -50,12 +50,12 @@ Modify the leaf status in place for A with a constant value:
 meteo = Atmosphere(T = 20.0, Wind = 1.0, P = 101.3, Rh = 0.65)
 leaf = ModelList(photosynthesis = ConstantA(26.0))
 
-photosynthesis!(leaf,meteo,Constants())
+run!(leaf,meteo,Constants())
 
 leaf.status.A
 ```
 """
-function photosynthesis!_(::ConstantA, models, status, meteo, constants=PlantMeteo.Constants(), extra=nothing)
+function PlantSimEngine.run!(::ConstantA, models, status, meteo, constants=PlantMeteo.Constants(), extra=nothing)
 
     # Net assimilation (μmol m-2 s-1)
     status.A = models.photosynthesis.A

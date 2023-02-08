@@ -44,26 +44,26 @@ end
     @test leaf1[:PPFD] == leaf1[:models][:PPFD][1]
 
     leaf1[:models].status.Rₛ = 300.0
-    pull_status!(leaf1)
+    PlantSimEngine.pull_status!(leaf1)
 
     # Modifying Rₛ and pulling it modifies the value in the attributes too:
     @test leaf1[:Rₛ] == [300.0]
 
     # Make a simulation, and check the other ones:
     meteo = Atmosphere(T=22.0, Wind=0.8333, P=101.325, Rh=0.4490995)
-    transform!(mtg, :models => (x -> energy_balance!(x, meteo)), ignore_nothing=true)
+    transform!(mtg, :models => (x -> run!(x, meteo)), ignore_nothing=true)
 
     # The output is not written in the attributes yet:
     @test leaf1[:A] == [-Inf]
 
     # Now it is:
-    pull_status!(leaf1)
+    PlantSimEngine.pull_status!(leaf1)
 
     @test leaf1[:A] == leaf1[:models][:A]
 
     # Checks if we can pull only some variables:
     leaf2 = get_node(mtg, 818)
-    pull_status!(leaf2, :A)
+    PlantSimEngine.pull_status!(leaf2, :A)
     @test leaf2[:A] == leaf2[:models][:A]
     @test leaf2[:Rn] === nothing
 end
@@ -96,7 +96,7 @@ end
 end
 
 
-@testset "mtg: energy_balance!" begin
+@testset "mtg: run!" begin
     file = joinpath(dirname(dirname(pathof(PlantBiophysics))), "test", "inputs", "models", "plant_coffee.yml")
     models = read_model(file)
     mtg = read_opf(joinpath(dirname(dirname(pathof(PlantBiophysics))), "test", "inputs", "scene", "opf", "coffee.opf"))
@@ -115,11 +115,17 @@ end
         [:Ra_PAR_f, :Ra_NIR_f] => ((x, y) -> x + y * 1.2) => :Rᵢ, # This would be the incident radiation
         [:Ra_PAR_f, :Ra_NIR_f] => ((x, y) -> fill(x + y, length(weather))) => :Rₛ,
         :Ra_PAR_f => (x -> x * 4.57) => :PPFD,
+        :sky_fraction => (x -> fill(x, length(weather))) => :sky_fraction,
         (x -> 0.03) => :d,
         ignore_nothing=true
     )
 
     leaf_node = get_node(mtg, 816)
+
+    # attr_name = MultiScaleTreeGraph.cache_name("PlantSimEngine models")
+    # @edit PlantSimEngine.init_mtg_models!(mtg, models, attr_name=attr_name)
+    # node = get_node(mtg, 816)
+    # node[attr_name]
 
     # Get the Ra_PAR_f before computation to check that it is not modified
     Ra_PAR_f = copy(leaf_node[:Ra_PAR_f])
@@ -127,12 +133,10 @@ end
     sky_fraction = copy(leaf_node[:sky_fraction])
 
     # Make the computation:
-    energy_balance!(mtg, models, weather)
+    run!(mtg, models, weather)
 
     @test leaf_node[:Ra_PAR_f] == Ra_PAR_f
-    @test leaf_node[:sky_fraction] == fill(sky_fraction, length(weather))
-    @test leaf_node[:sky_fraction] == fill(sky_fraction, length(weather))
-
+    @test leaf_node[:sky_fraction] == sky_fraction
 
     # Use the values of today (05/05/2022) as a reference. Run the few lines below to update:
     # for i in [:A, :Tₗ, :Rₗₗ, :H, :λE, :Gₛ, :Gbₕ, :Gbc, :Rn, :Cᵢ, :Cₛ]

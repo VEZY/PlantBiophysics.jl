@@ -4,11 +4,11 @@
 using PlantBiophysics, PlantSimEngine
 ```
 
-The stomatal conductance defines the conductance **for CO₂** between the atmosphere (the air around the leaf) and the air inside the stomata. The stomatal conductance to CO₂ and H₂O are related by a constant (see [`gsc_to_gsw`](@ref)).
+The stomatal conductance (`Gₛ`, ``mol_{CO_2} \cdot m^{-2} \cdot s^{-1}``) defines the conductance **for CO₂** between the atmosphere (the air around the leaf) and the air inside the stomata. The stomatal conductance to CO₂ and H₂O are related by a constant (see [`gsc_to_gsw`](@ref)).
 
 ## Models overview
 
-The stomatal conductance (`Gₛ`, ``mol_{CO_2} \cdot m^{-2} \cdot s^{-1}``) can be simulated using [`stomatal_conductance!`](@ref) or [`stomatal_conductance`](@ref). Several models are available to simulate it:
+Several models are available to simulate it:
 
 - [`Medlyn`](@ref): an implementation of the Medlyn et al. (2011) model
 - [`ConstantGs`](@ref): a model to force a constant value for `Gₛ`
@@ -22,9 +22,9 @@ using PlantBiophysics, PlantSimEngine
 
 meteo = Atmosphere(T = 20.0, Wind = 1.0, P = 101.3, Rh = 0.65)
 
-leaf = ModelList(stomatal_conductance = ConstantGs(Gₛ = 0.1))
+leaf = ModelList(ConstantGs(Gₛ = 0.1))
 
-stomatal_conductance!(leaf,meteo)
+run!(leaf,meteo)
 leaf[:Gₛ]
 ```
 
@@ -59,11 +59,11 @@ Here is an example usage:
 meteo = Atmosphere(T = 20.0, Wind = 1.0, P = 101.3, Rh = 0.65)
 
 leaf = ModelList(
-    stomatal_conductance = Medlyn(0.03, 12.0),
+    Medlyn(0.03, 12.0),
     status = (A = 20.0, Cₛ = 400.0, Dₗ = meteo.VPD)
 )
 
-stomatal_conductance!(leaf,meteo)
+run!(leaf,meteo)
 
 leaf
 ```
@@ -99,9 +99,9 @@ Here is an example usage:
 ```@example usepkg
 meteo = Atmosphere(T = 20.0, Wind = 1.0, P = 101.3, Rh = 0.65)
 
-leaf = ModelList(stomatal_conductance = ConstantGs(Gₛ = 0.1))
+leaf = ModelList(ConstantGs(Gₛ = 0.1))
 
-stomatal_conductance!(leaf,meteo)
+run!(leaf,meteo)
 leaf[:Gₛ]
 ```
 

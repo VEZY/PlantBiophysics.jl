@@ -50,10 +50,10 @@ Constant stomatal conductance for CO₂ (mol m-2 s-1).
 `meteo` or `gs_mod` are just declared here for compatibility with the call from
 photosynthesis (need a constant way of calling the functions).
 """
-function stomatal_conductance!_(::ConstantGs, models, status, gs_closure)
+function PlantSimEngine.run!(::ConstantGs, models, status, gs_closure)
     status.Gₛ = models.stomatal_conductance.Gₛ
 end
 
-function stomatal_conductance!_(::ConstantGs, models, status, meteo, constants, extra=nothing)
+function PlantSimEngine.run!(::ConstantGs, models, status, meteo, constants, extra=nothing)
     status.Gₛ = models.stomatal_conductance.Gₛ
 end

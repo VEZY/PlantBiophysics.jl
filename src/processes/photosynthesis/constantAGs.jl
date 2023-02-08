@@ -24,7 +24,7 @@ end
 Base.eltype(x::ConstantAGs) = typeof(x).parameters[1]
 
 """
-    photosynthesis!_(::ConstantAGs, models, status, meteo, constants=Constants())
+    run!(::ConstantAGs, models, status, meteo, constants=Constants())
 
 Constant photosynthesis coupled with a stomatal conductance model.
 
@@ -58,19 +58,19 @@ leaf = ModelList(
     status = (Cₛ = 400.0, Dₗ = 2.0)
 )
 
-photosynthesis!(leaf,meteo,PlantMeteo.Constants())
+run!(leaf,meteo,PlantMeteo.Constants())
 
 status(leaf, :A)
 status(leaf, :Cᵢ)
 ```
 """
-function photosynthesis!_(::ConstantAGs, models, status, meteo, constants=PlantMeteo.Constants(), extra=nothing)
+function PlantSimEngine.run!(::ConstantAGs, models, status, meteo, constants=PlantMeteo.Constants(), extra=nothing)
 
     # Net assimilation (μmol m-2 s-1)
     status.A = models.photosynthesis.A
 
     # Stomatal conductance (mol[CO₂] m-2 s-1)
-    stomatal_conductance!_(models.stomatal_conductance, models, status, meteo, constants, extra)
+    PlantSimEngine.run!(models.stomatal_conductance, models, status, meteo, constants, extra)
     # Intercellular CO₂ concentration (Cᵢ, μmol mol)
     status.Cᵢ = min(status.Cₛ, status.Cₛ - status.A / status.Gₛ)
 

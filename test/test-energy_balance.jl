@@ -41,7 +41,7 @@ end;
 
 
 
-@testset "energy_balance!" begin
+@testset "run!" begin
     # Reference value:
     ref = (
         Rₛ=13.747,
@@ -71,14 +71,8 @@ end;
         status=(Rₛ=13.747, sky_fraction=1.0, PPFD=1500.0, d=0.03)
     )
 
-    non_mutating = energy_balance(leaf, meteo)
+    run!(leaf, meteo)
 
-    for i in keys(ref)
-        @test non_mutating.status[i][1] ≈ ref[i]
-    end
-
-    # Mutating the leaf:
-    energy_balance!(leaf, meteo)
     for i in keys(ref)
         @test leaf.status[i][1] ≈ ref[i]
     end
@@ -97,7 +91,7 @@ end;
 # res = DataFrame(:PPFD => Float64[], :A => Float64[])
 # for i in 1:10:1500
 #     leaf.status.PPFD = i
-#     energy_balance!(leaf, meteo)
+#     run!(leaf, meteo)
 #     push!(res, (PPFD = leaf.status.PPFD, A = leaf.status.A))
 # end
 

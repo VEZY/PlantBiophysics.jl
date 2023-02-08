@@ -27,7 +27,7 @@ leaf = ModelList(
         stomatal_conductance = Medlyn(g0, g1),
         status = (A = df.A, Cₛ = df.Cₐ, Dₗ = df.VPD)
     )
-stomatal_conductance!(leaf, w)
+run!(leaf, w)
 
 # Visualising the results:
 gsAvpd = PlantBiophysics.GsAVPD(g0, g1, df.Gₛ, df.VPD, df.A, df.Cₐ, leaf[:Gₛ])

@@ -26,7 +26,7 @@ transform!(
     ignore_nothing = true
 )
 
-energy_balance!(mtg, models, weather)
+run!(mtg, models, weather)
 
 transform!(
     mtg,
@@ -35,9 +35,9 @@ transform!(
 )
 ```
 
-## Multiscale Tree Graph
+## Multi-scale Tree Graph
 
-The Multiscale Tree Graph, or MTG for short is a data structure that helps represent a plant topology, and optionally its geometry.
+The Multi-scale Tree Graph, or MTG for short is a data structure that helps represent a plant topology, and optionally its geometry.
 
 The OPF is a file format that stores an MTG with geometry onto the disk. Let's read an example OPF using `read_opf()`, a function from the `PlantGeom` package:
 
@@ -96,7 +96,7 @@ The design of `MultiScaleTreeGraph.transform!` is very close to the one adopted 
 Then `PlantBiophysics.jl` takes care of the rest and simulates the energy balance over each time-step:
 
 ```@example usepkg
-energy_balance!(mtg, models, weather)
+run!(mtg, models, weather)
 ```
 
 We can visualize the outputs in 3D using PlantGeom's `viz` function. To do so we have to extract the time step we want to use for coloring the organs. For example if we want to color the plant according to the value of the temperature from the first time-step, we would do:

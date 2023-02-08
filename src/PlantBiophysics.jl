@@ -1,7 +1,7 @@
 module PlantBiophysics
 
 import PlantSimEngine
-import PlantSimEngine: @gen_process_methods, AbstractModel, TimeStepTable
+import PlantSimEngine: @process, AbstractModel, TimeStepTable
 import PlantSimEngine: Status, ModelList
 
 import PlantMeteo
@@ -92,7 +92,6 @@ export gsc_to_gsw
 
 # Light interception
 export AbstractLight_InterceptionModel
-export light_interception, light_interception! # main interface to user
 export Beer # a struct to hold the values for the Beer-Lambert law of light extinction
 
 # Energy balance
@@ -100,13 +99,12 @@ export AbstractEnergy_BalanceModel
 export black_body
 export grey_body
 export net_longwave_radiation
-export energy_balance, energy_balance! # main interface to user
 export Monteith       # a struct to hold the values for the model of Monteith and Unsworth (2013)
 export latent_heat, sensible_heat
 
 # structure for light interception
 export Translucent
-export Ignore
+export LightIgnore
 export OpticalProperties
 export σ
 export AbstractLight_InterceptionModel
@@ -117,22 +115,14 @@ export ConstantA, ConstantAGs
 export Fvcb # Parameters for the coupled Farquhar et al. (1980) model
 export FvcbIter # To update...
 export FvcbRaw # Parameters for the original Farquhar et al. (1980) model
-export photosynthesis!
-export photosynthesis
-export photosynthesis!_
 
 # Conductances
 export AbstractStomatal_ConductanceModel
 export gbh_to_gbw
 export gbₕ_free
 export gbₕ_forced
-export stomatal_conductance, stomatal_conductance!
 export Medlyn
 export ConstantGs
-
-# Temporary structures (to move to another package)
-export Translucent
-export Ignore
 
 # Model helpers
 export get_km, Γ_star, arrhenius, get_J, gs_closure, get_Cᵢⱼ, get_Cᵢᵥ, get_Dₕ

@@ -60,7 +60,7 @@ Here's an example of using a DataFrame as input:
 ```@example usepkg
 using CSV, DataFrames, PlantMeteo
 file = joinpath(dirname(dirname(pathof(PlantMeteo))),"test","data","meteo.csv")
-df = CSV.read(file, DataFrame; header=5, datarow = 6)
+df = CSV.read(file, DataFrame; header=5, skipto = 6, dateformat = "yyyy/mm/dd")
 # Select and rename the variables:
 select!(df, :date, :temperature => :T, :relativeHumidity => (x -> x ./ 100 ) => :Rh, :wind => :Wind, :atmosphereCO2_ppm => :Cₐ)
 df[!,:duration] .= 1800 # Add the time-step duration, 30min

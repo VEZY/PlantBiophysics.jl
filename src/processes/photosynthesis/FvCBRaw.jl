@@ -10,7 +10,7 @@ See [`Fvcb`](@ref) for more details.
 - [`Fvcb`](@ref) for the coupled assimilation / conductance model
 - [`FvcbIter`](@ref) for the coupled assimilation / conductance model with an iterative resolution
 - [`get_J`](@ref)
-- [`photosynthesis`](@ref)
+- [`AbstractPhotosynthesisModel`](@ref)
 
 # References
 
@@ -68,7 +68,7 @@ end
 Base.eltype(x::FvcbRaw) = typeof(x).parameters[1]
 
 """
-    photosynthesis!_(::FvcbRaw, models, status, meteo=nothing, constants=Constants())
+    run!(::FvcbRaw, models, status, meteo=nothing, constants=Constants())
 
 Direct implementation of the photosynthesis model for C3 photosynthesis from Farquhar–von
 Caemmerer–Berry (Farquhar et al., 1980; von Caemmerer and Farquhar, 1981).
@@ -95,15 +95,16 @@ initialisations for:
 `Tₗ`, `PPFD`, `Cₛ` (and `Dₗ` if you use [`Medlyn`](@ref)) must be initialized by providing
 them as keyword arguments (see examples). If in doubt, it is simpler to compute the energy
 balance of the leaf with the photosynthesis to get those variables. See
-[`energy_balance`](@ref) for more details.
+[`AbstractEnergy_BalanceModel`](@ref) for more details.
 
 # Examples
 
 ```julia
+using PlantSimEngine
 leaf = ModelList(photosynthesis = FvcbRaw(), status = (Tₗ = 25.0, PPFD = 1000.0, Cᵢ = 400.0))
 # NB: we need Tₗ, PPFD and Cᵢ as inputs (see [`inputs`](@ref))
 
-photosynthesis!_(leaf)
+run!(leaf)
 leaf.status.A
 leaf.status.Cᵢ
 
@@ -115,7 +116,7 @@ leaf =
     )
 # NB: we need Tₗ, PPFD and Cᵢ as inputs (see [`inputs`](@ref))
 
-photosynthesis!_(leaf)
+run!(leaf)
 DataFrame(leaf) # fetch the leaf status as a DataFrame
 ```
 
@@ -141,7 +142,7 @@ Lombardozzi, L. D. et al. 2018.« Triose phosphate limitation in photosynthesis 
 reduces leaf photosynthesis and global terrestrial carbon storage ». Environmental Research
 Letters 13.7: 1748-9326. https://doi.org/10.1088/1748-9326/aacf68.
 """
-function photosynthesis!_(::FvcbRaw, models, status, meteo=nothing, constants=PlantMeteo.Constants(), extra=nothing)
+function PlantSimEngine.run!(::FvcbRaw, models, status, meteo=nothing, constants=PlantMeteo.Constants(), extra=nothing)
 
     Tₖ = status.Tₗ - constants.K₀
     Tᵣₖ = models.photosynthesis.Tᵣ - constants.K₀

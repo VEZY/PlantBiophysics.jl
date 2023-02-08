@@ -22,9 +22,9 @@ meteo = read_weather(
 )
 
 leaf = ModelList(
-        energy_balance = Monteith(),
-        photosynthesis = Fvcb(),
-        stomatal_conductance = Medlyn(0.03, 7.0),
+        Monteith(),
+        Fvcb(),
+        Medlyn(0.03, 7.0),
         status = (
             Rₛ = meteo[:Ri_SW_f] .* 0.8,
             sky_fraction = 1.0,
@@ -33,7 +33,7 @@ leaf = ModelList(
         )
 )
 
-energy_balance!(leaf,meteo)
+run!(leaf,meteo)
 
 DataFrame(leaf)
 ```
