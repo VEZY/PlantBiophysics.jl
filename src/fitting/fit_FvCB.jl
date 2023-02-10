@@ -65,7 +65,7 @@ plot(ACi_struct_full,leg=:bottomright)
 # Note that the results differ a bit because there are more variables that are re-simulated (e.g. Cᵢ)
 ```
 """
-function fit(::T, df; Tᵣ=nothing, VcMaxRef=0.0, JMaxRef=0.0, RdRef=0.0, TPURef=0.0) where {T<:Union{Type{Fvcb},Type{FvcbIter},Type{FvcbRaw}}}
+function PlantSimEngine.fit(::T, df; Tᵣ=nothing, VcMaxRef=0.0, JMaxRef=0.0, RdRef=0.0, TPURef=0.0) where {T<:Union{Type{Fvcb},Type{FvcbIter},Type{FvcbRaw}}}
     if Tᵣ === nothing
         Tᵣ = Statistics.mean(df.Tₗ)
     end

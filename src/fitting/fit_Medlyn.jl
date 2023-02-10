@@ -35,7 +35,7 @@ plot(gsAvpd,leg=:bottomright)
 # As in [`Medlyn`](@ref) reference paper, linear regression is also plotted.
 ```
 """
-function fit(::T, df) where {T<:Type{Medlyn}}
+function PlantSimEngine.fit(::T, df) where {T<:Type{Medlyn}}
     # Fitting the A/(Cₐ√Dₗ) - Gₛ curve using least squares method
     x = df.A ./ df.Cₐ
     y = sqrt.(df.VPD)

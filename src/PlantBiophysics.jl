@@ -69,7 +69,6 @@ include("io/read_licor6400.jl")
 include("io/read_walz.jl")
 
 # Parameters optimization
-include("fitting/fit.jl")
 include("fitting/fit_FvCB.jl")
 include("fitting/fit_Medlyn.jl")
 
@@ -128,8 +127,5 @@ export ConstantGs
 export get_km, Γ_star, arrhenius, get_J, gs_closure, get_Cᵢⱼ, get_Cᵢᵥ, get_Dₕ
 export Fvcb_net_assimiliation
 export get_process, get_model, instantiate
-
-# Parameters optimization
-export fit
 
 end
