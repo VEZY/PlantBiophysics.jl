@@ -6,9 +6,9 @@ using PlantBiophysics, PlantSimEngine
 
 ## The fit method
 
-The package provides a generic [`fit`](@ref) function to calibrate a model using user data.
+The package provides methods to the generic `fit` function from `PlantSimEngine` to calibrate a model with data.
 
-The generic function takes several parameters:
+The arguments depends on the methods, but usually takes several parameters:
 
 - the model type, *e.g.* `FvCB`
 - a `DataFrame` with the data (depends on the given method)
