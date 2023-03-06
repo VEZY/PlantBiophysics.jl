@@ -298,7 +298,7 @@ Hydrology and Earth System Sciences. DOI: https://doi.org/10.5194/hess-21-685-20
 ```julia
 Tₐ = 20.0 ; P = 100.0 ;
 ρ = air_density(Tₐ, P) # in kg m-3
-Δ = e_sat_slope(Tₐ)
+Δ = PlantMeteo.e_sat_slope(Tₐ)
 
 sensible_heat(300.0, 2.0, 0.1461683, 50.0, Δ, ρ, 2.0)
 ```
