@@ -25,11 +25,12 @@ function read_walz(file)
     rename!(
         df,
         :GH2O => :Gₛ, :ca => :Cₐ, :Tcuv => :T, :Pamb => :P, :rh => :Rh,
-        :PARtop => :PPFD, :ci => :Cᵢ, :Comment => :curve, :Tleaf => :Tₗ
+        :PARtop => :PPFD, :ci => :Cᵢ, :Comment => :curve, :Tleaf => :Tₗ,
+        :VPD => :Dₗ
     )
 
     # Recomputing the variables to fit the units used in the package:
-    df[!, :VPD] = round.(df[:, :VPD] .* df[:, :P] ./ 1000.0, digits=3)
+    df[!, :VPD] = PlantMeteo.vpd(df.Rh, df.T)
     df[!, :Gₛ] = round.(gsw_to_gsc.(df[:, :Gₛ]) ./ 1000.0, digits=5)
     df[!, :AVPD] = df[:, :A] ./ (df[:, :Cₐ] .* sqrt.(df[:, :VPD]))
     df[!, :Rh] = df[!, :Rh] ./ 100.0
