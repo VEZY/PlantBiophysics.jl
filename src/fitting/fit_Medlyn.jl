@@ -5,8 +5,17 @@ Optimize the parameters of the [`Medlyn`](@ref) model. Note that here Gₛ is st
 
 # Arguments
 
-- df: a DataFrame with columns A, VPD, Cₐ and Gₛ, where each row is an observation. The column
+- df: a DataFrame with columns A, Dₗ, Cₐ and Gₛ, where each row is an observation. The column
 names should match exactly.
+
+Note that Dₗ is the leaf to air vapour pressure deficit, computed as follows:
+
+```julia
+Dₗ = PlantMeteo.e_sat(Tₗ) - PlantMeteo.e_sat(T) * Rh
+```
+
+with Tₗ the leaf temperature, T the air temperature and Rh the air relative humidity. If Tₗ is not available, you can use Tₗ = T as a crude approximation,
+which gives Dₗ = VPD.
 
 # Examples
 
@@ -25,12 +34,12 @@ g0, g1 = fit(Medlyn, df)
 w = Weather(select(df, :T, :P, :Rh, :Cₐ, :VPD, :T => (x -> 10) => :Wind))
 leaf = ModelList(
         stomatal_conductance = Medlyn(g0, g1),
-        status = (A = df.A, Cₛ = df.Cₐ, Dₗ = df.VPD)
+        status = (A = df.A, Cₛ = df.Cₐ, Dₗ = df.Dₗ)
     )
 run!(leaf, w)
 
 # Visualising the results:
-gsAvpd = PlantBiophysics.GsAVPD(g0, g1, df.Gₛ, df.VPD, df.A, df.Cₐ, leaf[:Gₛ])
+gsAvpd = PlantBiophysics.GsADₗ(g0, g1, df.Gₛ, df.Dₗ, df.A, df.Cₐ, leaf[:Gₛ])
 plot(gsAvpd,leg=:bottomright)
 # As in [`Medlyn`](@ref) reference paper, linear regression is also plotted.
 ```
@@ -38,7 +47,7 @@ plot(gsAvpd,leg=:bottomright)
 function PlantSimEngine.fit(::T, df) where {T<:Type{Medlyn}}
     # Fitting the A/(Cₐ√Dₗ) - Gₛ curve using least squares method
     x = df.A ./ df.Cₐ
-    y = sqrt.(df.VPD)
+    y = sqrt.(df.Dₗ)
     Gₛ = df.Gₛ
     y = y[x.>0.0]
     Gₛ = Gₛ[x.>0.0]
@@ -53,25 +62,25 @@ function PlantSimEngine.fit(::T, df) where {T<:Type{Medlyn}}
     return (; g0, g1)
 end
 
-# Plot recipes for making A/(Cₐ √VPD)-Gₛ curves:
-mutable struct GsAVPD
+# Plot recipes for making A/(Cₐ √Dₗ)-Gₛ curves:
+mutable struct GsADₗ
     g0
     g1
     gs_meas
-    VPD_meas
+    Dₗ_meas
     A_meas
     Cₐ_meas
     gs_sim
 end
 
-GsAVPD(g0, g1, gs_meas, VPD_meas, A_meas, Cₐ_meas) = GsAVPD(g0, g1, gs_meas, VPD_meas, A_meas, Cₐ_meas, copy(gs_meas))
+GsADₗ(g0, g1, gs_meas, Dₗ_meas, A_meas, Cₐ_meas) = GsADₗ(g0, g1, gs_meas, Dₗ_meas, A_meas, Cₐ_meas, copy(gs_meas))
 
-@recipe function f(h::GsAVPD)
-    x = h.A_meas ./ (h.Cₐ_meas .* sqrt.(h.VPD_meas))
+@recipe function f(h::GsADₗ)
+    x = h.A_meas ./ (h.Cₐ_meas .* sqrt.(h.Dₗ_meas))
     y = h.gs_meas
     y2 = h.gs_sim
     # Main plot (measurement):
-    xguide --> "A/(Cₐ√VPD) (ppm)"
+    xguide --> "A/(Cₐ√Dₗ) (ppm)"
     yguide --> "gₛ (mol m⁻² s⁻¹)"
 
     EF_ = round(PlantSimEngine.EF(y, y2), digits=3)

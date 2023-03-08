@@ -117,6 +117,8 @@ leaf.status.A
 leaf.status.Cᵢ
 ```
 
+Note that we use `VPD` as an approximation of `Dₗ` here because we don't have the leaf temperature (*i.e.* `Dₗ = VPD` when `Tₗ = T`).
+
 # References
 
 Baldocchi, Dennis. 1994. « An analytical solution for coupled leaf photosynthesis and

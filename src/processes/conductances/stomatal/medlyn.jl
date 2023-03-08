@@ -22,6 +22,8 @@ leaf =
 run!(leaf,meteo)
 ```
 
+Note that we use `VPD` as an approximation of `Dₗ` here because we don't have the leaf temperature (*i.e.* `Dₗ = VPD` when `Tₗ = T`).
+
 # References
 
 Medlyn, Belinda E., Remko A. Duursma, Derek Eamus, David S. Ellsworth, I. Colin Prentice,
@@ -118,6 +120,8 @@ leaf =
     )
 run!(leaf,meteo)
 ```
+
+Note that we use `VPD` as an approximation of `Dₗ` here because we don't have the leaf temperature (*i.e.* `Dₗ = VPD` when `Tₗ = T`).
 
 # References
 

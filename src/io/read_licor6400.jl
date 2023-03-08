@@ -27,9 +27,8 @@ function read_licor6400(file)
     df[!, :Rh] = df[!, :Rh] ./ 100.0
     transform!(
         df,
-        [:T, :Rh] => ((x, y) -> PlantMeteo.e_sat.(x) .- PlantMeteo.vapor_pressure.(x, y)) => :VPD,
+        [:T, :Rh] => ((T, Rh) -> PlantMeteo.vpd.(Rh, T)) => :VPD,
         :Gₛ => (x -> gsw_to_gsc.(x)) => :Gₛ,
-        [:A, :Cₐ, :Dₗ] => ((x, y, z) -> x ./ (y .* sqrt.(z))) => :AVPD,
     )
     return df
 end

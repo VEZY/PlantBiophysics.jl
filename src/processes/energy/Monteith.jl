@@ -138,7 +138,7 @@ function PlantSimEngine.run!(::Monteith, models, status, meteo, constants=PlantM
     status.Tₗ = meteo.T - 0.2
     Tₗ_new = zero(meteo.T)
     status.Cₛ = meteo.Cₐ
-    status.Dₗ = meteo.VPD
+    status.Dₗ = PlantMeteo.e_sat(status.Tₗ) - PlantMeteo.e_sat(meteo.T) * meteo.Rh
     γˢ = Rbₕ = Δ = zero(meteo.T)
     status.Rn = status.Rₛ
     iter = 0

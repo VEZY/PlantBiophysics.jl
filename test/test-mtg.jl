@@ -143,15 +143,15 @@ end
     #     print("@test leaf_node[:$i] ≈ $(round.(leaf_node[i], digits= 5)) atol = 1e-4\n")
     # end
 
-    @test leaf_node[:A] ≈ [13.26041, 13.06967, 13.2554] atol = 1e-4
-    @test leaf_node[:Tₗ] ≈ [23.89506, 24.90282, 24.05352] atol = 1e-4
-    @test leaf_node[:Rₗₗ] ≈ [1.02677, 1.0427, 1.15823] atol = 1e-4
-    @test leaf_node[:H] ≈ [-55.1378, -64.8336, -74.09948] atol = 1e-4
-    @test leaf_node[:λE] ≈ [180.06553, 189.77726, 199.15867] atol = 1e-4
-    @test leaf_node[:Gₛ] ≈ [0.43526, 0.42401, 0.4196] atol = 1e-4
-    @test leaf_node[:Gbₕ] ≈ [0.02076, 0.02467, 0.02476] atol = 1e-4
-    @test leaf_node[:Gbc] ≈ [0.64289, 0.76133, 0.76612] atol = 1e-4
-    @test leaf_node[:Rn] ≈ [124.92773, 124.94366, 125.05919] atol = 1e-4
-    @test leaf_node[:Cᵢ] ≈ [328.90212, 332.00617, 331.10467] atol = 1e-4
-    @test leaf_node[:Cₛ] ≈ [359.37374, 362.83304, 362.69798] atol = 1e-4
+    @test leaf_node[:A] ≈ [13.2605, 13.06977, 13.25548] atol = 1e-4
+    @test leaf_node[:Tₗ] ≈ [23.89475, 24.90249, 24.05323] atol = 1e-4
+    @test leaf_node[:Rₗₗ] ≈ [1.02706, 1.04302, 1.1585] atol = 1e-4
+    @test leaf_node[:H] ≈ [-55.14038, -64.83672, -74.10218] atol = 1e-4
+    @test leaf_node[:λE] ≈ [180.0684, 189.7807, 199.16164] atol = 1e-4
+    @test leaf_node[:Gₛ] ≈ [0.43527, 0.42403, 0.41961] atol = 1e-4
+    @test leaf_node[:Gbₕ] ≈ [0.02076, 0.02467, 0.02477] atol = 1e-4
+    @test leaf_node[:Gbc] ≈ [0.6429, 0.76134, 0.76613] atol = 1e-4
+    @test leaf_node[:Rn] ≈ [124.92802, 124.94397, 125.05946] atol = 1e-4
+    @test leaf_node[:Cᵢ] ≈ [328.90364, 332.00744, 331.1057] atol = 1e-4
+    @test leaf_node[:Cₛ] ≈ [359.37384, 362.8331, 362.69801] atol = 1e-4
 end
