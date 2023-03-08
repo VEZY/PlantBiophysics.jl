@@ -1,17 +1,42 @@
 """
     read_walz(file)
 
-Import a Walz GFS-3000 output file.
+Import a Walz GFS-3000 output file, perform variables conversion and rename
+according to package conventions.
+
+# Arguments
+
+- `file`: a string or a vector of strings containing the path to the file(s) to
+  read.
 
 # Examples
+
+Reading one file:
 
 ```julia
 file = joinpath(dirname(dirname(pathof(PlantBiophysics))),"test","inputs","data","P1F20129.csv")
 read_walz(file)
 ```
+
+We can also read multiple files at once:
+
+```julia
+files = readdir(joinpath(dirname(dirname(pathof(PlantBiophysics))),"test","inputs","data"), join = true)
+df = read_walz(files)
+```
+
+In this case, the source of the data is added as the `source` columns into the DataFrame:
+
+```julia
+df.source
+```
 """
 function read_walz(file)
-    df = CSV.read(file, DataFrame, header=1, skipto=3)
+    if typeof(file) <: Vector{T} where {T<:AbstractString}
+        df = CSV.read(file, DataFrame, header=1, skipto=3, source=:source)
+    else
+        df = CSV.read(file, DataFrame, header=1, skipto=3)
+    end
 
     if hasproperty(df, :Ttop)
         rename!(df, :Ttop => :Tmin)
