@@ -50,7 +50,7 @@ function PlantSimEngine.fit(::T, df) where {T<:Type{Medlyn}}
     f = Gₛ .- x
     g0, g1 = inv(A' * A) * A' * f
 
-    return (g0, g1)
+    return (; g0, g1)
 end
 
 # Plot recipes for making A/(Cₐ √VPD)-Gₛ curves:
