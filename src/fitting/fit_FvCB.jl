@@ -1,5 +1,5 @@
 """
-    fit(::Type{Fvcb}, df; Tᵣ = nothing, VcMaxRef = 0., JMaxRef = 0., RdRef = 0., TPURef = 0.)
+    fit(::Type{Fvcb}, df; Tᵣ = nothing, VcMaxRef = 0.0, JMaxRef = 0.0, RdRef = 0.0, TPURef = 0.0, verbose = true)
 
 Optimize the parameters of the [`Fvcb`](@ref) model. Also works for [`FvcbIter`](@ref).
 
@@ -65,7 +65,7 @@ plot(ACi_struct_full,leg=:bottomright)
 # Note that the results differ a bit because there are more variables that are re-simulated (e.g. Cᵢ)
 ```
 """
-function PlantSimEngine.fit(::T, df; Tᵣ=nothing, VcMaxRef=0.0, JMaxRef=0.0, RdRef=0.0, TPURef=0.0) where {T<:Union{Type{Fvcb},Type{FvcbIter},Type{FvcbRaw}}}
+function PlantSimEngine.fit(::T, df; Tᵣ=nothing, VcMaxRef=0.0, JMaxRef=0.0, RdRef=0.0, TPURef=0.0, verbose=true) where {T<:Union{Type{Fvcb},Type{FvcbIter},Type{FvcbRaw}}}
     if Tᵣ === nothing
         Tᵣ = Statistics.mean(df.Tₗ)
     end
@@ -82,7 +82,7 @@ function PlantSimEngine.fit(::T, df; Tᵣ=nothing, VcMaxRef=0.0, JMaxRef=0.0, Rd
 
     # Fitting the A-Cᵢ curve using LsqFit.jl
     # fits = curve_fit(model, df.Cᵢ[ind], df.A[ind], [VcMaxRef, JMaxRef, RdRef, TPURef])
-    fits = curve_fit(model, Array(select(df, :Tₗ, :PPFD, :Cᵢ)), df.A, [VcMaxRef, JMaxRef, RdRef, TPURef])
+    fits = curve_fit(model, Array(select(df, :Tₗ, :PPFD, :Cᵢ)), df.A, [VcMaxRef, JMaxRef, RdRef, TPURef], lower=[0.0, 0.0, 0.0, 0.0], show_trace=verbose)
 
     return (VcMaxRef=fits.param[1], JMaxRef=fits.param[2], RdRef=fits.param[3], TPURef=fits.param[4], Tᵣ=Tᵣ)
 end
