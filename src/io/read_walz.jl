@@ -55,9 +55,9 @@ function read_walz(file)
     )
 
     # Recomputing the variables to fit the units used in the package:
+    df[!, :Rh] = df[!, :Rh] ./ 100.0
     df[!, :VPD] = PlantMeteo.vpd.(df.Rh, df.T)
     df[!, :Gₛ] = round.(gsw_to_gsc.(df[:, :Gₛ]) ./ 1000.0, digits=5)
-    df[!, :Rh] = df[!, :Rh] ./ 100.0
 
     return df
 end
