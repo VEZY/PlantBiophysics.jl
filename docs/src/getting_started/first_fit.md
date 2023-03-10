@@ -1,7 +1,7 @@
 # First parameter fitting
 
 ```@setup usepkg
-using PlantBiophysics
+using PlantBiophysics, PlantSimEngine
 ```
 
 Parameter fitting is also at the heart of the package, because why making a simulation without good parameter values?
@@ -11,7 +11,7 @@ The package provides a [`fit`](@ref) method that helps fitting model parameters 
 For example we provide a method to fit the parameters from the Farquhar et al. (1980) model ([`Fvcb`](@ref)). Here is an example usage:
 
 ```@example usepkg
-using PlantBiophysics, DataFrames
+using PlantBiophysics, PlantSimEngine, DataFrames
 
 df = read_walz(joinpath(dirname(dirname(pathof(PlantBiophysics))),"test","inputs","data","P1F20129.csv"))
 # Removing the Rh and light curves for the fitting because temperature varies
