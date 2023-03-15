@@ -1,5 +1,11 @@
 """
-    fit(::Type{Fvcb}, df; Tᵣ = nothing, VcMaxRef = 0.0, JMaxRef = 0.0, RdRef = 0.0, TPURef = 0.0, verbose = true)
+    fit(
+        ::Type{Fvcb}, df; 
+        Tᵣ = nothing, 
+        VcMaxRef = 0.0, JMaxRef = 0.0, RdRef = 0.0, TPURef = 0.0, 
+        VcMaxRef_bound=[0.0, Inf], JMaxRef_bound=[0.0, Inf], RdRef_bound=[0.0, Inf], TPURef_bound=[0.0, Inf],
+        verbose = true
+    )
 
 Optimize the parameters of the [`Fvcb`](@ref) model. Also works for [`FvcbIter`](@ref).
 
@@ -8,7 +14,12 @@ Optimize the parameters of the [`Fvcb`](@ref) model. Also works for [`FvcbIter`]
 - df: a DataFrame with columns A, PPFD, Tₗ and Cᵢ, where each row is an observation. The column
 names should match exactly
 - Tᵣ: reference temperature for the optimized parameter values. If not provided, use the average Tₗ.
-- VcMaxRef, JMaxRef, RdRef: initialisation values for the parameter optimisation
+- VcMaxRef, JMaxRef, RdRef, TPURef: initialisation values for the parameter optimisation
+- VcMaxRef_bound, JMaxRef_bound, RdRef_bound, TPURef_bound: boundary values for the parameter optimisation
+- verbose: if true, print the optimisation results
+
+Note that boundary values are set to [0.0, Inf] by default. You should adapt them to your use case. Note that no 
+boundary can be set using [-Inf, Inf].
 
 # Examples
 
@@ -67,7 +78,10 @@ plot(ACi_struct_full,leg=:bottomright)
 """
 function PlantSimEngine.fit(
     ::T, df;
-    Tᵣ=nothing, VcMaxRef=0.0, JMaxRef=0.0, RdRef=0.0, TPURef=0.0, verbose=false
+    Tᵣ=nothing,
+    VcMaxRef=0.0, JMaxRef=0.0, RdRef=0.0, TPURef=0.0,
+    VcMaxRef_bound=[0.0, Inf], JMaxRef_bound=[0.0, Inf], RdRef_bound=[0.0, Inf], TPURef_bound=[0.0, Inf],
+    verbose=false
 ) where {T<:Union{Type{Fvcb},Type{FvcbIter},Type{FvcbRaw}}}
 
     if Tᵣ === nothing
@@ -86,7 +100,14 @@ function PlantSimEngine.fit(
 
     # Fitting the A-Cᵢ curve using LsqFit.jl
     # fits = curve_fit(model, df.Cᵢ[ind], df.A[ind], [VcMaxRef, JMaxRef, RdRef, TPURef])
-    fits = curve_fit(model, Array(select(df, :Tₗ, :PPFD, :Cᵢ)), df.A, [VcMaxRef, JMaxRef, RdRef, TPURef], lower=[0.0, 0.0, 0.0, 0.0], show_trace=verbose)
+    fits = curve_fit(
+        model,
+        Array(select(df, :Tₗ, :PPFD, :Cᵢ)),
+        df.A,
+        [VcMaxRef, JMaxRef, RdRef, TPURef],
+        lower=[VcMaxRef_bound[1], JMaxRef_bound[1], RdRef_bound[1], TPURef_bound[1]],
+        upper=[VcMaxRef_bound[2], JMaxRef_bound[2], RdRef_bound[2], TPURef_bound[2]],
+        show_trace=verbose)
 
     return (VcMaxRef=fits.param[1], JMaxRef=fits.param[2], RdRef=fits.param[3], TPURef=fits.param[4], Tᵣ=Tᵣ)
 end

@@ -71,6 +71,7 @@ include("io/read_walz.jl")
 # Parameters optimization
 include("fitting/fit_FvCB.jl")
 include("fitting/fit_Medlyn.jl")
+include("fitting/fit_Beer.jl")
 
 # Depreciations
 include("depreciations/models.jl")
