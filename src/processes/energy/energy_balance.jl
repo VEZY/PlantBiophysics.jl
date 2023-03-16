@@ -145,8 +145,11 @@ transform!(
     ignore_nothing = true
 )
 
+# We can now initialize the models in the mtg:
+init_mtg_models!(mtg, models, length(meteo))
+
 # Making the simulation:
-run!(mtg, models, meteo)
+run!(mtg, meteo)
 
 # Pull the leaf temperature of the first step:
 transform!(

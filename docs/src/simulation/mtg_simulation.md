@@ -26,7 +26,9 @@ transform!(
     ignore_nothing = true
 )
 
-run!(mtg, models, weather)
+init_mtg_models!(mtg, models, length(weather))
+
+run!(mtg, weather)
 
 transform!(
     mtg,
@@ -93,10 +95,18 @@ transform!(
 
 The design of `MultiScaleTreeGraph.transform!` is very close to the one adopted by `DataFrames`. It helps us compute new variables (or attributes) from others, modify their units or rename them. Here we compute `Rᵢ` and `Rₛ` from the sum of `Ra_PAR_f` (absorbed radiation flux in the PAR) and `Ra_NIR_f` (...in the NIR), `PPFD` from `Ra_PAR_f` using the conversion between ``W \cdot m^{2}`` to ``μmol \cdot m^{-2} \cdot s^{-1}``, and `d` using a constant value of 0.3 m. Note that `sky_fraction` is already computed for each node with the right units thanks to Archimed-ϕ, so no need to transform it.
 
+Finally, we have to initialize the MTG with the models we want to use. We use `init_mtg_models!` from `PlantSimEngine` to do so:
+
+```@example usepkg
+init_mtg_models!(mtg, models, length(weather))
+```
+
+The function takes the MTG, the models, and the number of time-steps we want to simulate, and initializes the MTG with the models, and the variables needed for the simulation. The attributes can also be modified at this stage, for example by adding the variables that will be computed by the simulation, or by pre-allocating memory for the outputs.
+
 Then `PlantBiophysics.jl` takes care of the rest and simulates the energy balance over each time-step:
 
 ```@example usepkg
-run!(mtg, models, weather)
+run!(mtg, weather)
 ```
 
 We can visualize the outputs in 3D using PlantGeom's `viz` function. To do so we have to extract the time step we want to use for coloring the organs. For example if we want to color the plant according to the value of the temperature from the first time-step, we would do:

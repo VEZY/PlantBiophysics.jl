@@ -1,5 +1,6 @@
 file = joinpath(dirname(dirname(pathof(PlantBiophysics))), "test", "inputs", "scene", "opf", "coffee.opf")
 mtg = read_opf(file)
+models_name = Symbol(MultiScaleTreeGraph.cache_name("PlantSimEngine models"))
 
 # Declare our models:
 nrj = Monteith()
@@ -24,50 +25,16 @@ transform!(
 
 @testset "mtg: init_mtg_models!" begin
     # Initialising all components with their corresponding models and initialisations:
-    init_mtg_models!(mtg, models)
+    init_mtg_models!(mtg, models, 1, verbose=false)
 
     leaf_node = get_node(mtg, 818)
-    @test leaf_node[:models].models.photosynthesis === photo
-    @test leaf_node[:models].models.energy_balance === nrj
-    @test leaf_node[:models].models.stomatal_conductance === Gs
-    @test status(leaf_node[:models], :Rₛ)[1] == leaf_node[:Rₛ]
-    @test status(leaf_node[:models], :PPFD)[1] == leaf_node[:Ra_PAR_f] * 4.57
-    @test status(leaf_node[:models], :d)[1] == 0.03
+    @test leaf_node[models_name].models.photosynthesis === photo
+    @test leaf_node[models_name].models.energy_balance === nrj
+    @test leaf_node[models_name].models.stomatal_conductance === Gs
+    @test status(leaf_node[models_name], :Rₛ)[1] == leaf_node[:Rₛ][1]
+    @test status(leaf_node[models_name], :PPFD)[1] == leaf_node[:Ra_PAR_f] * 4.57
+    @test status(leaf_node[models_name], :d)[1] == 0.03
 end
-
-
-@testset "mtg: pull_status!" begin
-    leaf1 = get_node(mtg, 815)
-
-    # Thos are the inputs we gave earlier so they are both in the mtg attr. and the model status:
-    @test leaf1[:Rₛ] == status(leaf1[:models], :Rₛ)[1]
-    @test leaf1[:PPFD] == leaf1[:models][:PPFD][1]
-
-    leaf1[:models].status.Rₛ = 300.0
-    PlantSimEngine.pull_status!(leaf1)
-
-    # Modifying Rₛ and pulling it modifies the value in the attributes too:
-    @test leaf1[:Rₛ] == [300.0]
-
-    # Make a simulation, and check the other ones:
-    meteo = Atmosphere(T=22.0, Wind=0.8333, P=101.325, Rh=0.4490995)
-    transform!(mtg, :models => (x -> run!(x, meteo)), ignore_nothing=true)
-
-    # The output is not written in the attributes yet:
-    @test leaf1[:A] == [-Inf]
-
-    # Now it is:
-    PlantSimEngine.pull_status!(leaf1)
-
-    @test leaf1[:A] == leaf1[:models][:A]
-
-    # Checks if we can pull only some variables:
-    leaf2 = get_node(mtg, 818)
-    PlantSimEngine.pull_status!(leaf2, :A)
-    @test leaf2[:A] == leaf2[:models][:A]
-    @test leaf2[:Rn] === nothing
-end
-
 
 @testset "mtg: read_model" begin
     file = joinpath(dirname(dirname(pathof(PlantBiophysics))), "test", "inputs", "models", "plant_coffee.yml")
@@ -86,15 +53,14 @@ end
     )
 
     # Initialising all components with their corresponding models and initialisations:
-    init_mtg_models!(mtg, models)
+    init_mtg_models!(mtg, models, 1)
 
     metamer = get_node(mtg, 2069)
     leaf = get_node(mtg, 2070)
 
-    @test typeof(metamer[:models]) == typeof(models["Metamer"])
-    @test typeof(leaf[:models]) == typeof(models["Leaf"])
+    @test typeof(metamer[models_name].models) == typeof(models["Metamer"].models)
+    @test typeof(status(metamer[models_name])) <: TimeStepTable{<:Status}
 end
-
 
 @testset "mtg: run!" begin
     file = joinpath(dirname(dirname(pathof(PlantBiophysics))), "test", "inputs", "models", "plant_coffee.yml")
@@ -132,8 +98,11 @@ end
     # Get some initialisations to check if they have the same length as n steps in weather (after computation):
     sky_fraction = copy(leaf_node[:sky_fraction])
 
+    # Initialising all components with their corresponding models and initialisations:
+    init_mtg_models!(mtg, models, length(weather))
+
     # Make the computation:
-    run!(mtg, models, weather)
+    run!(mtg, weather)
 
     @test leaf_node[:Ra_PAR_f] == Ra_PAR_f
     @test leaf_node[:sky_fraction] == sky_fraction
