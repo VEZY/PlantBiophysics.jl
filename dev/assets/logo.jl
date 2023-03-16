@@ -19,7 +19,9 @@ transform!(
     ignore_nothing=true
 )
 
-run!(mtg, models, weather)
+init_mtg_models!(mtg, models, length(weather))
+
+run!(mtg, weather)
 
 transform!(
     mtg,
