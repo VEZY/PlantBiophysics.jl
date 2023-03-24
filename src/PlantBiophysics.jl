@@ -41,6 +41,7 @@ include("processes/γ_star.jl")
 # Light interception
 include("processes/light/Ignore.jl")
 include("processes/light/Beer.jl")
+include("processes/light/Beer_shortwave.jl")
 include("processes/light/Translucent.jl")
 
 # Photosynthesis related files:
