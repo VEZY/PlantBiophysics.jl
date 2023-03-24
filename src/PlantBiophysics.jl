@@ -93,7 +93,7 @@ export gsc_to_gsw
 
 # Light interception
 export AbstractLight_InterceptionModel
-export Beer # a struct to hold the values for the Beer-Lambert law of light extinction
+export Beer, BeerShortwave # structs to hold the values for the Beer-Lambert law of light extinction
 
 # Energy balance
 export AbstractEnergy_BalanceModel
