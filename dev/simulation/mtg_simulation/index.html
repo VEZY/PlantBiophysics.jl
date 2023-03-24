@@ -3,27 +3,27 @@
 mtg = read_opf(joinpath(dirname(dirname(pathof(PlantBiophysics))), &quot;test&quot;, &quot;inputs&quot;, &quot;scene&quot;, &quot;opf&quot;, &quot;coffee.opf&quot;))</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">/ 1: Individual
 └─ / 2: Axis
    ├─ &lt; 5: Metamer
-   │  └─ &lt; 799: Metamer
-   │     ├─ + 800: Axis
-   │     │  ├─ &lt; 806: Metamer
-   │     │  │  ├─ + 807: Axis
-   │     │  │  │  └─ / 808: Metamer
-   │     │  │  │     └─ &lt; 810: Metamer
-   │     │  │  │        └─ &lt; 814: Metamer
-   │     │  │  │           ├─ + 816: Leaf
-   │     │  │  │           ├─ + 815: Leaf
-   │     │  │  │           └─ &lt; 811: Metamer
-   │     │  │  │              ├─ + 813: Leaf
-   │     │  │  │              ├─ + 812: Leaf
-   │     │  │  │              └─ &lt; 809: Metamer
-   │     │  │  │                 └─ &lt; 817: Metamer
-   │     │  │  │                    └─ + 818: Leaf
-   │     │  │  └─ &lt; 939: Metamer
-   │     │  │     ├─ + 940: Leaf
-   │     │  │     ├─ + 941: Leaf
-   │     │  │     └─ &lt; 803: Metamer
-   │     │  │        └─ &lt; 926: Metamer
-   │     │  │           └─ &lt; 936: Metamer
+   ├─ &lt; 799: Metamer
+   │  ├─ + 800: Axis
+   │  │  ├─ &lt; 806: Metamer
+   │  │  │  └─ + 807: Axis
+   │  │  │     ├─ / 808: Metamer
+   │  │  │     ├─ &lt; 810: Metamer
+   │  │  │     ├─ &lt; 814: Metamer
+   │  │  │     │  ├─ + 816: Leaf
+   │  │  │     │  └─ + 815: Leaf
+   │  │  │     ├─ &lt; 811: Metamer
+   │  │  │     │  ├─ + 813: Leaf
+   │  │  │     │  └─ + 812: Leaf
+   │  │  │     ├─ &lt; 809: Metamer
+   │  │  │     └─ &lt; 817: Metamer
+   │  │  │        └─ + 818: Leaf
+   │  │  ├─ &lt; 939: Metamer
+   │  │  │  ├─ + 940: Leaf
+   │  │  │  └─ + 941: Leaf
+   │  │  ├─ &lt; 803: Metamer
+   │  │  ├─ &lt; 926: Metamer
+   │  │  ├─ &lt; 936: Metamer
 …</code></pre><p>The result is an MTG defining the plant at several scales using a tree graph. You can read the introduction to the MTG from <a href="https://vezy.github.io/MultiScaleTreeGraph.jl/stable/the_mtg/mtg_concept/">MultiScaleTreeGraph.jl</a>&#39;s documentation if you want to understand how it works.</p><p>Now let&#39;s import the weather data:</p><pre><code class="language-julia hljs">using PlantBiophysics, PlantSimEngine, PlantMeteo
 
 weather = read_weather(
@@ -44,7 +44,7 @@ weather = read_weather(
 <span class="sgr31">│</span>   3    <span class="sgr31">│</span>  2016-06-12T13:00:00  <span class="sgr31">│</span>  30 minutes  <span class="sgr31">│</span>  25.3  <span class="sgr31">│</span>  ...  <span class="sgr31">│</span>
 <span class="sgr31">╰────────┴───────────────────────┴──────────────┴────────┴───────╯</span>
 <span class="sgr1">Metadata: `Dict(&quot;name&quot; =&gt; &quot;Aquiares&quot;, &quot;latitude&quot; =&gt; 15.0, &quot;altitude&quot; =&gt; 100.0,  </span>
-<span class="sgr1">&quot;use&quot; =&gt; [:clearness], &quot;file&quot; =&gt; &quot;/home/runner/.julia/packages/PlantMeteo/HpPR0 </span>
+<span class="sgr1">&quot;use&quot; =&gt; [:clearness], &quot;file&quot; =&gt; &quot;/home/runner/.julia/packages/PlantMeteo/zA4BC </span>
 <span class="sgr1">/test/data/meteo.csv&quot;)`                                                         </span>
 </code></pre><p>And read the models associated to the MTG from a YAML file:</p><pre><code class="language-julia hljs">file = joinpath(dirname(dirname(pathof(PlantBiophysics))), &quot;test&quot;, &quot;inputs&quot;, &quot;models&quot;, &quot;plant_coffee.yml&quot;)
 models = read_model(file)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">Dict{String, ModelList} with 2 entries:
@@ -77,4 +77,4 @@ f</code></pre><img src='data:image/svg+xml;utf-8,<?xml version="1.0" encoding="U
 <use xlink:href="%23image22-zvfP8rWE" transform="matrix(0.24,0,0,0.24,0,0)"/>
 </g>
 </svg>
-'/></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../several_objects_simulation/">« Several objects</a><a class="docs-footer-nextpage" href="../uncertainty_propagation/">Tutorial: Uncertainty propagation »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 0.27.24 on <span class="colophon-date" title="Thursday 16 March 2023 11:14">Thursday 16 March 2023</span>. Using Julia version 1.7.2.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+'/></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../several_objects_simulation/">« Several objects</a><a class="docs-footer-nextpage" href="../uncertainty_propagation/">Tutorial: Uncertainty propagation »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 0.27.24 on <span class="colophon-date" title="Friday 24 March 2023 17:33">Friday 24 March 2023</span>. Using Julia version 1.7.2.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
