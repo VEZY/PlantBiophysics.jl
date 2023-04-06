@@ -29,9 +29,9 @@ leaf = ModelList(
         Fvcb(),
         Medlyn(0.03, 12.0),
         status = (
-            Rₛ = [5., 10., 20.],
+            Ra_SW_f = [5., 10., 20.],
             sky_fraction = 1.0,
-            PPFD = [500., 1000., 1500.0],
+            aPPFD = [500., 1000., 1500.0],
             d = 0.03
         )
     )
@@ -78,7 +78,7 @@ The status argument of the ModelList can also be provided as a DataFrame, or any
 
 ```@example usepkg
 using DataFrames
-df = DataFrame(:Rₛ => [13.747, 13.8], :sky_fraction => [1.0, 1.0], :d => [0.03, 0.03], :PPFD => [1300.0, 1500.0])
+df = DataFrame(:Ra_SW_f => [13.747, 13.8], :sky_fraction => [1.0, 1.0], :d => [0.03, 0.03], :aPPFD => [1300.0, 1500.0])
 
 m = ModelList(Monteith(), Fvcb(), Medlyn(0.03, 12.0), status=df)
 ```

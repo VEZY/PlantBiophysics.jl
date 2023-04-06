@@ -57,7 +57,7 @@ Base.eltype(x::Medlyn) = typeof(x).parameters[1]
 
 
 """
-    gs_closure(leaf::ModelList,meteo)
+    gs_closure(::Medlyn, models, status, meteo, constants=nothing, extra=nothing)
 
 Stomatal closure for CO₂ according to Medlyn et al. (2011). Carefull, this is just a part of
 the computation of the stomatal conductance.
@@ -71,17 +71,17 @@ The result of this function is then used as:
 
 # Arguments
 
-- `::Medlyn`: a medlyn model, usually the leaf model (*i.e.* leaf.stomatal_conductance)
-- `leaf::ModelList`: A `ModelList` struct holding the parameters for
-the model.
-- `status`: A status, usually the leaf status (*i.e.* leaf.status)
+- `::Medlyn`: an instance of the `Medlyn` model type
+- `models::ModelList`: A `ModelList` struct holding the parameters for the models.
+- `status`: A status struct holding the variables for the models.
 - `meteo`: meteorology structure, see [`Atmosphere`](https://palmstudio.github.io/PlantMeteo.jl/stable/#PlantMeteo.Atmosphere). Is not used in this model.
+- `constants`: A constants struct holding the constants for the models. Is not used in this model.
+- `extra`: A struct holding the extra variables for the models. Is not used in this model.
 
 # Details
 
 Use `variables()` on Medlyn to get the variables that must be instantiated in the
 `ModelList` struct.
-
 
 # Notes
 

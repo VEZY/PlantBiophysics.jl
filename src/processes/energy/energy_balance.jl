@@ -14,7 +14,7 @@ At the moment, two models are implemented in the package:
 # Note
 
 Some models need input values for some variables. For example `Monteith` requires a
-value for `Rₛ`, `d` and `sky_fraction`. If you read the models from a file, you can
+value for `Ra_SW_f`, `d` and `sky_fraction`. If you read the models from a file, you can
 use `init_status!` (see examples).
 
 # Examples
@@ -33,7 +33,7 @@ leaf =
         energy_balance = Monteith(),
         photosynthesis = Fvcb(),
         stomatal_conductance = Medlyn(0.03, 12.0),
-        status = (Rₛ = 13.747, sky_fraction = 1.0, PPFD = 1500.0, d = 0.03)
+        status = (Ra_SW_f = 13.747, sky_fraction = 1.0, aPPFD = 1500.0, d = 0.03)
     )
 
 run!(leaf,meteo)
@@ -41,7 +41,7 @@ run!(leaf,meteo)
 # ---Using several components---
 
 leaf2 = copy(leaf)
-leaf2[:PPFD] = 800.0
+leaf2[:aPPFD] = 800.0
 
 run!([leaf,leaf2],meteo)
 
@@ -63,7 +63,7 @@ leaf =
         energy_balance = Monteith(),
         photosynthesis = Fvcb(),
         stomatal_conductance = Medlyn(0.03, 12.0),
-        status = (Rₛ = [12.0,13.747], sky_fraction = 1.0, PPFD = 1500.0, d = 0.03)
+        status = (Ra_SW_f = [12.0,13.747], sky_fraction = 1.0, aPPFD = 1500.0, d = 0.03)
     )
 
 run!(leaf, w)
@@ -75,7 +75,7 @@ leaf2 =
         energy_balance = Monteith(),
         photosynthesis = Fvcb(),
         stomatal_conductance = Medlyn(0.03, 12.0),
-        status = (Rₛ = [12.0,13.747], sky_fraction = 1.0, PPFD = 1500.0, d = 0.01)
+        status = (Ra_SW_f = [12.0,13.747], sky_fraction = 1.0, aPPFD = 1500.0, d = 0.01)
     )
 
 run!(Dict(:leaf1 => leaf, :leaf2 => leaf2), w)
@@ -88,7 +88,7 @@ model = read_model(joinpath(dirname(dirname(pathof(PlantBiophysics))),"test","in
 # "https://raw.githubusercontent.com/VEZY/PlantBiophysics/main/test/inputs/models/plant_coffee.yml"
 
 # Initialising the mandatory variables:
-init_status!(model, Rₛ = 13.747, sky_fraction = 1.0, PPFD = 1500.0, Tₗ = 25.0, d = 0.03)
+init_status!(model, Ra_SW_f = 13.747, sky_fraction = 1.0, aPPFD = 1500.0, Tₗ = 25.0, d = 0.03)
 
 # NB: To know which variables has to be initialized according to the models used, you can use
 # `to_initialize(ComponentModels)`, *e.g.*:
@@ -133,15 +133,15 @@ models = Dict(
 
 # List the MTG attributes:
 names(mtg)
-# We have the skyFraction already, but not Rₛ and PPFD, so we must compute them first.
-# Rₛ is the shortwave radiation (or global radiation), so it is the sum of Ra_PAR_f and Ra_NIR_f.
-# PPFD is the PAR in μmol m-2 s-1, so Ra_PAR_f * 4.57.
+# We have the skyFraction already, but not Ra_SW_f and aPPFD, so we must compute them first.
+# Ra_SW_f is the shortwave radiation (or global radiation), so it is the sum of Ra_PAR_f and Ra_NIR_f.
+# aPPFD is the PAR in μmol m-2 s-1, so Ra_PAR_f * 4.57.
 
 # We can compute them using the following code (transform! comes from MultiScaleTreeGraph.jl):
 transform!(
     mtg,
-    [:Ra_PAR_f, :Ra_NIR_f] => ((x, y) -> x + y) => :Rₛ,
-    :Ra_PAR_f => (x -> x * 4.57) => :PPFD,
+    [:Ra_PAR_f, :Ra_NIR_f] => ((x, y) -> x + y) => :Ra_SW_f,
+    :Ra_PAR_f => (x -> x * 4.57) => :aPPFD,
     ignore_nothing = true
 )
 

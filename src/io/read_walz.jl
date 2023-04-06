@@ -50,7 +50,7 @@ function read_walz(file)
     rename!(
         df,
         :GH2O => :Gₛ, :ca => :Cₐ, :Tcuv => :T, :Pamb => :P, :rh => :Rh,
-        :PARtop => :PPFD, :ci => :Cᵢ, :Comment => :curve, :Tleaf => :Tₗ,
+        :PARtop => :aPPFD, :ci => :Cᵢ, :Comment => :curve, :Tleaf => :Tₗ,
         :VPD => :Dₗ
     )
 

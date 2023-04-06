@@ -20,7 +20,7 @@ The definition:
 - `Δₛᵥ`: entropy factor for VcMax.
 - `α`: quantum yield of electron transport (``mol_e\\ mol^{-1}_{quanta}``). See also eq. 4 of
 Medlyn et al. (2002) and its implementation in [`get_J`](@ref)
-- `θ`: determines the curvature of the light response curve for `J~PPFD`. See also eq. 4 of
+- `θ`: determines the curvature of the light response curve for `J~aPPFD`. See also eq. 4 of
 Medlyn et al. (2002) and its implementation in [`get_J`](@ref)
 
 The default values of the temperature correction parameters are taken from
@@ -106,7 +106,7 @@ function Fvcb(; Tᵣ=25.0, VcMaxRef=200.0, JMaxRef=250.0, RdRef=0.6, TPURef=9999
 end
 
 function PlantSimEngine.inputs_(::Fvcb)
-    (PPFD=-Inf, Tₗ=-Inf, Cₛ=-Inf)
+    (aPPFD=-Inf, Tₗ=-Inf, Cₛ=-Inf)
 end
 
 function PlantSimEngine.outputs_(::Fvcb)
@@ -170,7 +170,7 @@ Modify the first argument in place for A, Gₛ and Cᵢ:
 - `models`: a `ModelList` struct holding the parameters for the model with
 initialisations for:
     - `Tₗ` (°C): leaf temperature
-    - `PPFD` (μmol m-2 s-1): absorbed Photosynthetic Photon Flux Density
+    - `aPPFD` (μmol m-2 s-1): absorbed Photosynthetic Photon Flux Density
     - `Cₛ` (ppm): surface CO₂ concentration.
     - `Dₗ` (kPa): vapour pressure difference between the surface and the saturated
     air vapour pressure in case you're using the stomatal conductance model of [`Medlyn`](@ref).
@@ -180,7 +180,7 @@ initialisations for:
 
 # Note
 
-`Tₗ`, `PPFD`, `Cₛ` (and `Dₗ` if you use [`Medlyn`](@ref)) must be initialized by providing
+`Tₗ`, `aPPFD`, `Cₛ` (and `Dₗ` if you use [`Medlyn`](@ref)) must be initialized by providing
 them as keyword arguments (see examples). If in doubt, it is simpler to compute the energy
 balance of the leaf with the photosynthesis to get those variables. See
 [`AbstractEnergy_BalanceModel`](@ref) for more details.
@@ -195,9 +195,9 @@ leaf =
     ModelList(
         photosynthesis = Fvcb(),
         stomatal_conductance = Medlyn(0.03, 12.0),
-        status = (Tₗ = 25.0, PPFD = 1000.0, Cₛ = 400.0, Dₗ = meteo.VPD)
+        status = (Tₗ = 25.0, aPPFD = 1000.0, Cₛ = 400.0, Dₗ = meteo.VPD)
     )
-# NB: we need to initalise Tₗ, PPFD and Cₛ.
+# NB: we need to initalise Tₗ, aPPFD and Cₛ.
 # NB2: we provide the name of the process before the model but it is not mandatory.
 
 run!(leaf,meteo,PlantMeteo.Constants())
@@ -255,7 +255,7 @@ function PlantSimEngine.run!(::Fvcb, models, status, meteo, constants=PlantMeteo
     # cycle, and termed "day" respiration, or "light respiration" (Harley et al., 1986).
 
     # Actual electron transport rate (considering intercepted PAR and leaf temperature):
-    J = get_J(status.PPFD, JMax, models.photosynthesis.α, models.photosynthesis.θ) # in μmol m-2 s-1
+    J = get_J(status.aPPFD, JMax, models.photosynthesis.α, models.photosynthesis.θ) # in μmol m-2 s-1
     # RuBP regeneration
     Vⱼ = J / 4
 
@@ -290,8 +290,6 @@ function PlantSimEngine.run!(::Fvcb, models, status, meteo, constants=PlantMeteo
 
     # Stomatal conductance (mol[CO₂] m-2 s-1)
     PlantSimEngine.run!(models.stomatal_conductance, models, status, st_closure, extra)
-    # NB: `run!(` is the function that implements the computation directly. If you want to
-    # call the stomatal conductance interactively, use `run!()` or `stomatal_conductance()` instead.
 
     # Intercellular CO₂ concentration (Cᵢ, μmol mol)
     status.Cᵢ = min(status.Cₛ, status.Cₛ - status.A / status.Gₛ)
@@ -303,10 +301,10 @@ end
 Rate of electron transport J (``μmol\\ m^{-2}\\ s^{-1}``), computed using the smaller root
 of the quadratic equation (eq. 4 from Medlyn et al., 2002):
 
-    θ * J² - (α * PPFD + JMax) * J + α * PPFD * JMax
+    θ * J² - (α * aPPFD + JMax) * J + α * aPPFD * JMax
 
 NB: we use the smaller root because considering the range of values for θ and α (quite stable),
-and PPFD and JMax, the function always tends to JMax with high PPFD with the smaller root (behavior we
+and aPPFD and JMax, the function always tends to JMax with high aPPFD with the smaller root (behavior we
 are searching), and the opposite with the larger root.
 
 # Returns
@@ -318,7 +316,7 @@ A tuple with (A, Gₛ, Cᵢ):
 - Cᵢ: intercellular CO₂ concentration (ppm)
 # Arguments
 
-- `PPFD`: absorbed photon irradiance (``μmol_{quanta}\\ m^{-2}\\ s^{-1}``)
+- `aPPFD`: absorbed photon irradiance (``μmol_{quanta}\\ m^{-2}\\ s^{-1}``)
 - `α`: quantum yield of electron transport (``mol_e\\ mol^{-1}_{quanta}``)
 - `JMax`: maximum rate of electron transport (``μmol\\ m^{-2}\\ s^{-1}``)
 - `θ`: determines the shape of the non-rectangular hyperbola (-)
@@ -343,8 +341,8 @@ julia> PlantBiophysics.get_J(1500, A.JMaxRef, A.α, A.θ)
 188.17537926909347
 ```
 """
-function get_J(PPFD, JMax, α, θ)
-    (α * PPFD + JMax - sqrt((α * PPFD + JMax)^2 - 4 * α * θ * PPFD * JMax)) / (2 * θ)
+function get_J(aPPFD, JMax, α, θ)
+    (α * aPPFD + JMax - sqrt((α * aPPFD + JMax)^2 - 4 * α * θ * aPPFD * JMax)) / (2 * θ)
 end
 
 """

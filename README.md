@@ -57,7 +57,7 @@ leaf = ModelList(
     energy_balance = Monteith(),
     photosynthesis = Fvcb(),
     stomatal_conductance = Medlyn(0.03, 12.0),
-    status = (Rₛ = [13.747, 14.5], sky_fraction = 1.0, PPFD = 1500.0, d = 0.03)
+    status = (Ra_SW_f = [13.747, 14.5], sky_fraction = 1.0, aPPFD = 1500.0, d = 0.03)
 )
 
 run!(leaf, meteo)

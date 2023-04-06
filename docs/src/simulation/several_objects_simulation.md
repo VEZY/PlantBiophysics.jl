@@ -21,14 +21,14 @@ leaf1 = ModelList(
         Monteith(),
         Fvcb(),
         Medlyn(0.03, 12.0),
-        status = (Rₛ = 13.747, sky_fraction = 1.0, PPFD = 1500.0, d = 0.03)
+        status = (Ra_SW_f = 13.747, sky_fraction = 1.0, aPPFD = 1500.0, d = 0.03)
     )
 
 leaf2 = ModelList(
         Monteith(),
         Fvcb(),
         Medlyn(0.03, 12.0),
-        status = (Rₛ = 10., sky_fraction = 1.0, PPFD = 1250.0, d = 0.02)
+        status = (Ra_SW_f = 10., sky_fraction = 1.0, aPPFD = 1250.0, d = 0.02)
     )
 
 run!([leaf1, leaf2], meteo)
@@ -56,9 +56,9 @@ leaf1 = ModelList(
         Fvcb(),
         Medlyn(0.03, 12.0),
         status = (
-            Rₛ = [5., 10., 20.],
+            Ra_SW_f = [5., 10., 20.],
             sky_fraction = 1.0,
-            PPFD = [500., 1000., 1500.0],
+            aPPFD = [500., 1000., 1500.0],
             d = 0.03
         )
     )
@@ -68,9 +68,9 @@ leaf2 = ModelList(
         Fvcb(),
         Medlyn(0.03, 12.0),
         status = (
-            Rₛ = [3., 7., 16.],
+            Ra_SW_f = [3., 7., 16.],
             sky_fraction = 1.0,
-            PPFD = [400., 800., 1200.0],
+            aPPFD = [400., 800., 1200.0],
             d = 0.03
         )
     )

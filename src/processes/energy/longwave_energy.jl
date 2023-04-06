@@ -98,14 +98,14 @@ leaf area of the object that exchange energy.
 # the canopy:
 Tₗ = 25.0 ; Tₐ = 20.0
 ε₁ = 0.955 ; ε₂ = 1.0
-Rₗₗ = net_longwave_radiation(Tₗ,Tₐ,ε₁,ε₂,1.0)
-Rₗₗ
+Ra_LW_f = net_longwave_radiation(Tₗ,Tₐ,ε₁,ε₂,1.0)
+Ra_LW_f
 
-# Rₗₗ is the net longwave radiation flux between the leaf and the atmosphere per surface area.
+# Ra_LW_f is the net longwave radiation flux between the leaf and the atmosphere per surface area.
 # To get the actual net longwave radiation flux we need to multiply by the surface of the
 # leaf, e.g. for a leaf of 2cm²:
 leaf_area = 2e-4 # in m²
-Rₗₗ * leaf_area
+Ra_LW_f * leaf_area
 
 # The leaf lose ~0.0055 W towards the atmosphere.
 ```

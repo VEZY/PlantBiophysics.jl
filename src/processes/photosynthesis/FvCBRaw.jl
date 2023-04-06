@@ -58,7 +58,7 @@ function FvcbRaw(; Tᵣ=25.0, VcMaxRef=200.0, JMaxRef=250.0, RdRef=0.6, TPURef=9
 end
 
 function PlantSimEngine.inputs_(::FvcbRaw)
-    (PPFD=-Inf, Tₗ=-Inf, Cᵢ=-Inf)
+    (aPPFD=-Inf, Tₗ=-Inf, Cᵢ=-Inf)
 end
 
 function PlantSimEngine.outputs_(::FvcbRaw)
@@ -83,7 +83,7 @@ Modify the first argument in place for A, the carbon assimilation (μmol[CO₂] 
 - `models`: a `ModelList` struct holding the parameters for the model with
 initialisations for:
     - `Tₗ` (°C): leaf temperature
-    - `PPFD` (μmol m-2 s-1): absorbed Photosynthetic Photon Flux Density
+    - `aPPFD` (μmol m-2 s-1): absorbed Photosynthetic Photon Flux Density
     - `Cₛ` (ppm): surface CO₂ concentration.
     - `Dₗ` (kPa): vapour pressure difference between the surface and the saturated
     air vapour pressure in case you're using the stomatal conductance model of [`Medlyn`](@ref).
@@ -92,7 +92,7 @@ initialisations for:
 
 # Note
 
-`Tₗ`, `PPFD`, `Cₛ` (and `Dₗ` if you use [`Medlyn`](@ref)) must be initialized by providing
+`Tₗ`, `aPPFD`, `Cₛ` (and `Dₗ` if you use [`Medlyn`](@ref)) must be initialized by providing
 them as keyword arguments (see examples). If in doubt, it is simpler to compute the energy
 balance of the leaf with the photosynthesis to get those variables. See
 [`AbstractEnergy_BalanceModel`](@ref) for more details.
@@ -101,8 +101,8 @@ balance of the leaf with the photosynthesis to get those variables. See
 
 ```julia
 using PlantSimEngine
-leaf = ModelList(photosynthesis = FvcbRaw(), status = (Tₗ = 25.0, PPFD = 1000.0, Cᵢ = 400.0))
-# NB: we need Tₗ, PPFD and Cᵢ as inputs (see [`inputs`](@ref))
+leaf = ModelList(photosynthesis = FvcbRaw(), status = (Tₗ = 25.0, aPPFD = 1000.0, Cᵢ = 400.0))
+# NB: we need Tₗ, aPPFD and Cᵢ as inputs (see [`inputs`](@ref))
 
 run!(leaf)
 leaf.status.A
@@ -112,9 +112,9 @@ leaf.status.Cᵢ
 leaf =
     ModelList(
         photosynthesis = FvcbRaw(),
-        status = (Tₗ = [20., 25.0], PPFD = 1000.0, Cᵢ = [380.,400.0])
+        status = (Tₗ = [20., 25.0], aPPFD = 1000.0, Cᵢ = [380.,400.0])
     )
-# NB: we need Tₗ, PPFD and Cᵢ as inputs (see [`inputs`](@ref))
+# NB: we need Tₗ, aPPFD and Cᵢ as inputs (see [`inputs`](@ref))
 
 run!(leaf)
 DataFrame(leaf) # fetch the leaf status as a DataFrame
@@ -151,7 +151,7 @@ function PlantSimEngine.run!(::FvcbRaw, models, status, meteo=nothing, constants
     JMax = arrhenius(models.photosynthesis.JMaxRef, models.photosynthesis.Eₐⱼ, Tₖ, Tᵣₖ, models.photosynthesis.Hdⱼ, models.photosynthesis.Δₛⱼ, constants.R)
     VcMax = arrhenius(models.photosynthesis.VcMaxRef, models.photosynthesis.Eₐᵥ, Tₖ, Tᵣₖ, models.photosynthesis.Hdᵥ, models.photosynthesis.Δₛᵥ, constants.R)
     Rd = arrhenius(models.photosynthesis.RdRef, models.photosynthesis.Eₐᵣ, Tₖ, Tᵣₖ, constants.R)
-    J = get_J(status.PPFD, JMax, models.photosynthesis.α, models.photosynthesis.θ) # in μmol m-2 s-1
+    J = get_J(status.aPPFD, JMax, models.photosynthesis.α, models.photosynthesis.θ) # in μmol m-2 s-1
     Vⱼ = J / 4
     Wⱼ = Vⱼ * (status.Cᵢ - Γˢ) / (status.Cᵢ + 2.0 * Γˢ) # also called Aⱼ
     Wᵥ = VcMax * (status.Cᵢ - Γˢ) / (status.Cᵢ + Km)

@@ -7,7 +7,7 @@ Required inputs: `LAI` in m² m⁻².
 Required meteorology data: `Ri_PAR_f`, the incident flux of atmospheric radiation in the
 PAR, in W m[soil]⁻² (== J m[soil]⁻² s⁻¹).
 
-Output: PPFD, the absorbed Photosynthetic Photon Flux Density in μmol[PAR] m[leaf]⁻² s⁻¹.
+Output: aPPFD, the absorbed Photosynthetic Photon Flux Density in μmol[PAR] m[leaf]⁻² s⁻¹.
 """
 struct Beer{T} <: AbstractLight_InterceptionModel
     k::T
@@ -37,11 +37,11 @@ meteo = Atmosphere(T=20.0, Wind=1.0, P=101.3, Rh=0.65, Ri_PAR_f=300.0)
 
 run!(m, meteo)
 
-m[:PPFD]
+m[:aPPFD]
 ```
 """
 function PlantSimEngine.run!(::Beer, models, status, meteo, constants, extra=nothing)
-    status.PPFD =
+    status.aPPFD =
         meteo.Ri_PAR_f *
         exp(-models.light_interception.k * status.LAI) *
         constants.J_to_umol
@@ -52,5 +52,5 @@ function PlantSimEngine.inputs_(::Beer)
 end
 
 function PlantSimEngine.outputs_(::Beer)
-    (PPFD=-Inf,)
+    (aPPFD=-Inf,)
 end

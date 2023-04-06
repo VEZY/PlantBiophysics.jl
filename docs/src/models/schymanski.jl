@@ -56,7 +56,7 @@ leaf =
         Monteith(aₛᵥ=params["a_s"], maxiter=maxiter),
         ConstantA(0.0),
         status=(
-            Rₛ=results1_6a.Rn_leaf,
+            Ra_SW_f=results1_6a.Rn_leaf,
             sky_fraction=2.0,
             d=results1_6a.L_l,
             Gₛ=gs_obs

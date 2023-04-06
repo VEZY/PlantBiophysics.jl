@@ -119,7 +119,7 @@ to_initialize(m)
 Their values are uninitialized though (hence the warnings):
 
 ```@example usepkg
-(m[:LAI], m[:PPFD])
+(m[:LAI], m[:aPPFD])
 ```
 
 Uninitialized variables have often the value returned by `typemin()`, *e.g.* `-Inf` for `Float64`:
@@ -279,7 +279,7 @@ The most straightforward way of initializing a model list is by giving the initi
 m = ModelList(
     Fvcb(),
     Medlyn(0.03, 12.0),
-    status = (Tₗ = 25.0, PPFD = 1000.0, Cₛ = 400.0, Dₗ = 0.82)
+    status = (Tₗ = 25.0, aPPFD = 1000.0, Cₛ = 400.0, Dₗ = 0.82)
 )
 ```
 

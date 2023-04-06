@@ -19,7 +19,7 @@ function read_licor6400(file)
     rename!(
         df,
         :Cond => :Gₛ, :CO2S => :Cₐ, :Tair => :T, :Press => :P, :RH_S => :Rh,
-        :PARi => :PPFD, :Ci => :Cᵢ, :Tleaf => :Tₗ,
+        :PARi => :aPPFD, :Ci => :Cᵢ, :Tleaf => :Tₗ,
         :VpdL => :Dₗ, :Photo => :A, :BLCond => :Gbv,
     )
 

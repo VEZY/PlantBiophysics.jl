@@ -23,7 +23,7 @@ leaf = ModelList(
     Monteith(),
     Fvcb(),
     Medlyn(0.03, 12.0),
-    status = (Rₛ = 13.747, sky_fraction = 1.0, PPFD = 1500.0, d = 0.03)
+    status = (Ra_SW_f = 13.747, sky_fraction = 1.0, aPPFD = 1500.0, d = 0.03)
 )
 
 run!(leaf,meteo)
@@ -55,7 +55,7 @@ The [`Monteith`](@ref) model needs three input variables:
 inputs(Monteith())
 ```
 
-`Rₛ` (W m-2) is the net shortwave radiation (PAR + NIR), most often computed from a light interception model. `sky_fraction` (0-2) is the fraction of sky the object is viewing compared to everything else. It is given for the 360° viewing angle, *i.e.* for both faces. `d` (m) is the characteristic dimension, *e.g.* the leaf width (see eq. 10.9 from Monteith and Unsworth, 2013).
+`Ra_SW_f` (W m-2) is the net shortwave radiation (PAR + NIR), most often computed from a light interception model. `sky_fraction` (0-2) is the fraction of sky the object is viewing compared to everything else. It is given for the 360° viewing angle, *i.e.* for both faces. `d` (m) is the characteristic dimension, *e.g.* the leaf width (see eq. 10.9 from Monteith and Unsworth, 2013).
 
 !!! note
     `sky_fraction` is equal to `2` if the leaf is viewing sky only (*e.g.* in a controlled chamber with lights everywhere), `1` if the leaf is *e.g.* up on the canopy where the upper side of the leaf sees sky, and the bottom side sees soil and other components, or less than 1 if it is partly shaded. `sky_fraction` is used to compute the thermal radiation exchanges. Everything except the sky is considered at the same temperature than the object. This simplification makes the computations very fast, but less precise, especially when another object has a very different temperature.
@@ -68,7 +68,7 @@ The [`Monteith`](@ref) model computes a lot of variables, mainly because it is a
 outputs(Monteith())
 ```
 
-`Tₗ` (°C) is the component temperature, `Rn` (``W \cdot m^{-2}``) is the net radiation (PAR + NIR + TIR), `Rₗₗ` (``W \cdot m^{-2}``) is the longwave radiation (TIR), `H` (``W \cdot m^{-2}``) is the sensible heat flux, `λE` (``W \cdot m^{-2}``) is the latent heat flux, `Cₛ` (ppm) is the stomatal CO₂ concentration, `Cᵢ` (ppm) is the intercellular CO₂ concentration, `A` (``μmol \cdot m^{-2} \cdot s^{-1}``) is the CO₂ assimilation rate, `Gₛ` (``mol_{CO_2} \cdot m^{-2} \cdot s^{-1}``) the stomatal conductance, `Gbₕ` (``m \cdot s^{-1}``) the boundary layer conductance to heat, `Dₗ` (kPa) the difference between the vapour pressure at the leaf surface and the saturated air vapour pressure, `Gbc` (``mol_{CO_2} \cdot m^{-2} \cdot s^{-1}``) the boundary layer conductance to CO₂, and `iter` the number of iterations to reach convergence.
+`Tₗ` (°C) is the component temperature, `Rn` (``W \cdot m^{-2}``) is the net radiation (PAR + NIR + TIR), `Ra_LW_f` (``W \cdot m^{-2}``) is the longwave radiation (TIR), `H` (``W \cdot m^{-2}``) is the sensible heat flux, `λE` (``W \cdot m^{-2}``) is the latent heat flux, `Cₛ` (ppm) is the stomatal CO₂ concentration, `Cᵢ` (ppm) is the intercellular CO₂ concentration, `A` (``μmol \cdot m^{-2} \cdot s^{-1}``) is the CO₂ assimilation rate, `Gₛ` (``mol_{CO_2} \cdot m^{-2} \cdot s^{-1}``) the stomatal conductance, `Gbₕ` (``m \cdot s^{-1}``) the boundary layer conductance to heat, `Dₗ` (kPa) the difference between the vapour pressure at the leaf surface and the saturated air vapour pressure, `Gbc` (``mol_{CO_2} \cdot m^{-2} \cdot s^{-1}``) the boundary layer conductance to CO₂, and `iter` the number of iterations to reach convergence.
 
 !!! note
     The output variables depends on the models we are using for photosynthesis and stomatal conductance.
@@ -87,7 +87,7 @@ leaf = ModelList(
     Monteith(),
     Fvcb(),
     Medlyn(0.03, 12.0),
-    status = (Rₛ = 13.747, sky_fraction = 1.0, PPFD = 1500.0, d = 0.03)
+    status = (Ra_SW_f = 13.747, sky_fraction = 1.0, aPPFD = 1500.0, d = 0.03)
 )
 
 leaf

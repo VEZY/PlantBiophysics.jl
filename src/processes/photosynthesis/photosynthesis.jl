@@ -20,7 +20,7 @@ leaf =
     ModelList(
         photosynthesis = Fvcb(),
         stomatal_conductance = Medlyn(0.03, 12.0),
-        status = (Tₗ = 25.0, PPFD = 1000.0, Cₛ = 400.0, Dₗ = meteo.VPD)
+        status = (Tₗ = 25.0, aPPFD = 1000.0, Cₛ = 400.0, Dₗ = meteo.VPD)
     )
 
 run!(leaf, meteo)
@@ -28,7 +28,7 @@ run!(leaf, meteo)
 # ---Using several components---
 
 leaf2 = copy(leaf)
-leaf2.status.PPFD = 800.0
+leaf2.status.aPPFD = 800.0
 
 run!([leaf,leaf2],meteo)
 
@@ -53,7 +53,7 @@ run!(Dict(:leaf1 => leaf, :leaf2 => leaf2), w)
 model = read_model("a-model-file.yml")
 
 # Initialising the mandatory variables:
-init_status!(model, Tₗ = 25.0, PPFD = 1000.0, Cₛ = 400.0, Dₗ = meteo.VPD)
+init_status!(model, Tₗ = 25.0, aPPFD = 1000.0, Cₛ = 400.0, Dₗ = meteo.VPD)
 
 # Running a simulation for all component types in the same scene:
 run!(model, meteo)

@@ -26,9 +26,9 @@ leaf = ModelList(
         Fvcb(),
         Medlyn(0.03, 7.0),
         status = (
-            Rₛ = meteo[:Ri_SW_f] .* 0.8,
+            Ra_SW_f = meteo[:Ri_SW_f] .* 0.8,
             sky_fraction = 1.0,
-            PPFD = meteo[:Ri_SW_f] .* 0.8 .* 0.48 .* 4.57,
+            aPPFD = meteo[:Ri_SW_f] .* 0.8 .* 0.48 .* 4.57,
             d = 0.03
         )
 )

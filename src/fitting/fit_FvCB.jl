@@ -11,7 +11,7 @@ Optimize the parameters of the [`Fvcb`](@ref) model. Also works for [`FvcbIter`]
 
 # Arguments
 
-- df: a DataFrame with columns A, PPFD, Tₗ and Cᵢ, where each row is an observation. The column
+- df: a DataFrame with columns A, aPPFD, Tₗ and Cᵢ, where each row is an observation. The column
 names should match exactly
 - Tᵣ: reference temperature for the optimized parameter values. If not provided, use the average Tₗ.
 - VcMaxRef, JMaxRef, RdRef, TPURef: initialisation values for the parameter optimisation
@@ -46,7 +46,7 @@ sort!(df, :Cᵢ)
 leaf =
     ModelList(
         photosynthesis = FvcbRaw(VcMaxRef = VcMaxRef, JMaxRef = JMaxRef, RdRef = RdRef, TPURef = TPURef),
-        status = (Tₗ = df.Tₗ, PPFD = df.PPFD, Cᵢ = df.Cᵢ)
+        status = (Tₗ = df.Tₗ, aPPFD = df.aPPFD, Cᵢ = df.Cᵢ)
     )
 run!(leaf)
 df_sim = DataFrame(leaf)
@@ -63,7 +63,7 @@ leaf = ModelList(
         photosynthesis = Fvcb(VcMaxRef = VcMaxRef, JMaxRef = JMaxRef, RdRef = RdRef, Tᵣ = 25.0, TPURef = TPURef),
         # stomatal_conductance = ConstantGs(0.0, df[i,:Gₛ]),
         stomatal_conductance = Medlyn(0.03, 12.),
-        status = (Tₗ = df.Tₗ, PPFD = df.PPFD, Cₛ = df.Cₐ, Dₗ = 0.1)
+        status = (Tₗ = df.Tₗ, aPPFD = df.aPPFD, Cₛ = df.Cₐ, Dₗ = 0.1)
     )
 
 w = Weather(select(df, :T, :P, :Rh, :Cₐ, :T => (x -> 10) => :Wind))
@@ -92,7 +92,7 @@ function PlantSimEngine.fit(
         leaf =
             ModelList(
                 photosynthesis=FvcbRaw(Tᵣ=Tᵣ, VcMaxRef=p[1], JMaxRef=p[2], RdRef=p[3], TPURef=p[4]),
-                status=(Tₗ=x[:, 1], PPFD=x[:, 2], Cᵢ=x[:, 3])
+                status=(Tₗ=x[:, 1], aPPFD=x[:, 2], Cᵢ=x[:, 3])
             )
         PlantSimEngine.run!(leaf)
         DataFrame(leaf).A
@@ -102,7 +102,7 @@ function PlantSimEngine.fit(
     # fits = curve_fit(model, df.Cᵢ[ind], df.A[ind], [VcMaxRef, JMaxRef, RdRef, TPURef])
     fits = curve_fit(
         model,
-        Array(select(df, :Tₗ, :PPFD, :Cᵢ)),
+        Array(select(df, :Tₗ, :aPPFD, :Cᵢ)),
         df.A,
         [VcMaxRef, JMaxRef, RdRef, TPURef],
         lower=[VcMaxRef_bound[1], JMaxRef_bound[1], RdRef_bound[1], TPURef_bound[1]],

@@ -48,7 +48,7 @@ Now let's re-simulate the assimilation with our optimized parameter values:
 leaf =
     ModelList(
         FvcbRaw(VcMaxRef = VcMaxRef, JMaxRef = JMaxRef, RdRef = RdRef, TPURef = TPURef),
-        status = (Tₗ = df.Tₗ, PPFD = df.PPFD, Cᵢ = df.Cᵢ)
+        status = (Tₗ = df.Tₗ, aPPFD = df.aPPFD, Cᵢ = df.Cᵢ)
     )
 run!(leaf)
 df_sim = DataFrame(leaf);
@@ -69,7 +69,7 @@ There are another implementation of the FvCB model in our package. One that coup
 leaf = ModelList(
         Fvcb(VcMaxRef = VcMaxRef, JMaxRef = JMaxRef, RdRef = RdRef, Tᵣ = 25.0, TPURef = TPURef),
         Medlyn(0.03, 12.),
-        status = (Tₗ = df.Tₗ, PPFD = df.PPFD, Cₛ = df.Cₐ, Dₗ = 0.1)
+        status = (Tₗ = df.Tₗ, aPPFD = df.aPPFD, Cₛ = df.Cₐ, Dₗ = 0.1)
     )
 
 w = Weather(select(df, :T, :P, :Rh, :Cₐ, :T => (x -> 10) => :Wind))

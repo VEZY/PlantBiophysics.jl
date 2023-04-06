@@ -297,7 +297,7 @@ end
 
 # Define inputs:
 function PlantSimEngine.inputs_(::OurModel)
-    (PPFD=-Inf, Tₗ=-Inf, Cₛ=-Inf)
+    (aPPFD=-Inf, Tₗ=-Inf, Cₛ=-Inf)
 end
 
 # Define outputs:
@@ -313,7 +313,7 @@ function PlantSimEngine.run!(::OurModel, models, status, meteo, constants=Consta
 
     status.A =
         status.Cₛ / models.photosynthesis.a +
-        status.PPFD / models.photosynthesis.b +
+        status.aPPFD / models.photosynthesis.b +
         status.Tₗ / models.photosynthesis.c
 
     PlantSimEngine.run!(models.stomatal_conductance, models, status, meteo, constants, extras)
@@ -340,9 +340,9 @@ leaf =
     ModelList(
         OurModel(1.0, 2.0, 3.0),
         Medlyn(0.03, 12.0),
-        status = (Tₗ = 25.0, PPFD = 1000.0, Cₛ = 400.0, Dₗ = meteo.VPD)
+        status = (Tₗ = 25.0, aPPFD = 1000.0, Cₛ = 400.0, Dₗ = meteo.VPD)
     )
-# NB: we need  to initalise Tₗ, PPFD and Cₛ
+# NB: we need  to initalise Tₗ, aPPFD and Cₛ
 
 run!(leaf,meteo,Constants())
 leaf[:A]

@@ -20,8 +20,8 @@ models = read_model(joinpath(dirname(dirname(pathof(PlantBiophysics))), "test", 
 transform!(
     mtg,
     [:Ra_PAR_f, :Ra_NIR_f] => ((x, y) -> x + y * 1.2) => :Rᵢ, # This would be the incident radiation
-    [:Ra_PAR_f, :Ra_NIR_f] => ((x, y) -> x + y) => :Rₛ,
-    :Ra_PAR_f => (x -> x * 4.57) => :PPFD,
+    [:Ra_PAR_f, :Ra_NIR_f] => ((x, y) -> x + y) => :Ra_SW_f,
+    :Ra_PAR_f => (x -> x * 4.57) => :aPPFD,
     (x -> 0.3) => :d,
     ignore_nothing = true
 )
@@ -78,7 +78,7 @@ Let's check which variables we need to provide for our model configuration:
 to_initialize(models)
 ```
 
-OK, only the `"Leaf"` component must be initialized before computation for the coupled energy balance, with the shortwave radiation `Rₛ`, the visible sky fraction seen by the object `sky_fraction`, the characteristic dimension of the object `d` and the Photosynthetically active Photon Flux Density `PPFD`. We are in luck, we used [Archimed-ϕ](https://archimed-platform.github.io/archimed-phys-user-doc/) to compute the radiation interception of each organ in the example coffee plant we are using. So the only thing we need is to transform the variables given by Archimed-ϕ in each node to compute the ones we need. We use `transform!` from `MultiScaleTreeGraph.jl` to traverse the MTG and compute the right variable for each node:
+OK, only the `"Leaf"` component must be initialized before computation for the coupled energy balance, with the shortwave radiation `Ra_SW_f`, the visible sky fraction seen by the object `sky_fraction`, the characteristic dimension of the object `d` and the Photosynthetically active Photon Flux Density `aPPFD`. We are in luck, we used [Archimed-ϕ](https://archimed-platform.github.io/archimed-phys-user-doc/) to compute the radiation interception of each organ in the example coffee plant we are using. So the only thing we need is to transform the variables given by Archimed-ϕ in each node to compute the ones we need. We use `transform!` from `MultiScaleTreeGraph.jl` to traverse the MTG and compute the right variable for each node:
 
 ```@example usepkg
 using MultiScaleTreeGraph
@@ -86,14 +86,14 @@ using MultiScaleTreeGraph
 transform!(
     mtg,
     [:Ra_PAR_f, :Ra_NIR_f] => ((x, y) -> x + y * 1.2) => :Rᵢ, # This would be the incident radiation
-    [:Ra_PAR_f, :Ra_NIR_f] => ((x, y) -> x + y) => :Rₛ,
-    :Ra_PAR_f => (x -> x * 4.57) => :PPFD,
+    [:Ra_PAR_f, :Ra_NIR_f] => ((x, y) -> x + y) => :Ra_SW_f,
+    :Ra_PAR_f => (x -> x * 4.57) => :aPPFD,
     (x -> 0.3) => :d,
     ignore_nothing = true
 )
 ```
 
-The design of `MultiScaleTreeGraph.transform!` is very close to the one adopted by `DataFrames`. It helps us compute new variables (or attributes) from others, modify their units or rename them. Here we compute `Rᵢ` and `Rₛ` from the sum of `Ra_PAR_f` (absorbed radiation flux in the PAR) and `Ra_NIR_f` (...in the NIR), `PPFD` from `Ra_PAR_f` using the conversion between ``W \cdot m^{2}`` to ``μmol \cdot m^{-2} \cdot s^{-1}``, and `d` using a constant value of 0.3 m. Note that `sky_fraction` is already computed for each node with the right units thanks to Archimed-ϕ, so no need to transform it.
+The design of `MultiScaleTreeGraph.transform!` is very close to the one adopted by `DataFrames`. It helps us compute new variables (or attributes) from others, modify their units or rename them. Here we compute `Rᵢ` and `Ra_SW_f` from the sum of `Ra_PAR_f` (absorbed radiation flux in the PAR) and `Ra_NIR_f` (...in the NIR), `aPPFD` from `Ra_PAR_f` using the conversion between ``W \cdot m^{2}`` to ``μmol \cdot m^{-2} \cdot s^{-1}``, and `d` using a constant value of 0.3 m. Note that `sky_fraction` is already computed for each node with the right units thanks to Archimed-ϕ, so no need to transform it.
 
 Finally, we have to initialize the MTG with the models we want to use. We use `init_mtg_models!` from `PlantSimEngine` to do so:
 

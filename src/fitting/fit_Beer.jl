@@ -6,7 +6,7 @@ Optimize `k`, the coefficient of the Beer-Lambert law of light extinction.
 # Arguments
 
 - df: a DataFrame with columns Ri_PAR_f (Incoming light flux in the PAR, W m⁻²), 
-PPFD (μmol m⁻² s⁻¹) and LAI (m² m⁻²), where each row is an observation. The column
+aPPFD (μmol m⁻² s⁻¹) and LAI (m² m⁻²), where each row is an observation. The column
 names should match exactly.
 
 # Examples
@@ -17,7 +17,7 @@ using PlantSimEngine, PlantBiophysics, DataFrames, PlantMeteo
 # Defining dummy data:
 df = DataFrame(
     Ri_PAR_f = [200.0, 250.0, 300.0], 
-    PPFD = [548.4, 685.5, 822.6], 
+    aPPFD = [548.4, 685.5, 822.6], 
     LAI = [1.0, 1.0, 1.0],
     T = [20.0, 20.0, 20.0],
     Rh = [0.5, 0.5, 0.5],
@@ -27,7 +27,7 @@ df = DataFrame(
 # Fit the parameters values:
 k = fit(Beer, df)
 
-# Re-simulating PPFD using the newly fitted parameters:
+# Re-simulating aPPFD using the newly fitted parameters:
 w = Weather(df)
 leaf = ModelList(
         Beer(k.k),
@@ -39,6 +39,6 @@ leaf
 ```
 """
 function PlantSimEngine.fit(::Type{Beer}, df; J_to_umol=PlantMeteo.Constants().J_to_umol)
-    k = Statistics.mean(log.(df.Ri_PAR_f ./ (df.PPFD ./ J_to_umol)) ./ df.LAI)
+    k = Statistics.mean(log.(df.Ri_PAR_f ./ (df.aPPFD ./ J_to_umol)) ./ df.LAI)
     return (k=k,)
 end

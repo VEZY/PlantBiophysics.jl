@@ -46,5 +46,5 @@ ref_atmospheric_pressure_sea_level: 101.325
 # Stefan-Boltzmann constant [W.m-2.K-4]
 Stefan_Boltzmann_sigma: 5.67477E-8
 
-# conversion from sunlight irradiance (W/m2) to PPFD (micromol/m2/s)
+# conversion from sunlight irradiance (W/m2) to aPPFD (micromol/m2/s)
 sun_irradiance_to_photons: 4.57

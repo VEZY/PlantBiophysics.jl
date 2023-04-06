@@ -11,5 +11,5 @@ meteo = Atmosphere(T=20.0, Wind=1.0, P=101.3, Rh=0.65, Ri_PAR_f=300.0)
 @testset "Beer-Lambert" begin
     @test Beer <: AbstractLight_InterceptionModel
     run!(m, meteo, constants)
-    @test status(m).PPFD[1] ≈ 504.3627138460475 # in μmol[PAR] m[leaf]⁻² s⁻¹
+    @test status(m).aPPFD[1] ≈ 504.3627138460475 # in μmol[PAR] m[leaf]⁻² s⁻¹
 end;

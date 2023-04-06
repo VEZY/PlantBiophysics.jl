@@ -2,7 +2,7 @@ m = ModelList(
     energy_balance=Monteith(),
     photosynthesis=Fvcb(),
     stomatal_conductance=Medlyn(0.0, 0.0011),
-    status=(Rₛ=13.747, sky_fraction=1.0, d=0.03)
+    status=(Ra_SW_f=13.747, sky_fraction=1.0, d=0.03)
 )
 
 @testset "Single model dependency" begin
@@ -56,7 +56,7 @@ end
     struct dummy_E{T} <: AbstractEnergy_BalanceModel
         A::T
     end
-    PlantBiophysics.inputs_(::dummy_E) = (PPFD=-Inf, Tₗ=-Inf, Cₛ=-Inf)
+    PlantBiophysics.inputs_(::dummy_E) = (aPPFD=-Inf, Tₗ=-Inf, Cₛ=-Inf)
     PlantBiophysics.outputs_(::dummy_E) = (A=-Inf, Gₛ=-Inf, Cᵢ=-Inf)
     PlantBiophysics.dep(::dummy_E) = (light_interception=AbstractLight_InterceptionModel, photosynthesis=AbstractPhotosynthesisModel)
     function PlantSimEngine.run!(::dummy_E, models, status, meteo, constants=Constants())

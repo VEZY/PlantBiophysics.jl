@@ -31,12 +31,12 @@ function Monteith(; aₛₕ=2, aₛᵥ=1, ε=0.955, maxiter=10, ΔT=0.01)
 end
 
 function PlantSimEngine.inputs_(::Monteith)
-    (Rₛ=-Inf, sky_fraction=-Inf, d=-Inf)
+    (Ra_SW_f=-Inf, sky_fraction=-Inf, d=-Inf)
 end
 
 function PlantSimEngine.outputs_(::Monteith)
     (
-        Tₗ=-Inf, Rn=-Inf, Rₗₗ=-Inf, H=-Inf, λE=-Inf, Cₛ=-Inf, Cᵢ=-Inf,
+        Tₗ=-Inf, Rn=-Inf, Ra_LW_f=-Inf, H=-Inf, λE=-Inf, Cₛ=-Inf, Cᵢ=-Inf,
         A=-Inf, Gₛ=-Inf, Gbₕ=-Inf, Dₗ=-Inf, Gbc=-Inf, iter=typemin(Int)
     )
 end
@@ -58,7 +58,7 @@ the energy balance using the mass flux (~ Rn - λE).
 - `::Monteith`: a Monteith model, usually from a model list (*i.e.* m.energy_balance)
 - `models`: A `ModelList` struct holding the parameters for the model with
 initialisations for:
-    - `Rₛ` (W m-2): net shortwave radiation (PAR + NIR). Often computed from a light interception model
+    - `Ra_SW_f` (W m-2): net shortwave radiation (PAR + NIR). Often computed from a light interception model
     - `sky_fraction` (0-2): view factor between the object and the sky for both faces (see details).
     - `d` (m): characteristic dimension, *e.g.* leaf width (see eq. 10.9 from Monteith and Unsworth, 2013).
 - `status`: the status of the model, usually the model list status (*i.e.* leaf.status)
@@ -89,7 +89,7 @@ leaf = ModelList(
     energy_balance = Monteith(),
     photosynthesis = Fvcb(),
     stomatal_conductance = ConstantGs(0.0, 0.0011),
-    status = (Rₛ = 13.747, sky_fraction = 1.0, d = 0.03)
+    status = (Ra_SW_f = 13.747, sky_fraction = 1.0, d = 0.03)
 )
 
 run!(leaf,meteo)
@@ -101,12 +101,12 @@ leaf = ModelList(
     energy_balance = Monteith(),
     photosynthesis = Fvcb(),
     stomatal_conductance = Medlyn(0.03, 12.0),
-    status = (Rₛ = 13.747, sky_fraction = 1.0, PPFD = 1500.0, d = 0.03)
+    status = (Ra_SW_f = 13.747, sky_fraction = 1.0, aPPFD = 1500.0, d = 0.03)
 )
 
 run!(leaf,meteo)
 leaf[:Rn]
-leaf[:Rₗₗ]
+leaf[:Ra_LW_f]
 leaf[:A]
 
 DataFrame(leaf)
@@ -140,7 +140,7 @@ function PlantSimEngine.run!(::Monteith, models, status, meteo, constants=PlantM
     status.Cₛ = meteo.Cₐ
     status.Dₗ = PlantMeteo.e_sat(status.Tₗ) - PlantMeteo.e_sat(meteo.T) * meteo.Rh
     γˢ = Rbₕ = Δ = zero(meteo.T)
-    status.Rn = status.Rₛ
+    status.Rn = status.Ra_SW_f
     iter = 0
     # ?NB: We use iter = 0 and not 1 to get the right number of iterations at the end
     # of the for loop, because we use iter += 1 at the end (so it increments once again)
@@ -156,16 +156,16 @@ function PlantSimEngine.run!(::Monteith, models, status, meteo, constants=PlantM
             constants.Gsc_to_Gsw))
 
         # Re-computing the net radiation according to simulated leaf temperature:
-        status.Rₗₗ = net_longwave_radiation(status.Tₗ, meteo.T, models.energy_balance.ε, meteo.ε,
+        status.Ra_LW_f = net_longwave_radiation(status.Tₗ, meteo.T, models.energy_balance.ε, meteo.ε,
             status.sky_fraction, constants.K₀, constants.σ)
         #= ? NB: we use the sky fraction here (0-2) instead of the view factor (0-1) because:
             - we consider both sides of the leaf at the same time (1 -> leaf sees sky on one face)
             - we consider all objects in the scene have the same temperature as the leaf
             of interest except the atmosphere. So the leaf exchange thermal energy_balance only with
             the atmosphere. =#
-        # status.Rₗₗ = (grey_body(meteo.T,1.0) - grey_body(status.Tₗ, 1.0))*status.sky_fraction
+        # status.Ra_LW_f = (grey_body(meteo.T,1.0) - grey_body(status.Tₗ, 1.0))*status.sky_fraction
 
-        status.Rn = status.Rₛ + status.Rₗₗ
+        status.Rn = status.Ra_SW_f + status.Ra_LW_f
 
         # Leaf boundary conductance for heat (m s-1), one sided:
         status.Gbₕ = gbₕ_free(meteo.T, status.Tₗ, status.d, constants.Dₕ₀) +

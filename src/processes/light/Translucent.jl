@@ -28,7 +28,7 @@ function PlantSimEngine.inputs_(::Translucent)
 end
 
 function PlantSimEngine.outputs_(::Translucent)
-    # (Rₛ=-Inf, sky_fraction=-Inf)
+    # (Ra_SW_f=-Inf, sky_fraction=-Inf)
     # NB, it is not implemented yet so it computes nothing
     NamedTuple()
 end

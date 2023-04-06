@@ -29,7 +29,7 @@ end;
 end;
 
 
-@testset "Rₗₗ" begin
+@testset "Ra_LW_f" begin
     # Testing that both calls return the same value with default parameters:
     @test net_longwave_radiation(25.0, 20.0, 0.955, 1.0, 1.0, constants.K₀, constants.σ) ==
           net_longwave_radiation(25.0, 20.0, 0.955, 1.0, 1.0)
@@ -44,12 +44,12 @@ end;
 @testset "run!" begin
     # Reference value:
     ref = (
-        Rₛ=13.747,
+        Ra_SW_f=13.747,
         sky_fraction=1.0,
         d=0.03,
         Tₗ=17.659815647954556,
         Rn=21.266578615169767,
-        Rₗₗ=7.519578615169768,
+        Ra_LW_f=7.519578615169768,
         H=-121.49772892068047,
         λE=142.76430753585024,
         Cₛ=356.3299120547146,
@@ -60,7 +60,7 @@ end;
         Dₗ=0.5021641028493964,
         Gbc=0.6721539282466927,
         iter=2,
-        PPFD=1500.0
+        aPPFD=1500.0
     )
 
     meteo = Atmosphere(T=20.0, Wind=1.0, P=101.3, Rh=0.65)
@@ -68,7 +68,7 @@ end;
         energy_balance=Monteith(),
         photosynthesis=Fvcb(),
         stomatal_conductance=Medlyn(0.03, 12.0),
-        status=(Rₛ=13.747, sky_fraction=1.0, PPFD=1500.0, d=0.03)
+        status=(Ra_SW_f=13.747, sky_fraction=1.0, aPPFD=1500.0, d=0.03)
     )
 
     run!(leaf, meteo)
@@ -85,20 +85,20 @@ end;
 #     energy_balance = Monteith(),
 #     photosynthesis = Fvcb(),
 #     stomatal_conductance = Medlyn(0.03, 12.0),
-#     status = (Rₛ = 13.747, sky_fraction = 1.0, PPFD = 1500.0, d = 0.03)
+#     status = (Ra_SW_f = 13.747, sky_fraction = 1.0, aPPFD = 1500.0, d = 0.03)
 # )
 
-# res = DataFrame(:PPFD => Float64[], :A => Float64[])
+# res = DataFrame(:aPPFD => Float64[], :A => Float64[])
 # for i in 1:10:1500
-#     leaf.status.PPFD = i
+#     leaf.status.aPPFD = i
 #     run!(leaf, meteo)
-#     push!(res, (PPFD = leaf.status.PPFD, A = leaf.status.A))
+#     push!(res, (aPPFD = leaf.status.aPPFD, A = leaf.status.A))
 # end
 
 
-# plot(res.PPFD,res.A)
+# plot(res.aPPFD,res.A)
 # ylabel!("A")
-# xlabel!("PPFD")
+# xlabel!("aPPFD")
 
 
 # Add tests for several components and/or several meteo time-steps (Weather)

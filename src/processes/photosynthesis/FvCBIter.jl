@@ -47,7 +47,7 @@ function FvcbIter(; Tᵣ=25.0, VcMaxRef=200.0, JMaxRef=250.0, RdRef=0.6, Eₐᵣ
 end
 
 function PlantSimEngine.inputs_(::FvcbIter)
-    (PPFD=-Inf, Tₗ=-Inf, Gbc=-Inf)
+    (aPPFD=-Inf, Tₗ=-Inf, Gbc=-Inf)
 end
 
 function PlantSimEngine.outputs_(::FvcbIter)
@@ -83,7 +83,7 @@ Modify the first argument in place for A, Gₛ and Cᵢ:
 - `models`: a `ModelList` struct holding the parameters for the model with
 initialisations for:
     - `Tₗ` (°C): leaf temperature
-    - `PPFD` (μmol m-2 s-1): absorbed Photosynthetic Photon Flux Density
+    - `aPPFD` (μmol m-2 s-1): absorbed Photosynthetic Photon Flux Density
     - `Gbc` (mol m-2 s-1): boundary conductance for CO₂
     - `Dₗ` (kPa): is the difference between the vapour pressure at the leaf surface and the
     saturated air vapour pressure in case you're using the stomatal conductance model of [`Medlyn`](@ref).
@@ -93,7 +93,7 @@ initialisations for:
 
 # Note
 
-`Tₗ`, `PPFD`, `Gbc` (and `Dₗ` if you use [`Medlyn`](@ref)) must be initialized by providing
+`Tₗ`, `aPPFD`, `Gbc` (and `Dₗ` if you use [`Medlyn`](@ref)) must be initialized by providing
 them as keyword arguments (see examples). If in doubt, it is simpler to compute the energy
 balance of the leaf with the photosynthesis to get those variables. See
 [`AbstractEnergy_BalanceModel`](@ref) for more details.
@@ -108,9 +108,9 @@ leaf =
     ModelList(
         photosynthesis = FvcbIter(),
         stomatal_conductance = Medlyn(0.03, 12.0),
-        status = (Tₗ = 25.0, PPFD = 1000.0, Gbc = 0.67, Dₗ = meteo.VPD)
+        status = (Tₗ = 25.0, aPPFD = 1000.0, Gbc = 0.67, Dₗ = meteo.VPD)
     )
-# NB: we need  to initalise Tₗ, PPFD and Gbc.
+# NB: we need  to initalise Tₗ, aPPFD and Gbc.
 
 run!(leaf,meteo,PlantMeteo.Constants())
 leaf.status.A
@@ -162,7 +162,7 @@ function PlantSimEngine.run!(::FvcbIter, models, status, meteo, constants=PlantM
     # cycle, and termed "day" respiration, or "light respiration" (Harley et al., 1986).
 
     # Actual electron transport rate (considering intercepted PAR and leaf temperature):
-    J = get_J(status.PPFD, JMax, models.photosynthesis.α, models.photosynthesis.θ) # in μmol m-2 s-1
+    J = get_J(status.aPPFD, JMax, models.photosynthesis.α, models.photosynthesis.θ) # in μmol m-2 s-1
     # RuBP regeneration
     Vⱼ = J / 4
 

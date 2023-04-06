@@ -21,7 +21,7 @@ filter!(x -> x.curve != "Rh Curve" && x.curve != "ligth Curve", df)
 VcMaxRef, JMaxRef, RdRef, TPURef = fit(Fvcb, df; Tᵣ = 25.0)
 ```
 
-The fitting method uses the leaf temperature (`Tₗ`, °C), the Photosynthetic Photon Flux Density (`PPFD`, μmol m⁻² s⁻¹) and the intercellular CO₂ concentration (`Cᵢ`, ppm) from the data to fit the four main parameters of the model.
+The fitting method uses the leaf temperature (`Tₗ`, °C), the Photosynthetic Photon Flux Density (`aPPFD`, μmol m⁻² s⁻¹) and the intercellular CO₂ concentration (`Cᵢ`, ppm) from the data to fit the four main parameters of the model.
 
 ## Wrap-up
 

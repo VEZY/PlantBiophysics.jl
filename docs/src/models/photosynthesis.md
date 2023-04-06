@@ -51,7 +51,7 @@ The FvCB model has a lot of parameters:
 - `Hdᵥ`: rate of decrease of the function above the optimum (also called EDVC) for VcMax.
 - `Δₛᵥ`: entropy factor for VcMax.
 - `α`: quantum yield of electron transport (``mol_e \cdot mol^{-1}_{quanta}``). See also eq. 4 of Medlyn et al. (2002) and its implementation in [`get_J`](@ref)
-- `θ`: determines the curvature of the light response curve for `J~PPFD`. See also eq. 4 of Medlyn et al. (2002) and its implementation in [`get_J`](@ref)
+- `θ`: determines the curvature of the light response curve for `J~aPPFD`. See also eq. 4 of Medlyn et al. (2002) and its implementation in [`get_J`](@ref)
 
 The default values of the temperature correction parameters are taken from
 [plantecophys](https://remkoduursma.github.io/plantecophys/) (Duursma, 2015). If there is no negative effect of high temperatures on the reaction (Jmax or VcMax), then Δₛ can be set to 0.0.
@@ -70,7 +70,7 @@ The [`Fvcb`](@ref) model needs three input variables:
 inputs(Fvcb())
 ```
 
-The PPFD is the absorbed photosynthetically active photon flux density (``μmol_{quanta} \cdot m^{-2} \cdot s^{-1}``). It is usually computed by a light interception model.
+The aPPFD is the absorbed photosynthetically active photon flux density (``μmol_{quanta} \cdot m^{-2} \cdot s^{-1}``). It is usually computed by a light interception model.
 
 Tₗ is the leaf temperature in Celsius degree.
 
@@ -86,9 +86,9 @@ meteo = Atmosphere(T = 20.0, Wind = 1.0, P = 101.3, Rh = 0.65)
 leaf = ModelList(
     Fvcb(),
     Medlyn(0.03, 12.0),
-    status = (Tₗ = 25.0, PPFD = 1000.0, Cₛ = 400.0, Dₗ = meteo.VPD)
+    status = (Tₗ = 25.0, aPPFD = 1000.0, Cₛ = 400.0, Dₗ = meteo.VPD)
 )
-# NB: we need to initialize `Tₗ`, `PPFD` and `Cₛ` for `FvCB`, and `Dₗ` for the stomatal conductance of Medlyn et al. (2011).
+# NB: we need to initialize `Tₗ`, `aPPFD` and `Cₛ` for `FvCB`, and `Dₗ` for the stomatal conductance of Medlyn et al. (2011).
 
 run!(leaf,meteo)
 
@@ -118,10 +118,10 @@ meteo = Atmosphere(T = 20.0, Wind = 1.0, P = 101.3, Rh = 0.65)
 leaf = ModelList(
     FvcbIter(),
     Medlyn(0.03, 12.0),
-    status = (Tₗ = 25.0, PPFD = 1000.0, Gbc = 0.67, Dₗ = meteo.VPD)
+    status = (Tₗ = 25.0, aPPFD = 1000.0, Gbc = 0.67, Dₗ = meteo.VPD)
 )
 
-# NB: we need to initialize `Tₗ`, `PPFD` and `Gbc` for `FvcbIter`, and `Dₗ` for the stomatal conductance of Medlyn et al. (2011).
+# NB: we need to initialize `Tₗ`, `aPPFD` and `Gbc` for `FvcbIter`, and `Dₗ` for the stomatal conductance of Medlyn et al. (2011).
 
 run!(leaf,meteo,Constants())
 
@@ -142,7 +142,7 @@ The `FvcbRaw` model needs three input variables:
 inputs(FvcbRaw())
 ```
 
-The `PPFD` is, again, the absorbed photosynthetically active photon flux density (``μmol_{quanta} \cdot m^{-2} \cdot s^{-1}``). It is usually computed by a light interception model. `Tₗ` (°C) is the leaf temperature, and `Cᵢ` (ppm) is the intercellular CO₂ concentration, usually computed using a conductance model.
+The `aPPFD` is, again, the absorbed photosynthetically active photon flux density (``μmol_{quanta} \cdot m^{-2} \cdot s^{-1}``). It is usually computed by a light interception model. `Tₗ` (°C) is the leaf temperature, and `Cᵢ` (ppm) is the intercellular CO₂ concentration, usually computed using a conductance model.
 
 !!! note
     The three implementations of the `FvCB` model needs different input variables because they implement more or less coupling with other models.
@@ -152,9 +152,9 @@ The `PPFD` is, again, the absorbed photosynthetically active photon flux density
 ```@example usepkg
 leaf = ModelList(
     FvcbRaw(),
-    status = (Tₗ = 25.0, PPFD = 1000.0, Cᵢ = 400.0)
+    status = (Tₗ = 25.0, aPPFD = 1000.0, Cᵢ = 400.0)
 )
-# NB: we need `Tₗ`, `PPFD` and `Cᵢ` as inputs (see `inputs`)
+# NB: we need `Tₗ`, `aPPFD` and `Cᵢ` as inputs (see `inputs`)
 
 run!(leaf)
 leaf
@@ -208,7 +208,7 @@ leaf
 
 ## Parameter effects
 
-We can easily investigate the effects of parameters on the simulation. For example we can see what is the effect of PPFD on J.
+We can easily investigate the effects of parameters on the simulation. For example we can see what is the effect of aPPFD on J.
 
 First we import the packages needed:
 
@@ -220,20 +220,20 @@ using PlantBiophysics, PlantSimEngine
 Then we set up our models and their parameter values:
 
 ```@example 1
-A = Fvcb(); PPFD = 0:100:2000;
+A = Fvcb(); aPPFD = 0:100:2000;
 ```
 
-And finally we plot `J ~ PPFD` with different parameter values, with the simplification that JMax is equal to JMaxRef:
+And finally we plot `J ~ aPPFD` with different parameter values, with the simplification that JMax is equal to JMaxRef:
 
 ```@example 1
-plot(x -> PlantBiophysics.get_J(x, A.JMaxRef, A.α, A.θ), PPFD, xlabel = "PPFD (μmol m⁻² s⁻¹)",
+plot(x -> PlantBiophysics.get_J(x, A.JMaxRef, A.α, A.θ), aPPFD, xlabel = "aPPFD (μmol m⁻² s⁻¹)",
             ylab = "J (μmol m⁻² s⁻¹)", label = "Default values", legend = :bottomright)
-plot!(x -> PlantBiophysics.get_J(x, A.JMaxRef, A.α, A.θ * 0.5), PPFD, label = "θ * 0.5")
-plot!(x -> PlantBiophysics.get_J(x, A.JMaxRef, A.α * 0.5, A.θ), PPFD, label = "α * 0.5")
+plot!(x -> PlantBiophysics.get_J(x, A.JMaxRef, A.α, A.θ * 0.5), aPPFD, label = "θ * 0.5")
+plot!(x -> PlantBiophysics.get_J(x, A.JMaxRef, A.α * 0.5, A.θ), aPPFD, label = "α * 0.5")
 savefig("f-plot.svg"); nothing # hide
 ```
 
-![Effect of PPFD on J](f-plot.svg)
+![Effect of aPPFD on J](f-plot.svg)
 
 You can investigate other relationships with different plots.
 
