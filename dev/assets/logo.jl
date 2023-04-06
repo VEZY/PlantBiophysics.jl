@@ -13,8 +13,8 @@ models = read_model(joinpath(dirname(dirname(pathof(PlantBiophysics))), "test", 
 
 transform!(
     mtg,
-    [:Ra_PAR_f, :Ra_NIR_f] => ((x, y) -> x + y) => :Rₛ,
-    :Ra_PAR_f => (x -> x * 4.57) => :PPFD,
+    [:Ra_PAR_f, :Ra_NIR_f] => ((x, y) -> x + y) => :Ra_SW_f,
+    :Ra_PAR_f => (x -> x * 4.57) => :aPPFD,
     (x -> 0.3) => :d,
     ignore_nothing=true
 )

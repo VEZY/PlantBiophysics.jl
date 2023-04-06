@@ -7,7 +7,7 @@ leaf = ModelList(
         Monteith(),
         Fvcb(),
         Medlyn(0.03, 12.0),
-        status = (Rₛ = 13.747 ± 1., sky_fraction = 1.0, PPFD = 1500.0 ± 1., d = 0.03 ± 0.001),
+        status = (Ra_SW_f = 13.747 ± 1., sky_fraction = 1.0, aPPFD = 1500.0 ± 1., d = 0.03 ± 0.001),
         type_promotion = Dict(Float64 =&gt; Particles{Float64,2000})
     )</code></pre><p>Now our parameters and conditions are not scalars, but <code>Particles</code>, which are <code>n</code> sampled values in the <code>μ ± σ</code> distributions. By default <code>n = 2000</code>.</p><p>We can now run our simulation:</p><pre><code class="language-julia hljs">run!(leaf,meteo)</code></pre><p>And now we can plot the resulting inputs/outputs values:</p><pre><code class="language-julia hljs">p1 = plot(meteo.T,legend=:false,xlabel=&quot;Tₐ (°C)&quot;,ylabel=&quot;density&quot;,dpi=300,title=&quot;(a)&quot;,titlefontsize=9)
 p2 = plot(leaf.status.d[1],legend=:false,xlabel=&quot;d (m)&quot;,ylabel=&quot;density&quot;,dpi=300,title=&quot;(b)&quot;,titlefontsize=9)
@@ -22,7 +22,7 @@ leaf = ModelList(
         Monteith(),
         Fvcb(),
         Medlyn(0.03, 12.0),
-        status = (Rₛ = 13.747 ± 1., sky_fraction = 1.0, PPFD = 1500.0 ± 1., d = 0.01 .. 0.03),
+        status = (Ra_SW_f = 13.747 ± 1., sky_fraction = 1.0, aPPFD = 1500.0 ± 1., d = 0.01 .. 0.03),
         type_promotion = Dict(Float64 =&gt; Particles{Float64,2000})
     )
 
@@ -45,10 +45,10 @@ leaf = ModelList(
         Monteith(),
         Fvcb(),
         Medlyn(0.03, 12.0),
-        status = (Rₛ = 13.747 ± 2., sky_fraction = 0.6..1.0, PPFD = 1500.0 ± 100., d = [0.03,0.03,0.03]),
+        status = (Ra_SW_f = 13.747 ± 2., sky_fraction = 0.6..1.0, aPPFD = 1500.0 ± 100., d = [0.03,0.03,0.03]),
         type_promotion = Dict(Float64 =&gt; Particles{Float64,2000})
     )
 
 run!(leaf, weather)
 
-ribbonplot(weather[:date], leaf[:Tₗ], alpha = 0.2, ylab = &quot;Leaf Temperature&quot;, xlab = &quot;Time&quot;)</code></pre><p><img src="../error-ribbon.svg" alt/></p><h2 id="Performance"><a class="docs-heading-anchor" href="#Performance">Performance</a><a id="Performance-1"></a><a class="docs-heading-anchor-permalink" href="#Performance" title="Permalink"></a></h2><p>Monte Carlo results are highly dependent on the number of simulations given by the number of particles <code>n</code>. But keep in mind that the result of an uncertainty propagation with a low <code>n</code> is more unreliable than with a higher <code>n</code>.</p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../mtg_simulation/">« Whole-plant simulation</a><a class="docs-footer-nextpage" href="../../extending/implement_a_model/">Implement a model »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 0.27.24 on <span class="colophon-date" title="Wednesday 29 March 2023 08:19">Wednesday 29 March 2023</span>. Using Julia version 1.7.2.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+ribbonplot(weather[:date], leaf[:Tₗ], alpha = 0.2, ylab = &quot;Leaf Temperature&quot;, xlab = &quot;Time&quot;)</code></pre><p><img src="../error-ribbon.svg" alt/></p><h2 id="Performance"><a class="docs-heading-anchor" href="#Performance">Performance</a><a id="Performance-1"></a><a class="docs-heading-anchor-permalink" href="#Performance" title="Permalink"></a></h2><p>Monte Carlo results are highly dependent on the number of simulations given by the number of particles <code>n</code>. But keep in mind that the result of an uncertainty propagation with a low <code>n</code> is more unreliable than with a higher <code>n</code>.</p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../mtg_simulation/">« Whole-plant simulation</a><a class="docs-footer-nextpage" href="../../extending/implement_a_model/">Implement a model »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 0.27.24 on <span class="colophon-date" title="Thursday 6 April 2023 14:39">Thursday 6 April 2023</span>. Using Julia version 1.7.2.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
