@@ -16,7 +16,7 @@ clearness,Sky clearness,0-1
 e,Vapor pressure,kPa
 eₛ,Saturated vapor pressure,kPa
 Cₐ,Air CO₂ concentration,mol[CO₂] m⁻² s⁻¹
-Cₛ,Stomatal CO₂ concentration,mol[CO₂] m⁻² s⁻¹
+Cₛ,Air CO₂ concentration at the leaf surface,mol[CO₂] m⁻² s⁻¹
 Cᵢ,Intercellular CO₂ concentration,mol[CO₂] m⁻² s⁻¹
 Gₛ,stomatal conductance for CO₂,mol[CO₂] m⁻² s⁻¹
 Gbₕ,Leaf boundary conductance for heat (one-sided),m s⁻¹

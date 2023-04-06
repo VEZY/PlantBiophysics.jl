@@ -74,7 +74,7 @@ The aPPFD is the absorbed photosynthetically active photon flux density (``μmol
 
 Tₗ is the leaf temperature in Celsius degree.
 
-Cₛ (ppm) is the stomatal CO₂ concentration, usually computed using a conductance model.
+Cₛ (ppm) is the air CO₂ concentration at the leaf surface, usually computed using a boundary layer conductance model.
 
 ### [Example](@id exemple_fvcb)
 
@@ -187,7 +187,7 @@ leaf
 
 ### [Input variables](@id inputs_constantags)
 
-`ConstantAGs` needs Cₛ as input variable. Cₛ (ppm) is the stomatal CO₂ concentration, usually computed using a conductance model.
+`ConstantAGs` needs Cₛ as input variable. Cₛ (ppm) is the air CO₂ concentration at the leaf surface, usually computed using a conductance model.
 
 ```@example usepkg
 inputs(ConstantAGs())

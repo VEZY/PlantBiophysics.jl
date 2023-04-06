@@ -84,7 +84,7 @@ Modify the first argument in place for A, the carbon assimilation (μmol[CO₂] 
 initialisations for:
     - `Tₗ` (°C): leaf temperature
     - `aPPFD` (μmol m-2 s-1): absorbed Photosynthetic Photon Flux Density
-    - `Cₛ` (ppm): surface CO₂ concentration.
+    - `Cₛ` (ppm): Air CO₂ concentration at the leaf surface
     - `Dₗ` (kPa): vapour pressure difference between the surface and the saturated
     air vapour pressure in case you're using the stomatal conductance model of [`Medlyn`](@ref).
 - `status`: A status, usually the leaf status (*i.e.* leaf.status)

@@ -49,7 +49,7 @@ The [`Medlyn`](@ref) model needs three input variables:
 inputs(Medlyn(0.1, 8.0))
 ```
 
-`Dₗ` (kPa) is the difference between the vapour pressure at the leaf surface and the saturated air vapour pressure, `Cₛ` (ppm) is the stomatal CO₂ concentration, and `A` is the CO₂ assimilation rate (``μmol \cdot m^{-2} \cdot s^{-1}``)
+`Dₗ` (kPa) is the difference between the vapour pressure at the leaf surface and the saturated air vapour pressure, `Cₛ` (ppm) is the air CO₂ concentration at the leaf surface, and `A` is the CO₂ assimilation rate (``μmol \cdot m^{-2} \cdot s^{-1}``)
 
 ### [Example](@id exemple_medlyn)
 

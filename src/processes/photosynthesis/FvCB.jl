@@ -135,6 +135,7 @@ associated with electron transport rates on the thylakoid membrane (RuBP) is lim
 happens mostly when light is limiting, or when CO₂ concentration is rather high. It is
 parameterized using `JMaxRef`, the potential rate of electron transport. See [`get_Cᵢⱼ`](@ref)
 for the computation.
+
 - TPU-limited photosynthesis, when the rate at which inorganic phosphate is released for
 regenerating ATP from ADP during the utilization of triose phosphate (TPU) is limiting. It
 happens at very high assimilation rate, when neither light or CO₂ are limiting factors. The
@@ -144,6 +145,7 @@ The computation in this function is made following Farquhar & Wong (1984), Leuni
 (1995), and the MAESPA model (Duursma et al., 2012).
 
 The resolution is analytical as first presented in Baldocchi (1994), and needs Cₛ as input.
+
 Triose phosphate utilization (TPU) limitation is taken into account as proposed in
 Lombardozzi (2018) (*i.e.* `Aₚ = 3 * TPURef`, making the assumption that glycolate recycling
 is set to `0`). `TPURef` is set at `9999.0` by default, meaning there is no limitation of
@@ -171,7 +173,7 @@ Modify the first argument in place for A, Gₛ and Cᵢ:
 initialisations for:
     - `Tₗ` (°C): leaf temperature
     - `aPPFD` (μmol m-2 s-1): absorbed Photosynthetic Photon Flux Density
-    - `Cₛ` (ppm): surface CO₂ concentration.
+    - `Cₛ` (ppm): Air CO₂ concentration at the leaf surface
     - `Dₗ` (kPa): vapour pressure difference between the surface and the saturated
     air vapour pressure in case you're using the stomatal conductance model of [`Medlyn`](@ref).
 - `status`: A status, usually the leaf status (*i.e.* leaf.status)
@@ -352,7 +354,7 @@ Analytic resolution of Cᵢ when the rate of electron transport is limiting (``�
 
 - `Vⱼ`: RuBP regeneration (J/4.0, ``μmol\\ m^{-2}\\ s^{-1}``)
 - `Γˢ`: CO2 compensation point ``Γ^⋆`` (``μmol\\ mol^{-1}``)
-- `Cₛ`: stomatal CO₂ concentration (``μmol\\ mol^{-1}``)
+- `Cₛ`: Air CO₂ concentration at the leaf surface (``μmol\\ mol^{-1}``)
 - `Rd`: day respiration (``μmol\\ m^{-2}\\ s^{-1}``)
 - `g0`: residual stomatal conductance (``μmol\\ m^{-2}\\ s^{-1}``)
 - `st_closure`: stomatal conductance term computed from a given implementation of a Gs model,
@@ -385,7 +387,7 @@ Analytic resolution of Cᵢ when the RuBisCo activity is limiting (``μmol\\ mol
 
 - `VcMAX`: maximum rate of RuBisCo activity(``μmol\\ m^{-2}\\ s^{-1}``)
 - `Γˢ`: CO2 compensation point ``Γ^⋆`` (``μmol\\ mol^{-1}``)
-- `Cₛ`: stomatal CO₂ concentration (``μmol\\ mol^{-1}``)
+- `Cₛ`: Air CO₂ concentration at the leaf surface (``μmol\\ mol^{-1}``)
 - `Rd`: day respiration (``μmol\\ m^{-2}\\ s^{-1}``)
 - `g0`: residual stomatal conductance (``μmol\\ m^{-2}\\ s^{-1}``)
 - `st_closure`: stomatal conductance term computed from a given implementation of a Gs model,
