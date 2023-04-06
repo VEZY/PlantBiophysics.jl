@@ -150,7 +150,7 @@ See contributor's guide badge for more informations: [![ColPrac: Contributor's G
 - [MAESPA](http://maespa.github.io/) model, in FORTRAN.
 - [photosynthesis](https://github.com/cran/photosynthesis) R package
 - [plantecophys](https://bitbucket.org/remkoduursma/plantecophys/src/master/) R package
-- [LeafGasExchange](https://github.com/TESTgroup-BNL/LeafGasExchange) Julia package (that uses Python's SymPy library under the hood)
+- [LeafGasExchange](https://github.com/cropbox/LeafGasExchange.jl) Julia package (that uses Python's SymPy library under the hood)
 
 ## References
 
