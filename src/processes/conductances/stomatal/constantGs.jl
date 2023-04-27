@@ -57,3 +57,6 @@ end
 function PlantSimEngine.run!(::ConstantGs, models, status, meteo, constants, extra=nothing)
     status.Gₛ = models.stomatal_conductance.Gₛ
 end
+
+PlantSimEngine.ObjectDependencyTrait(::Type{<:ConstantGs}) = PlantSimEngine.IsObjectIndependent()
+PlantSimEngine.TimeStepDependencyTrait(::Type{<:ConstantGs}) = PlantSimEngine.IsTimeStepIndependent()

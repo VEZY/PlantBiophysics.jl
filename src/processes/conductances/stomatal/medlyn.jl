@@ -133,3 +133,6 @@ Global Change Biology 17 (6): 2134‑44. https://doi.org/10.1111/j.1365-2486.201
 function gs_closure(::Medlyn, models, status, meteo, constants=nothing, extra=nothing)
     (1.0 + models.stomatal_conductance.g1 / sqrt(max(1e-9, status.Dₗ))) / status.Cₛ
 end
+
+PlantSimEngine.ObjectDependencyTrait(::Type{<:Medlyn}) = PlantSimEngine.IsObjectIndependent()
+PlantSimEngine.TimeStepDependencyTrait(::Type{<:Medlyn}) = PlantSimEngine.IsTimeStepIndependent()

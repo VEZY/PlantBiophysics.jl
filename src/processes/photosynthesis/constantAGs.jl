@@ -76,3 +76,6 @@ function PlantSimEngine.run!(::ConstantAGs, models, status, meteo, constants=Pla
 
     return nothing
 end
+
+PlantSimEngine.ObjectDependencyTrait(::Type{<:ConstantAGs}) = PlantSimEngine.IsObjectIndependent()
+PlantSimEngine.TimeStepDependencyTrait(::Type{<:ConstantAGs}) = PlantSimEngine.IsTimeStepIndependent()

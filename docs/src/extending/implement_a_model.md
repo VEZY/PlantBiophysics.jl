@@ -234,7 +234,7 @@ PlantSimEngine.dep(::Fvcb) = (stomatal_conductance=AbstractStomatal_ConductanceM
 
 Here we say to PlantSimEngine that the `Fvcb` model needs a model of type `AbstractStomatal_ConductanceModel` in the stomatal conductance process.
 
-The last optional thing to implement is a method for the `eltype` function:
+The next optional thing to implement is a method for the `eltype` function:
 
 ```@example usepkg
 Base.eltype(x::BandB{T}) where {T} = T
@@ -242,7 +242,25 @@ Base.eltype(x::BandB{T}) where {T} = T
 
 This one helps Julia to know the type of the elements in your structure, and make it faster.
 
-OK that's it! Now you have a full new implementation of the stomatal conductance model! I hope it was clear and you understood everything. If you think some sections could be improved, you can make a PR on this doc, or open an issue so I can improve it.
+And finally the last optional thing to add is a trait that defines how the model can be run in parallel over space (*i.e.* over objects) or time (*i.e.* over time-steps).
+
+By default all models are considered **not** to be executable in parallel. But if you implement a model that is parallel over objects, you can define the trait like so:
+
+```@example usepkg
+PlantSimEngine.ObjectDependencyTrait(::Type{<:BandB}) = PlantSimEngine.IsObjectIndependent()
+```
+
+And if it is executable in parallel over time-steps, you can define it like this:
+
+```@example usepkg
+PlantSimEngine.TimeStepDependencyTrait(::Type{<:BandB}) = PlantSimEngine.IsTimeStepIndependent()
+```
+
+!!! tip
+    A model that is defined executable in parallel will not necessarily will. First, the user has to pass a parallel `executor` to [`run!`](@ref) (*e.g.* `ThreadedEx`). Second, if the model is coupled with another model that is not executable in parallel, `PlantSimEngine` will run all models in sequential.
+
+
+OK that's it! Now you have a full new implementation of the stomatal conductance model! I hope it was clear and that you understood everything. If you think some sections could be improved, you can make a PR on this doc, or open an issue so I can improve it.
 
 ## More details on model implementations
 
@@ -307,6 +325,12 @@ end
 
 # Tells Julia what is the type of elements:
 Base.eltype(x::OurModel{T}) where {T} = T
+
+# Tells PlantSimEngine that the model is executable in parallel over objects:
+PlantSimEngine.ObjectDependencyTrait(::Type{<:OurModel}) = PlantSimEngine.IsObjectIndependent()
+
+# and time-steps:
+PlantSimEngine.TimeStepDependencyTrait(::Type{<:OurModel}) = PlantSimEngine.IsTimeStepIndependent()
 
 # Implement the photosynthesis model:
 function PlantSimEngine.run!(::OurModel, models, status, meteo, constants=Constants(), extras=nothing)

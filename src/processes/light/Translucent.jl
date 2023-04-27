@@ -33,6 +33,9 @@ function PlantSimEngine.outputs_(::Translucent)
     NamedTuple()
 end
 
+PlantSimEngine.ObjectDependencyTrait(::Type{<:Translucent}) = PlantSimEngine.IsObjectIndependent()
+PlantSimEngine.TimeStepDependencyTrait(::Type{<:Translucent}) = PlantSimEngine.IsTimeStepIndependent()
+
 function PlantSimEngine.run!(::Translucent, models, status, meteo, constants, extra=nothing)
     return nothing
 end

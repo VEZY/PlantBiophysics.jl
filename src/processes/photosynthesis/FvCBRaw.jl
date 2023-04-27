@@ -66,6 +66,8 @@ function PlantSimEngine.outputs_(::FvcbRaw)
 end
 
 Base.eltype(x::FvcbRaw) = typeof(x).parameters[1]
+PlantSimEngine.ObjectDependencyTrait(::Type{<:FvcbRaw}) = PlantSimEngine.IsObjectIndependent()
+PlantSimEngine.TimeStepDependencyTrait(::Type{<:FvcbRaw}) = PlantSimEngine.IsTimeStepIndependent()
 
 """
     run!(::FvcbRaw, models, status, meteo=nothing, constants=Constants())

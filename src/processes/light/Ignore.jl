@@ -22,3 +22,6 @@ Method for when light interception should be explicitely ignored (do nothing).
 function PlantSimEngine.run!(::LightIgnore, models, status, meteo, constants=PlantMeteo.Constants(), extra=nothing)
     nothing
 end
+
+PlantSimEngine.ObjectDependencyTrait(::Type{<:LightIgnore}) = PlantSimEngine.IsObjectIndependent()
+PlantSimEngine.TimeStepDependencyTrait(::Type{<:LightIgnore}) = PlantSimEngine.IsTimeStepIndependent()

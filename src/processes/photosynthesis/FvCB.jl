@@ -116,6 +116,8 @@ end
 Base.eltype(x::Fvcb) = typeof(x).parameters[1]
 
 PlantSimEngine.dep(::Fvcb) = (stomatal_conductance=AbstractStomatal_ConductanceModel,)
+PlantSimEngine.ObjectDependencyTrait(::Type{<:Fvcb}) = PlantSimEngine.IsObjectIndependent()
+PlantSimEngine.TimeStepDependencyTrait(::Type{<:Fvcb}) = PlantSimEngine.IsTimeStepIndependent()
 
 """
     run!(::Fvcb, models, status, meteo, constants=Constants())

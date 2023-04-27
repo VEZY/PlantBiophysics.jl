@@ -54,3 +54,6 @@ end
 function PlantSimEngine.outputs_(::Beer)
     (aPPFD=-Inf,)
 end
+
+PlantSimEngine.ObjectDependencyTrait(::Type{<:Beer}) = PlantSimEngine.IsObjectIndependent()
+PlantSimEngine.TimeStepDependencyTrait(::Type{<:Beer}) = PlantSimEngine.IsTimeStepIndependent()

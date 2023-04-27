@@ -42,6 +42,8 @@ function PlantSimEngine.outputs_(::Monteith)
 end
 
 Base.eltype(x::Monteith) = typeof(x).parameters[1]
+PlantSimEngine.ObjectDependencyTrait(::Type{<:Monteith}) = PlantSimEngine.IsObjectIndependent()
+PlantSimEngine.TimeStepDependencyTrait(::Type{<:Monteith}) = PlantSimEngine.IsTimeStepIndependent()
 
 PlantSimEngine.dep(::Monteith) = (photosynthesis=AbstractPhotosynthesisModel,)
 

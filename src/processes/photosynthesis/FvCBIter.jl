@@ -55,6 +55,8 @@ function PlantSimEngine.outputs_(::FvcbIter)
 end
 
 Base.eltype(x::FvcbIter) = typeof(x).parameters[1]
+PlantSimEngine.ObjectDependencyTrait(::Type{<:FvcbIter}) = PlantSimEngine.IsObjectIndependent()
+PlantSimEngine.TimeStepDependencyTrait(::Type{<:FvcbIter}) = PlantSimEngine.IsTimeStepIndependent()
 
 PlantSimEngine.dep(::FvcbIter) = (stomatal_conductance=AbstractStomatal_ConductanceModel,)
 

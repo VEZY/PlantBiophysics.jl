@@ -15,3 +15,6 @@ Method for when energy balance is missing (do nothing).
 function PlantSimEngine.run!(::Missing, models, status, meteo, constants=PlantMeteo.Constants(), extra=nothing)
     nothing
 end
+
+PlantSimEngine.ObjectDependencyTrait(::Type{<:Missing}) = PlantSimEngine.IsObjectIndependent()
+PlantSimEngine.TimeStepDependencyTrait(::Type{<:Missing}) = PlantSimEngine.IsTimeStepIndependent()
