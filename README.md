@@ -102,7 +102,7 @@ For more examples, please read the documentation.
   - [x] add a tutorial for a plant
   - [x] How to implement a new model -> e.g. conductance (add a `variables` method)
   - [x] How to implement a new component:
-- [ ] Use [PrettyTables.jl](https://ronisbr.github.io/PrettyTables.jl/stable/#PrettyTables.jl) for printing the Weather and simulation outputs
+- [x] Use [PrettyTables.jl](https://ronisbr.github.io/PrettyTables.jl/stable/#PrettyTables.jl) for printing the Weather and simulation outputs
 - [x] Use leaf[:var] in the models implementations instead of leaf.status.var. It will make the code way cleaner.
 - [x] Do we have a `setindex!` method for `leaf[:var]`? Implement it if missing.
 - [ ] Make boundary layer conductances true models as for stomatal conductances, but maybe define the current ones as default when calling the function (I mean if no model is provided, use the ones currently in use).
