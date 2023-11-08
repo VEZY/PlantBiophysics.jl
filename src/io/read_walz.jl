@@ -9,6 +9,16 @@ according to package conventions.
 - `file`: a string or a vector of strings containing the path to the file(s) to
   read.
 
+# Returns
+
+A DataFrame containing the data read and transformed from the file(s). The units are the same than in the Walz output file, 
+except for:
+
+- Dₗ: kPa
+- Rh: fraction (0-1)
+- VPD: kPa
+- Gₛ: mol[CO₂] m⁻² s⁻¹
+
 # Examples
 
 Reading one file:
@@ -55,6 +65,8 @@ function read_walz(file)
     )
 
     # Recomputing the variables to fit the units used in the package:
+
+    df[!, :Dₗ] = df.Dₗ .* df.P ./ 1000.0
     df[!, :Rh] = df[!, :Rh] ./ 100.0
     df[!, :VPD] = PlantMeteo.vpd.(df.Rh, df.T)
     df[!, :Gₛ] = round.(gsw_to_gsc.(df[:, :Gₛ]) ./ 1000.0, digits=5)
