@@ -43,7 +43,7 @@ m[:aPPFD]
 function PlantSimEngine.run!(::Beer, models, status, meteo, constants, extra=nothing)
     status.aPPFD =
         meteo.Ri_PAR_f *
-        (1 - exp(-models.light_interception.k * status.LAI)) *
+        (1.0 - exp(-models.light_interception.k * status.LAI)) *
         constants.J_to_umol
 end
 
