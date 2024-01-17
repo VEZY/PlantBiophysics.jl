@@ -135,4 +135,8 @@ savefig("error-ribbon.svg"); nothing #hide
 
 ## Performance
 
-Monte Carlo results are highly dependent on the number of simulations given by the number of particles `n`. But keep in mind that the result of an uncertainty propagation with a low `n` is more unreliable than with a higher `n`.
+Monte Carlo results are highly dependent on the number of simulations given by the number of particles `n`, slowing the performance of the package. But keep in mind that the result of an uncertainty propagation with a low `n` is less reliable than with a higher `n`.
+
+## Tips in case of errors
+
+When using uncertainty distributions, it is important to consider the nature of the input variables. For example, certain variables such as characteristic length must be positive values only, and using inappropriate uncertainty distributions, like a Gaussian extending to negative values, will lead to error. You should exercise caution and select appropriate uncertainty distributions that align with the characteristics of the variables being modeled. 
