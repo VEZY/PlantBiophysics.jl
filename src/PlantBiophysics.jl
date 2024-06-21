@@ -40,6 +40,7 @@ include("processes/γ_star.jl")
 
 # Light interception
 include("processes/light/Ignore.jl")
+include("processes/light/LightFromNode.jl")
 include("processes/light/Beer.jl")
 include("processes/light/Beer_shortwave.jl")
 include("processes/light/Translucent.jl")
@@ -93,7 +94,7 @@ export gsc_to_gsw
 
 # Light interception
 export AbstractLight_InterceptionModel
-export Beer, BeerShortwave # structs to hold the values for the Beer-Lambert law of light extinction
+export Beer, BeerShortwave, LightFromMTGNode # structs to hold the values for the Beer-Lambert law of light extinction
 
 # Energy balance
 export AbstractEnergy_BalanceModel
