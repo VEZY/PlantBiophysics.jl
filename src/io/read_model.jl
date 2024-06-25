@@ -23,7 +23,7 @@ function read_model(file)
     group = model["Group"]
     types = collect(keys(model["Type"]))
 
-    components = Dict{String,ModelList}()
+    components = Dict{String,Tuple}()
 
     for (i, j) in model["Type"]
         # i = "Leaf";j = model["Type"][i]
@@ -57,7 +57,7 @@ function read_model(file)
 
         sort!(processes)
 
-        push!(components, i => ModelList(; processes...))
+        push!(components, i => (values(processes)...,))
     end
 
     return components

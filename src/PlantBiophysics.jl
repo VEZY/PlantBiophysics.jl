@@ -61,7 +61,7 @@ include("processes/conductances/boundary/gb.jl")
 
 # Energy balance
 include("processes/energy/longwave_energy.jl")
-include("processes/energy/Missing.jl")
+# include("processes/energy/Missing.jl")
 include("processes/energy/Monteith.jl")
 
 # File IO
@@ -93,7 +93,7 @@ export gsc_to_gsw
 
 # Light interception
 export AbstractLight_InterceptionModel
-export Beer, BeerShortwave # structs to hold the values for the Beer-Lambert law of light extinction
+export Beer, BeerShortwave  # structs to hold the values for the Beer-Lambert law of light extinction
 
 # Energy balance
 export AbstractEnergy_BalanceModel
