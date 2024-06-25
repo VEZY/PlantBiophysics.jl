@@ -50,8 +50,8 @@ PlantSimEngine.ObjectDependencyTrait(::Type{<:BeerShortwave}) = PlantSimEngine.I
 PlantSimEngine.TimeStepDependencyTrait(::Type{<:BeerShortwave}) = PlantSimEngine.IsTimeStepIndependent()
 
 function PlantSimEngine.run!(::BeerShortwave, models, status, meteo, constants, extra)
-    status.Ra_PAR_f = meteo.Ri_PAR_f * (1 - exp(-models.light_interception.k_PAR * status.LAI))
-    status.Ra_NIR_f = meteo.Ri_NIR_f * (1 - exp(-models.light_interception.k_NIR * status.LAI))
+    status.Ra_PAR_f = meteo.Ri_PAR_f * (1.0 - exp(-models.light_interception.k_PAR * status.LAI))
+    status.Ra_NIR_f = meteo.Ri_NIR_f * (1.0 - exp(-models.light_interception.k_NIR * status.LAI))
     status.aPPFD = status.Ra_PAR_f * constants.J_to_umol
     status.Ra_SW_f = status.Ra_PAR_f + status.Ra_NIR_f
 end
