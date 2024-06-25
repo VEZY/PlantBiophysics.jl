@@ -14,7 +14,7 @@ CurrentModule = PlantBiophysics
 
 `PlantBiophysics` is a package to deal with biophysical processes of plants such as photosynthesis, conductances for heat, water vapor and CO₂, latent, sensible energy fluxes, net radiation and temperature. It has two main use-cases:
 
-- fit the parameters of the models using the generic [`fit`](@ref) function
+- fit the parameters of the models using the generic [`fit`](@ref PlantSimEngine.fit) function
 - simulate the processes using the corresponding models
 
 The benefits of `PlantBiophysics` over existing tools are mainly:

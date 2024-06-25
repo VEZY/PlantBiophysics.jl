@@ -63,11 +63,6 @@ transform!(
     file = joinpath(dirname(dirname(pathof(PlantBiophysics))), "test", "inputs", "models", "plant_coffee.yml")
     models = read_model(file)
 
-    #! Note, LightFromMTGNode is not a model, it is a process that reads the light interception of a node from its attributes.
-    #! It will be deprecated at some point, see https://github.com/VirtualPlantLab/PlantSimEngine.jl/issues/74
-    models["Leaf"] = (filter(x -> !isa(x, Translucent), models["Leaf"])..., LightFromMTGNode())
-    models["Metamer"] = (LightFromMTGNode(),)
-
     mtg = read_opf(joinpath(dirname(dirname(pathof(PlantBiophysics))), "test", "inputs", "scene", "opf", "coffee.opf"))
     weather = read_weather(
         joinpath(dirname(dirname(pathof(PlantMeteo))), "test", "data", "meteo.csv"),
