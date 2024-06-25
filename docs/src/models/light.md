@@ -8,9 +8,9 @@ The light interception process is the process of computing the radiation interce
 
 There are two light interception models implemented in PlantBiophysics at the time, both derived from the Beer-Lambert law of light extinction. 
 
-- [Beer model](@ref beer): The first one is the Beer model, which is a simple model that computes the light interception (`aPPFD`) of a component as a function of the leaf area index (`LAI`) and the extinction coefficient (`k`). The Beer model is implemented in the `Beer` type. This model is recommended if you need to compute the photosynthesis of the plant, but not the energy balance.
+- [Beer model](@ref Beer): The first one is the Beer model, which is a simple model that computes the light interception (`aPPFD`) of a component as a function of the leaf area index (`LAI`) and the extinction coefficient (`k`). The Beer model is implemented in the `Beer` type. This model is recommended if you need to compute the photosynthesis of the plant, but not the energy balance.
 
-- [Beer model with shortwave radiation](@ref beer_shortwave): the second one is the same model as the `Beer` model, but with a computation of the intercepted shortwave radiation (`Ra_SW_f`) added to the computation of the `aPPFD`. This model needs the `k` coefficient, and the `f` coefficient, which is a proportionality factor between the shortwave radiation and the aPPFD (usually 0.48, the default).
+- [Beer model with shortwave radiation](@ref BeerShortwave): the second one is the same model as the `Beer` model, but with a computation of the intercepted shortwave radiation (`Ra_SW_f`) added to the computation of the `aPPFD`. This model needs the `k` coefficient, and the `f` coefficient, which is a proportionality factor between the shortwave radiation and the aPPFD (usually 0.48, the default).
 This model is recommended if you need to compute the energy balance of the object. The model is implemented in the `BeerShortwave` type.
 
 Here's an example usage:

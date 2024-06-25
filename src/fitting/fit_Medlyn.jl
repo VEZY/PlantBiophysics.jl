@@ -3,6 +3,9 @@
 
 Optimize the parameters of the [`Medlyn`](@ref) model. Note that here Gₛ is stomatal conductance for CO2, not H2O.
 
+Careful, g0 and g1 are fitted on CO₂ stomatal conductance, and so are given for CO₂, not H₂O.
+If you want to compare the values with the ones usually given in the literature, you need to multiply g0 and g1 by 1.57.
+
 # Arguments
 
 - df: a DataFrame with columns A, Dₗ, Cₐ and Gₛ, where each row is an observation. The column

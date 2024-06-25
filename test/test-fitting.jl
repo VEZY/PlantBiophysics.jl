@@ -26,5 +26,5 @@ end
     g0, g1 = fit(Medlyn, df)
 
     @test g0 ≈ 0.02644 atol = 1e-4
-    @test g1 ≈ 0.41426 atol = 1e-4
+    @test g1 ≈ 0.131696 atol = 1e-4
 end

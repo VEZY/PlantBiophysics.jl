@@ -19,22 +19,20 @@ models = read_model(joinpath(dirname(dirname(pathof(PlantBiophysics))), "test", 
 
 transform!(
     mtg,
-    [:Ra_PAR_f, :Ra_NIR_f] => ((x, y) -> x + y * 1.2) => :Rᵢ, # This would be the incident radiation
-    [:Ra_PAR_f, :Ra_NIR_f] => ((x, y) -> x + y) => :Ra_SW_f,
-    :Ra_PAR_f => (x -> x * 4.57) => :aPPFD,
+    :Ra_PAR_f => (x -> fill(x, length(weather))) => :Ra_PAR_f,
+    :sky_fraction => (x -> fill(x, length(weather))) => :sky_fraction,
+    [:Ra_PAR_f, :Ra_NIR_f] => ((x, y) -> x .+ y) => :Ra_SW_f,
     (x -> 0.3) => :d,
     ignore_nothing = true
 )
 
-init_mtg_models!(mtg, models, length(weather))
-
-run!(mtg, weather)
-
-transform!(
-    mtg,
-    :Tₗ => (x -> x[1]) => :Tₗ_1,
-    ignore_nothing = true
-)
+out = run!(mtg, models, weather, outputs=Dict{String,Any}("Leaf" => (:Tₗ,)))
+outputs_leaves = outputs(out)["Leaf"]
+for ts in eachindex(outputs_leaves[:node])
+    for node in outputs_leaves[:node][ts]
+        node[:Tₗ] = outputs_leaves[:Tₗ][ts]
+    end
+end
 ```
 
 ## Multi-scale Tree Graph
@@ -75,54 +73,58 @@ models = read_model(file)
 Let's check which variables we need to provide for our model configuration:
 
 ```@example usepkg
-to_initialize(models)
+to_initialize(models, mtg)
 ```
 
-OK, only the `"Leaf"` component must be initialized before computation for the coupled energy balance, with the shortwave radiation `Ra_SW_f`, the visible sky fraction seen by the object `sky_fraction`, the characteristic dimension of the object `d` and the Photosynthetically active Photon Flux Density `aPPFD`. We are in luck, we used [Archimed-ϕ](https://archimed-platform.github.io/archimed-phys-user-doc/) to compute the radiation interception of each organ in the example coffee plant we are using. So the only thing we need is to transform the variables given by Archimed-ϕ in each node to compute the ones we need. We use `transform!` from `MultiScaleTreeGraph.jl` to traverse the MTG and compute the right variable for each node:
+OK, only the `"Leaf"` component must be initialized before computation for the coupled energy balance, with the characteristic dimension of the object `d`.
+
+But we also know that the `Translucent` model reads some variables from the MTG nodes directly: the absorbed shortwave radiation flux `Ra_SW_f`, the visible sky fraction seen by the object `sky_fraction`, and the photosynthetically active absorbed radiation flux `Ra_PAR_f`. We are in luck, we used [Archimed-ϕ](https://archimed-platform.github.io/archimed-phys-user-doc/) to compute the radiation interception of each organ in the example coffee plant we are using. So the only thing we need to do is to transform the variables given by Archimed-ϕ in each node to compute the ones we need. We use `transform!` from `MultiScaleTreeGraph.jl` to traverse the MTG and compute the right variable for each node:
 
 ```@example usepkg
 using MultiScaleTreeGraph
 
 transform!(
     mtg,
-    [:Ra_PAR_f, :Ra_NIR_f] => ((x, y) -> x + y * 1.2) => :Rᵢ, # This would be the incident radiation
-    [:Ra_PAR_f, :Ra_NIR_f] => ((x, y) -> x + y) => :Ra_SW_f,
-    :Ra_PAR_f => (x -> x * 4.57) => :aPPFD,
+    :Ra_PAR_f => (x -> fill(x, length(weather))) => :Ra_PAR_f,
+    :sky_fraction => (x -> fill(x, length(weather))) => :sky_fraction,
+    [:Ra_PAR_f, :Ra_NIR_f] => ((x, y) -> x .+ y) => :Ra_SW_f,
     (x -> 0.3) => :d,
     ignore_nothing = true
 )
 ```
 
-The design of `MultiScaleTreeGraph.transform!` is very close to the one adopted by `DataFrames`. It helps us compute new variables (or attributes) from others, modify their units or rename them. Here we compute `Rᵢ` and `Ra_SW_f` from the sum of `Ra_PAR_f` (absorbed radiation flux in the PAR) and `Ra_NIR_f` (...in the NIR), `aPPFD` from `Ra_PAR_f` using the conversion between ``W \cdot m^{2}`` to ``μmol \cdot m^{-2} \cdot s^{-1}``, and `d` using a constant value of 0.3 m. Note that `sky_fraction` is already computed for each node with the right units thanks to Archimed-ϕ, so no need to transform it.
+The design of `MultiScaleTreeGraph.transform!` is very close to the one from `DataFrames`. It helps us compute new variables (or attributes) from others, modify their units or rename them. Here we compute a value for each time-step by repeating the values of `Ra_PAR_f` and `sky_fraction` 3 times, and compute `Ra_SW_f` from the sum of `Ra_PAR_f` (absorbed radiation flux in the PAR) and `Ra_NIR_f` (...in the NIR). We also put a single constant value for `d`: 0.3 m.
 
-Finally, we have to initialize the MTG with the models we want to use. We use `init_mtg_models!` from `PlantSimEngine` to do so:
+Now let's choose the outputs we want to save. Here we choose to only output the leaf temperature `Tₗ`:
 
 ```@example usepkg
-init_mtg_models!(mtg, models, length(weather))
+vars=Dict{String,Any}("Leaf" => (:Tₗ,))
 ```
 
-The function takes the MTG, the models, and the number of time-steps we want to simulate, and initializes the MTG with the models, and the variables needed for the simulation. The attributes can also be modified at this stage, for example by adding the variables that will be computed by the simulation, or by pre-allocating memory for the outputs.
-
-Then `PlantBiophysics.jl` takes care of the rest and simulates the energy balance over each time-step:
+Now we can run a simulation using `run!` from `PlantSimEngine`:
 
 ```@example usepkg
-run!(mtg, weather)
+outs = run!(mtg, models, weather, outputs=vars);
+nothing # hide
 ```
 
-We can visualize the outputs in 3D using PlantGeom's `viz` function. To do so we have to extract the time step we want to use for coloring the organs. For example if we want to color the plant according to the value of the temperature from the first time-step, we would do:
+We can now extract the outputs from the simulation and store them in the MTG:
 
 ```@example usepkg
-transform!(
-    mtg,
-    :Tₗ => (x -> x[1]) => :Tₗ_1,
-    ignore_nothing = true
-)
+outputs_leaves = outputs(outs)["Leaf"]
+for ts in eachindex(outputs_leaves[:node])
+    for node in outputs_leaves[:node][ts]
+        node[:Tₗ] = outputs_leaves[:Tₗ][ts]
+    end
+end
 ```
 
-And then actually plotting it:
+And finally, we can visualize the outputs in 3D using PlantGeom's `viz` function:
 
 ```@example usepkg
-f, ax, p = viz(mtg, color = :Tₗ_1)
+f, ax, p = viz(mtg, color = :Tₗ, index = 2)
 colorbar(f[1, 2], p)
 f
 ```
+
+Note that we use the `index` keyword argument to select the time-step we want to visualize.
