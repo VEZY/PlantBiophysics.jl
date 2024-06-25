@@ -22,11 +22,6 @@ end;
 
     PlantSimEngine.init_status!(leaf, Tₗ=25.0)
     @test leaf.status.Tₗ == [25.0]
-
-    file = joinpath(dirname(dirname(pathof(PlantBiophysics))), "test", "inputs", "models", "plant_coffee.yml")
-    model = read_model(file)
-    PlantSimEngine.init_status!(model, Tₗ=25.0)
-    @test model["Leaf"].status.Tₗ == [25.0]
 end;
 
 

@@ -70,7 +70,7 @@ run!(leaf, weather, cst)
 # Running the simulation:
 size_inches = (8, 6)
 size_pt = 72 .* size_inches
-f = Figure(resolution=size_pt, fontsize=12)
+f = Figure(size=size_pt, fontsize=12)
 ax = Axis(
     f[1, 1],
     xlabel=L"Wind speed ($m \cdot s^{-1}$)",
