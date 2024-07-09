@@ -51,7 +51,7 @@ The result is an MTG defining the plant at several scales using a tree graph. Yo
 Now let's import the weather data:
 
 ```@example usepkg
-using PlantBiophysics, PlantSimEngine, PlantMeteo
+using PlantBiophysics, PlantSimEngine, PlantMeteo, Dates
 
 weather = read_weather(
     joinpath(dirname(dirname(pathof(PlantMeteo))), "test", "data", "meteo.csv"),
