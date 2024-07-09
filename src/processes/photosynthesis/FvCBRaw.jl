@@ -3,7 +3,7 @@
 Farquhar–von Caemmerer–Berry (FvCB) model for C3 photosynthesis (Farquhar et al., 1980;
 von Caemmerer and Farquhar, 1981). Direct implementation of the model.
 
-See [`Fvcb`](@ref) for more details.
+$FVCB_PARAMETERS
 
 # See also
 

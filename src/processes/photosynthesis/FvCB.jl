@@ -1,9 +1,5 @@
-
-"""
-Farquhar–von Caemmerer–Berry (FvCB) model for C3 photosynthesis (Farquhar et al., 1980;
-von Caemmerer and Farquhar, 1981) coupled with a conductance model.
-
-The definition:
+FVCB_PARAMETERS = """
+# Parameters
 
 - `Tᵣ`: the reference temperature (°C) at which other parameters were measured
 - `VcMaxRef`: maximum rate of Rubisco activity (``μmol\\ m^{-2}\\ s^{-1}``)
@@ -22,6 +18,11 @@ The definition:
 Medlyn et al. (2002) and its implementation in [`get_J`](@ref)
 - `θ`: determines the curvature of the light response curve for `J~aPPFD`. See also eq. 4 of
 Medlyn et al. (2002) and its implementation in [`get_J`](@ref)
+"""
+
+
+FVCB_NOTES = """
+# Note on parameters
 
 The default values of the temperature correction parameters are taken from
 [plantecophys](https://remkoduursma.github.io/plantecophys/). If there is no negative effect
@@ -31,11 +32,18 @@ of high temperatures on the reaction (Jmax or VcMax), then Δₛ can be set to 0
 
 α is taken at 0.24 as in the R package `plantecophys` (Duursma, 2015).
 
-# Note
-
 Medlyn et al. (2002) found relatively low influence ("a slight effect") of α and θ. They also
 say that Kc, Ko and Γ* "are thought to be intrinsic properties of the Rubisco enzyme
 and are generally assumed constant among species".
+"""
+
+"""
+Farquhar–von Caemmerer–Berry (FvCB) model for C3 photosynthesis (Farquhar et al., 1980;
+von Caemmerer and Farquhar, 1981) coupled with a conductance model.
+
+$FVCB_PARAMETERS
+
+$FVCB_NOTES
 
 # See also
 

@@ -4,7 +4,8 @@
         Tᵣ = nothing, 
         VcMaxRef = 0.0, JMaxRef = 0.0, RdRef = 0.0, TPURef = 0.0, 
         VcMaxRef_bound=[0.0, Inf], JMaxRef_bound=[0.0, Inf], RdRef_bound=[0.0, Inf], TPURef_bound=[0.0, Inf],
-        verbose = true
+        verbose = true,
+        Eₐᵣ=46390.0, O₂=210.0, Eₐⱼ=29680.0, Hdⱼ=200000.0, Δₛⱼ=631.88, Eₐᵥ=58550.0, Hdᵥ=200000.0, Δₛᵥ=629.26, α=0.24, θ=0.7
     )
 
 Optimize the parameters of the [`Fvcb`](@ref) model. Also works for [`FvcbIter`](@ref).
@@ -17,6 +18,11 @@ names should match exactly
 - VcMaxRef, JMaxRef, RdRef, TPURef: initialisation values for the parameter optimisation
 - VcMaxRef_bound, JMaxRef_bound, RdRef_bound, TPURef_bound: boundary values for the parameter optimisation
 - verbose: if true, print the optimisation results
+- Eₐᵣ, O₂, Eₐⱼ, Hdⱼ, Δₛⱼ, Eₐᵥ, Hdᵥ, Δₛᵥ, α, θ: parameters for the FvCB model
+
+FvCB model parameters:
+
+$FVCB_PARAMETERS
 
 Note that boundary values are set to [0.0, Inf] by default. You should adapt them to your use case. Note that no 
 boundary can be set using [-Inf, Inf].
@@ -81,7 +87,8 @@ function PlantSimEngine.fit(
     Tᵣ=nothing,
     VcMaxRef=0.0, JMaxRef=0.0, RdRef=0.0, TPURef=0.0,
     VcMaxRef_bound=[0.0, Inf], JMaxRef_bound=[0.0, Inf], RdRef_bound=[0.0, Inf], TPURef_bound=[0.0, Inf],
-    verbose=false
+    verbose=false,
+    Eₐᵣ=46390.0, O₂=210.0, Eₐⱼ=29680.0, Hdⱼ=200000.0, Δₛⱼ=631.88, Eₐᵥ=58550.0, Hdᵥ=200000.0, Δₛᵥ=629.26, α=0.24, θ=0.7
 ) where {T<:Union{Type{Fvcb},Type{FvcbIter},Type{FvcbRaw}}}
 
     if Tᵣ === nothing
@@ -91,11 +98,14 @@ function PlantSimEngine.fit(
     function model(x, p)
         leaf =
             ModelList(
-                photosynthesis=FvcbRaw(Tᵣ=Tᵣ, VcMaxRef=p[1], JMaxRef=p[2], RdRef=p[3], TPURef=p[4]),
+                photosynthesis=FvcbRaw(
+                    Tᵣ=Tᵣ, VcMaxRef=p[1], JMaxRef=p[2], RdRef=p[3], TPURef=p[4],
+                    Eₐᵣ=Eₐᵣ, O₂=O₂, Eₐⱼ=Eₐⱼ, Hdⱼ=Hdⱼ, Δₛⱼ=Δₛⱼ, Eₐᵥ=Eₐᵥ, Hdᵥ=Hdᵥ, Δₛᵥ=Δₛᵥ, α=α, θ=θ
+                ),
                 status=(Tₗ=x[:, 1], aPPFD=x[:, 2], Cᵢ=x[:, 3])
             )
         PlantSimEngine.run!(leaf)
-        DataFrame(leaf).A
+        PlantSimEngine.status(leaf).A
     end
 
     # Fitting the A-Cᵢ curve using LsqFit.jl

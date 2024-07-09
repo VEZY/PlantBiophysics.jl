@@ -5,13 +5,14 @@ von Caemmerer and Farquhar, 1981).
 
 Iterative implementation, *i.e.* the assimilation is computed iteratively over Cᵢ.
 
-For more details on arguments, see [`Fvcb`](@ref).
-This structure has several more parameters:
 
+$FVCB_PARAMETERS
 - `iter_A_max::Int`: maximum number of iterations allowed for the iteration on the assimilation.
 - `ΔT_A::T = 1`: threshold bellow which the assimilation is considered constant. Given in
 percent of change, *i.e.* 1% means that two successive assimilations with less than 1%
 difference in value are considered the same value.
+
+$FVCB_NOTES
 """
 struct FvcbIter{T} <: AbstractPhotosynthesisModel
     Tᵣ::T
