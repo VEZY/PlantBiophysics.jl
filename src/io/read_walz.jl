@@ -1,5 +1,5 @@
 """
-    read_walz(file)
+    read_walz(file; abs=0.85)
 
 Import a Walz GFS-3000 output file, perform variables conversion and rename
 according to package conventions.
@@ -8,6 +8,7 @@ according to package conventions.
 
 - `file`: a string or a vector of strings containing the path to the file(s) to
   read.
+- `abs=0.85`: the absorptance of the leaf. Default is 0.85 (von Caemmerer et al., 2009).
 
 # Returns
 
@@ -41,7 +42,7 @@ In this case, the source of the data is added as the `source` columns into the D
 df.source
 ```
 """
-function read_walz(file)
+function read_walz(file; abs=0.85)
     if typeof(file) <: Vector{T} where {T<:AbstractString}
         df = CSV.read(file, DataFrame, header=1, skipto=3, source=:source)
     else
@@ -57,10 +58,10 @@ function read_walz(file)
     dropmissing!(df, :VPD)
 
     # Renaming variables to fit the standard in the package:
-    rename!(
+    transform!(
         df,
         :GH2O => :Gₛ, :ca => :Cₐ, :Tcuv => :T, :Pamb => :P, :rh => :Rh,
-        :PARtop => :aPPFD, :ci => :Cᵢ, :Comment => :curve, :Tleaf => :Tₗ,
+        :PARtop => (x -> x .* abs) => :aPPFD, :ci => :Cᵢ, :Comment => :curve, :Tleaf => :Tₗ,
         :VPD => :Dₗ
     )
 

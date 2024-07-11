@@ -37,6 +37,7 @@ Type:
               vcMaxRef: 200   # umol[electron] m-2 s-1 , maximum carboxylation rate at the reference temperature
               rdRef: 0.6      # umol[CO2] m-2 s-1, mitochondrial respiration in the light at reference temperature (other than that associated with the PCO cycle)
               theta: 0.853    # curvature of the light-response curve of electron transport.
+              α: 0.24
               LWratio: 1.5    # average lenght / width ratio for the component. Used to compute the boundary layer conductance.
               nFaceStomata: 1 # number of faces of the component with stomata (1: hypostomatal, 2: amphistomatal  leaf).
               leafEmissivity : 0.98 # Ratio between the leaf radiant emittance (also called radiant exitance) compared to the one of a black body.

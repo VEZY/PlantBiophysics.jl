@@ -1,6 +1,6 @@
 
 # Testing the ModelList struct
-A = Fvcb()
+A = Fvcb(α=0.24) # because I set-up the tests with this value for α
 g0 = 0.03;
 g1 = 12.0;
 Gs = Medlyn(g0, g1) # Instance of a Medlyn type with g0 = 0.03 and g1 = 0.1
@@ -51,7 +51,7 @@ end;
     # Reference ModelList
     m = ModelList(
         energy_balance=Monteith(),
-        photosynthesis=Fvcb(),
+        photosynthesis=Fvcb(α=0.24), # because I set-up the tests with this value for α
         stomatal_conductance=Medlyn(0.03, 12.0),
         status=TimeStepTable{Status}(df)
     )
@@ -59,7 +59,7 @@ end;
     # Automatically transform the DataFrame into a TimeStepTable{Status}:
     m_2 = ModelList(
         energy_balance=Monteith(),
-        photosynthesis=Fvcb(),
+        photosynthesis=Fvcb(α=0.24), # because I set-up the tests with this value for α
         stomatal_conductance=Medlyn(0.03, 12.0),
         status=df
     )
@@ -67,7 +67,7 @@ end;
     # Keep the DataFrame structure:
     m_df = ModelList(
         energy_balance=Monteith(),
-        photosynthesis=Fvcb(),
+        photosynthesis=Fvcb(α=0.24), # because I set-up the tests with this value for α
         stomatal_conductance=Medlyn(0.03, 12.0),
         status=df,
         init_fun=x -> DataFrame(x)

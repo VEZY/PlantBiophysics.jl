@@ -15,7 +15,7 @@ FVCB_PARAMETERS = """
 - `Hdᵥ`: rate of decrease of the function above the optimum (also called EDVC) for VcMax.
 - `Δₛᵥ`: entropy factor for VcMax.
 - `α`: quantum yield of electron transport (``mol_e\\ mol^{-1}_{quanta}``). See also eq. 4 of
-Medlyn et al. (2002) and its implementation in [`get_J`](@ref)
+Medlyn et al. (2002), equation 9.16 from von Caemmerer et al. (2009) ((1-f)/2) and its implementation in [`get_J`](@ref)
 - `θ`: determines the curvature of the light response curve for `J~aPPFD`. See also eq. 4 of
 Medlyn et al. (2002) and its implementation in [`get_J`](@ref)
 """
@@ -30,7 +30,7 @@ of high temperatures on the reaction (Jmax or VcMax), then Δₛ can be set to 0
 
 θ is taken at 0.7 according to (Von Caemmerer, 2000) but it can be modified to 0.9 as in (Su et al., 2009). The larger it is, the lower the smoothing.
 
-α is taken at 0.24 as in the R package `plantecophys` (Duursma, 2015).
+α is taken at 0.425 as proposed in von Caemmerer et al. (2009) eq. 9.16, where α = (1-f)/2.
 
 Medlyn et al. (2002) found relatively low influence ("a slight effect") of α and θ. They also
 say that Kc, Ko and Γ* "are thought to be intrinsic properties of the Rubisco enzyme
@@ -108,7 +108,7 @@ end
 
 function Fvcb(; Tᵣ=25.0, VcMaxRef=200.0, JMaxRef=250.0, RdRef=0.6, TPURef=9999.0, Eₐᵣ=46390.0,
     O₂=210.0, Eₐⱼ=29680.0, Hdⱼ=200000.0, Δₛⱼ=631.88, Eₐᵥ=58550.0, Hdᵥ=200000.0,
-    Δₛᵥ=629.26, α=0.24, θ=0.7)
+    Δₛᵥ=629.26, α=0.425, θ=0.7)
 
     Fvcb(promote(Tᵣ, VcMaxRef, JMaxRef, RdRef, TPURef, Eₐᵣ, O₂, Eₐⱼ, Hdⱼ, Δₛⱼ, Eₐᵥ, Hdᵥ, Δₛᵥ, α, θ)...)
 end
@@ -241,33 +241,27 @@ Lombardozzi, L. D. et al. 2018.« Triose phosphate limitation in photosynthesis 
 reduces leaf photosynthesis and global terrestrial carbon storage ». Environmental Research
 Letters 13.7: 1748-9326. https://doi.org/10.1088/1748-9326/aacf68.
 """
-function PlantSimEngine.run!(::Fvcb, models, status, meteo, constants=PlantMeteo.Constants(), extra=nothing)
+function PlantSimEngine.run!(m::Fvcb, models, status, meteo, constants=PlantMeteo.Constants(), extra=nothing)
 
     # Tranform Celsius temperatures in Kelvin:
     Tₖ = status.Tₗ - constants.K₀
-    Tᵣₖ = models.photosynthesis.Tᵣ - constants.K₀
+    Tᵣₖ = m.Tᵣ - constants.K₀
 
     # Temperature dependence of the parameters:
     Γˢ = Γ_star(Tₖ, Tᵣₖ, constants.R) # Gamma star (CO2 compensation point) in μmol mol-1
-    Km = get_km(Tₖ, Tᵣₖ, models.photosynthesis.O₂, constants.R) # effective Michaelis–Menten coefficient for CO2
+    Km = get_km(Tₖ, Tᵣₖ, m.O₂, constants.R) # effective Michaelis–Menten coefficient for CO2
 
     # Maximum electron transport rate at the given leaf temperature (μmol m-2 s-1):
-    JMax = arrhenius(
-        models.photosynthesis.JMaxRef, models.photosynthesis.Eₐⱼ, Tₖ, Tᵣₖ,
-        models.photosynthesis.Hdⱼ, models.photosynthesis.Δₛⱼ, constants.R
-    )
+    JMax = arrhenius(m.JMaxRef, m.Eₐⱼ, Tₖ, Tᵣₖ, m.Hdⱼ, m.Δₛⱼ, constants.R)
     # Maximum rate of Rubisco activity at the given models temperature (μmol m-2 s-1):
-    VcMax = arrhenius(
-        models.photosynthesis.VcMaxRef, models.photosynthesis.Eₐᵥ, Tₖ, Tᵣₖ,
-        models.photosynthesis.Hdᵥ, models.photosynthesis.Δₛᵥ, constants.R
-    )
+    VcMax = arrhenius(m.VcMaxRef, m.Eₐᵥ, Tₖ, Tᵣₖ, m.Hdᵥ, m.Δₛᵥ, constants.R)
     # Rate of mitochondrial respiration at the given leaf temperature (μmol m-2 s-1):
-    Rd = arrhenius(models.photosynthesis.RdRef, models.photosynthesis.Eₐᵣ, Tₖ, Tᵣₖ, constants.R)
+    Rd = arrhenius(m.RdRef, m.Eₐᵣ, Tₖ, Tᵣₖ, constants.R)
     # Rd is also described as the CO2 release in the light by processes other than the PCO
     # cycle, and termed "day" respiration, or "light respiration" (Harley et al., 1986).
 
     # Actual electron transport rate (considering intercepted PAR and leaf temperature):
-    J = get_J(status.aPPFD, JMax, models.photosynthesis.α, models.photosynthesis.θ) # in μmol m-2 s-1
+    J = get_J(status.aPPFD, JMax, m.α, m.θ) # in μmol m-2 s-1
     # RuBP regeneration
     Vⱼ = J / 4
 
@@ -298,7 +292,7 @@ function PlantSimEngine.run!(::Fvcb, models, status, meteo, constants=PlantMeteo
     end
 
     # Net assimilation (μmol m-2 s-1)
-    status.A = min(Wᵥ, Wⱼ, 3 * models.photosynthesis.TPURef) - Rd
+    status.A = min(Wᵥ, Wⱼ, 3 * m.TPURef) - Rd
 
     # Stomatal conductance (mol[CO₂] m-2 s-1)
     PlantSimEngine.run!(models.stomatal_conductance, models, status, st_closure, extra)
@@ -347,10 +341,10 @@ Von Caemmerer, Susanna. 2000. Biochemical models of leaf photosynthesis. Csiro p
 ```jldoctest; setup = :(using PlantBiophysics)
 # Using default values for the model:
 julia> A = Fvcb()
-Fvcb{Float64}(25.0, 200.0, 250.0, 0.6, 9999.0, 46390.0, 210.0, 29680.0, 200000.0, 631.88, 58550.0, 200000.0, 629.26, 0.24, 0.7)
+Fvcb{Float64}(25.0, 200.0, 250.0, 0.6, 9999.0, 46390.0, 210.0, 29680.0, 200000.0, 631.88, 58550.0, 200000.0, 629.26, 0.425, 0.7)
 
 julia> PlantBiophysics.get_J(1500, A.JMaxRef, A.α, A.θ)
-188.17537926909347
+216.5715752671342
 ```
 """
 function get_J(aPPFD, JMax, α, θ)

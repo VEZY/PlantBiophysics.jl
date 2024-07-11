@@ -4,7 +4,7 @@ models_name = Symbol(MultiScaleTreeGraph.cache_name("PlantSimEngine models"))
 
 # Declare our models:
 nrj = Monteith()
-photo = Fvcb()
+photo = Fvcb(α=0.24) # because I set-up the tests with this value for α
 Gs = Medlyn(0.03, 12.0)
 models = Dict(
     "Leaf" =>
