@@ -39,7 +39,7 @@ function FvcbIter(; iter_A_max=20, ΔT_A=1.0, kwargs...)
     @assert ΔT_A > 0 "ΔT_A must be greater than 0"
     iter_A_max = convert(Int, iter_A_max)
 
-    params = Fvcb(kwargs...)    # Add type promotion in case we want to use e.g. Measurements for one parameter only and
+    params = Fvcb(; kwargs...)    # Add type promotion in case we want to use e.g. Measurements for one parameter only and
     # we don't want to set each parameter to ± 0 by hand.
     ΔT_A = convert(eltype(params), ΔT_A)
 
@@ -138,42 +138,42 @@ Leuning, R., F. M. Kelliher, DGG de Pury, et E.D. Schulze. 1995. Leaf nitrogen,
 photosynthesis, conductance and transpiration: scaling from leaves to canopies ». Plant,
 Cell & Environment 18 (10): 1183‑1200.
 """
-function PlantSimEngine.run!(::FvcbIter, models, status, meteo, constants=PlantMeteo.Constants(), extra=nothing)
+function PlantSimEngine.run!(m::FvcbIter, models, status, meteo, constants=PlantMeteo.Constants(), extra=nothing)
 
     # Start with a probable value for Cₛ and Cᵢ:
     status.Cₛ = meteo.Cₐ
     status.Cᵢ = status.Cₛ * 0.75
     # Tranform Celsius temperatures in Kelvin:
     Tₖ = status.Tₗ - constants.K₀
-    Tᵣₖ = models.photosynthesis.Tᵣ - constants.K₀
+    Tᵣₖ = m.Tᵣ - constants.K₀
 
     # Temperature dependence of the parameters:
     Γˢ = Γ_star(Tₖ, Tᵣₖ, constants.R) # Gamma star (CO2 compensation point) in μmol mol-1
-    Km = get_km(Tₖ, Tᵣₖ, models.photosynthesis.O₂, constants.R) # effective Michaelis–Menten coefficient for CO2
+    Km = get_km(Tₖ, Tᵣₖ, m.O₂, constants.R) # effective Michaelis–Menten coefficient for CO2
 
     # Maximum electron transport rate at the given leaf temperature (μmol m-2 s-1):
     JMax = arrhenius(
-        models.photosynthesis.JMaxRef, models.photosynthesis.Eₐⱼ, Tₖ, Tᵣₖ,
-        models.photosynthesis.Hdⱼ, models.photosynthesis.Δₛⱼ, constants.R
+        m.JMaxRef, m.Eₐⱼ, Tₖ, Tᵣₖ,
+        m.Hdⱼ, m.Δₛⱼ, constants.R
     )
     # Maximum rate of Rubisco activity at the given leaf temperature (μmol m-2 s-1):
     VcMax = arrhenius(
-        models.photosynthesis.VcMaxRef, models.photosynthesis.Eₐᵥ, Tₖ, Tᵣₖ,
-        models.photosynthesis.Hdᵥ, models.photosynthesis.Δₛᵥ, constants.R
+        m.VcMaxRef, m.Eₐᵥ, Tₖ, Tᵣₖ,
+        m.Hdᵥ, m.Δₛᵥ, constants.R
     )
     # Rate of mitochondrial respiration at the given leaf temperature (μmol m-2 s-1):
-    Rd = arrhenius(models.photosynthesis.RdRef, models.photosynthesis.Eₐᵣ, Tₖ, Tᵣₖ, constants.R)
+    Rd = arrhenius(m.RdRef, m.Eₐᵣ, Tₖ, Tᵣₖ, constants.R)
     # Rd is also described as the CO2 release in the light by processes other than the PCO
     # cycle, and termed "day" respiration, or "light respiration" (Harley et al., 1986).
 
     # Actual electron transport rate (considering intercepted PAR and leaf temperature):
-    J = get_J(status.aPPFD, JMax, models.photosynthesis.α, models.photosynthesis.θ) # in μmol m-2 s-1
+    J = get_J(status.aPPFD, JMax, m.α, m.θ) # in μmol m-2 s-1
     # RuBP regeneration
     Vⱼ = J / 4
 
     # First iteration to initialize the values for A and Gₛ:
     # Net assimilation (μmol m-2 s-1)
-    status.A = Fvcb_net_assimiliation(status.Cᵢ, Vⱼ, Γˢ, VcMax, Km, Rd, models.photosynthesis.TPURef)
+    status.A = Fvcb_net_assimiliation(status.Cᵢ, Vⱼ, Γˢ, VcMax, Km, Rd, m.TPURef)
 
     iter = true
     iter_inc = 1
@@ -192,11 +192,11 @@ function PlantSimEngine.run!(::FvcbIter, models, status, meteo, constants=PlantM
             A_new = -Rd
         else
             # Net assimilation (μmol m-2 s-1):
-            A_new = Fvcb_net_assimiliation(status.Cᵢ, Vⱼ, Γˢ, VcMax, Km, Rd, models.photosynthesis.TPURef)
+            A_new = Fvcb_net_assimiliation(status.Cᵢ, Vⱼ, Γˢ, VcMax, Km, Rd, m.TPURef)
         end
 
-        if abs(A_new - status.A) / status.A <= models.photosynthesis.ΔT_A ||
-           iter_inc == models.photosynthesis.iter_A_max
+        if abs(A_new - status.A) / status.A <= m.ΔT_A ||
+           iter_inc == m.iter_A_max
 
             iter = false
         end
