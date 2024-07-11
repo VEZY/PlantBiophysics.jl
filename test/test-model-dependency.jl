@@ -1,6 +1,6 @@
 m = ModelList(
     energy_balance=Monteith(),
-    photosynthesis=Fvcb(),
+    photosynthesis=Fvcb(α=0.24), # because I set-up the tests with this value for α
     stomatal_conductance=Medlyn(0.0, 0.0011),
     status=(Ra_SW_f=13.747, sky_fraction=1.0, d=0.03)
 )
@@ -73,7 +73,7 @@ end
         ModelList(
             light_interception=Beer(0.5),
             energy_balance=dummy_E(20.0),
-            photosynthesis=Fvcb(),
+            photosynthesis=Fvcb(α=0.24), # because I set-up the tests with this value for α
             stomatal_conductance=Medlyn(0.0, 0.0011)
         )
     )

@@ -3,8 +3,7 @@ constants = Constants()
 
 T = 28.0 - constants.K₀ # Current temperature
 Tᵣ = 25.0 - constants.K₀ # Reference temperature
-A = Fvcb()
-
+A = Fvcb(α=0.24) # because I set-up the tests with this value for α
 @testset "Γ_star()" begin
     @test PlantBiophysics.Γ_star(T, Tᵣ, constants.R) ==
           PlantBiophysics.arrhenius(42.75, 37830.0, T, Tᵣ, constants.R)

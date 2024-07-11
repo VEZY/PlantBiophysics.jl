@@ -5,7 +5,7 @@
     filter!(x -> x.curve != "Rh Curve" && x.curve != "ligth Curve", df)
 
     # Fit the parameter values:
-    VcMaxRef, JMaxRef, RdRef, TPURef = fit(Fvcb, df; Tᵣ=25.0)
+    VcMaxRef, JMaxRef, RdRef, TPURef = fit(Fvcb, df; Tᵣ=25.0, α=0.24)
     # Note that Tᵣ was set to 25 °C in our response curve. You should adapt its value to what you
     # had during the response curves
 
@@ -15,7 +15,7 @@
     @test TPURef ≈ 5.596 atol = 1e-2
 
 
-    VcMaxRef, JMaxRef, RdRef, TPURef = fit(Fvcb, df; Tᵣ=25.0, Eₐᵥ=71100.0)
+    VcMaxRef, JMaxRef, RdRef, TPURef = fit(Fvcb, df; Tᵣ=25.0, Eₐᵥ=71100.0, α=0.24)
 
     @test VcMaxRef ≈ 45.204 atol = 1e-2
     @test JMaxRef ≈ 82.986 atol = 1e-2
