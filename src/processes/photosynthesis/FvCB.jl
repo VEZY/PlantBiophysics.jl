@@ -15,7 +15,7 @@ FVCB_PARAMETERS = """
 - `Hdᵥ`: rate of decrease of the function above the optimum (also called EDVC) for VcMax.
 - `Δₛᵥ`: entropy factor for VcMax.
 - `α`: quantum yield of electron transport (``mol_e\\ mol^{-1}_{quanta}``). See also eq. 4 of
-Medlyn et al. (2002) and its implementation in [`get_J`](@ref)
+Medlyn et al. (2002), equation 9.16 from von Caemmerer et al. (2009) ((1-f)/2) and its implementation in [`get_J`](@ref)
 - `θ`: determines the curvature of the light response curve for `J~aPPFD`. See also eq. 4 of
 Medlyn et al. (2002) and its implementation in [`get_J`](@ref)
 """
@@ -30,7 +30,7 @@ of high temperatures on the reaction (Jmax or VcMax), then Δₛ can be set to 0
 
 θ is taken at 0.7 according to (Von Caemmerer, 2000) but it can be modified to 0.9 as in (Su et al., 2009). The larger it is, the lower the smoothing.
 
-α is taken at 0.425 as in the R package `plantecophys` (Duursma, 2015).
+α is taken at 0.425 as proposed in von Caemmerer et al. (2009) eq. 9.16, where α = (1-f)/2.
 
 Medlyn et al. (2002) found relatively low influence ("a slight effect") of α and θ. They also
 say that Kc, Ko and Γ* "are thought to be intrinsic properties of the Rubisco enzyme
