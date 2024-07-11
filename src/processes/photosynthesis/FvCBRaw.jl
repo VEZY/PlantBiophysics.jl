@@ -50,11 +50,9 @@ struct FvcbRaw{T} <: AbstractPhotosynthesisModel
     θ::T
 end
 
-function FvcbRaw(; Tᵣ=25.0, VcMaxRef=200.0, JMaxRef=250.0, RdRef=0.6, TPURef=9999.0, Eₐᵣ=46390.0,
-    O₂=210.0, Eₐⱼ=29680.0, Hdⱼ=200000.0, Δₛⱼ=631.88, Eₐᵥ=58550.0, Hdᵥ=200000.0,
-    Δₛᵥ=629.26, α=0.24, θ=0.7)
-
-    FvcbRaw(promote(Tᵣ, VcMaxRef, JMaxRef, RdRef, TPURef, Eₐᵣ, O₂, Eₐⱼ, Hdⱼ, Δₛⱼ, Eₐᵥ, Hdᵥ, Δₛᵥ, α, θ)...)
+function FvcbRaw(; kwargs...)
+    params = Fvcb(kwargs...)
+    FvcbRaw{eltype(params)}([getfield(params, f) for f in fieldnames(Fvcb)]...) # Both models share the same parameters, so we use a single source of information: Fvcb.
 end
 
 function PlantSimEngine.inputs_(::FvcbRaw)

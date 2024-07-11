@@ -5,7 +5,7 @@
         VcMaxRef = 0.0, JMaxRef = 0.0, RdRef = 0.0, TPURef = 0.0, 
         VcMaxRef_bound=[0.0, Inf], JMaxRef_bound=[0.0, Inf], RdRef_bound=[0.0, Inf], TPURef_bound=[0.0, Inf],
         verbose = true,
-        Eₐᵣ=46390.0, O₂=210.0, Eₐⱼ=29680.0, Hdⱼ=200000.0, Δₛⱼ=631.88, Eₐᵥ=58550.0, Hdᵥ=200000.0, Δₛᵥ=629.26, α=0.24, θ=0.7
+        Eₐᵣ=46390.0, O₂=210.0, Eₐⱼ=29680.0, Hdⱼ=200000.0, Δₛⱼ=631.88, Eₐᵥ=58550.0, Hdᵥ=200000.0, Δₛᵥ=629.26, α=0.425, θ=0.7
     )
 
 Optimize the parameters of the [`Fvcb`](@ref) model. Also works for [`FvcbIter`](@ref).
@@ -88,7 +88,7 @@ function PlantSimEngine.fit(
     VcMaxRef=0.0, JMaxRef=0.0, RdRef=0.0, TPURef=0.0,
     VcMaxRef_bound=[0.0, Inf], JMaxRef_bound=[0.0, Inf], RdRef_bound=[0.0, Inf], TPURef_bound=[0.0, Inf],
     verbose=false,
-    Eₐᵣ=46390.0, O₂=210.0, Eₐⱼ=29680.0, Hdⱼ=200000.0, Δₛⱼ=631.88, Eₐᵥ=58550.0, Hdᵥ=200000.0, Δₛᵥ=629.26, α=0.24, θ=0.7
+    Eₐᵣ=46390.0, O₂=210.0, Eₐⱼ=29680.0, Hdⱼ=200000.0, Δₛⱼ=631.88, Eₐᵥ=58550.0, Hdᵥ=200000.0, Δₛᵥ=629.26, α=0.425, θ=0.7
 ) where {T<:Union{Type{Fvcb},Type{FvcbIter},Type{FvcbRaw}}}
 
     if Tᵣ === nothing

@@ -19,6 +19,7 @@ struct FvcbIter{T} <: AbstractPhotosynthesisModel
     VcMaxRef::T
     JMaxRef::T
     RdRef::T
+    TPURef::T
     Eₐᵣ::T
     O₂::T
     Eₐⱼ::T
@@ -33,17 +34,19 @@ struct FvcbIter{T} <: AbstractPhotosynthesisModel
     ΔT_A::T
 end
 
-function FvcbIter(; Tᵣ=25.0, VcMaxRef=200.0, JMaxRef=250.0, RdRef=0.6, Eₐᵣ=46390.0,
-    O₂=210.0, Eₐⱼ=29680.0, Hdⱼ=200000.0, Δₛⱼ=631.88, Eₐᵥ=58550.0, Hdᵥ=200000.0,
-    Δₛᵥ=629.26, α=0.425, θ=0.90, iter_A_max=20, ΔT_A=1.0)
+function FvcbIter(; iter_A_max=20, ΔT_A=1.0, kwargs...)
+    @assert iter_A_max > 0 "iter_A_max must be greater than 0"
+    @assert ΔT_A > 0 "ΔT_A must be greater than 0"
+    iter_A_max = convert(Int, iter_A_max)
 
-    # Add type promotion in case we want to use e.g. Measurements for one parameter only and
+    params = Fvcb(kwargs...)    # Add type promotion in case we want to use e.g. Measurements for one parameter only and
     # we don't want to set each parameter to ± 0 by hand.
-    param_float = promote(Tᵣ, VcMaxRef, JMaxRef, RdRef, Eₐᵣ, O₂, Eₐⱼ, Hdⱼ, Δₛⱼ, Eₐᵥ, Hdᵥ, Δₛᵥ, α, θ, ΔT_A)
-    FvcbIter(
-        param_float[1:end-1]...,
+    ΔT_A = convert(eltype(params), ΔT_A)
+
+    FvcbIter{eltype(params)}(
+        [getfield(params, f) for f in fieldnames(Fvcb)]...,
         iter_A_max,
-        param_float[end]
+        ΔT_A
     )
 end
 
@@ -140,7 +143,6 @@ function PlantSimEngine.run!(::FvcbIter, models, status, meteo, constants=PlantM
     # Start with a probable value for Cₛ and Cᵢ:
     status.Cₛ = meteo.Cₐ
     status.Cᵢ = status.Cₛ * 0.75
-
     # Tranform Celsius temperatures in Kelvin:
     Tₖ = status.Tₗ - constants.K₀
     Tᵣₖ = models.photosynthesis.Tᵣ - constants.K₀
@@ -171,7 +173,7 @@ function PlantSimEngine.run!(::FvcbIter, models, status, meteo, constants=PlantM
 
     # First iteration to initialize the values for A and Gₛ:
     # Net assimilation (μmol m-2 s-1)
-    status.A = Fvcb_net_assimiliation(status.Cᵢ, Vⱼ, Γˢ, VcMax, Km, Rd)
+    status.A = Fvcb_net_assimiliation(status.Cᵢ, Vⱼ, Γˢ, VcMax, Km, Rd, models.photosynthesis.TPURef)
 
     iter = true
     iter_inc = 1
@@ -190,7 +192,7 @@ function PlantSimEngine.run!(::FvcbIter, models, status, meteo, constants=PlantM
             A_new = -Rd
         else
             # Net assimilation (μmol m-2 s-1):
-            A_new = Fvcb_net_assimiliation(status.Cᵢ, Vⱼ, Γˢ, VcMax, Km, Rd)
+            A_new = Fvcb_net_assimiliation(status.Cᵢ, Vⱼ, Γˢ, VcMax, Km, Rd, models.photosynthesis.TPURef)
         end
 
         if abs(A_new - status.A) / status.A <= models.photosynthesis.ΔT_A ||
@@ -211,7 +213,7 @@ end
 Net assimilation following the Farquhar–von Caemmerer–Berry (FvCB) model for C3 photosynthesis
 (Farquhar et al., 1980; von Caemmerer and Farquhar, 1981)
 """
-function Fvcb_net_assimiliation(Cᵢ, Vⱼ, Γˢ, VcMax, Km, Rd)
+function Fvcb_net_assimiliation(Cᵢ, Vⱼ, Γˢ, VcMax, Km, Rd, TPU)
     # Electron-transport-limited rate of CO₂ assimilation (RuBP regeneration-limited):
     Wⱼ = Vⱼ * (Cᵢ - Γˢ) / (Cᵢ + 2.0 * Γˢ)
     # See Von Caemmerer, Susanna. 2000. Biochemical models of leaf photosynthesis.
@@ -221,7 +223,10 @@ function Fvcb_net_assimiliation(Cᵢ, Vⱼ, Γˢ, VcMax, Km, Rd)
     # Rubisco-carboxylation-limited rate of CO₂ assimilation (RuBP activity-limited):
     Wᵥ = VcMax * (Cᵢ - Γˢ) / (Cᵢ + Km)
 
+    ag = 0.0
+    Wₚ = (Cᵢ - Γˢ) * 3 * TPU / (Cᵢ - (1 .+ 3 * ag) * Γˢ)
+
     # Net assimilation (μmol m-2 s-1):
-    A = min(Wᵥ, Wⱼ) - Rd
+    A = min(Wᵥ, Wⱼ, Wₚ) - Rd
     return A
 end
