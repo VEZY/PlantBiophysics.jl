@@ -71,6 +71,10 @@ And the output would be:
 
 For more examples, please read the documentation.
 
+## Ask Questions
+
+If you have any questions or feedback, [open an issue](https://github.com/VEZY/PlantBiophysics.jl/issues) or ask on [discourse](https://fspm.discourse.group/c/software/virtual-plant-lab).
+
 ## Roadmap
 
 - [x] Add FvCB model
