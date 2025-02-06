@@ -71,10 +71,10 @@ end;
         status=(Ra_SW_f=13.747, sky_fraction=1.0, aPPFD=1500.0, d=0.03)
     )
 
-    run!(leaf, meteo)
+    outputs = run!(leaf, meteo)
 
     for i in keys(ref)
-        @test leaf.status[i][1] ≈ ref[i]
+        @test outputs[i][1] ≈ ref[i]
     end
 end;
 
