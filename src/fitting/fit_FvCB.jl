@@ -104,8 +104,8 @@ function PlantSimEngine.fit(
                 ),
                 status=(Tₗ=x[:, 1], aPPFD=x[:, 2], Cᵢ=x[:, 3])
             )
-        PlantSimEngine.run!(leaf)
-        PlantSimEngine.status(leaf).A
+        outputs = PlantSimEngine.run!(leaf)
+        outputs.A
     end
 
     # Fitting the A-Cᵢ curve using LsqFit.jl

@@ -18,10 +18,10 @@ end;
 
 @testset "init_status!" begin
     leaf = ModelList(photosynthesis=A, stomatal_conductance=Gs)
-    @test leaf.status.Tₗ == [-Inf]
+    @test leaf.status.Tₗ == -Inf
 
     PlantSimEngine.init_status!(leaf, Tₗ=25.0)
-    @test leaf.status.Tₗ == [25.0]
+    @test leaf.status.Tₗ == 25.0
 end;
 
 
@@ -31,7 +31,7 @@ end;
     @test to_initialize(leaf) == to_initialize(photosynthesis=A, stomatal_conductance=Gs)
     @test to_initialize(photosynthesis=A) == (photosynthesis=(:aPPFD, :Tₗ, :Cₛ),)
 
-    @test leaf.status.Tₗ == [-Inf]
+    @test leaf.status.Tₗ == -Inf
     @test is_initialized(leaf) == false
 
     leaf =
@@ -45,41 +45,24 @@ end;
 end;
 
 
-@testset "Status as DataFrame" begin
-    df = DataFrame(:Ra_SW_f => [13.747, 13.8], :sky_fraction => [1.0, 1.0], :d => [0.03, 0.03], :aPPFD => [1300.0, 1500.0])
+@testset "Outputs as DataFrame" begin
+    st = (:Ra_SW_f => [13.747, 13.8], :sky_fraction => [1.0, 1.0], :d => [0.03, 0.03], :aPPFD => [1300.0, 1500.0])
 
     # Reference ModelList
     m = ModelList(
         energy_balance=Monteith(),
         photosynthesis=Fvcb(α=0.24), # because I set-up the tests with this value for α
         stomatal_conductance=Medlyn(0.03, 12.0),
-        status=TimeStepTable{Status}(df)
-    )
-
-    # Automatically transform the DataFrame into a TimeStepTable{Status}:
-    m_2 = ModelList(
-        energy_balance=Monteith(),
-        photosynthesis=Fvcb(α=0.24), # because I set-up the tests with this value for α
-        stomatal_conductance=Medlyn(0.03, 12.0),
-        status=df
-    )
-
-    # Keep the DataFrame structure:
-    m_df = ModelList(
-        energy_balance=Monteith(),
-        photosynthesis=Fvcb(α=0.24), # because I set-up the tests with this value for α
-        stomatal_conductance=Medlyn(0.03, 12.0),
-        status=df,
-        init_fun=x -> DataFrame(x)
+        status=st
     )
 
     meteo = Atmosphere(T=20.0, Wind=1.0, P=101.3, Rh=0.65)
     constants = Constants()
 
-    run!(m, meteo, constants, nothing) # 1.525 μs
-    run!(m_2, meteo, constants) # idem
-    run!(m_df, meteo, constants) # 26.125 μs
+    out = run!(m, meteo, constants, nothing) # 1.525 μs
+    
+    out_df = outputs(out, DataFrame)
 
-    @test DataFrame(status(m_2)) == DataFrame(status(m))
-    @test status(m_df) == DataFrame(status(m))
+    @test DataFrame(out) == out_df
+    @test out_df == DataFrame(out)
 end;
