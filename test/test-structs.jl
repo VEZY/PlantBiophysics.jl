@@ -61,7 +61,7 @@ end;
 
     out = run!(m, meteo, constants, nothing) # 1.525 μs
     
-    out_df = outputs(out, DataFrame)
+    out_df = convert_outputs(out, DataFrame)
 
     @test DataFrame(out) == out_df
     @test out_df == DataFrame(out)

@@ -26,7 +26,7 @@ transform!(
     ignore_nothing = true
 )
 
-out = run!(mtg, models, weather, outputs=Dict{String,Any}("Leaf" => (:Tₗ,)))
+out = run!(mtg, models, weather, tracked_outputs=Dict{String,Any}("Leaf" => (:Tₗ,)))
 outputs_leaves = outputs(out)["Leaf"]
 for ts in eachindex(outputs_leaves[:node])
     for node in outputs_leaves[:node][ts]
@@ -104,7 +104,7 @@ vars=Dict{String,Any}("Leaf" => (:Tₗ,))
 Now we can run a simulation using `run!` from `PlantSimEngine`:
 
 ```@example usepkg
-outs = run!(mtg, models, weather, outputs=vars);
+outs = run!(mtg, models, weather, tracked_outputs=vars);
 nothing # hide
 ```
 
