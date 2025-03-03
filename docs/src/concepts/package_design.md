@@ -195,16 +195,14 @@ leaf = ModelList(
     status = (A = 20.0, Dₗ = meteo.VPD, Cₛ = 400.0)
 )
 
-run!(leaf, meteo)
+out_sim = run!(leaf, meteo)
 
-leaf[:Gₛ]
+out_sim[:Gₛ]
 ```
 
 ### Outputs
 
-The `status` field of a `ModelList` is used to initialize the variables before simulation and then to keep track of their values during and after the simulation. We can extract the simulation outputs of a model list using the `status` function (from PlantSimEngine).
-
-The status can either be a `Status` type if simulating only one time-step, or a `TimeStepTable` (from `PlantMeteo`) if several.
+The `status` field of a `ModelList` is used to initialize the variables before simulation and then to keep track of their current value during the simulation. We can extract the simulation outputs of a model list of the last timestep using the `status` function (from PlantSimEngine), as a `Status` type.
 
 Let's look at the status of our previous simulated leaf:
 
@@ -212,34 +210,26 @@ Let's look at the status of our previous simulated leaf:
 status(leaf)
 ```
 
-We can extract the value of one variable using the `status` function, *e.g.* for the stomatal conductance:
-
-```@example usepkg
-status(leaf, :Gₛ)
-```
+We can otherwise extract the value of one variable by querying the output data, *e.g.* for the stomatal conductance:
 
 Or similarly using the dot syntax:
 
 ```@example usepkg
-leaf.status.Gₛ
+out_sim.Gₛ
 ```
 
 Or much simpler (and recommended), by indexing directly the model list:
 
 ```@example usepkg
-leaf[:Gₛ]
+out_sim[:Gₛ]
 ```
 
 Another simple way to get the results is to transform the outputs into a `DataFrame`:
 
 ```@example usepkg
 using DataFrames
-DataFrame(leaf)
+df = PlantSimEngine.convert_outputs(out_sim, DataFrame)
 ```
-
-!!! note
-    The output from `DataFrame` is adapted to the kind of simulation you did: one row per
-    time-steps, and per component models if you simulated several.
 
 ## Model coupling
 
@@ -288,7 +278,7 @@ Our component models structure is now fully parameterized and initialized for a 
 Let's simulate it:
 
 ```@example usepkg
-run!(m)
+out_sim = run!(m)
 ```
 
 !!! tip

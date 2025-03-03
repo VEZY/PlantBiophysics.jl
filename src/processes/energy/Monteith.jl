@@ -106,12 +106,12 @@ leaf = ModelList(
     status = (Ra_SW_f = 13.747, sky_fraction = 1.0, aPPFD = 1500.0, d = 0.03)
 )
 
-run!(leaf,meteo)
-leaf[:Rn]
-leaf[:Ra_LW_f]
-leaf[:A]
+out_sim = run!(leaf,meteo)
+out_sim[:Rn]
+out_sim[:Ra_LW_f]
+out_sim[:A]
 
-DataFrame(leaf)
+df = PlantSimEngine.convert_outputs(out_sim, DataFrame)
 ```
 
 # References

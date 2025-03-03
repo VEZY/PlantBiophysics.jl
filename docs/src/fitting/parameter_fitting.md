@@ -50,8 +50,8 @@ leaf =
         FvcbRaw(VcMaxRef = VcMaxRef, JMaxRef = JMaxRef, RdRef = RdRef, TPURef = TPURef),
         status = (Tₗ = df.Tₗ, aPPFD = df.aPPFD, Cᵢ = df.Cᵢ)
     )
-run!(leaf)
-df_sim = DataFrame(leaf);
+outs_sim = run!(leaf)
+df_sim = PlantSimEngine.convert_outputs(outs_sim, DataFrame);
 ```
 
 Finally, we can make an A-Cᵢ plot using our custom `ACi` structure as follows:
@@ -73,8 +73,8 @@ leaf = ModelList(
     )
 
 w = Weather(select(df, :T, :P, :Rh, :Cₐ, :T => (x -> 10) => :Wind))
-run!(leaf, w)
-df_sim2 = DataFrame(leaf)
+outs_sim2 = run!(leaf, w)
+df_sim2 = PlantSimEngine.convert_outputs(outs_sim2, DataFrame);
 
 aci2 = PlantBiophysics.ACi(VcMaxRef, JMaxRef, RdRef, df[:,:A], df_sim2[:,:A], df[:,:Cᵢ], df_sim2[:,:Cᵢ])
 plot(aci2, leg = :bottomright)

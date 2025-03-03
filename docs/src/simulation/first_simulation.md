@@ -20,9 +20,9 @@ leaf = ModelList(
         status = (Ra_SW_f = 13.747, sky_fraction = 1.0, aPPFD = 1500.0, d = 0.03)
     )
 
-run!(leaf,meteo)
+out_sim = run!(leaf,meteo)
 
-leaf
+out_sim
 ```
 
 Now let's describe what is happening here.
@@ -65,23 +65,23 @@ Or look into the documentation of the structure (e.g. `?Fvcb`) or the documentat
 
 ## Results
 
-The results of the computations are stored in the `status` field of the model list. To get the value for each given variable we can just index the object like so:
+The results of the computations are stored in the outputs structure returned by the `run!` function. The last timestep values can also be found in the `status` field of the `ModelList`. To get the value for each given variable we can just index the output structure like so:
 
 ```@example usepkg
-leaf[:A]
+out_sim[:A]
 ```
 
 Another simpler way to get all the results at once is to use `DataFrame`:
 
 ```@example usepkg
 using DataFrames
-DataFrame(leaf)
+PlantSimEngine.convert_outputs(out_sim, DataFrame)
 ```
 
 Or simply by printing the object:
 
 ```@example usepkg
-leaf
+out_sim
 ```
 
 ## Wrap-up

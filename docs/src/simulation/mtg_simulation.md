@@ -111,7 +111,7 @@ nothing # hide
 We can now extract the outputs from the simulation and store them in the MTG:
 
 ```@example usepkg
-outputs_leaves = outputs(outs)["Leaf"]
+outputs_leaves = outs["Leaf"]
 for ts in eachindex(outputs_leaves[:node])
     for node in outputs_leaves[:node][ts]
         node[:Tₗ] = outputs_leaves[:Tₗ][ts]

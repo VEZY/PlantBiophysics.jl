@@ -33,9 +33,9 @@ leaf = ModelList(
         )
 )
 
-run!(leaf,meteo)
+out_sim = run!(leaf,meteo)
 
-DataFrame(leaf)
+df = PlantSimEngine.convert_outputs(out_sim, DataFrame)
 ```
 
 Curious to understand more ? Head to the next section to learn more about parameter fitting, or to the [Simple simulation](@ref) section for more details about how to make simulations.
