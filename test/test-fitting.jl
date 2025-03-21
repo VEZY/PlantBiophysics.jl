@@ -5,7 +5,7 @@
     filter!(x -> x.curve != "Rh Curve" && x.curve != "ligth Curve", df)
 
     # Fit the parameter values:
-    VcMaxRef, JMaxRef, RdRef, TPURef = fit(Fvcb, df; Tᵣ=25.0)
+    VcMaxRef, JMaxRef, RdRef, TPURef = PlantSimEngine.fit(Fvcb, df; Tᵣ=25.0)
     # Note that Tᵣ was set to 25 °C in our response curve. You should adapt its value to what you
     # had during the response curves
 
