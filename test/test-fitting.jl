@@ -15,7 +15,7 @@
     @test TPURef ≈ 5.596 atol = 1e-2
 
 
-    VcMaxRef, JMaxRef, RdRef, TPURef = fit(Fvcb, df; Tᵣ=25.0, Eₐᵥ=71100.0)
+    VcMaxRef, JMaxRef, RdRef, TPURef = PlantBiophysics.fit(Fvcb, df; Tᵣ=25.0, Eₐᵥ=71100.0)
 
     @test VcMaxRef ≈ 45.204 atol = 1e-2
     @test JMaxRef ≈ 80.386 atol = 1e-2
@@ -31,7 +31,7 @@ end
 
 
     # Fit the parameter values:
-    g0, g1 = fit(Medlyn, df)
+    g0, g1 = PlantBiophysics.fit(Medlyn, df)
 
     @test g0 ≈ 0.02644 atol = 1e-4
     @test g1 ≈ 0.131696 atol = 1e-4
