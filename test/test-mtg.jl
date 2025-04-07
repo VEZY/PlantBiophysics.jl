@@ -84,7 +84,11 @@ transform!(
         ignore_nothing=true
     )
 
-    leaf_node_index = 816
+    # Samuel : changing index from 816 to 2352 after output structure changes
+    # The indexing here was a bit weird :  out_leaf[:node][1][816] actually returns node #2352
+    # meaning the prior test also used node 2352, but the get_node function confusingly returned the node labelled 816
+    # Anyway, behaviour is unchanged, no uncovered bugs, life goes on
+    leaf_node_index = 2352
     leaf_node = get_node(mtg, leaf_node_index)
 
     # attr_name = MultiScaleTreeGraph.cache_name("PlantSimEngine models")
@@ -112,15 +116,17 @@ transform!(
     #     print("@test leaf_node[:$i] ≈ $(round.(leaf_node[i], digits= 5)) atol = 1e-4\n")
     # end
 
-    @test [ts[leaf_node_index] for ts in out_leaf[:A]] ≈ [15.02811551295279, 14.84360130865809, 15.042350741959263] atol = 1e-4
-    @test [ts[leaf_node_index] for ts in out_leaf[:Tₗ]] ≈ [23.893099204266356, 24.874829296660252, 24.015679403940453] atol = 1e-4
-    @test [ts[leaf_node_index] for ts in out_leaf[:Ra_LW_f]] ≈ [1.14627541299134, 1.1914837843642352, 1.3296911902332498] atol = 1e-4
-    @test [ts[leaf_node_index] for ts in out_leaf[:H]] ≈ [-55.228872186188084, -66.52995979765936, -76.41569370159633] atol = 1e-4
-    @test [ts[leaf_node_index] for ts in out_leaf[:λE]] ≈ [194.70453907867162, 206.0508350615158, 216.07477637132178] atol = 1e-4
-    @test [ts[leaf_node_index] for ts in out_leaf[:Gₛ]] ≈ [0.5014258543060032, 0.4901245596622712, 0.48491464428223297] atol = 1e-4
-    @test [ts[leaf_node_index] for ts in out_leaf[:Gbₕ]] ≈ [0.020762064267331817, 0.024689460654883366, 0.024791460561489252] atol = 1e-4
-    @test [ts[leaf_node_index] for ts in out_leaf[:Gbc]] ≈ [0.6429369392329636, 0.7620005006226626, 0.766943182562655] atol = 1e-4
-    @test [ts[leaf_node_index] for ts in out_leaf[:Rn]] ≈ [139.47566689248353, 139.52087526385642, 139.65908266972545] atol = 1e-4
-    @test [ts[leaf_node_index] for ts in out_leaf[:Cᵢ]] ≈ [326.6484086881649, 330.23157818958396, 329.3630716711602] atol = 1e-4
-    @test [ts[leaf_node_index] for ts in out_leaf[:Cₛ]] ≈ [356.6258328058089, 360.52022105427915, 360.3866165265373] atol = 1e-4
+    leaf_node_index_data = filter(x -> index(x.node) == leaf_node_index, out_leaf)
+
+    @test [nt[:A] for nt in leaf_node_index_data] ≈ [15.02811551295279, 14.84360130865809, 15.042350741959263] atol = 1e-4
+    @test [nt[:Tₗ] for nt in leaf_node_index_data] ≈ [23.893099204266356, 24.874829296660252, 24.015679403940453] atol = 1e-4
+    @test [nt[:Ra_LW_f] for nt in leaf_node_index_data] ≈ [1.14627541299134, 1.1914837843642352, 1.3296911902332498] atol = 1e-4
+    @test [nt[:H] for nt in leaf_node_index_data] ≈ [-55.228872186188084, -66.52995979765936, -76.41569370159633] atol = 1e-4
+    @test [nt[:λE] for nt in leaf_node_index_data] ≈ [194.70453907867162, 206.0508350615158, 216.07477637132178] atol = 1e-4
+    @test [nt[:Gₛ] for nt in leaf_node_index_data] ≈ [0.5014258543060032, 0.4901245596622712, 0.48491464428223297] atol = 1e-4
+    @test [nt[:Gbₕ] for nt in leaf_node_index_data] ≈ [0.020762064267331817, 0.024689460654883366, 0.024791460561489252] atol = 1e-4
+    @test [nt[:Gbc] for nt in leaf_node_index_data] ≈ [0.6429369392329636, 0.7620005006226626, 0.766943182562655] atol = 1e-4
+    @test [nt[:Rn] for nt in leaf_node_index_data] ≈ [139.47566689248353, 139.52087526385642, 139.65908266972545] atol = 1e-4
+    @test [nt[:Cᵢ] for nt in leaf_node_index_data] ≈ [326.6484086881649, 330.23157818958396, 329.3630716711602] atol = 1e-4
+    @test [nt[:Cₛ] for nt in leaf_node_index_data] ≈ [356.6258328058089, 360.52022105427915, 360.3866165265373] atol = 1e-4
 end
