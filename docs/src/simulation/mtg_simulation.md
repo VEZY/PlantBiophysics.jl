@@ -27,7 +27,7 @@ transform!(
 )
 
 out = run!(mtg, models, weather, tracked_outputs=Dict{String,Any}("Leaf" => (:Tₗ,)))
-outputs_leaves = outputs(out)["Leaf"]
+outputs_leaves = out["Leaf"]
 for ts in eachindex(outputs_leaves[:node])
     for node in outputs_leaves[:node][ts]
         node[:Tₗ] = outputs_leaves[:Tₗ][ts]
