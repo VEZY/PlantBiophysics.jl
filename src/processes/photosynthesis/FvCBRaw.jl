@@ -116,8 +116,8 @@ leaf =
     )
 # NB: we need Tₗ, aPPFD and Cᵢ as inputs (see [`inputs`](@ref))
 
-run!(leaf)
-DataFrame(leaf) # fetch the leaf status as a DataFrame
+out_sim = run!(leaf)
+PlantSimEngine.convert_outputs(out_sim, DataFrame) # fetch the leaf status as a DataFrame
 ```
 
 # References

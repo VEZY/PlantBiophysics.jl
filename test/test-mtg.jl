@@ -101,8 +101,8 @@ transform!(
     # init_mtg_models!(mtg, models, length(weather))
 
     # Make the computation:
-    out = run!(mtg, models, weather, outputs=Dict{String,Any}("Leaf" => (:A, :Tₗ, :Ra_LW_f, :H, :λE, :Gₛ, :Gbₕ, :Gbc, :Rn, :Cᵢ, :Cₛ)))
-    out_leaf = outputs(out)["Leaf"]
+    out = run!(mtg, models, weather, tracked_outputs=Dict{String,Any}("Leaf" => (:A, :Tₗ, :Ra_LW_f, :H, :λE, :Gₛ, :Gbₕ, :Gbc, :Rn, :Cᵢ, :Cₛ)))
+    out_leaf = out["Leaf"]
 
     @test leaf_node[:Ra_PAR_f] == Ra_PAR_f
     @test leaf_node[:sky_fraction] == sky_fraction

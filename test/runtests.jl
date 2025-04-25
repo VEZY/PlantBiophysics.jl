@@ -7,6 +7,7 @@ using Dates
 using DataFrames
 using MultiScaleTreeGraph
 using PlantGeom
+using MonteCarloMeasurements
 
 # We use the ones from PlantBiophysics so it works even with "dev"ed versions:
 using PlantBiophysics.PlantMeteo
@@ -49,6 +50,10 @@ using PlantBiophysics.PlantSimEngine
 
     @testset "Fitting" begin
         include("test-fitting.jl")
+    end
+
+    @testset "Uncertainty propagation" begin
+        include("test-uncertainty-propagation.jl")
     end
 
     @testset "Doctests" begin

@@ -53,16 +53,16 @@ Now our parameters and conditions are not scalars, but `Particles`, which are `n
 We can now run our simulation:
 
 ```@example usepkg
-run!(leaf,meteo)
+out_sim = run!(leaf,meteo)
 ```
 
 And now we can plot the resulting inputs/outputs values:
 
 ```@example usepkg
 p1 = plot(meteo.T,legend=:false,xlabel="Tₐ (°C)",ylabel="density",dpi=300,title="(a)",titlefontsize=9)
-p2 = plot(leaf.status.d[1],legend=:false,xlabel="d (m)",ylabel="density",dpi=300,title="(b)",titlefontsize=9)
-p3 = plot(leaf.status.Tₗ[1],legend=:false,xlabel="Tₗ (°C)",ylabel="density",dpi=300,title="(c)",titlefontsize=9)
-p4 = plot(leaf.status.A[1],legend=:false,xlabel="A",ylabel="density",dpi=300,title="(d)",titlefontsize=9)
+p2 = plot(out_sim.d[1],legend=:false,xlabel="d (m)",ylabel="density",dpi=300,title="(b)",titlefontsize=9)
+p3 = plot(out_sim.Tₗ[1],legend=:false,xlabel="Tₗ (°C)",ylabel="density",dpi=300,title="(c)",titlefontsize=9)
+p4 = plot(out_sim.A[1],legend=:false,xlabel="A",ylabel="density",dpi=300,title="(d)",titlefontsize=9)
 plot(p1,p2,p3,p4,dpi=300,titleloc=:right)
 savefig("distributions-example-gaussian.svg"); nothing #hide
 ```
@@ -89,12 +89,12 @@ leaf = ModelList(
         type_promotion = Dict(Float64 => Particles{Float64,2000})
     )
 
-run!(leaf,meteo)
+out_sim = run!(leaf,meteo)
 
 p1 = plot(meteo.T,legend=:false,xlabel="Tₐ (°C)",ylabel="density",dpi=300,title="(a)",titlefontsize=9)
-p2 = plot(leaf.status.d[1],legend=:false,xlabel="d (m)",ylabel="density",dpi=300,title="(b)",titlefontsize=9)
-p3 = plot(leaf.status.Tₗ[1],legend=:false,xlabel="Tₗ (°C)",ylabel="density",dpi=300,title="(c)",titlefontsize=9)
-p4 = plot(leaf.status.A[1],legend=:false,xlabel="A",ylabel="density",dpi=300,title="(d)",titlefontsize=9)
+p2 = plot(out_sim.d[1],legend=:false,xlabel="d (m)",ylabel="density",dpi=300,title="(b)",titlefontsize=9)
+p3 = plot(out_sim.Tₗ[1],legend=:false,xlabel="Tₗ (°C)",ylabel="density",dpi=300,title="(c)",titlefontsize=9)
+p4 = plot(out_sim.A[1],legend=:false,xlabel="A",ylabel="density",dpi=300,title="(d)",titlefontsize=9)
 plot(p1,p2,p3,p4,dpi=300,titleloc=:right)
 savefig("distributions-example-various.svg"); nothing #hide
 ```
@@ -125,9 +125,9 @@ leaf = ModelList(
         type_promotion = Dict(Float64 => Particles{Float64,2000})
     )
 
-run!(leaf, weather)
+out_sim = run!(leaf, weather)
 
-ribbonplot(weather[:date], leaf[:Tₗ], alpha = 0.2, ylab = "Leaf Temperature", xlab = "Time")
+ribbonplot(weather[:date], out_sim[:Tₗ], alpha = 0.2, ylab = "Leaf Temperature", xlab = "Time")
 savefig("error-ribbon.svg"); nothing #hide
 ```
 

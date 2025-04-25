@@ -26,8 +26,8 @@ transform!(
     ignore_nothing = true
 )
 
-out = run!(mtg, models, weather, outputs=Dict{String,Any}("Leaf" => (:Tₗ,)))
-outputs_leaves = outputs(out)["Leaf"]
+out = run!(mtg, models, weather, tracked_outputs=Dict{String,Any}("Leaf" => (:Tₗ,)))
+outputs_leaves = out["Leaf"]
 for ts in eachindex(outputs_leaves[:node])
     for node in outputs_leaves[:node][ts]
         node[:Tₗ] = outputs_leaves[:Tₗ][ts]
@@ -104,14 +104,14 @@ vars=Dict{String,Any}("Leaf" => (:Tₗ,))
 Now we can run a simulation using `run!` from `PlantSimEngine`:
 
 ```@example usepkg
-outs = run!(mtg, models, weather, outputs=vars);
+outs = run!(mtg, models, weather, tracked_outputs=vars);
 nothing # hide
 ```
 
 We can now extract the outputs from the simulation and store them in the MTG:
 
 ```@example usepkg
-outputs_leaves = outputs(outs)["Leaf"]
+outputs_leaves = outs["Leaf"]
 for ts in eachindex(outputs_leaves[:node])
     for node in outputs_leaves[:node][ts]
         node[:Tₗ] = outputs_leaves[:Tₗ][ts]

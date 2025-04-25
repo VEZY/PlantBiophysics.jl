@@ -36,9 +36,9 @@ leaf = ModelList(
         )
     )
 
-run!(leaf,meteo)
+out_sim = run!(leaf,meteo)
 
-DataFrame(leaf)
+df = PlantSimEngine.convert_outputs(out_sim, DataFrame)
 ```
 
 The only difference is that we use the `Weather` structure instead of the `Atmosphere`, and that we provide the models inputs as an Array in the status for the ones that change over time.

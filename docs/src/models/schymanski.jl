@@ -65,7 +65,7 @@ leaf =
 
 # NB, we use ConstantAGs and not ConstantA because Monteith calls the photosynthesis,
 # not stomatal_conductance (stomatal_conductance is called inside the photosynthesis).
-run!(leaf, weather, cst)
+out = run!(leaf, weather, cst)
 
 # Running the simulation:
 size_inches = (8, 6)
@@ -81,9 +81,9 @@ p2 = scatter!(ax, results1_6a.v_w, results1_6a.Hlmeas, label="H", color="#E07A5F
 p3 = scatter!(ax, results1_6a.v_w, results1_6a.Rn_leaf, label="Rn", color="#81B29A")
 p4 = scatter!(ax, results1_6a.v_w, results1_6a.Hlmeas + results1_6a.Elmeas, label="H+LE", marker=:star5, color="#81B29A")
 # Simulation:
-p5 = lines!(ax, weather[:Wind], leaf[:H], label="H", color="#E07A5F")
-p6 = lines!(ax, weather[:Wind], leaf[:λE], label="LE", color="#3D405B")
-p7 = lines!(ax, weather[:Wind], leaf[:Rn], label="Rn", color="#81B29A")
+p5 = lines!(ax, weather[:Wind], out[:H], label="H", color="#E07A5F")
+p6 = lines!(ax, weather[:Wind], out[:λE], label="LE", color="#3D405B")
+p7 = lines!(ax, weather[:Wind], out[:Rn], label="Rn", color="#81B29A")
 Legend(
     f[2, 1],
     [p1, p2, p3, p4],

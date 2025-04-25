@@ -2,7 +2,7 @@
 
 ```@setup usepkg
 using PlantBiophysics, PlantSimEngine, PlantMeteo
-using Dates, DataFrames
+using Dates
 ```
 
 ## Running the simulation
@@ -31,13 +31,11 @@ leaf2 = ModelList(
         status = (Ra_SW_f = 10., sky_fraction = 1.0, aPPFD = 1250.0, d = 0.02)
     )
 
-run!([leaf1, leaf2], meteo)
+output_vector = run!([leaf1, leaf2], meteo)
 
-DataFrame(Dict("leaf1" => leaf1, "leaf2" => leaf2))
 ```
 
-Note that we use a `Dict` of components in the call to `DataFrame` because it allows to get a `component` column to retrieve the component in the `DataFrame`, but we could also just use an Array instead.
-
+Providing an array of `ModelList` object to the `run!` function returns an array of output data in the same order the `ModelList` objects were provided. 
 A simulation over different time-steps would give:
 
 ```@example usepkg
@@ -75,7 +73,6 @@ leaf2 = ModelList(
         )
     )
 
-run!([leaf1, leaf2], meteo)
+output_vector = run!([leaf1, leaf2], meteo)
 
-DataFrame(Dict("leaf1" => leaf1, "leaf2" => leaf2))
 ```

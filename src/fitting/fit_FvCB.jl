@@ -54,8 +54,8 @@ leaf =
         photosynthesis = FvcbRaw(VcMaxRef = VcMaxRef, JMaxRef = JMaxRef, RdRef = RdRef, TPURef = TPURef),
         status = (Tₗ = df.Tₗ, aPPFD = df.aPPFD, Cᵢ = df.Cᵢ)
     )
-run!(leaf)
-df_sim = DataFrame(leaf)
+out_sim = run!(leaf)
+df_sim = PlantSimEngine.convert_outputs(out_sim, DataFrame)
 
 # Visualising the results:
 ACi_struct = PlantBiophysics.ACi(VcMaxRef, JMaxRef, RdRef, df.A, df_sim.A, df[:,:Cᵢ], df_sim.Cᵢ)
@@ -73,8 +73,8 @@ leaf = ModelList(
     )
 
 w = Weather(select(df, :T, :P, :Rh, :Cₐ, :T => (x -> 10) => :Wind))
-run!(leaf, w)
-df_sim2 = DataFrame(leaf)
+out_sim2 = run!(leaf, w)
+df_sim2 = PlantSimEngine.convert_outputs(out_sim2, DataFrame)
 
 # And finally we plot the results:
 ACi_struct_full = PlantBiophysics.ACi(VcMaxRef, JMaxRef, RdRef, df.A, df_sim2.A, df[:,:Cᵢ], df_sim2.Cᵢ)
@@ -104,8 +104,8 @@ function PlantSimEngine.fit(
                 ),
                 status=(Tₗ=x[:, 1], aPPFD=x[:, 2], Cᵢ=x[:, 3])
             )
-        PlantSimEngine.run!(leaf)
-        PlantSimEngine.status(leaf).A
+        outputs = PlantSimEngine.run!(leaf)
+        outputs.A
     end
 
     # Fitting the A-Cᵢ curve using LsqFit.jl
