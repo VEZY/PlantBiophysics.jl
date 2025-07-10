@@ -102,25 +102,27 @@ transform!(
 
     # Make the computation:
     out = run!(mtg, models, weather, tracked_outputs=Dict{String,Any}("Leaf" => (:A, :Tₗ, :Ra_LW_f, :H, :λE, :Gₛ, :Gbₕ, :Gbc, :Rn, :Cᵢ, :Cₛ)))
+    out = PlantSimEngine.convert_outputs(out, DataFrame)
     out_leaf = out["Leaf"]
 
     @test leaf_node[:Ra_PAR_f] == Ra_PAR_f
     @test leaf_node[:sky_fraction] == sky_fraction
 
+    df_leaf_node = subset(out_leaf, :node => (x -> x .== leaf_node_index))
     # Use the values of today (05/05/2022) as a reference. Run the few lines below to update:
     # for i in [:A, :Tₗ, :Ra_LW_f, :H, :λE, :Gₛ, :Gbₕ, :Gbc, :Rn, :Cᵢ, :Cₛ]
-    #     print("@test leaf_node[:$i] ≈ $(round.(leaf_node[i], digits= 5)) atol = 1e-4\n")
+    #     print("@test df_leaf_node.$i ≈ $(round.(df_leaf_node[:, i], digits= 5)) atol = 1e-4\n")
     # end
 
-    @test [ts[leaf_node_index] for ts in out_leaf[:A]] ≈ [15.02811551295279, 14.84360130865809, 15.042350741959263] atol = 1e-4
-    @test [ts[leaf_node_index] for ts in out_leaf[:Tₗ]] ≈ [23.893099204266356, 24.874829296660252, 24.015679403940453] atol = 1e-4
-    @test [ts[leaf_node_index] for ts in out_leaf[:Ra_LW_f]] ≈ [1.14627541299134, 1.1914837843642352, 1.3296911902332498] atol = 1e-4
-    @test [ts[leaf_node_index] for ts in out_leaf[:H]] ≈ [-55.228872186188084, -66.52995979765936, -76.41569370159633] atol = 1e-4
-    @test [ts[leaf_node_index] for ts in out_leaf[:λE]] ≈ [194.70453907867162, 206.0508350615158, 216.07477637132178] atol = 1e-4
-    @test [ts[leaf_node_index] for ts in out_leaf[:Gₛ]] ≈ [0.5014258543060032, 0.4901245596622712, 0.48491464428223297] atol = 1e-4
-    @test [ts[leaf_node_index] for ts in out_leaf[:Gbₕ]] ≈ [0.020762064267331817, 0.024689460654883366, 0.024791460561489252] atol = 1e-4
-    @test [ts[leaf_node_index] for ts in out_leaf[:Gbc]] ≈ [0.6429369392329636, 0.7620005006226626, 0.766943182562655] atol = 1e-4
-    @test [ts[leaf_node_index] for ts in out_leaf[:Rn]] ≈ [139.47566689248353, 139.52087526385642, 139.65908266972545] atol = 1e-4
-    @test [ts[leaf_node_index] for ts in out_leaf[:Cᵢ]] ≈ [326.6484086881649, 330.23157818958396, 329.3630716711602] atol = 1e-4
-    @test [ts[leaf_node_index] for ts in out_leaf[:Cₛ]] ≈ [356.6258328058089, 360.52022105427915, 360.3866165265373] atol = 1e-4
+    @test df_leaf_node.A ≈ [13.2605, 13.06977, 13.25548] atol = 1e-4
+    @test df_leaf_node.Tₗ ≈ [23.89475, 24.90249, 24.05323] atol = 1e-4
+    @test df_leaf_node.Ra_LW_f ≈ [1.02706, 1.04302, 1.1585] atol = 1e-4
+    @test df_leaf_node.H ≈ [-55.14038, -64.83672, -74.10218] atol = 1e-4
+    @test df_leaf_node.λE ≈ [180.0684, 189.7807, 199.16164] atol = 1e-4
+    @test df_leaf_node.Gₛ ≈ [0.43527, 0.42403, 0.41961] atol = 1e-4
+    @test df_leaf_node.Gbₕ ≈ [0.02076, 0.02467, 0.02477] atol = 1e-4
+    @test df_leaf_node.Gbc ≈ [0.6429, 0.76134, 0.76613] atol = 1e-4
+    @test df_leaf_node.Rn ≈ [124.92802, 124.94397, 125.05946] atol = 1e-4
+    @test df_leaf_node.Cᵢ ≈ [328.90364, 332.00744, 331.1057] atol = 1e-4
+    @test df_leaf_node.Cₛ ≈ [359.37384, 362.8331, 362.69801] atol = 1e-4
 end
