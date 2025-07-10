@@ -28,10 +28,8 @@ transform!(
 
 out = run!(mtg, models, weather, tracked_outputs=Dict{String,Any}("Leaf" => (:Tₗ,)))
 outputs_leaves = out["Leaf"]
-for ts in eachindex(outputs_leaves[:node])
-    for node in outputs_leaves[:node][ts]
-        node[:Tₗ] = outputs_leaves[:Tₗ][ts]
-    end
+for ts in outputs_leaves
+    ts.node.Tₗ = ts.Tₗ
 end
 ```
 
@@ -111,13 +109,13 @@ nothing # hide
 We can now extract the outputs from the simulation and store them in the MTG:
 
 ```@example usepkg
-outputs_leaves = outs["Leaf"]
-for ts in eachindex(outputs_leaves[:node])
-    for node in outputs_leaves[:node][ts]
-        node[:Tₗ] = outputs_leaves[:Tₗ][ts]
-    end
+for ts in outs["Leaf"]
+    ts.node.Tₗ = ts.Tₗ
 end
 ```
+
+!!! note
+    The outputs are stored in the MTG nodes. The node is also accessible from the simulation output as the `node` field.
 
 And finally, we can visualize the outputs in 3D using PlantGeom's `viz` function:
 
