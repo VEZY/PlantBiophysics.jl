@@ -231,7 +231,7 @@ using DataFrames
 df = PlantSimEngine.convert_outputs(out_sim, DataFrame)
 ```
 
-## Model coupling
+## [Model coupling](@id model_coupling_page)
 
 A model can work either independently or in conjunction with other models. For example a stomatal conductance model is often associated with a photosynthesis model, *i.e.* it is called from the photosynthesis model.
 
