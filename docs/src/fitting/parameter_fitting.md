@@ -42,6 +42,9 @@ filter!(x -> x.curve == "CO2 Curve", df)
 nothing # hide
 ```
 
+!!! note
+    Several functions are provided to read the data from a LiCOR 6400 or 6800, a WALZ GFS-3000, or the standard [ESS-DIVE](https://ess-dive.gitbook.io/leaf-level-gas-exchange). The functions are respectively [`read_licor6400`](@ref), [`read_licor6800`](@ref), [`read_walz`](@ref) and [`read_ess_dive`](@ref). The data is returned as a `DataFrame` with the following columns: `Tₗ`, `aPPFD`, `Cᵢ`, `A`, `Cₐ`, `Dₗ`, and `Gₛ`.
+
 Now let's re-simulate the assimilation with our optimized parameter values:
 
 ```@example usepkg

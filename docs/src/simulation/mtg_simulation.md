@@ -117,10 +117,10 @@ end
 !!! note
     The outputs are stored in the MTG nodes. The node is also accessible from the simulation output as the `node` field.
 
-And finally, we can visualize the outputs in 3D using PlantGeom's `viz` function:
+And finally, we can visualize the outputs in 3D using PlantGeom's `plantviz` function:
 
 ```@example usepkg
-f, ax, p = viz(mtg, color = :Tₗ, index = 2)
+f, ax, p = plantviz(mtg, color = :Tₗ, index = 2)
 colorbar(f[1, 2], p)
 f
 ```

@@ -158,8 +158,8 @@ transform!(
     ignore_nothing = true
 )
 
-# Vizualise the output:
-viz(mtg, color = :Tₗ_1)
+# vizualise the output:
+plantviz(mtg, color = :Tₗ_1)
 ```
 
 # References

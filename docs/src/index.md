@@ -12,10 +12,11 @@ CurrentModule = PlantBiophysics
 
 ## Overview
 
-`PlantBiophysics` is a package to deal with biophysical processes of plants such as photosynthesis, conductances for heat, water vapor and CO₂, latent, sensible energy fluxes, net radiation and temperature. It has two main use-cases:
+`PlantBiophysics` is a package designed to handle the biophysical processes of plants, including photosynthesis, conductances for heat, water vapor, and CO₂, latent and sensible energy fluxes, net radiation, and temperature. It supports three main use cases:
 
-- fit the parameters of the models using the generic [`fit`](@ref PlantSimEngine.fit) function
-- simulate the processes using the corresponding models
+- Parameter estimation: Fit model parameters using the generic [fit](@ref PlantSimEngine.fit) function (*e.g.*, the Farquhar et al. 1980 photosynthesis model using A-Cᵢ curves).
+- Model comparison: Easily compare different model implementations by providing a list of models, letting PlantBiophysics automatically couple them (*e.g.*, photosynthesis + stomatal conductance + energy balance).
+- Simulation: Run fast simulations of the biophysical processes using the selected models, benefiting from the high computational performance of Julia.
 
 The benefits of `PlantBiophysics` over existing tools are mainly:
 
@@ -41,6 +42,23 @@ using PlantBiophysics
 ## Examples
 
 See the [First simulation](@ref) section for examples.
+
+Else, here is a short example for a simulation:
+
+```@example
+using PlantBiophysics, PlantSimEngine, PlantMeteo
+meteo = Atmosphere(T = 25.0, Wind = 1.0, Rh = 0.5, Ri_SW_f = 400.0) # Example meteorological data
+leaf = ModelList(
+        Monteith(),
+        Fvcb(),
+        Medlyn(0.03, 7.0),
+        status = (
+            Ra_SW_f = meteo[:Ri_SW_f] .* 0.8, aPPFD = meteo[:Ri_SW_f] .* 0.8 .* 0.48 .* 4.57,
+            sky_fraction = 1.0, d = 0.03
+        )
+)
+sim = run!(leaf,meteo)
+```
 
 ## Similar projects
 
