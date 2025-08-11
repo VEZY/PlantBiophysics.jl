@@ -37,13 +37,11 @@ struct Medlyn{T} <: AbstractStomatal_ConductanceModel
     gs_min::T
 end
 
-function Medlyn(g0, g1, gs_min)
+function Medlyn(g0, g1, gs_min=oftype(g0, 0.001))
     Medlyn(promote(g0, g1, gs_min))
 end
 
-Medlyn(g0, g1) = Medlyn(g0, g1, oftype(g0, 0.001))
-
-Medlyn(; g0, g1, gs_min=oftype(g0, 0.001)) = Medlyn(g0, g1, gs_min)
+Medlyn(; g0, g1, gs_min=0.001) = Medlyn(g0, g1, gs_min)
 
 function PlantSimEngine.inputs_(::Medlyn)
     (Dₗ=-Inf, Cₛ=-Inf, A=-Inf)

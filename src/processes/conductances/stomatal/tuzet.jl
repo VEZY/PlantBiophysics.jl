@@ -44,12 +44,8 @@ struct Tuzet{T} <: AbstractStomatal_ConductanceModel
     gs_min::T
 end
 
-function Tuzet(g0, g1, Ψᵥ, sf, Γ, gs_min)
-    Tuzet(promote(g0, g1, Ψᵥ, sf, Γ, gs_min))
-end
-
-Tuzet(g0, g1, Ψᵥ, sf, Γ, gs_min=oftype(g0, 0.001)) = Tuzet(g0, g1, Ψᵥ, sf, Γ, gs_min)
-Tuzet(; g0, g1, Ψᵥ, sf, Γ, gs_min=oftype(g0, 0.001)) = Tuzet(g0, g1, Ψᵥ, sf, Γ, gs_min)
+Tuzet(g0, g1, Ψᵥ, sf, Γ, gs_min=oftype(g0, 0.001)) = Tuzet(promote(g0, g1, Ψᵥ, sf, Γ, gs_min))
+Tuzet(; g0, g1, Ψᵥ, sf, Γ, gs_min=0.001) = Tuzet(g0, g1, Ψᵥ, sf, Γ, gs_min)
 
 function PlantSimEngine.inputs_(::Tuzet)
     (Ψₗ=-Inf, Cₛ=-Inf)
