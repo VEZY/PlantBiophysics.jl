@@ -3,7 +3,7 @@ Medlyn et al. (2011) stomatal conductance model for CO₂.
 
 # Arguments
 
-- `g0`: intercept.
+- `g0`: intercept, it is the minimal stomatal conductance.
 - `g1`: slope.
 - `gs_min = 0.001`: residual conductance. We consider the residual conductance being different
     from `g0` because in practice `g0` can be negative when fitting real-world data.
@@ -43,7 +43,7 @@ end
 
 Medlyn(g0, g1) = Medlyn(g0, g1, oftype(g0, 0.001))
 
-Medlyn(; g0, g1) = Medlyn(g0, g1, oftype(g0, 0.001))
+Medlyn(; g0, g1, gs_min=oftype(g0, 0.001)) = Medlyn(g0, g1, gs_min)
 
 function PlantSimEngine.inputs_(::Medlyn)
     (Dₗ=-Inf, Cₛ=-Inf, A=-Inf)
@@ -53,8 +53,7 @@ function PlantSimEngine.outputs_(::Medlyn)
     (Gₛ=-Inf,)
 end
 
-Base.eltype(x::Medlyn) = typeof(x).parameters[1]
-
+Base.eltype(::Medlyn{T}) where T = T
 
 """
     gs_closure(::Medlyn, models, status, meteo, constants=nothing, extra=nothing)
