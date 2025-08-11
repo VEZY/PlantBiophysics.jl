@@ -11,6 +11,7 @@ The stomatal conductance (`Gₛ`, ``mol_{CO_2} \cdot m^{-2} \cdot s^{-1}``) defi
 Several models are available to simulate it:
 
 - [`Medlyn`](@ref): an implementation of the Medlyn et al. (2011) model
+- [`Tuzet`](@ref): an implementation of the Tuzet et al. (2003) model
 - [`ConstantGs`](@ref): a model to force a constant value for `Gₛ`
 
 You can choose which model to use by passing a component with a stomatal conductance model set to one of the `struct` above.
@@ -105,7 +106,50 @@ run!(leaf,meteo)
 leaf[:Gₛ]
 ```
 
-## References
+## Tuzet et al. (2003) Stomatal Conductance Model
+
+The Tuzet et al. (2003) model describes stomatal conductance as a function of leaf water potential and CO₂ concentration. It is particularly useful for modeling the effects of water stress on stomatal behavior.
+
+### Parameters
+
+- `g0`: Intercept of the stomatal conductance model (mol m⁻² s⁻¹).
+- `g1`: Slope of the stomatal conductance model (mol m⁻² s⁻¹).
+- `Ψᵥ`: Leaf water potential at which stomatal conductance is halved (MPa).
+- `sf`: Sensitivity factor for stomatal closure (unitless).
+- `Γ`: CO₂ compensation point (μmol mol⁻¹).
+- `gs_min`: Residual stomatal conductance (mol m⁻² s⁻¹).
+
+### Equation
+
+The stomatal conductance is calculated as:
+
+```math
+FPSIF = \frac{1 + \exp(sf \cdot Ψᵥ)}{1 + \exp(sf \cdot (Ψᵥ - Ψₗ))}
+Gₛ = g0 + \frac{g1}{Cₛ - Γ} \cdot FPSIF
+```
+
+Where:
+
+- `Ψₗ` is the leaf water potential (MPa).
+- `Cₛ` is the CO₂ concentration at the leaf surface (μmol mol⁻¹).
+- `Γ` is the CO₂ compensation point (μmol mol⁻¹).
+
+### Example Usage
+
+```@example usepkg
+using PlantMeteo, PlantSimEngine, PlantBiophysics
+
+meteo = Atmosphere(T = 20.0, Wind = 1.0, P = 101.3, Rh = 0.65)
+leaf = ModelList(
+    stomatal_conductance = Tuzet(0.03, 12.0, -1.5, 2.0, 30.0),
+    status = (Cₛ = 380.0, Ψₗ = -1.0)
+)
+outputs = run!(leaf, meteo)
+```
+
+### References
+
+Tuzet, A., Perrier, A., & Leuning, R. (2003). A coupled model of stomatal conductance, photosynthesis and transpiration. *Plant, Cell & Environment*, 26(7), 1097-1116.
 
 Medlyn, B. E., E. Dreyer, D. Ellsworth, M. Forstreuter, P. C. Harley, M. U. F. Kirschbaum,
 X. Le Roux, et al. 2002. « Temperature response of parameters of a biochemically based model
