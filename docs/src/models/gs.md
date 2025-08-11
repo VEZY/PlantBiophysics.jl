@@ -72,40 +72,6 @@ leaf
 !!! note
     You can use `inputs` to get the variables needed for a given model, e.g.: `inputs(Medlyn(0.03, 12.0))`
 
-## ConstantGs
-
-### [Parameters](@id param_constantgs)
-
-The [`ConstantGs`](@ref) model has the following set of parameters:
-
-- `g0 = 0.0`: intercept (``mol_{CO_2} \cdot m^{-2} \cdot s^{-1}``).
-- `Gₛ`: forced stomatal conductance.
-
-This model computes the stomatal conductance using a constant value for the stomatal conductance.
-
-`g0` is only provided for compatibility with photosynthesis models such as [`Fvcb`](@ref) that needs a partial computation of the stomatal conductance at one point:
-
-```julia
-(Gₛ - g0) / A
-```
-
-### [Input variables](@id inputs_constantgs)
-
-[`ConstantGs`](@ref) doesn't need any input variables.
-
-### [Example](@id exemple_constantgs)
-
-Here is an example usage:
-
-```@example usepkg
-meteo = Atmosphere(T = 20.0, Wind = 1.0, P = 101.3, Rh = 0.65)
-
-leaf = ModelList(ConstantGs(Gₛ = 0.1))
-
-run!(leaf,meteo)
-leaf[:Gₛ]
-```
-
 ## Tuzet et al. (2003) Stomatal Conductance Model
 
 The Tuzet et al. (2003) model describes stomatal conductance as a function of leaf water potential and CO₂ concentration. It is particularly useful for modeling the effects of water stress on stomatal behavior.
@@ -142,12 +108,46 @@ using PlantMeteo, PlantSimEngine, PlantBiophysics
 meteo = Atmosphere(T = 20.0, Wind = 1.0, P = 101.3, Rh = 0.65)
 leaf = ModelList(
     stomatal_conductance = Tuzet(0.03, 12.0, -1.5, 2.0, 30.0),
-    status = (Cₛ = 380.0, Ψₗ = -1.0)
+    status = (A = 20.0, Cₛ = 400.0, Ψₗ = -1.0)
 )
 outputs = run!(leaf, meteo)
 ```
 
-### References
+## ConstantGs
+
+### [Parameters](@id param_constantgs)
+
+The [`ConstantGs`](@ref) model has the following set of parameters:
+
+- `g0 = 0.0`: intercept (``mol_{CO_2} \cdot m^{-2} \cdot s^{-1}``).
+- `Gₛ`: forced stomatal conductance.
+
+This model computes the stomatal conductance using a constant value for the stomatal conductance.
+
+`g0` is only provided for compatibility with photosynthesis models such as [`Fvcb`](@ref) that needs a partial computation of the stomatal conductance at one point:
+
+```julia
+(Gₛ - g0) / A
+```
+
+### [Input variables](@id inputs_constantgs)
+
+[`ConstantGs`](@ref) doesn't need any input variables.
+
+### [Example](@id exemple_constantgs)
+
+Here is an example usage:
+
+```@example usepkg
+meteo = Atmosphere(T = 20.0, Wind = 1.0, P = 101.3, Rh = 0.65)
+
+leaf = ModelList(ConstantGs(Gₛ = 0.1))
+
+run!(leaf,meteo)
+leaf[:Gₛ]
+```
+
+## References
 
 Tuzet, A., Perrier, A., & Leuning, R. (2003). A coupled model of stomatal conductance, photosynthesis and transpiration. *Plant, Cell & Environment*, 26(7), 1097-1116.
 
