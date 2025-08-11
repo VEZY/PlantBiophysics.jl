@@ -10,6 +10,13 @@ Tuzet et al. (2003) stomatal conductance model for CO₂.
 - `Γ`: CO₂ compensation point (mol mol⁻¹).
 - `gs_min`: residual conductance (μmol m⁻² s⁻¹).
 
+# Variables 
+
+- `Ψₗ`: leaf water potential (MPa).
+- `Cₛ`: CO₂ concentration at the leaf surface (μmol mol⁻¹).
+- `A`: CO₂ assimilation rate (μmol m⁻² s⁻¹).
+- `Gₛ`: stomatal conductance (μmol m⁻² s⁻¹).
+
 # Note
 
 The CO₂ compensation point represents the concentration of CO₂ at which photosynthesis and respiration are balanced, 

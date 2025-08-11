@@ -1,7 +1,7 @@
 # Generate all methods for the stomatal conductance process: several meteo time-steps, components,
 #  over an MTG, and the mutating /non-mutating versions
 @process "stomatal_conductance" """
-Process for the stomatal conductance for CO₂ (mol m⁻² s⁻¹), it takes the form:
+Process for the stomatal conductance for CO₂ (μmol m⁻² s⁻¹), it takes the form:
 
 `leaf.stomatal_conductance.g0 + gs_closure(leaf,meteo) * leaf.status.A`
 
