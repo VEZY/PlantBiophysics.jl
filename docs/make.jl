@@ -11,7 +11,7 @@ DocMeta.setdocmeta!(PlantBiophysics, :DocTestSetup, :(using PlantBiophysics, Dat
 makedocs(;
     modules=[PlantBiophysics],
     authors="remi.vezy <VEZY@users.noreply.github.com> and contributors",
-    repo="https://github.com/VEZY/PlantBiophysics.jl/blob/{commit}{path}#L{line}",
+    repo=Documenter.Remotes.GitHub("VEZY", "PlantBiophysics.jl"),
     sitename="PlantBiophysics.jl",
     format=Documenter.HTML(;
         prettyurls=get(ENV, "CI", "false") == "true",

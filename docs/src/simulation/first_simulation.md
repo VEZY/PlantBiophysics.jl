@@ -29,7 +29,7 @@ Now let's describe what is happening here.
 
 ## PlantSimEngine
 
-PlantBiophysics is nothing but an extension of [PlantSimEngine.jl](https://vezy.github.io/PlantSimEngine.jl/). What it really does is implementing biophysical models for PlantSimEngine. So when you use PlantBiophysics, you'll also need to import PlantSimEngine too.
+PlantBiophysics is nothing but an extension of [PlantSimEngine.jl](https://virtualplantlab.github.io/PlantSimEngine.jl). What it really does is implementing biophysical models for PlantSimEngine. So when you use PlantBiophysics, you'll also need to import PlantSimEngine too.
 
 ## Meteorology
 
@@ -61,7 +61,7 @@ Or look into the documentation of the structure (e.g. `?Fvcb`) or the documentat
 
 ## Model coupling
 
-`PlantSimEngine` handles all model coupling and the order of execution of the processes. The user only needs to provide the list of models and the initializations. The package takes care of the rest by building a dependency graph and executing the processes in the right order considering the soft and hard dependencies. You can take a look at these concepts in the [PlantSimEngine documentation](https://vezy.github.io/PlantSimEngine.jl/stable/model_execution/).
+`PlantSimEngine` handles all model coupling and the order of execution of the processes. The user only needs to provide the list of models and the initializations. The package takes care of the rest by building a dependency graph and executing the processes in the right order considering the soft and hard dependencies. You can take a look at these concepts in the [PlantSimEngine documentation](https://virtualplantlab.github.io/PlantSimEngine.jl/stable/model_execution/).
 
 ## Results
 

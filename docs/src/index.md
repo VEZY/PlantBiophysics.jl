@@ -12,17 +12,20 @@ CurrentModule = PlantBiophysics
 
 ## Overview
 
-`PlantBiophysics` is a package to deal with biophysical processes of plants such as photosynthesis, conductances for heat, water vapor and CO₂, latent, sensible energy fluxes, net radiation and temperature. It has two main use-cases:
+`PlantBiophysics.jl` is a Julia package designed to simulate and analyze the biophysical processes of plants. It provides tools for modeling photosynthesis, energy fluxes, and conductances for heat, water vapor, and CO₂. The package is built to support parameter estimation, model comparison, and simulation tasks, offering flexibility and computational efficiency.
 
-- fit the parameters of the models using the generic [`fit`](@ref PlantSimEngine.fit) function
-- simulate the processes using the corresponding models
+### Features
 
-The benefits of `PlantBiophysics` over existing tools are mainly:
+- **Parameter Estimation**: Fit model parameters using the generic [fit](@ref PlantSimEngine.fit) function (*e.g.*, the Farquhar et al. 1980 photosynthesis model using A-Cᵢ curves).
+- **Model Comparison**: Compare different model implementations by providing a list of models, letting `PlantBiophysics.jl` automatically couple them (*e.g.*, photosynthesis + stomatal conductance + energy balance).
+- **Simulation**: Run simulations of biophysical processes using selected models, leveraging Julia's computational performance.
 
-- (very) fast yet interactive
-- easily scalable: from single objects to whole scenes, one time step to many.
-- easily extendable: make your own model, `PlantBiophysics` handles its coupling with others automatically
-- composable: use [Unitful](https://github.com/PainterQubits/Unitful.jl) to propagate units, use [MonteCarloMeasurements.jl](https://github.com/baggepinnen/MonteCarloMeasurements.jl) to propagate measurement error
+### Advantages
+
+- **Efficiency**: Designed for fast computations.
+- **Scalability**: Handles simulations from single objects to entire scenes.
+- **Extensibility**: Allows users to integrate custom models seamlessly, and generically couple them (see [Model coupling](@ref model_coupling_page) for more details).
+- **Composability**: Supports unit propagation with [Unitful](https://github.com/PainterQubits/Unitful.jl) and error propagation with [MonteCarloMeasurements.jl](https://github.com/baggepinnen/MonteCarloMeasurements.jl).
 
 ## Installation
 
@@ -38,39 +41,43 @@ To use the package, execute this command from the Julia REPL:
 using PlantBiophysics
 ```
 
-## Examples
+## Quick Start
 
-See the [First simulation](@ref) section for examples.
+Explore the [First simulation](@ref) section for detailed examples. Here's a quick example:
 
-## Similar projects
+```@example
+using PlantBiophysics, PlantSimEngine, PlantMeteo
+meteo = Atmosphere(T = 25.0, Wind = 1.0, Rh = 0.5, Ri_SW_f = 400.0) # Example meteorological data
+leaf = ModelList(
+        Monteith(),
+        Fvcb(),
+        Medlyn(0.03, 7.0),
+        status = (
+            Ra_SW_f = meteo[:Ri_SW_f] .* 0.8, aPPFD = meteo[:Ri_SW_f] .* 0.8 .* 0.48 .* 4.57,
+            sky_fraction = 1.0, d = 0.03
+        )
+)
+sim = run!(leaf, meteo)
+```
 
-A lot of similar tools exist in the wild, pick yours from this list:
+## Similar Projects
 
-- [photosynthesis](https://github.com/cran/photosynthesis) R package
-- [plantecophys](https://bitbucket.org/remkoduursma/plantecophys/src/master/) R package
-- [LeafGasExchange](https://github.com/TESTgroup-BNL/LeafGasExchange) R package
-- [MAESPA](http://maespa.github.io/), not really a tool, rather a model, but the implementations of the models are heavily inspired by MAESPA.
+Other tools for plant biophysics include:
 
-If you develop such tools and it is not on the list, please make a PR or contact me so we can add it! 😃
+- [photosynthesis](https://github.com/cran/photosynthesis) (R package)
+- [plantecophys](https://bitbucket.org/remkoduursma/plantecophys/src/master/) (R package)
+- [LeafGasExchange](https://github.com/TESTgroup-BNL/LeafGasExchange) (R package)
+- [MAESPA](http://maespa.github.io/) (model inspired by MAESPA)
 
-## Related references
+If you know of similar tools not listed here, feel free to make a PR or contact us to add them.
 
-Baldocchi, Dennis. 1994. « An analytical solution for coupled leaf photosynthesis and
-stomatal conductance models ». Tree Physiology 14 (7-8‑9): 1069‑79.
-<https://doi.org/10.1093/treephys/14.7-8-9.1069>.
+## References
 
-Duursma, R. A., et B. E. Medlyn. 2012. « MAESPA: a model to study interactions between water
-limitation, environmental drivers and vegetation function at tree and stand levels, with an
-example application to [CO2] × drought interactions ». Geoscientific Model Development 5
-(4): 919‑40. <https://doi.org/10.5194/gmd-5-919-2012>.
+Key references for plant biophysics:
 
-Farquhar, G. D., S. von von Caemmerer, et J. A. Berry. 1980. « A biochemical model of
-photosynthetic CO2 assimilation in leaves of C3 species ». Planta 149 (1): 78‑90.
-
-Leuning, R., F. M. Kelliher, DGG de Pury, et E.-D. SCHULZE. 1995. « Leaf nitrogen,
-photosynthesis, conductance and transpiration: scaling from leaves to canopies ». Plant,
-Cell & Environment 18 (10): 1183‑1200.
-
-Medlyn, B. E., D. Loustau, et S. Delzon. 2002. « Temperature response of parameters of a biochemically based model of photosynthesis. I. Seasonal changes in mature maritime pine (Pinus pinaster Ait.) ». Plant, Cell & Environment 25 (9): 1155‑65.
-
-Medlyn, B. E., E. Dreyer, D. Ellsworth, M. Forstreuter, P. C. Harley, M. U. F. Kirschbaum, X. Le Roux, et al. 2002. « Temperature response of parameters of a biochemically based model of photosynthesis. II. A review of experimental data ». Plant, Cell & Environment 25 (9): 1167‑79. <https://doi.org/10.1046/j.1365-3040.2002.00891.x>.
+- Baldocchi, Dennis. 1994. "An analytical solution for coupled leaf photosynthesis and stomatal conductance models." Tree Physiology 14 (7-8‑9): 1069‑79. <https://doi.org/10.1093/treephys/14.7-8-9.1069>.
+- Duursma, R. A., et B. E. Medlyn. 2012. "MAESPA: a model to study interactions between water limitation, environmental drivers and vegetation function at tree and stand levels, with an example application to [CO2] × drought interactions." Geoscientific Model Development 5 (4): 919‑40. <https://doi.org/10.5194/gmd-5-919-2012>.
+- Farquhar, G. D., S. von von Caemmerer, et J. A. Berry. 1980. "A biochemical model of photosynthetic CO2 assimilation in leaves of C3 species." Planta 149 (1): 78‑90.
+- Leuning, R., F. M. Kelliher, DGG de Pury, et E.-D. SCHULZE. 1995. "Leaf nitrogen, photosynthesis, conductance and transpiration: scaling from leaves to canopies." Plant, Cell & Environment 18 (10): 1183‑1200.
+- Medlyn, B. E., D. Loustau, et S. Delzon. 2002. "Temperature response of parameters of a biochemically based model of photosynthesis. I. Seasonal changes in mature maritime pine (Pinus pinaster Ait.)." Plant, Cell & Environment 25 (9): 1155‑65.
+- Medlyn, B. E., E. Dreyer, D. Ellsworth, M. Forstreuter, P. C. Harley, M. U. F. Kirschbaum, X. Le Roux, et al. 2002. "Temperature response of parameters of a biochemically based model of photosynthesis. II. A review of experimental data." Plant, Cell & Environment 25 (9): 1167‑79. <https://doi.org/10.1046/j.1365-3040.2002.00891.x>.

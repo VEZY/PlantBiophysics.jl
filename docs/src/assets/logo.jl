@@ -31,7 +31,7 @@ transform!(
 
 f = Figure(backgroundcolor=:transparent)
 ax = Axis(f[1, 1], backgroundcolor=:transparent)
-viz!(f[1, 1], mtg, color=:Tₗ_1)
+plantviz!(f[1, 1], mtg, color=:Tₗ_1)
 hidespines!(ax)
 hidedecorations!(ax)
 f

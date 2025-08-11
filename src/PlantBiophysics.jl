@@ -55,6 +55,7 @@ include("processes/photosynthesis/temperature-dependence.jl")
 # Stomatal conductance related files:
 include("processes/conductances/stomatal/constantGs.jl")
 include("processes/conductances/stomatal/medlyn.jl")
+include("processes/conductances/stomatal/tuzet.jl")
 
 # Boundary layer conductance:
 include("processes/conductances/boundary/gb.jl")
@@ -66,8 +67,10 @@ include("processes/energy/Monteith.jl")
 
 # File IO
 include("io/read_model.jl")
-include("io/read_licor6400.jl")
 include("io/read_walz.jl")
+include("io/read_licor6400.jl")
+include("io/read_licor6800.jl")
+include("io/read_ess_dive.jl")
 
 # Parameters optimization
 include("fitting/fit_FvCB.jl")
@@ -80,8 +83,7 @@ include("depreciations/models.jl")
 # File IO:
 export read_model
 export is_model
-export read_walz
-export read_licor6400
+export read_walz, read_licor6400, read_licor6800, read_ess_dive
 
 # Conversions
 export ms_to_mol
@@ -122,7 +124,7 @@ export AbstractStomatal_ConductanceModel
 export gbh_to_gbw
 export gbₕ_free
 export gbₕ_forced
-export Medlyn
+export Medlyn, Tuzet, ConstantGs
 export ConstantGs
 
 # Model helpers

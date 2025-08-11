@@ -19,4 +19,4 @@ run!(m, meteo)
 
 m[:aPPFD]
 ```
-"""
+""" verbose = false

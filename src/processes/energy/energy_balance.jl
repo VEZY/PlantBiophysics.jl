@@ -158,8 +158,8 @@ transform!(
     ignore_nothing = true
 )
 
-# Vizualise the output:
-viz(mtg, color = :Tₗ_1)
+# vizualise the output:
+plantviz(mtg, color = :Tₗ_1)
 ```
 
 # References
@@ -181,4 +181,4 @@ Vezy, Rémi, Mathias Christina, Olivier Roupsard, Yann Nouvellon, Remko Duursma,
 Maxime Soma, et al. 2018. « Measuring and modelling energy partitioning in canopies of varying
 complexity using MAESPA model ». Agricultural and Forest Meteorology 253‑254 (printemps): 203‑17.
 https://doi.org/10.1016/j.agrformet.2018.02.005.
-"""
+""" verbose = false
