@@ -22,6 +22,14 @@ leaf = ModelList(
     @test outputs.Gₛ[1] ≈ 0.6607197172920005 # in mol[CO₂] m-2 s-1
 end;
 
+@testset "Tuzet et al. (2003)" begin
+    leaf = ModelList(
+        stomatal_conductance=Tuzet(0.03, 12.0, -1.5, 2.0, 30.0),
+        status=(A=A, Cₛ=Cₛ, Ψₗ=[0.0, -1.0, -2.0])
+    )
+    outputs = run!(leaf, meteo)
+    @test outputs.Gₛ ≈ [0.918888888888889, 0.7121829707245958, 0.2809610900468388] # in mol[CO₂] m-2 s-1
+end;
 
 # VPD = 0.1:0.1:3.0
 # plot(x -> stomatal_conductance(Gs,A,Cₛ,VPD = x), VPD, xlabel = "VPD (kPa)",

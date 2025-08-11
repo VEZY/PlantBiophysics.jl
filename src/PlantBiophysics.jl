@@ -55,6 +55,7 @@ include("processes/photosynthesis/temperature-dependence.jl")
 # Stomatal conductance related files:
 include("processes/conductances/stomatal/constantGs.jl")
 include("processes/conductances/stomatal/medlyn.jl")
+include("processes/conductances/stomatal/tuzet.jl")
 
 # Boundary layer conductance:
 include("processes/conductances/boundary/gb.jl")
@@ -123,7 +124,7 @@ export AbstractStomatal_ConductanceModel
 export gbh_to_gbw
 export gbₕ_free
 export gbₕ_forced
-export Medlyn
+export Medlyn, Tuzet, ConstantGs
 export ConstantGs
 
 # Model helpers
