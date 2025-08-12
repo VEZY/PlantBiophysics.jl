@@ -54,7 +54,7 @@ function read_licor6400(file; abs=0.85, column_names_start=nothing, data_start=n
         :HHMMSS => :Time,
         :Cond => :Gₛ, :CO2S => :Cₐ, :Tair => :T, :Press => :P, :RH_S => (x -> x ./ 100) => :Rh,
         :PARi => (x -> x .* abs) => :aPPFD, :Ci => :Cᵢ, :Tleaf => :Tₗ, :Photo => :A,
-        :VpdL => :Dₗ, :Photo => :A, :BLCond => :Gbv, :
+        :VpdL => :Dₗ, :BLCond => :Gbv, :
     )
 
     # Recomputing the variables to match the units used in the package:
