@@ -13,13 +13,7 @@ Import Licor6800 data from the excel file with the units and names corresponding
 The reference for the variables are found on the Licor 6800 website: See reference here: https://www.licor.com/support/LI-6800/topics/symbols.html
 """
 function read_licor6800(file; column_names_start=65, data_start=column_names_start + 2, kwargs...)
-    error_on_xlsx(file)
-
-    if typeof(file) <: Vector{T} where {T<:AbstractString}
-        df = CSV.read(file, DataFrame; header=column_names_start, skipto=data_start, source=:source, kwargs...)
-    else
-        df = CSV.read(file, DataFrame; header=column_names_start, skipto=data_start, kwargs...)
-    end
+    df = read_file(file; column_names_start=column_names_start, data_start=data_start, kwargs...)
 
     # Standard transformations for Licor 6800
     rename!(

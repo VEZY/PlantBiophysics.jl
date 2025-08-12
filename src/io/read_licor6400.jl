@@ -12,13 +12,7 @@ Import Licor6400 data (such as Medlyn 2001 data) with the units and names corres
 - `kwargs...`: additional keyword arguments to pass to the CSV reader (*e.g.*, `decimal=','`).
 """
 function read_licor6400(file; abs=0.85, column_names_start=3, data_start=column_names_start + 1, kwargs...)
-    error_on_xlsx(file)
-
-    if typeof(file) <: Vector{T} where {T<:AbstractString}
-        df = CSV.read(file, DataFrame; header=column_names_start, skipto=data_start, source=:source, kwargs...)
-    else
-        df = CSV.read(file, DataFrame; header=column_names_start, skipto=data_start, kwargs...)
-    end
+    df = read_file(file; column_names_start=column_names_start, data_start=data_start, kwargs...)
 
     if hasproperty(df, :Ttop)
         rename!(df, :Ttop => :Tmin)

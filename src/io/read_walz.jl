@@ -46,13 +46,7 @@ df.source
 ```
 """
 function read_walz(file; abs=0.85, column_names_start=1, data_start=column_names_start + 2, kwargs...)
-    error_on_xlsx(file)
-
-    if typeof(file) <: Vector{T} where {T<:AbstractString}
-        df = CSV.read(file, DataFrame; header=column_names_start, skipto=data_start, source=:source, kwargs...)
-    else
-        df = CSV.read(file, DataFrame; header=column_names_start, skipto=data_start, kwargs...)
-    end
+    df = read_file(file; column_names_start=column_names_start, data_start=data_start, kwargs...)
 
     if hasproperty(df, :Ttop)
         rename!(df, :Ttop => :Tmin)
