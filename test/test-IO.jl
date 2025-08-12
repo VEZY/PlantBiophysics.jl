@@ -40,7 +40,7 @@ end;
 @testset "read_licor6400()" begin
     absorptance = 0.85
     file_licor6400 = joinpath(dirname(dirname(pathof(PlantBiophysics))), "test", "inputs", "data", "6400.csv")
-    data_licor6400 = read_licor6400(file_licor6400; abs=absorptance, column_names_start=13)
+    data_licor6400 = read_licor6400(file_licor6400; abs=absorptance)
     required_names = [:Dₗ, :Cₐ, :Cᵢ, :A, :Gₛ, :Rh, :VPD, :T, :Tₗ, :P, :aPPFD]
     @test all(hasproperty(data_licor6400, name) for name in required_names) # All computed columns are available
     @test nrow(dropmissing(data_licor6400[:, required_names])) == nrow(data_licor6400) # No data is missing
