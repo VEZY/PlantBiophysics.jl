@@ -58,3 +58,15 @@ end;
     @test all(extrema(data_licor6800.T) .≈ (28.98541818, 29.02936)) # Control that we are in °C
     @test all(extrema(data_licor6800.Rh) .≈ (0.6477531371, 0.6501544731)) # Control that we are in [0,1]
 end;
+
+
+
+@testset "read_ciras4()" begin
+    file_ciras4 = joinpath(dirname(dirname(pathof(PlantBiophysics))), "test", "inputs", "data", "ciras4.csv")
+    data_ciras4 = read_ciras4(file_ciras4)
+    required_names = [:Dₗ, :Cᵢ, :A, :Gₛ, :Rh, :VPD, :T, :Tₗ, :P, :aPPFD]
+    @test all(hasproperty(data_ciras4, name) for name in required_names) # All computed columns are available
+    @test nrow(dropmissing(data_ciras4[:, required_names])) == nrow(data_ciras4) # No data is missing
+    @test all(extrema(data_ciras4.T) .≈ (24.173282745646993, 31.37502194789174)) # Control that we are in °C
+    @test all(extrema(data_ciras4.Rh) .≈ (0.5516815549361279, 0.8500860468849767)) # Control that we are in [0,1]
+end;

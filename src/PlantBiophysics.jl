@@ -71,6 +71,7 @@ include("io/read_model.jl")
 include("io/read_walz.jl")
 include("io/read_licor6400.jl")
 include("io/read_licor6800.jl")
+include("io/read_ciras4.jl")
 include("io/read_ess_dive.jl")
 
 # Parameters optimization
@@ -84,7 +85,7 @@ include("depreciations/models.jl")
 # File IO:
 export read_model
 export is_model
-export read_walz, read_licor6400, read_licor6800, read_ess_dive
+export read_walz, read_licor6400, read_licor6800, read_ess_dive, read_ciras4
 
 # Conversions
 export ms_to_mol
