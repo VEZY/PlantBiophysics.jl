@@ -43,6 +43,8 @@ df.source
 ```
 """
 function read_walz(file; abs=0.85)
+    error_on_xlsx(file)
+
     if typeof(file) <: Vector{T} where {T<:AbstractString}
         df = CSV.read(file, DataFrame, header=1, skipto=3, source=:source)
     else

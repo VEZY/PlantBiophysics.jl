@@ -44,6 +44,8 @@ Ely K.S., Rogers A, Crystal-Ornelas R (2020). ESS-DIVE reporting format for leaf
 Ely K.S. et al (2021). A reporting format for leaf-level gas exchange data and metadata. Ecological Informatics. Volume 61. https://doi.org/10.1016/j.ecoinf.2021.101232
 """
 function read_ess_dive(file; abs=0.85)
+    error_on_xlsx(file)
+
     if typeof(file) <: Vector{T} where {T<:AbstractString}
         df = CSV.read(file, DataFrame, source=:source)
     else

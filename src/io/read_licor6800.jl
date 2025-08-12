@@ -10,7 +10,8 @@ Import Licor6800 data from the excel file with the units and names corresponding
 
 The reference for the variables are found on the Licor 6800 website: See reference here: https://www.licor.com/support/LI-6800/topics/symbols.html
 """
-function read_licor6800(file; abs=0.85)
+function read_licor6800(file; kwargs)
+    error_on_xlsx(file)
     if typeof(file) <: Vector{T} where {T<:AbstractString}
         df = CSV.read(file, DataFrame, header=65, skipto=67, source=:source)
     else
