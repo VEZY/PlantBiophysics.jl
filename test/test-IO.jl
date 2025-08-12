@@ -51,7 +51,7 @@ end;
 
 @testset "read_licor6800()" begin
     file_licor6800 = joinpath(dirname(dirname(pathof(PlantBiophysics))), "test", "inputs", "data", "6800.csv")
-    data_licor6800 = read_licor6800(file_licor6800, column_names_start=14)
+    data_licor6800 = read_licor6800(file_licor6800)
     required_names = [:Dₗ, :Cₐ, :Cᵢ, :A, :Gₛ, :Rh, :VPD, :T, :Tₗ, :P, :aPPFD]
     @test all(hasproperty(data_licor6800, name) for name in required_names) # All computed columns are available
     @test nrow(dropmissing(data_licor6800[:, required_names])) == nrow(data_licor6800) # No data is missing
