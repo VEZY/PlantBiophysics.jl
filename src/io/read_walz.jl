@@ -1,5 +1,5 @@
 """
-    read_walz(file; abs=0.85)
+    read_walz(file; abs=0.85, column_names_start=1, data_start=column_names_start + 2, kwargs...)
 
 Import a Walz GFS-3000 output file, perform variables conversion and rename
 according to package conventions.
@@ -9,6 +9,9 @@ according to package conventions.
 - `file`: a string or a vector of strings containing the path to the file(s) to
   read.
 - `abs=0.85`: the absorptance of the leaf. Default is 0.85 (von Caemmerer et al., 2009).
+- `column_names_start=1`: the row number to start reading column names from. Default is 1.
+- `data_start=column_names_start+2`: the row number to start reading data from. Default is 3 (`column_names_start+2`).
+- `kwargs...`: additional keyword arguments to pass to the CSV reader (*e.g.*, `decimal=','`).
 
 # Returns
 
@@ -42,13 +45,13 @@ In this case, the source of the data is added as the `source` columns into the D
 df.source
 ```
 """
-function read_walz(file; abs=0.85)
+function read_walz(file; abs=0.85, column_names_start=1, data_start=column_names_start + 2, kwargs...)
     error_on_xlsx(file)
 
     if typeof(file) <: Vector{T} where {T<:AbstractString}
-        df = CSV.read(file, DataFrame, header=1, skipto=3, source=:source)
+        df = CSV.read(file, DataFrame; header=column_names_start, skipto=data_start, source=:source, kwargs...)
     else
-        df = CSV.read(file, DataFrame, header=1, skipto=3)
+        df = CSV.read(file, DataFrame; header=column_names_start, skipto=data_start, kwargs...)
     end
 
     if hasproperty(df, :Ttop)

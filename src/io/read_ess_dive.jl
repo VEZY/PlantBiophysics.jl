@@ -1,5 +1,5 @@
 """
-    read_ess_dive(file)
+    read_ess_dive(file; abs=0.85, column_names_start=1, data_start=column_names_start + 1, kwargs...)
 
 Import data from the ESS-DIVE database with the units and names corresponding to the ones used in PlantBiophysics.jl.
 
@@ -12,7 +12,7 @@ ESS-DIVE files are expected to have the following columns:
 - `CO2s`: CO2 concentration inside the leaf chamber (ppm)
 - `gsw`: stomatal conductance to water vapor per leaf area (mmol m⁻² s⁻¹)
 - `Patm`: atmospheric pressure (kPa)
-- `Qin`: In-chamber photosynthetic flux density (PPFD) incident on the leaf (µmol m⁻² s⁻¹)
+- `Qin`: In-chamber photosynthetic flux density (PPFD, µmol m⁻² s⁻¹) incident on the leaf, **not absorbed**
 - `RHs`: relative humidity in the leaf chamber (%)
 - `Tleaf`: leaf surface temperature (Celsius)
 
@@ -22,6 +22,9 @@ See here for more information: https://ess-dive.gitbook.io/leaf-level-gas-exchan
 
 - `file`: a string or a vector of strings containing the path to the file(s) to read.
 - `abs=0.85`: the absorptance of the leaf. Default is 0.85 (von Caemmerer et al., 2009).
+- `column_names_start=1`: the row number to start reading column names from. Default is 1.
+- `data_start=column_names_start+1`: the row number to start reading data from. Default is 2 (`column_names_start+1`).
+- `kwargs...`: additional keyword arguments to pass to the CSV reader (*e.g.*, `decimal=','`).
 
 # Returns
 
@@ -43,13 +46,13 @@ Access the ESS-DIVE database here: https://data.ess-dive.lbl.gov/view/doi:10.154
 Ely K.S., Rogers A, Crystal-Ornelas R (2020). ESS-DIVE reporting format for leaf-level gas exchange data and metadata. Environmental Systems Science Data Infrastructure for a Virtual Ecosystem (ESS-DIVE), ESS-DIVE repository. Dataset. https://data.ess-dive.lbl.gov/datasets/doi:10.15485/1659484
 Ely K.S. et al (2021). A reporting format for leaf-level gas exchange data and metadata. Ecological Informatics. Volume 61. https://doi.org/10.1016/j.ecoinf.2021.101232
 """
-function read_ess_dive(file; abs=0.85)
+function read_ess_dive(file; abs=0.85, column_names_start=1, data_start=column_names_start + 1, kwargs...)
     error_on_xlsx(file)
 
     if typeof(file) <: Vector{T} where {T<:AbstractString}
-        df = CSV.read(file, DataFrame, source=:source)
+        df = CSV.read(file, DataFrame; header=column_names_start, skipto=data_start, source=:source, kwargs...)
     else
-        df = CSV.read(file, DataFrame)
+        df = CSV.read(file, DataFrame; header=column_names_start, skipto=data_start, kwargs...)
     end
 
     # Renaming variables to fit the standard in the package:

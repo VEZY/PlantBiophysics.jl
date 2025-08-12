@@ -1,24 +1,27 @@
 """
-    read_licor6800(file; abs=0.85)
+    read_licor6800(file; column_names_start=65, data_start=column_names_start + 2, kwargs...)
 
 Import Licor6800 data from the excel file with the units and names corresponding to the ones used in PlantBiophysics.jl.
 
 # Arguments
 
 - `file`: a string or a vector of strings containing the path to the file(s) to read.
-- `abs=0.85`: the absorptance of the leaf. Default is 0.85 (von Caemmerer et al., 2009).
+- `column_names_start=65`: the row number to start reading column names from. Default is 65.
+- `data_start=column_names_start+2`: the row number to start reading data from. Default is 67 (`column_names_start+2`).
+- `kwargs...`: additional keyword arguments to pass to the CSV reader (*e.g.*, `decimal=','`).
 
 The reference for the variables are found on the Licor 6800 website: See reference here: https://www.licor.com/support/LI-6800/topics/symbols.html
 """
-function read_licor6800(file; kwargs)
+function read_licor6800(file; column_names_start=65, data_start=column_names_start + 2, kwargs...)
     error_on_xlsx(file)
+
     if typeof(file) <: Vector{T} where {T<:AbstractString}
-        df = CSV.read(file, DataFrame, header=65, skipto=67, source=:source)
+        df = CSV.read(file, DataFrame; header=column_names_start, skipto=data_start, source=:source, kwargs...)
     else
-        df = CSV.read(file, DataFrame, header=65, skipto=67)
+        df = CSV.read(file, DataFrame; header=column_names_start, skipto=data_start, kwargs...)
     end
 
-    # Renaming variables to fit the standard in the package:
+    # Standard transformations for Licor 6800
     rename!(
         df,
         :Ci => :Cᵢ, :Tleaf => :Tₗ, :Qabs => :aPPFD, :VPDleaf => :Dₗ, :Pa => :P,

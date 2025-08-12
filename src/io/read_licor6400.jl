@@ -1,5 +1,5 @@
 """
-    read_licor6400(file; abs=0.85)
+    read_licor6400(file; abs=0.85, column_names_start=3, data_start=column_names_start + 1, kwargs...)
 
 Import Licor6400 data (such as Medlyn 2001 data) with the units and names corresponding to the ones used in PlantBiophysics.jl.
 
@@ -9,10 +9,9 @@ Import Licor6400 data (such as Medlyn 2001 data) with the units and names corres
 - `abs=0.85`: the absorptance of the leaf. Default is 0.85 (von Caemmerer et al., 2009).
 - `column_names_start=3`: the row number to start reading column names from. Default is 3.
 - `data_start=column_names_start+1`: the row number to start reading data from. Default is 4 (`column_names_start+1`).
-- `kwargs...`: additional keyword arguments to pass to the CSV reader (*e.g.*, `delim=','`).
+- `kwargs...`: additional keyword arguments to pass to the CSV reader (*e.g.*, `decimal=','`).
 """
 function read_licor6400(file; abs=0.85, column_names_start=3, data_start=column_names_start + 1, kwargs...)
-
     error_on_xlsx(file)
 
     if typeof(file) <: Vector{T} where {T<:AbstractString}
