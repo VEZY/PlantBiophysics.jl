@@ -40,11 +40,21 @@ end;
 @testset "read_licor6400()" begin
     absorptance = 0.85
     file_licor6400 = joinpath(dirname(dirname(pathof(PlantBiophysics))), "test", "inputs", "data", "6400.csv")
-    data_licor6400 = read_licor6400(file_licor6400; abs=absorptance, column_names_start=13, decimal=',')
+    data_licor6400 = read_licor6400(file_licor6400; abs=absorptance, column_names_start=13)
     required_names = [:Dₗ, :Cₐ, :Cᵢ, :A, :Gₛ, :Rh, :VPD, :T, :Tₗ, :P, :aPPFD]
     @test all(hasproperty(data_licor6400, name) for name in required_names) # All computed columns are available
     @test nrow(dropmissing(data_licor6400[:, required_names])) == nrow(data_licor6400) # No data is missing
     @test all(extrema(data_licor6400.T) .≈ (29.83, 29.96)) # Control that we are in °C
     @test all(extrema(data_licor6400.Rh) .≈ (0.5215, 0.6498999999999999)) # Control that we are in [0,1]
     @test data_licor6400.aPPFD[1] ≈ absorptance * data_licor6400.PARi[1] # Control that we are in μmol m⁻² s⁻¹
+end;
+
+@testset "read_licor6800()" begin
+    file_licor6800 = joinpath(dirname(dirname(pathof(PlantBiophysics))), "test", "inputs", "data", "6800.csv")
+    data_licor6800 = read_licor6800(file_licor6800, column_names_start=14)
+    required_names = [:Dₗ, :Cₐ, :Cᵢ, :A, :Gₛ, :Rh, :VPD, :T, :Tₗ, :P, :aPPFD]
+    @test all(hasproperty(data_licor6800, name) for name in required_names) # All computed columns are available
+    @test nrow(dropmissing(data_licor6800[:, required_names])) == nrow(data_licor6800) # No data is missing
+    @test all(extrema(data_licor6800.T) .≈ (24.9513375, 25.00604444)) # Control that we are in °C
+    @test all(extrema(data_licor6800.Rh) .≈ (0.6290072346, 0.6573368490999999)) # Control that we are in [0,1]
 end;
