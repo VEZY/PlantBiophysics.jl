@@ -55,6 +55,6 @@ end;
     required_names = [:Dₗ, :Cₐ, :Cᵢ, :A, :Gₛ, :Rh, :VPD, :T, :Tₗ, :P, :aPPFD]
     @test all(hasproperty(data_licor6800, name) for name in required_names) # All computed columns are available
     @test nrow(dropmissing(data_licor6800[:, required_names])) == nrow(data_licor6800) # No data is missing
-    @test all(extrema(data_licor6800.T) .≈ (24.9513375, 25.00604444)) # Control that we are in °C
-    @test all(extrema(data_licor6800.Rh) .≈ (0.6290072346, 0.6573368490999999)) # Control that we are in [0,1]
+    @test all(extrema(data_licor6800.T) .≈ (28.98541818, 29.02936)) # Control that we are in °C
+    @test all(extrema(data_licor6800.Rh) .≈ (0.6477531371, 0.6501544731)) # Control that we are in [0,1]
 end;
