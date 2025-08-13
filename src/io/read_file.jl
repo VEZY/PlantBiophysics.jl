@@ -13,9 +13,9 @@ Reads one or multiple CSV file(s) and returns a DataFrame.
 function read_file(file; column_names_start=1, data_start=column_names_start + 1, kwargs...)
     error_on_xlsx(file)
     if typeof(file) <: Vector{T} where {T<:AbstractString}
-        df = CSV.read(file, DataFrame; header=column_names_start, skipto=data_start, source=:source, kwargs...)
+        df = CSV.read(file, DataFrame; header=column_names_start, skipto=data_start, source=:source, stripwhitespace=true, kwargs...)
     else
-        df = CSV.read(file, DataFrame; header=column_names_start, skipto=data_start, kwargs...)
+        df = CSV.read(file, DataFrame; header=column_names_start, skipto=data_start, stripwhitespace=true, kwargs...)
     end
 end
 
