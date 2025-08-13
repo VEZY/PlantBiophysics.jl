@@ -32,7 +32,7 @@ function read_ciras4(file; abs=0.85, column_names_start=1, data_start=column_nam
 
     select!(
         df,
-        Not([:TIMESTAMP, :PARi, :Tleaf, :Tcuv, :VPD, :Patm, :Aleaf, :RH, :Ci, :gs]),
+        Not([:TIMESTAMP, :PARi, :Tleaf, :Tcuv, :Patm, :Aleaf, :RH, :Ci, :gs]),
     )
     return df
 end
