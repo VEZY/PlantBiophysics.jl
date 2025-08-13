@@ -19,13 +19,20 @@ function read_ciras4(file; abs=0.85, column_names_start=1, data_start=column_nam
     select!(
         df,
         "DateTime" => (x -> Dates.DateTime.(x, "dd/mm/yyyy HH:MM:SS")) => "DateTime",
-        "PARi" => (x -> x .* abs) => "aPPFD", "Tcuv" => "T", "Tleaf" => "Tₗ", "A",
+        "PARi" => (x -> x .* abs) => "aPPFD",
+        "Tcuv" => "T", "Tleaf" => "Tₗ", "A",
         "VPD" => "Dₗ", "Patm" => "P", "Aleaf" => "Area",
         "RH" => (x -> x ./ 100.0) => "Rh",
         "Ci" => "Cᵢ", "gs" => (x -> gsw_to_gsc.(x)) => "Gₛ",
+        :
     )
 
     # Recomputing the variables to fit the units used in the package:
     df[!, :VPD] = PlantMeteo.vpd.(df.Rh, df.T)
+
+    select!(
+        df,
+        Not([:TIMESTAMP, :PARi, :Tleaf, :Tcuv, :VPD, :Patm, :Aleaf, :RH, :Ci, :gs]),
+    )
     return df
 end
