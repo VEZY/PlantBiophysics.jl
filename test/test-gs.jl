@@ -13,7 +13,7 @@ meteo = Atmosphere(T=28.0, Wind=0.8333, P=101.325, Rh=0.47)
 leaf = ModelList(
     stomatal_conductance=Gs, # Instance of a Medlyn type
     status=(A=A, Cₛ=Cₛ, Dₗ=meteo.VPD)
-)
+) 
 
 # Computing the stomatal conductance using the Medlyn et al. (2011) model:
 
