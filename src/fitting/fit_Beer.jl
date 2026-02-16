@@ -29,7 +29,7 @@ k = fit(Beer, df)
 
 # Re-simulating aPPFD using the newly fitted parameters:
 w = Weather(df)
-leaf = ModelList(
+leaf = ModelMapping(
         Beer(k.k),
         status = (LAI = df.LAI,)
     )

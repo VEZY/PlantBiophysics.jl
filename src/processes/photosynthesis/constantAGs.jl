@@ -39,7 +39,7 @@ Modify the leaf status in place for A, Gₛ and Cᵢ:
 # Arguments
 
 - `::ConstantAGs`: a constant assimilation model coupled to a stomatal conductance model
-- `models`: a `ModelList` struct holding the parameters for the model with
+- `models`: a `ModelMapping` struct holding the parameters for the model with
 initialisations for:
     - `Cₛ` (mol m-2 s-1): surface CO₂ concentration.
     - any other value needed by the stomatal conductance model.
@@ -52,7 +52,7 @@ initialisations for:
 ```julia
 using PlantBiophysics, PlantMeteo
 meteo = Atmosphere(T = 20.0, Wind = 1.0, P = 101.3, Rh = 0.65)
-leaf = ModelList(
+leaf = ModelMapping(
     photosynthesis = ConstantAGs(),
     stomatal_conductance = Medlyn(0.03, 12.0),
     status = (Cₛ = 400.0, Dₗ = 2.0)

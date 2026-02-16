@@ -1,13 +1,13 @@
 
-# Testing the ModelList struct
+# Testing the ModelMapping struct
 A = Fvcb(α=0.24) # because I set-up the tests with this value for α
 g0 = 0.03;
 g1 = 12.0;
 Gs = Medlyn(g0, g1) # Instance of a Medlyn type with g0 = 0.03 and g1 = 0.1
 
-@testset "ModelList()" begin
-    leaf = ModelList(photosynthesis=A, stomatal_conductance=Gs)
-    @test typeof(leaf) <: ModelList
+@testset "ModelMapping()" begin
+    leaf = ModelMapping(photosynthesis=A, stomatal_conductance=Gs)
+    @test typeof(leaf) <: ModelMapping
     @test typeof(leaf.models.photosynthesis) == Fvcb{Float64}
     @test typeof(leaf.models.stomatal_conductance) == Medlyn{Float64}
     @test leaf.models.photosynthesis.Tᵣ == 25.0
@@ -17,7 +17,7 @@ end;
 
 
 @testset "init_status!" begin
-    leaf = ModelList(photosynthesis=A, stomatal_conductance=Gs)
+    leaf = ModelMapping(photosynthesis=A, stomatal_conductance=Gs)
     @test leaf.status.Tₗ == -Inf
 
     PlantSimEngine.init_status!(leaf, Tₗ=25.0)
@@ -26,7 +26,7 @@ end;
 
 
 @testset "Vars to initialize" begin
-    leaf = ModelList(photosynthesis=A, stomatal_conductance=Gs)
+    leaf = ModelMapping(photosynthesis=A, stomatal_conductance=Gs)
     @test to_initialize(leaf) == (photosynthesis=(:aPPFD, :Tₗ, :Cₛ), stomatal_conductance=(:Dₗ, :Cₛ))
     @test to_initialize(leaf) == to_initialize(photosynthesis=A, stomatal_conductance=Gs)
     @test to_initialize(photosynthesis=A) == (photosynthesis=(:aPPFD, :Tₗ, :Cₛ),)
@@ -35,7 +35,7 @@ end;
     @test is_initialized(leaf) == false
 
     leaf =
-        ModelList(
+        ModelMapping(
             photosynthesis=A,
             stomatal_conductance=Gs,
             status=(Tₗ=25.0, aPPFD=1000.0, Cₛ=400.0, Dₗ=1.2)
@@ -55,15 +55,15 @@ using CSV
     st = (:Ra_SW_f => [13.747, 13.8], :sky_fraction => [1.0, 1.0], :d => [0.03, 0.03], :aPPFD => [1300.0, 1500.0])
     df = DataFrame(:Ra_SW_f => [13.747, 13.8], :sky_fraction => [1.0, 1.0], :d => [0.03, 0.03], :aPPFD => [1300.0, 1500.0])
 
-    # Reference ModelList
-    m =  ModelList(
+    # Reference ModelMapping
+    m =  ModelMapping(
         energy_balance=Monteith(),
         photosynthesis=Fvcb(α=0.24), # because I set-up the tests with this value for α
         stomatal_conductance=Medlyn(0.03, 12.0),
         status=df  #st
         )
 
-    m2 = ModelList(
+    m2 = ModelMapping(
         energy_balance=Monteith(),
         photosynthesis=Fvcb(α=0.24), # because I set-up the tests with this value for α
         stomatal_conductance=Medlyn(0.03, 12.0),

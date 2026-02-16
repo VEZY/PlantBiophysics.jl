@@ -2,7 +2,7 @@ module PlantBiophysics
 
 import PlantSimEngine
 import PlantSimEngine: @process, AbstractModel, TimeStepTable
-import PlantSimEngine: Status, ModelList
+import PlantSimEngine: Status, ModelMapping
 
 import PlantMeteo
 import PlantMeteo: Weather, AbstractAtmosphere

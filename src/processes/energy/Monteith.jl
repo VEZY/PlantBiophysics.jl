@@ -63,7 +63,7 @@ the energy balance using the mass flux (~ Rn - λE).
 # Arguments
 
 - `::Monteith`: a Monteith model, usually from a model list (*i.e.* m.energy_balance)
-- `models`: A `ModelList` struct holding the parameters for the model with
+- `models`: A `ModelMapping` struct holding the parameters for the model with
 initialisations for:
     - `Ra_SW_f` (W m-2): net shortwave radiation (PAR + NIR). Often computed from a light interception model
     - `sky_fraction` (0-2): view factor between the object and the sky for both faces (see details).
@@ -92,7 +92,7 @@ More information [here](https://docs.julialang.org/en/v1/stdlib/Logging/#Environ
 meteo = Atmosphere(T = 22.0, Wind = 0.8333, P = 101.325, Rh = 0.4490995)
 
 # Using a constant value for Gs:
-leaf = ModelList(
+leaf = ModelMapping(
     energy_balance = Monteith(),
     photosynthesis = Fvcb(),
     stomatal_conductance = ConstantGs(0.0, 0.0011),
@@ -104,7 +104,7 @@ leaf.status.Rn
 julia> 12.902547446281233
 
 # Using the model from Medlyn et al. (2011) for Gs:
-leaf = ModelList(
+leaf = ModelMapping(
     energy_balance = Monteith(),
     photosynthesis = Fvcb(),
     stomatal_conductance = Medlyn(0.03, 12.0),

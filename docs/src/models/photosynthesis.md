@@ -22,7 +22,7 @@ For example, you can "simulate" a constant assimilation for a leaf using the fol
 
 ```@example usepkg
 using PlantBiophysics, PlantSimEngine
-leaf = ModelList(ConstantA(25.0))
+leaf = ModelMapping(ConstantA(25.0))
 run!(leaf)
 ```
 
@@ -105,7 +105,7 @@ Here is an example usage:
 ```@example usepkg
 meteo = Atmosphere(T = 20.0, Wind = 1.0, P = 101.3, Rh = 0.65)
 
-leaf = ModelList(
+leaf = ModelMapping(
     Fvcb(),
     Medlyn(0.03, 12.0),
     status = (Tₗ = 25.0, aPPFD = 1000.0, Cₛ = 400.0, Dₗ = meteo.VPD)
@@ -137,7 +137,7 @@ Here is an example usage:
 ```@example usepkg
 meteo = Atmosphere(T = 20.0, Wind = 1.0, P = 101.3, Rh = 0.65)
 
-leaf = ModelList(
+leaf = ModelMapping(
     FvcbIter(),
     Medlyn(0.03, 12.0),
     status = (Tₗ = 25.0, aPPFD = 1000.0, Gbc = 0.67, Dₗ = meteo.VPD)
@@ -172,7 +172,7 @@ The `aPPFD` is, again, the absorbed photosynthetically active photon flux densit
 ### [Example](@id exemple_raw)
 
 ```@example usepkg
-leaf = ModelList(
+leaf = ModelMapping(
     FvcbRaw(),
     status = (Tₗ = 25.0, aPPFD = 1000.0, Cᵢ = 400.0)
 )
@@ -195,7 +195,7 @@ leaf
 ### [Example](@id exemple_constanta)
 
 ```@example usepkg
-leaf = ModelList(ConstantA())
+leaf = ModelMapping(ConstantA())
 
 run!(leaf)
 leaf
@@ -218,7 +218,7 @@ inputs(ConstantAGs())
 ### [Example](@id exemple_constantags)
 
 ```@example usepkg
-leaf = ModelList(
+leaf = ModelMapping(
     ConstantAGs(),
     Medlyn(0.03, 12.0),
     status = (Cₛ = 380.0, Dₗ = 2.0)

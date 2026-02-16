@@ -52,7 +52,7 @@ weather = PlantMeteo.Weather(w)
 gs_obs = gsw_to_gsc.(ms_to_mol.(results1_6a.g_sw, results1_6a.T_a .- params["T0"], results1_6a.P_a ./ 1000))
 
 leaf =
-    ModelList(
+    ModelMapping(
         Monteith(aₛᵥ=params["a_s"], maxiter=maxiter),
         ConstantA(0.0),
         status=(

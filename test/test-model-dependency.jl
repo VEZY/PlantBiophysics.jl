@@ -1,4 +1,4 @@
-m = ModelList(
+m = ModelMapping(
     energy_balance=Monteith(),
     photosynthesis=Fvcb(α=0.24), # because I set-up the tests with this value for α
     stomatal_conductance=Medlyn(0.0, 0.0011),
@@ -12,7 +12,7 @@ m = ModelList(
     @test dep(m.models.stomatal_conductance) == []
 end
 
-@testset "ModelList model dependency tree" begin
+@testset "ModelMapping model dependency tree" begin
     # Should return the type of model it depends on as a dependency tree
     dep_tree = dep(m)
     dep_root = dep_tree.roots
@@ -28,18 +28,18 @@ end
 end
 
 
-@testset "ModelList dependency tree -> missing dep" begin
+@testset "ModelMapping dependency tree -> missing dep" begin
     # There is a missing dependency for the Monteith model:
-    dep_tree = dep(ModelList(energy_balance=Monteith()))
+    dep_tree = dep(ModelMapping(energy_balance=Monteith()))
     dep_root = dep_tree.root
 
     @test dep_root.value == typeof(m.models.energy_balance)
     @test dep_root.children == PlantBiophysics.DependencyNode[]
 end
 
-@testset "ModelList dependency tree -> missing dep with two models" begin
+@testset "ModelMapping dependency tree -> missing dep with two models" begin
     # Two models are given, but still no photosynthesis is given:
-    dep_tree = dep(ModelList(energy_balance=Monteith(), stomatal_conductance=Medlyn(0.0, 0.0011)))
+    dep_tree = dep(ModelMapping(energy_balance=Monteith(), stomatal_conductance=Medlyn(0.0, 0.0011)))
     dep_root = dep_tree.root
 
     @test dep_root.value == typeof(m.models.energy_balance)
@@ -51,7 +51,7 @@ end
 end
 
 
-@testset "ModelList dependency tree printing" begin
+@testset "ModelMapping dependency tree printing" begin
     # Defining a dummy energy model that takes 2 dependencies:
     struct dummy_E{T} <: AbstractEnergy_BalanceModel
         A::T
@@ -63,14 +63,14 @@ end
         return nothing
     end
 
-    dep_tree = dep(ModelList(energy_balance=dummy_E(20.0), stomatal_conductance=Medlyn(0.0, 0.0011)))
+    dep_tree = dep(ModelMapping(energy_balance=dummy_E(20.0), stomatal_conductance=Medlyn(0.0, 0.0011)))
     @test dep_tree.not_found == Dict{Symbol,DataType}(:light_interception => AbstractLight_InterceptionModel, :photosynthesis => AbstractPhotosynthesisModel)
     @test length(dep_tree.roots) == 2
     @test dep_tree.roots[:energy_balance].missing_dependency == Int[1, 2]
     @test dep_tree.roots[:energy_balance].dependency == (light_interception=AbstractLight_InterceptionModel, photosynthesis=AbstractPhotosynthesisModel)
 
     dep_tree_two_dep = dep(
-        ModelList(
+        ModelMapping(
             light_interception=Beer(0.5),
             energy_balance=dummy_E(20.0),
             photosynthesis=Fvcb(α=0.24), # because I set-up the tests with this value for α

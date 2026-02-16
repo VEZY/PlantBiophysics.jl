@@ -3,7 +3,7 @@
     unsafe_comparisons(true)
     meteo = Atmosphere(T=22.0 ± 0.1, Wind=0.8333 ± 0.1, P=101.325 ± 1.0, Rh=0.4490995 ± 0.02, Cₐ=400.0 ± 1.0)
 
-    leaf = ModelList(
+    leaf = ModelMapping(
         Monteith(),
         Fvcb(),
         Medlyn(0.03, 12.0),

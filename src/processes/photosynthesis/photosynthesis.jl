@@ -5,7 +5,7 @@ Photosynthesis process to compute the CO₂ assimilation, and potentially
 hard-coupled with a stomatal conductance process.
 
 The models used are defined by the types of the `photosynthesis` and `stomatal_conductance`
-fields of the `ModelList`. For exemple to use the implementation of the Farquhar–von Caemmerer–Berry
+fields of the `ModelMapping`. For exemple to use the implementation of the Farquhar–von Caemmerer–Berry
 (FvCB) model, use the type `Fvcb` (see example below).
 
 # Examples
@@ -17,7 +17,7 @@ meteo = Atmosphere(T = 20.0, Wind = 1.0, P = 101.3, Rh = 0.65)
 
 # Using Fvcb model:
 leaf =
-    ModelList(
+    ModelMapping(
         photosynthesis = Fvcb(),
         stomatal_conductance = Medlyn(0.03, 12.0),
         status = (Tₗ = 25.0, aPPFD = 1000.0, Cₛ = 400.0, Dₗ = meteo.VPD)

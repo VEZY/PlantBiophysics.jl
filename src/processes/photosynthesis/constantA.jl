@@ -39,7 +39,7 @@ Modify the leaf status in place for A with a constant value:
 # Arguments
 
 - `::ConstantA`: a constant assimilation model
-- `models`: a `ModelList` struct holding the parameters for the model.
+- `models`: a `ModelMapping` struct holding the parameters for the model.
 - `status`: A status, usually the leaf status (*i.e.* leaf.status)
 - `meteo`: meteorology structure, see [`Atmosphere`](https://palmstudio.github.io/PlantMeteo.jl/stable/#PlantMeteo.Atmosphere)
 - `constants = PlantMeteo.Constants()`: physical constants. See `PlantMeteo.Constants` for more details
@@ -48,7 +48,7 @@ Modify the leaf status in place for A with a constant value:
 
 ```julia
 meteo = Atmosphere(T = 20.0, Wind = 1.0, P = 101.3, Rh = 0.65)
-leaf = ModelList(photosynthesis = ConstantA(26.0))
+leaf = ModelMapping(photosynthesis = ConstantA(26.0))
 
 run!(leaf,meteo,Constants())
 

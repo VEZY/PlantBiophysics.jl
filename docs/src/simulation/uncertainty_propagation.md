@@ -9,7 +9,7 @@ using Dates
 unsafe_comparisons(true)
 meteo = Atmosphere(T = 22.0 ± 0.1, Wind = 0.8333 ± 0.1, P = 101.325 ± 1., Rh = 0.4490995 ± 0.02, Cₐ = 400. ± 1.)
 
-leaf = ModelList(
+leaf = ModelMapping(
         Monteith(),
         Fvcb(),
         Medlyn(0.03, 12.0),
@@ -39,7 +39,7 @@ We can use the `μ ± σ` notation for the values of the parameters and micro-me
 ```julia
 meteo = Atmosphere(T = 22.0 ± 0.1, Wind = 0.8333 ± 0.1, P = 101.325 ± 1., Rh = 0.4490995 ± 0.02, Cₐ = 400. ± 1.)
 
-leaf = ModelList(
+leaf = ModelMapping(
         Monteith(),
         Fvcb(),
         Medlyn(0.03, 12.0),
@@ -81,7 +81,7 @@ Here's an example usage:
 
 meteo = Atmosphere(T = 15.0 .. 18.0, Wind = 0.8333 ± 0.1, P = 101.325 ± 1., Rh = 0.4490995 ± 0.02, Cₐ = 400. ± 1.)
 
-leaf = ModelList(
+leaf = ModelMapping(
         Monteith(),
         Fvcb(),
         Medlyn(0.03, 12.0),
@@ -117,7 +117,7 @@ weather = read_weather(
     date_format = DateFormat("yyyy/mm/dd")
 )
 
-leaf = ModelList(
+leaf = ModelMapping(
         Monteith(),
         Fvcb(),
         Medlyn(0.03, 12.0),

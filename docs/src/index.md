@@ -48,7 +48,7 @@ Explore the [First simulation](@ref) section for detailed examples. Here's a qui
 ```@example
 using PlantBiophysics, PlantSimEngine, PlantMeteo
 meteo = Atmosphere(T = 25.0, Wind = 1.0, Rh = 0.5, Ri_SW_f = 400.0) # Example meteorological data
-leaf = ModelList(
+leaf = ModelMapping(
         Monteith(),
         Fvcb(),
         Medlyn(0.03, 7.0),

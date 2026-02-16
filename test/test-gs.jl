@@ -10,7 +10,7 @@ Gs = Medlyn(0.03, 12.0, 0.0) # Instance of a Medlyn type with g0 = 0.03 and g1 =
 meteo = Atmosphere(T=28.0, Wind=0.8333, P=101.325, Rh=0.47)
 
 # Defining the leaf struct:
-leaf = ModelList(
+leaf = ModelMapping(
     stomatal_conductance=Gs, # Instance of a Medlyn type
     status=(A=A, Cₛ=Cₛ, Dₗ=meteo.VPD)
 )
@@ -23,7 +23,7 @@ leaf = ModelList(
 end;
 
 @testset "Tuzet et al. (2003)" begin
-    leaf = ModelList(
+    leaf = ModelMapping(
         stomatal_conductance=Tuzet(0.03, 12.0, -1.5, 2.0, 30.0),
         status=(A=A, Cₛ=Cₛ, Ψₗ=[0.0, -1.0, -2.0])
     )

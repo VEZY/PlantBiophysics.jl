@@ -24,7 +24,7 @@ meteo =
         date_format=DateFormat("yyyy/mm/dd")
     )
 
-leaf = ModelList(
+leaf = ModelMapping(
         Monteith(),
         Fvcb(),
         Medlyn(0.03, 12.0),
@@ -74,13 +74,13 @@ meteo = Weather(df)
 
 You'll have to be careful about the names and the units you are using though, they must match exactly the ones expected for `Atmosphere`. See the documentation of the structure if in doubt.
 
-The status argument of the ModelList can also be provided as a DataFrame, or any other type that implements the [Tables.jl](https://github.com/JuliaData/Tables.jl) interface. Here's an example using a DataFrame:
+The status argument of the ModelMapping can also be provided as a DataFrame, or any other type that implements the [Tables.jl](https://github.com/JuliaData/Tables.jl) interface. Here's an example using a DataFrame:
 
 ```@example usepkg
 using DataFrames
 df = DataFrame(:Ra_SW_f => [13.747, 13.8], :sky_fraction => [1.0, 1.0], :d => [0.03, 0.03], :aPPFD => [1300.0, 1500.0])
 
-m = ModelList(Monteith(), Fvcb(), Medlyn(0.03, 12.0), status=df)
+m = ModelMapping(Monteith(), Fvcb(), Medlyn(0.03, 12.0), status=df)
 ```
 
 Note that computations will be slower, so if performance is an issue, use

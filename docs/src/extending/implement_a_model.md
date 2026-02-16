@@ -129,7 +129,7 @@ In practice, the `run!` implementation is rather generic and will not be modifie
     ```
 
 
-So let's do it! Here is our own implementation of the stomatal closure for a `ModelList` component models:
+So let's do it! Here is our own implementation of the stomatal closure for a `ModelMapping` component models:
 
 ```@example usepkg
 function PlantBiophysics.gs_closure(::BandB, models, status, meteo, constants, extra)
@@ -283,16 +283,16 @@ Where `[...]` represent the lines of code implementing the model (not shown here
 
 The interesting bit is in the function declaration at the top. This is where all the magic happens. The first argument let Julia know that this is the method for computing the `Fvcb` model.
 
-Now if we look again at what are the fields of a `ModelList`:
+Now if we look again at what are the fields of a `ModelMapping`:
 
 ```@example usepkg
-fieldnames(ModelList)
+fieldnames(ModelMapping)
 ```
 
-we see that it has two fields: `models` and `status`. The first one is a list of models named after the process they simulate. So if we want to simulate the photosynthesis with the `Fvcb` model, our `ModelList` needs an instance of the [`Fvcb`](@ref) structure for the `photosynthesis` process, like so:
+we see that it has two fields: `models` and `status`. The first one is a list of models named after the process they simulate. So if we want to simulate the photosynthesis with the `Fvcb` model, our `ModelMapping` needs an instance of the [`Fvcb`](@ref) structure for the `photosynthesis` process, like so:
 
 ```@example usepkg
-leaf = ModelList(Fvcb());
+leaf = ModelMapping(Fvcb());
 leaf.models.photosynthesis
 ```
 
@@ -361,7 +361,7 @@ using PlantMeteo
 meteo = Atmosphere(T = 20.0, Wind = 1.0, P = 101.3, Rh = 0.65)
 
 leaf =
-    ModelList(
+    ModelMapping(
         OurModel(1.0, 2.0, 3.0),
         Medlyn(0.03, 12.0),
         status = (Tₗ = 25.0, aPPFD = 1000.0, Cₛ = 400.0, Dₗ = meteo.VPD)
