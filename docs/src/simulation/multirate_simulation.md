@@ -14,15 +14,18 @@ This tutorial shows how to run:
 - coupled leaf energy balance + photosynthesis + stomatal conductance at hourly rate
 - one daily model that integrates hourly assimilation
 
-## Define a daily integration model
+The assimilation from photosynthesis is a rate (`μmol m⁻² s⁻¹`).
+With hourly meteorology, we can directly integrate `A` and convert to daily amount in the integration reducer (`* 3600`).
+
+## Define the daily integration model
 
 ```@example multirate
 PlantSimEngine.@process "dailyassimintegrator" verbose = false
 struct DailyAssimIntegratorModel <: AbstractDailyassimintegratorModel end
-PlantSimEngine.inputs_(::DailyAssimIntegratorModel) = (A = -Inf,)
+PlantSimEngine.inputs_(::DailyAssimIntegratorModel) = (A_integrated = -Inf,)
 PlantSimEngine.outputs_(::DailyAssimIntegratorModel) = (A_daily = -Inf,)
 function PlantSimEngine.run!(::DailyAssimIntegratorModel, models, status, meteo, constants = nothing, extra = nothing)
-    status.A_daily = status.A
+    status.A_daily = status.A_integrated
     nothing
 end
 ```
@@ -53,17 +56,18 @@ meteo = Weather([
 ```@example multirate
 mapping = ModelMapping(
     "Leaf" => (
-        ModelSpec(Monteith()) |> TimeStepModel(Dates.Hour(1)),
-        ModelSpec(Fvcb()) |> TimeStepModel(Dates.Hour(1)),
-        ModelSpec(Medlyn(0.03, 12.0)) |> TimeStepModel(Dates.Hour(1)),
+        Monteith(),
+        Fvcb(),
+        Medlyn(0.03, 12.0),
         ModelSpec(DailyAssimIntegratorModel()) |>
         TimeStepModel(Dates.Day(1)) |>
-        InputBindings(; A = (process = :photosynthesis, var = :A, policy = Integrate())),
+        InputBindings(; A_integrated = (process = :energy_balance, var = :A, policy = Integrate(vals -> sum(vals) * 3600.0))),
         Status(
             d = 0.03,
             Ra_SW_f = 150.0,
             sky_fraction = 1.0,
-            aPPFD = 1200.0
+            aPPFD = 1200.0,
+            A_integrated = 0.0
         )
     ),
 )
@@ -76,6 +80,12 @@ outs = run!(mtg, mapping, meteo, tracked_outputs = Dict{String,Any}("Leaf" => (:
 leaf_df = PlantSimEngine.convert_outputs(outs, DataFrame)["Leaf"]
 
 first(leaf_df, 6)
+```
+
+Check that the first daily value is the hourly rate converted to amount (`1 hour = 3600 s`):
+
+```@example multirate
+isapprox(leaf_df.A_daily[1], leaf_df.A[1] * 3600.0; atol = 1e-6)
 ```
 
 With `TimeStepModel(Dates.Day(1))`, the daily model runs at time steps `1`, `25`, ...
