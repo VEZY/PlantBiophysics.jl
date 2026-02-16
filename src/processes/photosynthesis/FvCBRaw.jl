@@ -66,6 +66,10 @@ end
 Base.eltype(x::FvcbRaw) = typeof(x).parameters[1]
 PlantSimEngine.ObjectDependencyTrait(::Type{<:FvcbRaw}) = PlantSimEngine.IsObjectIndependent()
 PlantSimEngine.TimeStepDependencyTrait(::Type{<:FvcbRaw}) = PlantSimEngine.IsTimeStepIndependent()
+PlantSimEngine.timestep_hint(::Type{<:FvcbRaw}) = (
+    required=(Dates.Minute(1), Dates.Hour(6)),
+    preferred=Dates.Hour(1)
+)
 
 """
     run!(::FvcbRaw, models, status, meteo=nothing, constants=Constants())

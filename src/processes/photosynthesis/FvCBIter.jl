@@ -61,6 +61,10 @@ end
 Base.eltype(x::FvcbIter) = typeof(x).parameters[1]
 PlantSimEngine.ObjectDependencyTrait(::Type{<:FvcbIter}) = PlantSimEngine.IsObjectIndependent()
 PlantSimEngine.TimeStepDependencyTrait(::Type{<:FvcbIter}) = PlantSimEngine.IsTimeStepIndependent()
+PlantSimEngine.timestep_hint(::Type{<:FvcbIter}) = (
+    required=(Dates.Minute(1), Dates.Hour(6)),
+    preferred=Dates.Hour(1)
+)
 
 PlantSimEngine.dep(::FvcbIter) = (stomatal_conductance=AbstractStomatal_ConductanceModel,)
 

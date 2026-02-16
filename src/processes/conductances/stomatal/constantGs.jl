@@ -60,3 +60,7 @@ end
 
 PlantSimEngine.ObjectDependencyTrait(::Type{<:ConstantGs}) = PlantSimEngine.IsObjectIndependent()
 PlantSimEngine.TimeStepDependencyTrait(::Type{<:ConstantGs}) = PlantSimEngine.IsTimeStepIndependent()
+PlantSimEngine.timestep_hint(::Type{<:ConstantGs}) = (
+    required=(Dates.Minute(1), Dates.Hour(6)),
+    preferred=Dates.Hour(1)
+)

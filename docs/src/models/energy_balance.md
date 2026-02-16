@@ -30,6 +30,28 @@ out_sim = run!(leaf,meteo)
 out_sim[:Rn]
 ```
 
+## Multi-rate defaults
+
+The `Monteith` energy-balance model declares a multi-rate timestep hint:
+
+- required range: 1 minute to 2 hours
+- preferred timestep: 1 hour
+
+This hint is used by `PlantSimEngine` when no explicit `TimeStepModel(...)` is provided in a `ModelSpec`.
+
+```@example usepkg
+using Dates
+
+PlantSimEngine.timestep_hint(Monteith())
+```
+
+You can still enforce a specific model timestep in the mapping:
+
+```@example usepkg
+spec = ModelSpec(Monteith()) |> TimeStepModel(Dates.Minute(30))
+PlantSimEngine.timestep(spec)
+```
+
 ## Monteith
 
 Leaf energy balance according to Monteith and Unsworth (2013), and corrigendum from Schymanski et al. (2017). The computation is close to the one from the MAESPA model (Duursma et al., 2012, Vezy et al., 2018) here. The leaf temperature is computed iteratively to close the energy balance using the mass flux (~ Rn - λE).

@@ -29,6 +29,28 @@ run!(leaf,meteo)
 leaf[:Gₛ]
 ```
 
+## Multi-rate defaults
+
+All stomatal conductance models in `PlantBiophysics` declare a multi-rate timestep hint:
+
+- required range: 1 minute to 6 hours
+- preferred timestep: 1 hour
+
+These hints are used by `PlantSimEngine` when no explicit `TimeStepModel(...)` is provided in a `ModelSpec`.
+
+```@example usepkg
+using Dates
+
+PlantSimEngine.timestep_hint(Medlyn(0.03, 12.0))
+```
+
+You can still enforce a specific model timestep in the mapping:
+
+```@example usepkg
+spec = ModelSpec(Medlyn(0.03, 12.0)) |> TimeStepModel(Dates.Hour(3))
+PlantSimEngine.timestep(spec)
+```
+
 ## Medlyn
 
 ### [Parameters](@id param_medlyn)

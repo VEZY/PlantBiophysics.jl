@@ -37,6 +37,7 @@ makedocs(;
         "Tutorial: Simulation" => [
             "Simple Simulation" => "./simulation/first_simulation.md",
             "Several time steps" => "./simulation/several_simulation.md",
+            "Multi-rate simulation" => "./simulation/multirate_simulation.md",
             "Several objects" => "./simulation/several_objects_simulation.md",
             "Whole-plant simulation" => "./simulation/mtg_simulation.md",
         ],

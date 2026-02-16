@@ -31,6 +31,28 @@ This model does one thing only: force the photosynthesis to the value given as a
 !!! note
     This model feels useless here, but it can be useful when coupled with other models, for example when simulating the full energy balance with a coupled photosynthesis and stomatal conductance model. In this case it is used to better understand how the energy balance works for a given assimilation.
 
+## Multi-rate defaults
+
+All photosynthesis models in `PlantBiophysics` declare a multi-rate timestep hint:
+
+- required range: 1 minute to 6 hours
+- preferred timestep: 1 hour
+
+These hints are used by `PlantSimEngine` when no explicit `TimeStepModel(...)` is provided in a `ModelSpec`.
+
+```@example usepkg
+using Dates
+
+PlantSimEngine.timestep_hint(Fvcb())
+```
+
+You can still enforce a specific model timestep in the mapping:
+
+```@example usepkg
+spec = ModelSpec(Fvcb()) |> TimeStepModel(Dates.Hour(2))
+PlantSimEngine.timestep(spec)
+```
+
 ## Fvcb
 
 ### [Parameters](@id param_fvcb)

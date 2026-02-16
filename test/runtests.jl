@@ -48,6 +48,10 @@ using PlantBiophysics.PlantSimEngine
         include("test-mtg.jl")
     end
 
+    @testset "Multi-rate" begin
+        include("test-multirate.jl")
+    end
+
     @testset "Fitting" begin
         include("test-fitting.jl")
     end

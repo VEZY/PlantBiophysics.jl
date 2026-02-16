@@ -44,6 +44,11 @@ end
 Base.eltype(x::Monteith) = typeof(x).parameters[1]
 PlantSimEngine.ObjectDependencyTrait(::Type{<:Monteith}) = PlantSimEngine.IsObjectIndependent()
 PlantSimEngine.TimeStepDependencyTrait(::Type{<:Monteith}) = PlantSimEngine.IsTimeStepIndependent()
+# Multi-rate default for energy balance: keep relatively fine cadence.
+PlantSimEngine.timestep_hint(::Type{<:Monteith}) = (
+    required=(Dates.Minute(1), Dates.Hour(2)),
+    preferred=Dates.Hour(1)
+)
 
 PlantSimEngine.dep(::Monteith) = (photosynthesis=AbstractPhotosynthesisModel,)
 
