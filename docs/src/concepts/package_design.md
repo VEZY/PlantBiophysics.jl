@@ -78,13 +78,7 @@ Perfect! Now is that all we need to make a simulation? Well, usually no. Models 
 
 Variables are computed by models, and can optionally be initialized before the simulation. Variables and their values are stored in the `ModelMapping`, and are initialized automatically or manually.
 
-`ModelMapping` stores both process declarations and status information:
-
-```@example usepkg
-fieldnames(ModelMapping)
-```
-
-For example the [`Beer`](@ref) model needs the leaf area index (`LAI`, m^{2} \cdot m^{-2}) to run.
+`ModelMapping` stores both process declarations and status information. For example the [`Beer`](@ref) model needs the leaf area index (`LAI`, m^{2} \cdot m^{-2}) to run.
 
 We can see which variables are needed as inputs using `inputs` from PlantSimEngine:
 
@@ -105,7 +99,7 @@ If we instantiate a `ModelMapping` with the Beer-Lambert model, we can see that 
 ```@example usepkg
 using PlantSimEngine, PlantBiophysics
 m = ModelMapping(Beer(0.5))
-keys(m.status)
+keys(status(m))
 ```
 
 To know which variables should be initialized, we can use `to_initialize` from PlantSimEngine:
