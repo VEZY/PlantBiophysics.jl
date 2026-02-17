@@ -80,8 +80,8 @@ end
     @test sim.temporal_state.last_run[ModelKey(ScopeId(:global, 1), "Leaf", :dailyassimintegratortest)] == 25.0
 
     specs = PlantSimEngine.get_model_specs(sim)["Leaf"]
-    @test PlantSimEngine.timestep(specs[:energy_balance]) == Dates.Hour(1)
-    @test PlantSimEngine.timestep(specs[:photosynthesis]) == Dates.Hour(1)
-    @test PlantSimEngine.timestep(specs[:stomatal_conductance]) == Dates.Hour(1)
+    @test isnothing(PlantSimEngine.timestep(specs[:energy_balance]))
+    @test isnothing(PlantSimEngine.timestep(specs[:photosynthesis]))
+    @test isnothing(PlantSimEngine.timestep(specs[:stomatal_conductance]))
     @test PlantSimEngine.timestep(specs[:dailyassimintegratortest]) == Dates.Day(1)
 end

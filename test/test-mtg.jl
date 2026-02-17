@@ -101,7 +101,10 @@ transform!(
     # init_mtg_models!(mtg, models, length(weather))
 
     # Make the computation:
-    out = run!(mtg, models, weather, tracked_outputs=Dict{String,Any}("Leaf" => (:A, :Tₗ, :Ra_LW_f, :H, :λE, :Gₛ, :Gbₕ, :Gbc, :Rn, :Cᵢ, :Cₛ)))
+    out = run!(
+        mtg, models, weather,
+        tracked_outputs=Dict{String,Any}("Leaf" => (:A, :Tₗ, :Ra_LW_f, :H, :λE, :Gₛ, :Gbₕ, :Gbc, :Rn, :Cᵢ, :Cₛ))
+    )
     out = PlantSimEngine.convert_outputs(out, DataFrame)
     out_leaf = out["Leaf"]
 
