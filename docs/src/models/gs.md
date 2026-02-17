@@ -25,8 +25,8 @@ meteo = Atmosphere(T = 20.0, Wind = 1.0, P = 101.3, Rh = 0.65)
 
 leaf = ModelMapping(ConstantGs(Gₛ = 0.1))
 
-run!(leaf,meteo)
-leaf[:Gₛ]
+out = run!(leaf,meteo)
+out[:Gₛ]
 ```
 
 ## Multi-rate defaults
@@ -86,9 +86,9 @@ leaf = ModelMapping(
     status = (A = 20.0, Cₛ = 400.0, Dₗ = meteo.VPD)
 )
 
-run!(leaf,meteo)
+out = run!(leaf,meteo)
 
-leaf
+out
 ```
 
 !!! note
@@ -165,8 +165,8 @@ meteo = Atmosphere(T = 20.0, Wind = 1.0, P = 101.3, Rh = 0.65)
 
 leaf = ModelMapping(ConstantGs(Gₛ = 0.1))
 
-run!(leaf,meteo)
-leaf[:Gₛ]
+out = run!(leaf,meteo)
+out[:Gₛ]
 ```
 
 ## References

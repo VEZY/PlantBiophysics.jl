@@ -23,7 +23,7 @@ For example, you can "simulate" a constant assimilation for a leaf using the fol
 ```@example usepkg
 using PlantBiophysics, PlantSimEngine
 leaf = ModelMapping(ConstantA(25.0))
-run!(leaf)
+out = run!(leaf)
 ```
 
 This model does one thing only: force the photosynthesis to the value given as a parameter in the model, here 25.0 ``μmol \cdot m^{-2} \cdot s^{-1}``.
@@ -112,9 +112,9 @@ leaf = ModelMapping(
 )
 # NB: we need to initialize `Tₗ`, `aPPFD` and `Cₛ` for `FvCB`, and `Dₗ` for the stomatal conductance of Medlyn et al. (2011).
 
-run!(leaf,meteo)
+out = run!(leaf,meteo)
 
-leaf
+out
 ```
 
 !!! note
@@ -145,9 +145,9 @@ leaf = ModelMapping(
 
 # NB: we need to initialize `Tₗ`, `aPPFD` and `Gbc` for `FvcbIter`, and `Dₗ` for the stomatal conductance of Medlyn et al. (2011).
 
-run!(leaf,meteo,Constants())
+out = run!(leaf,meteo,Constants())
 
-leaf
+out
 ```
 
 ## FvcbRaw
@@ -178,8 +178,8 @@ leaf = ModelMapping(
 )
 # NB: we need `Tₗ`, `aPPFD` and `Cᵢ` as inputs (see `inputs`)
 
-run!(leaf)
-leaf
+out = run!(leaf)
+out
 ```
 
 ## ConstantA
@@ -197,8 +197,8 @@ leaf
 ```@example usepkg
 leaf = ModelMapping(ConstantA())
 
-run!(leaf)
-leaf
+out = run!(leaf)
+out
 ```
 
 ## ConstantAGs
@@ -224,8 +224,8 @@ leaf = ModelMapping(
     status = (Cₛ = 380.0, Dₗ = 2.0)
 )
 
-run!(leaf)
-leaf
+out = run!(leaf)
+out
 ```
 
 ## Parameter effects

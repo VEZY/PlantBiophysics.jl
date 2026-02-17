@@ -368,6 +368,6 @@ leaf =
     )
 # NB: we need  to initalise Tₗ, aPPFD and Cₛ
 
-run!(leaf,meteo,Constants())
-leaf[:A]
+out = run!(leaf,meteo,Constants())
+out[:A]
 ```
