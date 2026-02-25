@@ -30,10 +30,10 @@ end
 end
 
 @testset "Multi-rate hourly leaf + daily integration" begin
-    mtg = Node(NodeMTG("/", "Scene", 1, 0))
-    plant = Node(mtg, NodeMTG("+", "Plant", 1, 1))
-    internode = Node(plant, NodeMTG("/", "Internode", 1, 2))
-    Node(internode, NodeMTG("+", "Leaf", 1, 2))
+    mtg = Node(NodeMTG(:/, :Scene, 1, 0))
+    plant = Node(mtg, NodeMTG(:+, :Plant, 1, 1))
+    internode = Node(plant, NodeMTG(:/, :Internode, 1, 2))
+    Node(internode, NodeMTG(:+, :Leaf, 1, 2))
 
     meteo = Weather([
         Atmosphere(
@@ -48,7 +48,7 @@ end
     ])
 
     mapping = ModelMapping(
-        "Leaf" => (
+        :Leaf => (
             Monteith(),
             Fvcb(),
             Medlyn(0.03, 12.0),
@@ -70,20 +70,20 @@ end
         mapping,
         nsteps=length(meteo),
         check=true,
-        outputs=Dict("Leaf" => (:A, :A_daily)),
+        outputs=Dict(:Leaf => (:A, :A_daily)),
     )
 
     out = run!(sim, meteo, executor=SequentialEx())
-    out_df = convert_outputs(out, DataFrame)["Leaf"]
+    out_df = convert_outputs(out, DataFrame)[:Leaf]
 
     @test nrow(out_df) == 48
     @test out_df.A_daily[1] ≈ out_df.A[1] * 3600.0 atol = 1e-4
     @test all(out_df.A_daily[1:24] .== out_df.A_daily[1])
     @test all(out_df.A_daily[25:48] .== out_df.A_daily[25])
     @test out_df.A_daily[25] ≈ 24.0 * out_df.A[1] * 3600.0 atol = 1e-3
-    @test sim.temporal_state.last_run[ModelKey(ScopeId(:global, 1), "Leaf", :dailyassimintegratortest)] == 25.0
+    @test sim.temporal_state.last_run[ModelKey(ScopeId(:global, 1), :Leaf, :dailyassimintegratortest)] == 25.0
 
-    specs = PlantSimEngine.get_model_specs(sim)["Leaf"]
+    specs = PlantSimEngine.get_model_specs(sim)[:Leaf]
     @test isnothing(PlantSimEngine.timestep(specs[:energy_balance]))
     @test isnothing(PlantSimEngine.timestep(specs[:photosynthesis]))
     @test isnothing(PlantSimEngine.timestep(specs[:stomatal_conductance]))

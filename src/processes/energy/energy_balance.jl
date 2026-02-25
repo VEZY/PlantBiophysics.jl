@@ -92,14 +92,14 @@ init_status!(model, Ra_SW_f = 13.747, sky_fraction = 1.0, aPPFD = 1500.0, Tₗ =
 
 # NB: To know which variables has to be initialized according to the models used, you can use
 # `to_initialize(ComponentModels)`, *e.g.*:
-to_initialize(model["Leaf"])
+to_initialize(model[:Leaf])
 
 # Running a simulation for all component types in the same scene:
 run!(model, meteo)
 
-model["Leaf"].status.Rn
-model["Leaf"].status.A
-model["Leaf"].status.Cᵢ
+model[:Leaf].status.Rn
+model[:Leaf].status.A
+model[:Leaf].status.Cᵢ
 
 # ---Simulation on a full plant using an MTG---
 
@@ -122,7 +122,7 @@ meteo = read_weather(
 
 # Make the models:
 models = Dict(
-    "Leaf" =>
+    :Leaf =>
         ModelMapping(
             energy_balance = Monteith(),
             photosynthesis = Fvcb(),
@@ -149,7 +149,7 @@ transform!(
 init_mtg_models!(mtg, models, length(meteo))
 
 # Making the simulation:
-run!(mtg, meteo)
+run!(mtg, ModelMapping(models), meteo)
 
 # Pull the leaf temperature of the first step:
 transform!(

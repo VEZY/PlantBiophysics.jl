@@ -7,7 +7,7 @@ nrj = Monteith()
 photo = Fvcb(α=0.24) # because I set-up the tests with this value for α
 Gs = Medlyn(0.03, 12.0)
 models = Dict(
-    "Leaf" =>
+    :Leaf =>
         (
             nrj,
             photo,
@@ -16,7 +16,7 @@ models = Dict(
         )
 )
 # We can compute them directly inside the MTG from available variables:
-transform!(
+MultiScaleTreeGraph.transform!(
     mtg,
     [:Ra_PAR_f, :Ra_NIR_f] => ((x, y) -> x + y) => :Ra_SW_f,
     :Ra_PAR_f => (x -> x * 4.57) => :aPPFD,
@@ -55,7 +55,7 @@ transform!(
 #     metamer = get_node(mtg, 2069)
 #     leaf = get_node(mtg, 2070)
 
-#     @test typeof(metamer[models_name].models) == typeof(models["Metamer"].models)
+#     @test typeof(metamer[models_name].models) == typeof(models[:Metamer].models)
 #     @test typeof(status(metamer[models_name])) <: TimeStepTable{<:Status}
 # end
 
@@ -74,7 +74,7 @@ transform!(
     )
 
     # We can compute them directly inside the MTG from available variables:
-    transform!(
+    MultiScaleTreeGraph.transform!(
         mtg,
         [:Ra_PAR_f, :Ra_NIR_f] => ((x, y) -> x + y * 1.2) => :Rᵢ, # This would be the incident radiation
         [:Ra_PAR_f, :Ra_NIR_f] => ((x, y) -> fill(x + y, length(weather))) => :Ra_SW_f,
@@ -102,11 +102,11 @@ transform!(
 
     # Make the computation:
     out = run!(
-        mtg, models, weather,
-        tracked_outputs=Dict{String,Any}("Leaf" => (:A, :Tₗ, :Ra_LW_f, :H, :λE, :Gₛ, :Gbₕ, :Gbc, :Rn, :Cᵢ, :Cₛ))
+        mtg, ModelMapping(models), weather,
+        tracked_outputs=Dict{Symbol,Any}(:Leaf => (:A, :Tₗ, :Ra_LW_f, :H, :λE, :Gₛ, :Gbₕ, :Gbc, :Rn, :Cᵢ, :Cₛ))
     )
     out = PlantSimEngine.convert_outputs(out, DataFrame)
-    out_leaf = out["Leaf"]
+    out_leaf = out[:Leaf]
 
     @test leaf_node[:Ra_PAR_f] == Ra_PAR_f
     @test leaf_node[:sky_fraction] == sky_fraction

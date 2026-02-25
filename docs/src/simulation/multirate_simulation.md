@@ -34,10 +34,10 @@ end
 ## Build a minimal MTG and hourly weather
 
 ```@example multirate
-mtg = Node(NodeMTG("/", "Scene", 1, 0))
-plant = Node(mtg, NodeMTG("+", "Plant", 1, 1))
-internode = Node(plant, NodeMTG("/", "Internode", 1, 2))
-Node(internode, NodeMTG("+", "Leaf", 1, 2))
+mtg = Node(NodeMTG(:/, :Scene, 1, 0))
+plant = Node(mtg, NodeMTG(:+, :Plant, 1, 1))
+internode = Node(plant, NodeMTG(:/, :Internode, 1, 2))
+Node(internode, NodeMTG(:+, :Leaf, 1, 2))
 
 meteo = Weather([
     Atmosphere(
@@ -56,7 +56,7 @@ meteo = Weather([
 
 ```@example multirate
 mapping = ModelMapping(
-    "Leaf" => (
+    :Leaf => (
         Monteith(),
         Fvcb(),
         Medlyn(0.03, 12.0),
@@ -77,8 +77,8 @@ mapping = ModelMapping(
 ## Run and inspect outputs
 
 ```@example multirate
-outs = run!(mtg, mapping, meteo, tracked_outputs = Dict{String,Any}("Leaf" => (:A, :A_daily)))
-leaf_df = PlantSimEngine.convert_outputs(outs, DataFrame)["Leaf"]
+outs = run!(mtg, mapping, meteo, tracked_outputs = Dict{Symbol,Any}(:Leaf => (:A, :A_daily)))
+leaf_df = PlantSimEngine.convert_outputs(outs, DataFrame)[:Leaf]
 
 first(leaf_df, 6)
 ```

@@ -57,7 +57,7 @@ init_status!(model, Tₗ = 25.0, aPPFD = 1000.0, Cₛ = 400.0, Dₗ = meteo.VPD)
 
 # Running a simulation for all component types in the same scene:
 run!(model, meteo)
-model["Leaf"].status.A
+model[:Leaf].status.A
 
 ```
 
