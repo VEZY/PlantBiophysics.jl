@@ -15,7 +15,8 @@ This tutorial shows how to run:
 - one daily model that integrates hourly assimilation
 
 The assimilation from photosynthesis is a rate (`μmol m⁻² s⁻¹`).
-With hourly meteorology, we can directly integrate `A` and convert to daily amount in the integration reducer (`* 3600`).
+By default, PlantBiophysics models expose `PlantSimEngine.output_policy(...)= (A=Integrate(),)` for assimilation outputs.
+For flux-to-amount conversion (hourly `A` to daily amount), we override with an explicit reducer (`* 3600`) in `InputBindings(...)`.
 
 ## Define the daily integration model
 

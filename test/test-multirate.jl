@@ -20,6 +20,10 @@ end
     @test PlantSimEngine.timestep_hint(ConstantA()) == (required=fast_range, preferred=hourly_pref)
     @test PlantSimEngine.timestep_hint(ConstantAGs()) == (required=fast_range, preferred=hourly_pref)
 
+    @test PlantSimEngine.output_policy(Monteith()).A isa Integrate
+    @test PlantSimEngine.output_policy(Fvcb()).A isa Integrate
+    @test PlantSimEngine.output_policy(Medlyn(0.03, 12.0)).Gₛ isa Aggregate
+
     @test PlantSimEngine.timestep_hint(Medlyn(0.03, 12.0)) == (required=fast_range, preferred=hourly_pref)
     @test PlantSimEngine.timestep_hint(Tuzet(0.03, 12.0, -1.5, 2.0, 30.0)) == (required=fast_range, preferred=hourly_pref)
     @test PlantSimEngine.timestep_hint(ConstantGs(0.0, 0.1)) == (required=fast_range, preferred=hourly_pref)

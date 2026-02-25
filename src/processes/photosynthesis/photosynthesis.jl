@@ -63,3 +63,7 @@ model["Leaf"].status.A
 
 Note that we use `VPD` as an approximation of `Dₗ` here because we don't have the leaf temperature (*i.e.* `Dₗ = VPD` when `Tₗ = T`).
 """ verbose = false
+
+# Default policy for assimilation rates when consumed at coarser clocks.
+# Mapping-level InputBindings policy still overrides this default when provided.
+PlantSimEngine.output_policy(::Type{<:AbstractPhotosynthesisModel}) = (A=PlantSimEngine.Integrate(),)

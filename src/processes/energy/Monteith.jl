@@ -49,6 +49,16 @@ PlantSimEngine.timestep_hint(::Type{<:Monteith}) = (
     required=(Dates.Minute(1), Dates.Hour(2)),
     preferred=Dates.Hour(1)
 )
+PlantSimEngine.output_policy(::Type{<:Monteith}) = (
+    A=PlantSimEngine.Integrate(), Tₗ=PlantSimEngine.Integrate(PlantMeteo.MeanReducer()),
+    Rn=PlantSimEngine.Integrate(), Ra_LW_f=PlantSimEngine.Integrate(), H=PlantSimEngine.Integrate(),
+    λE=PlantSimEngine.Integrate(), Cₛ=PlantSimEngine.Integrate(PlantMeteo.MeanReducer()),
+    Cᵢ=PlantSimEngine.Integrate(PlantMeteo.MeanReducer()),
+    Gₛ=PlantSimEngine.Integrate(), Gbₕ=PlantSimEngine.Integrate(),
+    Dₗ=PlantSimEngine.Integrate(PlantMeteo.MeanReducer()),
+    Gbc=PlantSimEngine.Integrate(), iter=PlantSimEngine.Integrate(PlantMeteo.MeanReducer())
+)
+#! note: all sum intagrated variables (`Integrate()`) have to be / sum(duration). 
 
 PlantSimEngine.dep(::Monteith) = (photosynthesis=AbstractPhotosynthesisModel,)
 
