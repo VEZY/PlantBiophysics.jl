@@ -66,6 +66,13 @@ PlantSimEngine.timestep_hint(::Type{<:FvcbIter}) = (
     preferred=Dates.Hour(1)
 )
 
+PlantSimEngine.output_policy(::Type{<:FvcbIter}) = (
+    A=PlantSimEngine.Integrate(PlantMeteo.DurationSumReducer()), # from μmol m-2 s-1 to μmol m-2 timerstep-1
+    Cᵢ=PlantSimEngine.Integrate(PlantMeteo.MeanReducer()),
+    Gₛ=PlantSimEngine.Integrate(PlantMeteo.DurationSumReducer()),
+    Cₛ=PlantSimEngine.Integrate(PlantMeteo.MeanReducer()),
+)
+
 PlantSimEngine.dep(::FvcbIter) = (stomatal_conductance=AbstractStomatal_ConductanceModel,)
 
 """

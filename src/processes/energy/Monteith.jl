@@ -50,15 +50,20 @@ PlantSimEngine.timestep_hint(::Type{<:Monteith}) = (
     preferred=Dates.Hour(1)
 )
 PlantSimEngine.output_policy(::Type{<:Monteith}) = (
-    A=PlantSimEngine.Integrate(), Tₗ=PlantSimEngine.Integrate(PlantMeteo.MeanReducer()),
-    Rn=PlantSimEngine.Integrate(), Ra_LW_f=PlantSimEngine.Integrate(), H=PlantSimEngine.Integrate(),
-    λE=PlantSimEngine.Integrate(), Cₛ=PlantSimEngine.Integrate(PlantMeteo.MeanReducer()),
+    A=PlantSimEngine.Integrate(PlantMeteo.DurationSumReducer()),
+    Tₗ=PlantSimEngine.Integrate(PlantMeteo.MeanReducer()),
+    Rn=PlantSimEngine.Integrate(PlantMeteo.RadiationEnergy()), # W m-2 to MJ m-2 timestep-1
+    Ra_LW_f=PlantSimEngine.Integrate(PlantMeteo.RadiationEnergy()),
+    H=PlantSimEngine.Integrate(PlantMeteo.RadiationEnergy()),
+    λE=PlantSimEngine.Integrate(PlantMeteo.RadiationEnergy()),
+    Cₛ=PlantSimEngine.Integrate(PlantMeteo.MeanReducer()),
     Cᵢ=PlantSimEngine.Integrate(PlantMeteo.MeanReducer()),
-    Gₛ=PlantSimEngine.Integrate(), Gbₕ=PlantSimEngine.Integrate(),
+    Gₛ=PlantSimEngine.Integrate(PlantMeteo.DurationSumReducer()),
+    Gbₕ=PlantSimEngine.Integrate(PlantMeteo.DurationSumReducer()),
     Dₗ=PlantSimEngine.Integrate(PlantMeteo.MeanReducer()),
-    Gbc=PlantSimEngine.Integrate(), iter=PlantSimEngine.Integrate(PlantMeteo.MeanReducer())
+    Gbc=PlantSimEngine.Integrate(PlantMeteo.DurationSumReducer()),
+    iter=PlantSimEngine.Integrate(PlantMeteo.MeanReducer())
 )
-#! note: all sum intagrated variables (`Integrate()`) have to be / sum(duration). 
 
 PlantSimEngine.dep(::Monteith) = (photosynthesis=AbstractPhotosynthesisModel,)
 

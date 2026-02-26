@@ -131,6 +131,12 @@ PlantSimEngine.timestep_hint(::Type{<:Fvcb}) = (
     preferred=Dates.Hour(1)
 )
 
+PlantSimEngine.output_policy(::Type{<:Fvcb}) = (
+    A=PlantSimEngine.Integrate(PlantMeteo.DurationSumReducer()), # from μmol m-2 s-1 to μmol m-2 timerstep-1
+    Cᵢ=PlantSimEngine.Integrate(PlantMeteo.MeanReducer()),
+    Gₛ=PlantSimEngine.Integrate(PlantMeteo.DurationSumReducer()),
+)
+
 """
     run!(::Fvcb, models, status, meteo, constants=Constants())
 

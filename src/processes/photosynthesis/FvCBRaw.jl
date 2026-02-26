@@ -70,6 +70,9 @@ PlantSimEngine.timestep_hint(::Type{<:FvcbRaw}) = (
     required=(Dates.Minute(1), Dates.Hour(6)),
     preferred=Dates.Hour(1)
 )
+PlantSimEngine.output_policy(::Type{<:FvcbRaw}) = (
+    A=PlantSimEngine.Integrate(PlantMeteo.DurationSumReducer()), # from μmol m-2 s-1 to μmol m-2 timerstep-1
+)
 
 """
     run!(::FvcbRaw, models, status, meteo=nothing, constants=Constants())

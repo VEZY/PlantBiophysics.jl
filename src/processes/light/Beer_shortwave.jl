@@ -48,6 +48,12 @@ PlantSimEngine.inputs_(::BeerShortwave) = (LAI=-Inf,)
 PlantSimEngine.outputs_(::BeerShortwave) = (Ra_SW_f=-Inf, Ra_PAR_f=-Inf, Ra_NIR_f=-Inf, aPPFD=-Inf)
 PlantSimEngine.ObjectDependencyTrait(::Type{<:BeerShortwave}) = PlantSimEngine.IsObjectIndependent()
 PlantSimEngine.TimeStepDependencyTrait(::Type{<:BeerShortwave}) = PlantSimEngine.IsTimeStepIndependent()
+PlantSimEngine.output_policy(::Type{<:BeerShortwave}) = (
+    Ra_SW_f=PlantSimEngine.Integrate(PlantMeteo.RadiationEnergy()), # from W m-2 to J m-2 timerstep-1
+    Ra_PAR_f=PlantSimEngine.Integrate(PlantMeteo.RadiationEnergy()),
+    Ra_NIR_f=PlantSimEngine.Integrate(PlantMeteo.RadiationEnergy()),
+    aPPFD=PlantSimEngine.Integrate(PlantMeteo.RadiationEnergy()),
+)
 
 function PlantSimEngine.run!(::BeerShortwave, models, status, meteo, constants, extra)
     status.Ra_PAR_f = meteo.Ri_PAR_f * (1.0 - exp(-models.light_interception.k_PAR * status.LAI))

@@ -40,7 +40,7 @@ run!(leaf,meteo)
 
 # Default policy for stomatal conductance when consumed at coarser clocks.
 # Conductance is typically summarized over a window rather than accumulated.
-PlantSimEngine.output_policy(::Type{<:AbstractStomatal_ConductanceModel}) = (Gₛ=PlantSimEngine.Aggregate(),)
+PlantSimEngine.output_policy(::Type{<:AbstractStomatal_ConductanceModel}) = (Gₛ=PlantSimEngine.Aggregate(PlantMeteo.DurationSumReducer()),)
 
 # Gs is used a little bit differently compared to the other processes. We use two forms:
 # the stomatal closure and the full computation of Gs

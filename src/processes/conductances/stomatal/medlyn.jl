@@ -51,6 +51,10 @@ function PlantSimEngine.outputs_(::Medlyn)
     (Gₛ=-Inf,)
 end
 
+PlantSimEngine.output_policy(::Type{<:Medlyn}) = (
+    Gₛ=PlantSimEngine.Integrate(PlantMeteo.DurationSumReducer()),
+)
+
 Base.eltype(::Medlyn{T}) where T = T
 
 """

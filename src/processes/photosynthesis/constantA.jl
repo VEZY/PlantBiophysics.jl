@@ -23,6 +23,10 @@ function PlantSimEngine.outputs_(::ConstantA)
     (A=-Inf,)
 end
 
+PlantSimEngine.output_policy(::Type{<:ConstantA}) = (
+    A=PlantSimEngine.Integrate(PlantMeteo.DurationSumReducer()), # from μmol m-2 s-1 to μmol m-2 timerstep-1
+)
+
 Base.eltype(x::ConstantA) = typeof(x).parameters[1]
 
 """

@@ -57,3 +57,6 @@ end
 
 PlantSimEngine.ObjectDependencyTrait(::Type{<:Beer}) = PlantSimEngine.IsObjectIndependent()
 PlantSimEngine.TimeStepDependencyTrait(::Type{<:Beer}) = PlantSimEngine.IsTimeStepIndependent()
+PlantSimEngine.output_policy(::Type{<:Beer}) = (
+    aPPFD=PlantSimEngine.Integrate(PlantMeteo.RadiationEnergy()),
+)

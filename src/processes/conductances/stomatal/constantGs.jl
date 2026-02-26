@@ -29,6 +29,10 @@ function PlantSimEngine.outputs_(::ConstantGs)
     (Gₛ=-Inf,)
 end
 
+PlantSimEngine.output_policy(::Type{<:ConstantGs}) = (
+    Gₛ=PlantSimEngine.Integrate(PlantMeteo.DurationSumReducer()),
+)
+
 Base.eltype(x::ConstantGs) = typeof(x).parameters[1]
 
 """
