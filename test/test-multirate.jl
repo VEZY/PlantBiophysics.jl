@@ -22,7 +22,7 @@ end
 
     @test PlantSimEngine.output_policy(Monteith()).A isa Integrate
     @test PlantSimEngine.output_policy(Fvcb()).A isa Integrate
-    @test PlantSimEngine.output_policy(Medlyn(0.03, 12.0)).Gₛ isa Aggregate
+    @test PlantSimEngine.output_policy(Medlyn(0.03, 12.0)).Gₛ isa Integrate
 
     @test PlantSimEngine.timestep_hint(Medlyn(0.03, 12.0)) == (required=fast_range, preferred=hourly_pref)
     @test PlantSimEngine.timestep_hint(Tuzet(0.03, 12.0, -1.5, 2.0, 30.0)) == (required=fast_range, preferred=hourly_pref)
