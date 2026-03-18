@@ -8,6 +8,7 @@ using DataFrames
 using MultiScaleTreeGraph
 using PlantGeom
 using MonteCarloMeasurements
+using Statistics
 
 # We use the ones from PlantBiophysics so it works even with "dev"ed versions:
 using PlantBiophysics.PlantMeteo
