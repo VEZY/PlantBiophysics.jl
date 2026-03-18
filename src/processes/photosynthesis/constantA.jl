@@ -23,6 +23,10 @@ function PlantSimEngine.outputs_(::ConstantA)
     (A=-Inf,)
 end
 
+PlantSimEngine.output_policy(::Type{<:ConstantA}) = (
+    A=PlantSimEngine.Integrate(PlantMeteo.DurationSumReducer()), # from μmol m-2 s-1 to μmol m-2 timerstep-1
+)
+
 Base.eltype(x::ConstantA) = typeof(x).parameters[1]
 
 """
@@ -39,7 +43,7 @@ Modify the leaf status in place for A with a constant value:
 # Arguments
 
 - `::ConstantA`: a constant assimilation model
-- `models`: a `ModelList` struct holding the parameters for the model.
+- `models`: a `ModelMapping` struct holding the parameters for the model.
 - `status`: A status, usually the leaf status (*i.e.* leaf.status)
 - `meteo`: meteorology structure, see [`Atmosphere`](https://palmstudio.github.io/PlantMeteo.jl/stable/#PlantMeteo.Atmosphere)
 - `constants = PlantMeteo.Constants()`: physical constants. See `PlantMeteo.Constants` for more details
@@ -48,7 +52,7 @@ Modify the leaf status in place for A with a constant value:
 
 ```julia
 meteo = Atmosphere(T = 20.0, Wind = 1.0, P = 101.3, Rh = 0.65)
-leaf = ModelList(photosynthesis = ConstantA(26.0))
+leaf = ModelMapping(photosynthesis = ConstantA(26.0))
 
 run!(leaf,meteo,Constants())
 
@@ -65,4 +69,7 @@ end
 
 PlantSimEngine.ObjectDependencyTrait(::Type{<:ConstantA}) = PlantSimEngine.IsObjectIndependent()
 PlantSimEngine.TimeStepDependencyTrait(::Type{<:ConstantA}) = PlantSimEngine.IsTimeStepIndependent()
-
+PlantSimEngine.timestep_hint(::Type{<:ConstantA}) = (
+    required=(Dates.Minute(1), Dates.Hour(6)),
+    preferred=Dates.Hour(1)
+)

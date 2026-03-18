@@ -17,7 +17,7 @@ weather = read_weather(
 
 models = read_model(joinpath(dirname(dirname(pathof(PlantBiophysics))), "test", "inputs", "models", "plant_coffee.yml"));
 
-transform!(
+MultiScaleTreeGraph.transform!(
     mtg,
     :Ra_PAR_f => (x -> fill(x, length(weather))) => :Ra_PAR_f,
     :sky_fraction => (x -> fill(x, length(weather))) => :sky_fraction,
@@ -26,8 +26,8 @@ transform!(
     ignore_nothing = true
 )
 
-out = run!(mtg, models, weather, tracked_outputs=Dict{String,Any}("Leaf" => (:Tₗ,)))
-outputs_leaves = out["Leaf"]
+out = run!(mtg, ModelMapping(models), weather, tracked_outputs=Dict{Symbol,Any}(:Leaf => (:Tₗ,)))
+outputs_leaves = out[:Leaf]
 for ts in outputs_leaves
     ts.node.Tₗ = ts.Tₗ
 end
@@ -74,14 +74,14 @@ Let's check which variables we need to provide for our model configuration:
 to_initialize(models, mtg)
 ```
 
-OK, only the `"Leaf"` component must be initialized before computation for the coupled energy balance, with the characteristic dimension of the object `d`.
+OK, only the `:Leaf` component must be initialized before computation for the coupled energy balance, with the characteristic dimension of the object `d`.
 
 But we also know that the `Translucent` model reads some variables from the MTG nodes directly: the absorbed shortwave radiation flux `Ra_SW_f`, the visible sky fraction seen by the object `sky_fraction`, and the photosynthetically active absorbed radiation flux `Ra_PAR_f`. We are in luck, we used [Archimed-ϕ](https://archimed-platform.github.io/archimed-phys-user-doc/) to compute the radiation interception of each organ in the example coffee plant we are using. So the only thing we need to do is to transform the variables given by Archimed-ϕ in each node to compute the ones we need. We use `transform!` from `MultiScaleTreeGraph.jl` to traverse the MTG and compute the right variable for each node:
 
 ```@example usepkg
 using MultiScaleTreeGraph
 
-transform!(
+MultiScaleTreeGraph.transform!(
     mtg,
     :Ra_PAR_f => (x -> fill(x, length(weather))) => :Ra_PAR_f,
     :sky_fraction => (x -> fill(x, length(weather))) => :sky_fraction,
@@ -96,20 +96,20 @@ The design of `MultiScaleTreeGraph.transform!` is very close to the one from `Da
 Now let's choose the outputs we want to save. Here we choose to only output the leaf temperature `Tₗ`:
 
 ```@example usepkg
-vars=Dict{String,Any}("Leaf" => (:Tₗ,))
+vars=Dict{Symbol,Any}(:Leaf => (:Tₗ,))
 ```
 
 Now we can run a simulation using `run!` from `PlantSimEngine`:
 
 ```@example usepkg
-outs = run!(mtg, models, weather, tracked_outputs=vars);
+outs = run!(mtg, ModelMapping(models), weather, tracked_outputs=vars);
 nothing # hide
 ```
 
 We can now extract the outputs from the simulation and store them in the MTG:
 
 ```@example usepkg
-for ts in outs["Leaf"]
+for ts in outs[:Leaf]
     ts.node.Tₗ = ts.Tₗ
 end
 ```

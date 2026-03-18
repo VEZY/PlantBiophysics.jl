@@ -44,6 +44,26 @@ end
 Base.eltype(x::Monteith) = typeof(x).parameters[1]
 PlantSimEngine.ObjectDependencyTrait(::Type{<:Monteith}) = PlantSimEngine.IsObjectIndependent()
 PlantSimEngine.TimeStepDependencyTrait(::Type{<:Monteith}) = PlantSimEngine.IsTimeStepIndependent()
+# Multi-rate default for energy balance: keep relatively fine cadence.
+PlantSimEngine.timestep_hint(::Type{<:Monteith}) = (
+    required=(Dates.Minute(1), Dates.Hour(2)),
+    preferred=Dates.Hour(1)
+)
+PlantSimEngine.output_policy(::Type{<:Monteith}) = (
+    A=PlantSimEngine.Integrate(PlantMeteo.DurationSumReducer()),
+    Tₗ=PlantSimEngine.Integrate(PlantMeteo.MeanReducer()),
+    Rn=PlantSimEngine.Integrate(PlantMeteo.RadiationEnergy()), # W m-2 to MJ m-2 timestep-1
+    Ra_LW_f=PlantSimEngine.Integrate(PlantMeteo.RadiationEnergy()),
+    H=PlantSimEngine.Integrate(PlantMeteo.RadiationEnergy()),
+    λE=PlantSimEngine.Integrate(PlantMeteo.RadiationEnergy()),
+    Cₛ=PlantSimEngine.Integrate(PlantMeteo.MeanReducer()),
+    Cᵢ=PlantSimEngine.Integrate(PlantMeteo.MeanReducer()),
+    Gₛ=PlantSimEngine.Integrate(PlantMeteo.DurationSumReducer()),
+    Gbₕ=PlantSimEngine.Integrate(PlantMeteo.DurationSumReducer()),
+    Dₗ=PlantSimEngine.Integrate(PlantMeteo.MeanReducer()),
+    Gbc=PlantSimEngine.Integrate(PlantMeteo.DurationSumReducer()),
+    iter=PlantSimEngine.Integrate(PlantMeteo.MeanReducer())
+)
 
 PlantSimEngine.dep(::Monteith) = (photosynthesis=AbstractPhotosynthesisModel,)
 
@@ -58,7 +78,7 @@ the energy balance using the mass flux (~ Rn - λE).
 # Arguments
 
 - `::Monteith`: a Monteith model, usually from a model list (*i.e.* m.energy_balance)
-- `models`: A `ModelList` struct holding the parameters for the model with
+- `models`: A `ModelMapping` struct holding the parameters for the model with
 initialisations for:
     - `Ra_SW_f` (W m-2): net shortwave radiation (PAR + NIR). Often computed from a light interception model
     - `sky_fraction` (0-2): view factor between the object and the sky for both faces (see details).
@@ -87,7 +107,7 @@ More information [here](https://docs.julialang.org/en/v1/stdlib/Logging/#Environ
 meteo = Atmosphere(T = 22.0, Wind = 0.8333, P = 101.325, Rh = 0.4490995)
 
 # Using a constant value for Gs:
-leaf = ModelList(
+leaf = ModelMapping(
     energy_balance = Monteith(),
     photosynthesis = Fvcb(),
     stomatal_conductance = ConstantGs(0.0, 0.0011),
@@ -99,7 +119,7 @@ leaf.status.Rn
 julia> 12.902547446281233
 
 # Using the model from Medlyn et al. (2011) for Gs:
-leaf = ModelList(
+leaf = ModelMapping(
     energy_balance = Monteith(),
     photosynthesis = Fvcb(),
     stomatal_conductance = Medlyn(0.03, 12.0),

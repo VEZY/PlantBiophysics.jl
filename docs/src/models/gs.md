@@ -23,10 +23,32 @@ using PlantBiophysics, PlantSimEngine
 
 meteo = Atmosphere(T = 20.0, Wind = 1.0, P = 101.3, Rh = 0.65)
 
-leaf = ModelList(ConstantGs(Gₛ = 0.1))
+leaf = ModelMapping(ConstantGs(Gₛ = 0.1))
 
-run!(leaf,meteo)
-leaf[:Gₛ]
+out = run!(leaf,meteo)
+out[:Gₛ]
+```
+
+## Multi-rate defaults
+
+All stomatal conductance models in `PlantBiophysics` declare a multi-rate timestep hint:
+
+- required range: 1 minute to 6 hours
+- preferred timestep: 1 hour
+
+These hints are used by `PlantSimEngine` when no explicit `TimeStepModel(...)` is provided in a `ModelSpec`.
+
+```@example usepkg
+using Dates
+
+PlantSimEngine.timestep_hint(Medlyn(0.03, 12.0))
+```
+
+You can still enforce a specific model timestep in the mapping:
+
+```@example usepkg
+spec = ModelSpec(Medlyn(0.03, 12.0)) |> TimeStepModel(Dates.Hour(3))
+PlantSimEngine.timestep(spec)
 ```
 
 ## Medlyn
@@ -59,14 +81,14 @@ Here is an example usage:
 ```@example usepkg
 meteo = Atmosphere(T = 20.0, Wind = 1.0, P = 101.3, Rh = 0.65)
 
-leaf = ModelList(
+leaf = ModelMapping(
     Medlyn(0.03, 12.0),
     status = (A = 20.0, Cₛ = 400.0, Dₗ = meteo.VPD)
 )
 
-run!(leaf,meteo)
+out = run!(leaf,meteo)
 
-leaf
+out
 ```
 
 !!! note
@@ -106,7 +128,7 @@ Where:
 using PlantMeteo, PlantSimEngine, PlantBiophysics
 
 meteo = Atmosphere(T = 20.0, Wind = 1.0, P = 101.3, Rh = 0.65)
-leaf = ModelList(
+leaf = ModelMapping(
     stomatal_conductance = Tuzet(0.03, 12.0, -1.5, 2.0, 30.0),
     status = (A = 20.0, Cₛ = 400.0, Ψₗ = -1.0)
 )
@@ -141,10 +163,10 @@ Here is an example usage:
 ```@example usepkg
 meteo = Atmosphere(T = 20.0, Wind = 1.0, P = 101.3, Rh = 0.65)
 
-leaf = ModelList(ConstantGs(Gₛ = 0.1))
+leaf = ModelMapping(ConstantGs(Gₛ = 0.1))
 
-run!(leaf,meteo)
-leaf[:Gₛ]
+out = run!(leaf,meteo)
+out[:Gₛ]
 ```
 
 ## References

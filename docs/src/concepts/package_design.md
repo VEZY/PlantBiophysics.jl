@@ -32,19 +32,19 @@ Models can use three types of entries:
 
 Parameters are constant values that are used by the model to compute its outputs. Meteorological information are values that are provided by the user and are used as inputs to the model. Variables are computed by the model and can optionally be initialized before the simulation.
 
-Users can choose which model is used to simulate a process using the `ModelList` structure from PlantSimEngine. `ModelList` is also used to store the values of the parameters, and to initialize variables.
+Users can choose which model is used to simulate a process using the `ModelMapping` structure from PlantSimEngine. `ModelMapping` is also used to store the values of the parameters, and to initialize variables.
 
-Let's instantiate a `ModelList` with the Beer-Lambert model of light extinction. The model is implemented with the [`Beer`](@ref) structure and has only one parameter: the extinction coefficient (`k`).
+Let's instantiate a `ModelMapping` with the Beer-Lambert model of light extinction. The model is implemented with the [`Beer`](@ref) structure and has only one parameter: the extinction coefficient (`k`).
 
 ```@example usepkg
 using PlantSimEngine, PlantBiophysics
-ModelList(Beer(0.5))
+ModelMapping(Beer(0.5))
 ```
 
-What happened here? We provided an instance of a model to a `ModelList` that automatically associates it to the process it simulates (*i.e.* the light interception).
+What happened here? We provided an instance of a model to a `ModelMapping` that automatically associates it to the process it simulates (*i.e.* the light interception).
 
 !!! tip
-    We see that we only instantiated the `ModelList` for the light extinction process. What about the others like photosynthesis or energy balance ? Well there is no need to give models if we have no intention to simulate them.
+    We see that we only instantiated the `ModelMapping` for the light extinction process. What about the others like photosynthesis or energy balance ? Well there is no need to give models if we have no intention to simulate them.
 
 ## Parameters
 
@@ -76,15 +76,9 @@ Perfect! Now is that all we need to make a simulation? Well, usually no. Models 
 
 ## Variables (inputs, outputs)
 
-Variables are computed by models, and can optionally be initialized before the simulation. Variables and their values are stored in the `ModelList`, and are initialized automatically or manually.
+Variables are computed by models, and can optionally be initialized before the simulation. Variables and their values are stored in the `ModelMapping`, and are initialized automatically or manually.
 
-Hence, `ModelList` objects store two fields:
-
-```@example usepkg
-fieldnames(ModelList)
-```
-
-The first field is a list of models associated to the processes they simulate. The second, `:status`, is used to hold all inputs and outputs of our models, called variables. For example the [`Beer`](@ref) model needs the leaf area index (`LAI`, m^{2} \cdot m^{-2}) to run.
+`ModelMapping` stores both process declarations and status information. For example the [`Beer`](@ref) model needs the leaf area index (`LAI`, m^{2} \cdot m^{-2}) to run.
 
 We can see which variables are needed as inputs using `inputs` from PlantSimEngine:
 
@@ -100,18 +94,18 @@ using PlantSimEngine
 outputs(Beer(0.5))
 ```
 
-If we instantiate a `ModelList` with the Beer-Lambert model, we can see that the `:status` field has two variables: `LAI` and `PPDF`. The first is an input, the second an output.
+If we instantiate a `ModelMapping` with the Beer-Lambert model, we can see that the `:status` field has two variables: `LAI` and `PPDF`. The first is an input, the second an output.
 
 ```@example usepkg
 using PlantSimEngine, PlantBiophysics
-m = ModelList(Beer(0.5))
-keys(m.status)
+m = ModelMapping(Beer(0.5))
+keys(status(m))
 ```
 
 To know which variables should be initialized, we can use `to_initialize` from PlantSimEngine:
 
 ```@example usepkg
-m = ModelList(Beer(0.5))
+m = ModelMapping(Beer(0.5))
 
 to_initialize(m)
 ```
@@ -134,15 +128,16 @@ typemin(Float64)
 We can initialize the variables by providing their values to the status at instantiation:
 
 ```@example usepkg
-m = ModelList(Beer(0.5), status = (LAI = 2.0,))
+m = ModelMapping(Beer(0.5), status = (LAI = 2.0,))
 ```
 
-Or after instantiation using `init_status!` (from PlantSimEngine):
+Or after instantiation by updating the status:
 
 ```@example usepkg
-m = ModelList(Beer(0.5))
+m = ModelMapping(Beer(0.5))
 
-init_status!(m, LAI = 2.0)
+m.status.LAI = 2.0
+m
 ```
 
 We can check if a component is correctly initialized using `is_initialized` (from PlantSimEngine):
@@ -175,12 +170,12 @@ More details are available from the [dedicated section](@ref microclimate_page).
 Making a simulation is rather simple, we simply use the `run!` function provided by `PlantSimEngine`:
 
 ```julia
-run!(model_list, meteo)
+run!(model_mapping, meteo)
 ```
 
-The first argument is the model list (see `ModelList` from `PlantSimEngine`), and the second defines the micro-climatic conditions (more details below in [Climate forcing](@ref)).
+The first argument is the model mapping (see `ModelMapping` from `PlantSimEngine`), and the second defines the micro-climatic conditions (more details below in [Climate forcing](@ref)).
 
-The `ModelList` should be initialized for the given process before calling `run!`. See [Variables (inputs, outputs)](@ref) for more details.
+The `ModelMapping` should be initialized for the given process before calling `run!`. See [Variables (inputs, outputs)](@ref) for more details.
 
 ### Example simulation
 
@@ -190,7 +185,7 @@ For example we can simulate the `stomatal_conductance` of a leaf like so:
 using PlantMeteo, PlantSimEngine, PlantBiophysics
 meteo = Atmosphere(T = 20.0, Wind = 1.0, P = 101.3, Rh = 0.65)
 
-leaf = ModelList(
+leaf = ModelMapping(
     Medlyn(0.03, 12.0),
     status = (A = 20.0, Dₗ = meteo.VPD, Cₛ = 400.0)
 )
@@ -202,29 +197,27 @@ out_sim[:Gₛ]
 
 ### Outputs
 
-The `status` field of a `ModelList` is used to initialize the variables before simulation and then to keep track of their current value during the simulation. We can extract the simulation outputs of a model list of the last timestep using the `status` function (from PlantSimEngine), as a `Status` type.
+The outputs of a simulation are returned as a `TimeStepTable{Status}`, which you can think of as a type-stable `DataFrame` with some extra features.
 
-Let's look at the status of our previous simulated leaf:
-
-```@setup usepkg
-status(leaf)
-```
-
-We can otherwise extract the value of one variable by querying the output data, *e.g.* for the stomatal conductance:
-
-Or similarly using the dot syntax:
-
-```@example usepkg
-out_sim.Gₛ
-```
-
-Or much simpler (and recommended), by indexing directly the model list:
+You can index into it like a `DataFrame` with a symbol to get the values of a variable across all time-steps:
 
 ```@example usepkg
 out_sim[:Gₛ]
 ```
 
-Another simple way to get the results is to transform the outputs into a `DataFrame`:
+Indexing both rows and columns is also possible, like in a `DataFrame`:
+
+```@example usepkg
+out_sim[1, :Gₛ]
+```
+
+But also indexing a single timestep by indexing with one integer, a range or `begin` and `end`:
+
+```@example usepkg
+out_sim[end]
+```
+
+You can still easily transform it into a `DataFrame` if you prefer:
 
 ```@example usepkg
 using DataFrames
@@ -235,12 +228,12 @@ df = PlantSimEngine.convert_outputs(out_sim, DataFrame)
 
 A model can work either independently or in conjunction with other models. For example a stomatal conductance model is often associated with a photosynthesis model, *i.e.* it is called from the photosynthesis model.
 
-Several models proposed in `PlantBiophysics.jl` are hard-coupled models, *i.e.* one model calls another. For example, the [`Fvcb`](@ref) structure is the implementation of the Farquhar–von Caemmerer–Berry model for C3 photosynthesis (Farquhar et al., 1980; von Caemmerer and Farquhar, 1981) calls a stomatal conductance model. Hence, using [`Fvcb`](@ref) requires a stomatal conductance model in the `ModelList` to compute Gₛ.
+Several models proposed in `PlantBiophysics.jl` are hard-coupled models, *i.e.* one model calls another. For example, the [`Fvcb`](@ref) structure is the implementation of the Farquhar–von Caemmerer–Berry model for C3 photosynthesis (Farquhar et al., 1980; von Caemmerer and Farquhar, 1981) calls a stomatal conductance model. Hence, using [`Fvcb`](@ref) requires a stomatal conductance model in the `ModelMapping` to compute Gₛ.
 
-We can use the stomatal conductance model of Medlyn et al. (2011) as an example to compute it. It is implemented with the [`Medlyn`](@ref) structure. We can then create a `ModelList` with the two models:
+We can use the stomatal conductance model of Medlyn et al. (2011) as an example to compute it. It is implemented with the [`Medlyn`](@ref) structure. We can then create a `ModelMapping` with the two models:
 
 ```@example usepkg
-ModelList(Fvcb(), Medlyn(0.03, 12.0))
+ModelMapping(Fvcb(), Medlyn(0.03, 12.0))
 ```
 
 Now this instantiation returns some warnings saying we need to initialize some variables.
@@ -260,13 +253,13 @@ inputs(Medlyn(0.03, 12.0))
 We see that `A` is needed as input of `Medlyn`, but we also know that it is an output of `Fvcb`. This is why we prefer using `to_initialize` from `PlantSimEngine.jl` instead of `inputs`, because it returns only the variables that need to be initialized, considering that some inputs are duplicated between models, and some are computed by other models (they are outputs of a model):
 
 ```@example usepkg
-to_initialize(ModelList(Fvcb(), Medlyn(0.03, 12.0)))
+to_initialize(ModelMapping(Fvcb(), Medlyn(0.03, 12.0)))
 ```
 
-The most straightforward way of initializing a model list is by giving the initializations to the `status` keyword argument during instantiation:
+The most straightforward way of initializing a model mapping is by giving the initializations to the `status` keyword argument during instantiation:
 
 ```@example usepkg
-m = ModelList(
+m = ModelMapping(
     Fvcb(),
     Medlyn(0.03, 12.0),
     status = (Tₗ = 25.0, aPPFD = 1000.0, Cₛ = 400.0, Dₗ = 0.82)

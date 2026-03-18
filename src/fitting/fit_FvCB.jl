@@ -50,7 +50,7 @@ sort!(df, :Cᵢ)
 
 # Re-simulating A using the newly fitted parameters:
 leaf =
-    ModelList(
+    ModelMapping(
         photosynthesis = FvcbRaw(VcMaxRef = VcMaxRef, JMaxRef = JMaxRef, RdRef = RdRef, TPURef = TPURef),
         status = (Tₗ = df.Tₗ, aPPFD = df.aPPFD, Cᵢ = df.Cᵢ)
     )
@@ -65,7 +65,7 @@ plot(ACi_struct,leg=:bottomright)
 # Adding the windspeed to simulate the boundary-layer conductance (we put a high value):
 df[!, :Wind] .= 10.0
 
-leaf = ModelList(
+leaf = ModelMapping(
         photosynthesis = Fvcb(VcMaxRef = VcMaxRef, JMaxRef = JMaxRef, RdRef = RdRef, Tᵣ = 25.0, TPURef = TPURef),
         # stomatal_conductance = ConstantGs(0.0, df[i,:Gₛ]),
         stomatal_conductance = Medlyn(0.03, 12.),
@@ -97,7 +97,7 @@ function PlantSimEngine.fit(
 
     function model(x, p)
         leaf =
-            ModelList(
+            ModelMapping(
                 photosynthesis=FvcbRaw(
                     Tᵣ=Tᵣ, VcMaxRef=p[1], JMaxRef=p[2], RdRef=p[3], TPURef=p[4],
                     Eₐᵣ=Eₐᵣ, O₂=O₂, Eₐⱼ=Eₐⱼ, Hdⱼ=Hdⱼ, Δₛⱼ=Δₛⱼ, Eₐᵥ=Eₐᵥ, Hdᵥ=Hdᵥ, Δₛᵥ=Δₛᵥ, α=α, θ=θ

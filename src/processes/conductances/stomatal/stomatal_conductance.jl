@@ -12,8 +12,8 @@ allowed to go below `leaf.stomatal_conductance.gs_min`.
 # Arguments
 
 - `Gs::Gsm`: a stomatal conductance model, usually the leaf model (*i.e.* leaf.stomatal_conductance)
-- `models::ModelList`: A leaf struct holding the parameters for the model. See
-`ModelList`, and `Medlyn` or `ConstantGs` for the conductance models.
+- `models::ModelMapping`: A leaf struct holding the parameters for the model. See
+`ModelMapping`, and `Medlyn` or `ConstantGs` for the conductance models.
 - `status::Status`: A status, usually the leaf status (*i.e.* leaf.status)
 - `gs_mod`: the output from a `gs_closure` implementation (the conductance models
 generally only implement this function)
@@ -28,7 +28,7 @@ meteo = Atmosphere(T = 22.0, Wind = 0.8333, P = 101.325, Rh = 0.4490995)
 # Using a constant value for Gs:
 
 leaf =
-    ModelList(
+    ModelMapping(
         stomatal_conductance = Medlyn(0.03,12.0), # Instance of a Medlyn type
         status = (A = 20.0, Cₛ = 380.0, Dₗ = meteo.VPD)
     )
@@ -37,6 +37,10 @@ leaf =
 run!(leaf,meteo)
 ```
 """ verbose = false
+
+# Default policy for stomatal conductance when consumed at coarser clocks.
+# Conductance is typically summarized over a window rather than accumulated.
+PlantSimEngine.output_policy(::Type{<:AbstractStomatal_ConductanceModel}) = (Gₛ=PlantSimEngine.Aggregate(PlantMeteo.DurationSumReducer()),)
 
 # Gs is used a little bit differently compared to the other processes. We use two forms:
 # the stomatal closure and the full computation of Gs

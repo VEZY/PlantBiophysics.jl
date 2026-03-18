@@ -22,14 +22,36 @@ For example, you can "simulate" a constant assimilation for a leaf using the fol
 
 ```@example usepkg
 using PlantBiophysics, PlantSimEngine
-leaf = ModelList(ConstantA(25.0))
-run!(leaf)
+leaf = ModelMapping(ConstantA(25.0))
+out = run!(leaf)
 ```
 
 This model does one thing only: force the photosynthesis to the value given as a parameter in the model, here 25.0 ``μmol \cdot m^{-2} \cdot s^{-1}``.
 
 !!! note
     This model feels useless here, but it can be useful when coupled with other models, for example when simulating the full energy balance with a coupled photosynthesis and stomatal conductance model. In this case it is used to better understand how the energy balance works for a given assimilation.
+
+## Multi-rate defaults
+
+All photosynthesis models in `PlantBiophysics` declare a multi-rate timestep hint:
+
+- required range: 1 minute to 6 hours
+- preferred timestep: 1 hour
+
+These hints are used by `PlantSimEngine` when no explicit `TimeStepModel(...)` is provided in a `ModelSpec`.
+
+```@example usepkg
+using Dates
+
+PlantSimEngine.timestep_hint(Fvcb())
+```
+
+You can still enforce a specific model timestep in the mapping:
+
+```@example usepkg
+spec = ModelSpec(Fvcb()) |> TimeStepModel(Dates.Hour(2))
+PlantSimEngine.timestep(spec)
+```
 
 ## Fvcb
 
@@ -83,16 +105,16 @@ Here is an example usage:
 ```@example usepkg
 meteo = Atmosphere(T = 20.0, Wind = 1.0, P = 101.3, Rh = 0.65)
 
-leaf = ModelList(
+leaf = ModelMapping(
     Fvcb(),
     Medlyn(0.03, 12.0),
     status = (Tₗ = 25.0, aPPFD = 1000.0, Cₛ = 400.0, Dₗ = meteo.VPD)
 )
 # NB: we need to initialize `Tₗ`, `aPPFD` and `Cₛ` for `FvCB`, and `Dₗ` for the stomatal conductance of Medlyn et al. (2011).
 
-run!(leaf,meteo)
+out = run!(leaf,meteo)
 
-leaf
+out
 ```
 
 !!! note
@@ -115,7 +137,7 @@ Here is an example usage:
 ```@example usepkg
 meteo = Atmosphere(T = 20.0, Wind = 1.0, P = 101.3, Rh = 0.65)
 
-leaf = ModelList(
+leaf = ModelMapping(
     FvcbIter(),
     Medlyn(0.03, 12.0),
     status = (Tₗ = 25.0, aPPFD = 1000.0, Gbc = 0.67, Dₗ = meteo.VPD)
@@ -123,9 +145,9 @@ leaf = ModelList(
 
 # NB: we need to initialize `Tₗ`, `aPPFD` and `Gbc` for `FvcbIter`, and `Dₗ` for the stomatal conductance of Medlyn et al. (2011).
 
-run!(leaf,meteo,Constants())
+out = run!(leaf,meteo,Constants())
 
-leaf
+out
 ```
 
 ## FvcbRaw
@@ -150,14 +172,14 @@ The `aPPFD` is, again, the absorbed photosynthetically active photon flux densit
 ### [Example](@id exemple_raw)
 
 ```@example usepkg
-leaf = ModelList(
+leaf = ModelMapping(
     FvcbRaw(),
     status = (Tₗ = 25.0, aPPFD = 1000.0, Cᵢ = 400.0)
 )
 # NB: we need `Tₗ`, `aPPFD` and `Cᵢ` as inputs (see `inputs`)
 
-run!(leaf)
-leaf
+out = run!(leaf)
+out
 ```
 
 ## ConstantA
@@ -173,10 +195,10 @@ leaf
 ### [Example](@id exemple_constanta)
 
 ```@example usepkg
-leaf = ModelList(ConstantA())
+leaf = ModelMapping(ConstantA())
 
-run!(leaf)
-leaf
+out = run!(leaf)
+out
 ```
 
 ## ConstantAGs
@@ -196,14 +218,14 @@ inputs(ConstantAGs())
 ### [Example](@id exemple_constantags)
 
 ```@example usepkg
-leaf = ModelList(
+leaf = ModelMapping(
     ConstantAGs(),
     Medlyn(0.03, 12.0),
     status = (Cₛ = 380.0, Dₗ = 2.0)
 )
 
-run!(leaf)
-leaf
+out = run!(leaf)
+out
 ```
 
 ## Parameter effects

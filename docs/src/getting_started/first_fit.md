@@ -6,7 +6,7 @@ using PlantBiophysics, PlantSimEngine
 
 Parameter fitting is also at the heart of the package, because why making a simulation without good parameter values?
 
-The package provides a [`fit`](@ref) method that helps fitting model parameters to data.
+The package provides a `fit` method that helps fitting model parameters to data.
 
 For example we provide a method to fit the parameters from the Farquhar et al. (1980) model ([`Fvcb`](@ref)). Here is an example usage:
 

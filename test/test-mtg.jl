@@ -6,17 +6,10 @@ models_name = Symbol(MultiScaleTreeGraph.cache_name("PlantSimEngine models"))
 nrj = Monteith()
 photo = Fvcb(α=0.24) # because I set-up the tests with this value for α
 Gs = Medlyn(0.03, 12.0)
-models = Dict(
-    "Leaf" =>
-        (
-            nrj,
-            photo,
-            Gs,
-            Status(d=0.03,)
-        )
-)
+models = ModelMapping(:Leaf => (nrj, photo, Gs, Status(d=0.03,)))
+
 # We can compute them directly inside the MTG from available variables:
-transform!(
+MultiScaleTreeGraph.transform!(
     mtg,
     [:Ra_PAR_f, :Ra_NIR_f] => ((x, y) -> x + y) => :Ra_SW_f,
     :Ra_PAR_f => (x -> x * 4.57) => :aPPFD,
@@ -55,7 +48,7 @@ transform!(
 #     metamer = get_node(mtg, 2069)
 #     leaf = get_node(mtg, 2070)
 
-#     @test typeof(metamer[models_name].models) == typeof(models["Metamer"].models)
+#     @test typeof(metamer[models_name].models) == typeof(models[:Metamer].models)
 #     @test typeof(status(metamer[models_name])) <: TimeStepTable{<:Status}
 # end
 
@@ -74,7 +67,7 @@ transform!(
     )
 
     # We can compute them directly inside the MTG from available variables:
-    transform!(
+    MultiScaleTreeGraph.transform!(
         mtg,
         [:Ra_PAR_f, :Ra_NIR_f] => ((x, y) -> x + y * 1.2) => :Rᵢ, # This would be the incident radiation
         [:Ra_PAR_f, :Ra_NIR_f] => ((x, y) -> fill(x + y, length(weather))) => :Ra_SW_f,
@@ -100,10 +93,23 @@ transform!(
     # Initialising all components with their corresponding models and initialisations:
     # init_mtg_models!(mtg, models, length(weather))
 
+    rates = effective_rate_summary(ModelMapping(models), weather)
+    @test rates.base_step_seconds == 1800.0 # Meteo has a timestep of 30min, so the base step should be 1800s.
+    @test only(collect(keys(rates.rates))) == 1800.0 # Only one rate should be resolved for the models, which is the base step, because all models can run at meteo-rate.
+    @test length(rates.rates[1800]) == 5 # 4 processes for the leaves, and 1 for the metamer
+
     # Make the computation:
-    out = run!(mtg, models, weather, tracked_outputs=Dict{String,Any}("Leaf" => (:A, :Tₗ, :Ra_LW_f, :H, :λE, :Gₛ, :Gbₕ, :Gbc, :Rn, :Cᵢ, :Cₛ)))
+    out = run!(
+        mtg, ModelMapping(models), weather,
+        tracked_outputs=Dict{Symbol,Any}(:Leaf => (:A, :Tₗ, :Ra_LW_f, :H, :λE, :Gₛ, :Gbₕ, :Gbc, :Rn, :Cᵢ, :Cₛ))
+    )
     out = PlantSimEngine.convert_outputs(out, DataFrame)
-    out_leaf = out["Leaf"]
+    out_leaf = out[:Leaf]
+
+    # Make the same simulation as single scale for leaf 816 to check that the values are the same as in the MTG:
+    models_no_light = filter(x -> process(x) != :light_interception, models[:Leaf])
+    single_scale_models = ModelMapping(models_no_light..., status=Status(d=0.03, aPPFD=leaf_node[:Ra_PAR_f] .* 4.57, Ra_SW_f=leaf_node[:Ra_SW_f], sky_fraction=leaf_node[:sky_fraction]))
+    out_single = PlantSimEngine.run!(single_scale_models, weather, tracked_outputs=(:A, :Tₗ, :Ra_LW_f, :H, :λE, :Gₛ, :Gbₕ, :Gbc, :Rn, :Cᵢ, :Cₛ))
 
     @test leaf_node[:Ra_PAR_f] == Ra_PAR_f
     @test leaf_node[:sky_fraction] == sky_fraction
@@ -125,4 +131,10 @@ transform!(
     @test df_leaf_node.Rn ≈ [124.92802, 124.94397, 125.05946] atol = 1e-4
     @test df_leaf_node.Cᵢ ≈ [328.90364, 332.00744, 331.1057] atol = 1e-4
     @test df_leaf_node.Cₛ ≈ [359.37384, 362.8331, 362.69801] atol = 1e-4
+
+    # Testing that the multi-scale simulation yields similar results than the single-scale simulation
+    for k in keys(out_single)
+        @test df_leaf_node[:, k] == out_single[k]
+        # e.g. df_leaf_node[:, :A] == out_single[:A]
+    end
 end

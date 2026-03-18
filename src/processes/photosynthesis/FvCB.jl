@@ -126,6 +126,16 @@ Base.eltype(x::Fvcb) = typeof(x).parameters[1]
 PlantSimEngine.dep(::Fvcb) = (stomatal_conductance=AbstractStomatal_ConductanceModel,)
 PlantSimEngine.ObjectDependencyTrait(::Type{<:Fvcb}) = PlantSimEngine.IsObjectIndependent()
 PlantSimEngine.TimeStepDependencyTrait(::Type{<:Fvcb}) = PlantSimEngine.IsTimeStepIndependent()
+PlantSimEngine.timestep_hint(::Type{<:Fvcb}) = (
+    required=(Dates.Minute(1), Dates.Hour(6)),
+    preferred=Dates.Hour(1)
+)
+
+PlantSimEngine.output_policy(::Type{<:Fvcb}) = (
+    A=PlantSimEngine.Integrate(PlantMeteo.DurationSumReducer()), # from μmol m-2 s-1 to μmol m-2 timerstep-1
+    Cᵢ=PlantSimEngine.Integrate(PlantMeteo.MeanReducer()),
+    Gₛ=PlantSimEngine.Integrate(PlantMeteo.DurationSumReducer()),
+)
 
 """
     run!(::Fvcb, models, status, meteo, constants=Constants())
@@ -179,7 +189,7 @@ Modify the first argument in place for A, Gₛ and Cᵢ:
 # Arguments
 
 - `::Fvcb`: the Farquhar–von Caemmerer–Berry (FvCB) model
-- `models`: a `ModelList` struct holding the parameters for the model with
+- `models`: a `ModelMapping` struct holding the parameters for the model with
 initialisations for:
     - `Tₗ` (°C): leaf temperature
     - `aPPFD` (μmol m-2 s-1): absorbed Photosynthetic Photon Flux Density
@@ -204,7 +214,7 @@ using PlantBiophysics, PlantMeteo
 meteo = Atmosphere(T = 20.0, Wind = 1.0, P = 101.3, Rh = 0.65)
 
 leaf =
-    ModelList(
+    ModelMapping(
         photosynthesis = Fvcb(),
         stomatal_conductance = Medlyn(0.03, 12.0),
         status = (Tₗ = 25.0, aPPFD = 1000.0, Cₛ = 400.0, Dₗ = meteo.VPD)

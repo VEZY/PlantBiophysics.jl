@@ -64,7 +64,7 @@ end;
     )
 
     meteo = Atmosphere(T=20.0, Wind=1.0, P=101.3, Rh=0.65)
-    leaf = ModelList(
+    leaf = ModelMapping(
         energy_balance=Monteith(),
         photosynthesis=Fvcb(α=0.24), # because I set-up the tests with this value for α
         stomatal_conductance=Medlyn(0.03, 12.0),
@@ -81,7 +81,7 @@ end;
 
 
 # meteo = Atmosphere(T = 20.0, Wind = 1.0, P = 101.3, Rh = 0.65)
-# leaf = ModelList(
+# leaf = ModelMapping(
 #     energy_balance = Monteith(),
 #     photosynthesis = Fvcb(),
 #     stomatal_conductance = Medlyn(0.03, 12.0),

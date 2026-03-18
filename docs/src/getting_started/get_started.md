@@ -21,7 +21,7 @@ meteo = read_weather(
     date_format = DateFormat("yyyy/mm/dd")
 )
 
-leaf = ModelList(
+leaf = ModelMapping(
         Monteith(),
         Fvcb(),
         Medlyn(0.03, 7.0),

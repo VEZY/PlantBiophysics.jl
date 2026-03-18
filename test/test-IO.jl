@@ -5,9 +5,9 @@ file = joinpath(dirname(dirname(pathof(PlantBiophysics))), "test", "inputs", "mo
 @testset "read_model()" begin
     model = read_model(file)
 
-    @test all([haskey(model, i) for i in ["Metamer", "Leaf"]])
+    @test all([haskey(model, i) for i in [:Metamer, :Leaf]])
 
-    model = model["Leaf"]
+    model = model[:Leaf]
     @test typeof(model) <: Tuple{Vararg{AbstractModel}}
     @test typeof(model[1]) == Monteith{Float64,Int64}
     @test typeof(model[4]) == Medlyn{Float64}

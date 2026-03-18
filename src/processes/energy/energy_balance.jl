@@ -29,7 +29,7 @@ meteo = Atmosphere(T = 20.0, Wind = 1.0, P = 101.3, Rh = 0.65)
 # Using the model of Monteith and Unsworth (2013) for energy, Farquhar et al. (1980) for
 # photosynthesis, and Medlyn et al. (2011) for stomatal conductance:
 leaf =
-    ModelList(
+    ModelMapping(
         energy_balance = Monteith(),
         photosynthesis = Fvcb(),
         stomatal_conductance = Medlyn(0.03, 12.0),
@@ -59,7 +59,7 @@ w = Weather(
 )
 
 leaf =
-    ModelList(
+    ModelMapping(
         energy_balance = Monteith(),
         photosynthesis = Fvcb(),
         stomatal_conductance = Medlyn(0.03, 12.0),
@@ -71,7 +71,7 @@ run!(leaf, w)
 # ---Using several meteo time-steps and several components---
 
 leaf2 =
-    ModelList(
+    ModelMapping(
         energy_balance = Monteith(),
         photosynthesis = Fvcb(),
         stomatal_conductance = Medlyn(0.03, 12.0),
@@ -92,14 +92,14 @@ init_status!(model, Ra_SW_f = 13.747, sky_fraction = 1.0, aPPFD = 1500.0, Tₗ =
 
 # NB: To know which variables has to be initialized according to the models used, you can use
 # `to_initialize(ComponentModels)`, *e.g.*:
-to_initialize(model["Leaf"])
+to_initialize(model[:Leaf])
 
 # Running a simulation for all component types in the same scene:
 run!(model, meteo)
 
-model["Leaf"].status.Rn
-model["Leaf"].status.A
-model["Leaf"].status.Cᵢ
+model[:Leaf].status.Rn
+model[:Leaf].status.A
+model[:Leaf].status.Cᵢ
 
 # ---Simulation on a full plant using an MTG---
 
@@ -122,8 +122,8 @@ meteo = read_weather(
 
 # Make the models:
 models = Dict(
-    "Leaf" =>
-        ModelList(
+    :Leaf =>
+        ModelMapping(
             energy_balance = Monteith(),
             photosynthesis = Fvcb(),
             stomatal_conductance = Medlyn(0.03, 12.0),
@@ -149,7 +149,7 @@ transform!(
 init_mtg_models!(mtg, models, length(meteo))
 
 # Making the simulation:
-run!(mtg, meteo)
+run!(mtg, ModelMapping(models), meteo)
 
 # Pull the leaf temperature of the first step:
 transform!(

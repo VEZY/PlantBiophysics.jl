@@ -21,7 +21,7 @@ Computes the light interception of an object using the Beer-Lambert law.
 # Arguments
 
 - `::Beer`: a Beer model, from the model list (*i.e.* m.light_interception)
-- `models`: A `ModelList` struct holding the parameters for the model with
+- `models`: A `ModelMapping` struct holding the parameters for the model with
 initialisations for `LAI` (m² m⁻²): the leaf area index.
 - `status`: the status of the model, usually the model list status (*i.e.* m.status)
 - `meteo`: meteorology structure, see [`Atmosphere`](https://palmstudio.github.io/PlantMeteo.jl/stable/#PlantMeteo.Atmosphere)
@@ -31,7 +31,7 @@ initialisations for `LAI` (m² m⁻²): the leaf area index.
 
 ```julia
 using PlantSimEngine, PlantBiophysics, PlantMeteo
-m = ModelList(light_interception=Beer(0.5), status=(LAI=2.0,))
+m = ModelMapping(light_interception=Beer(0.5), status=(LAI=2.0,))
 
 meteo = Atmosphere(T=20.0, Wind=1.0, P=101.3, Rh=0.65, Ri_PAR_f=300.0)
 
@@ -57,3 +57,6 @@ end
 
 PlantSimEngine.ObjectDependencyTrait(::Type{<:Beer}) = PlantSimEngine.IsObjectIndependent()
 PlantSimEngine.TimeStepDependencyTrait(::Type{<:Beer}) = PlantSimEngine.IsTimeStepIndependent()
+PlantSimEngine.output_policy(::Type{<:Beer}) = (
+    aPPFD=PlantSimEngine.Integrate(PlantMeteo.RadiationEnergy()),
+)

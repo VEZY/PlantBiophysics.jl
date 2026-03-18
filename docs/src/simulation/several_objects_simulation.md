@@ -17,14 +17,14 @@ using Dates, DataFrames
 
 meteo = Atmosphere(T = 22.0, Wind = 0.8333, P = 101.325, Rh = 0.4490995)
 
-leaf1 = ModelList(
+leaf1 = ModelMapping(
         Monteith(),
         Fvcb(),
         Medlyn(0.03, 12.0),
         status = (Ra_SW_f = 13.747, sky_fraction = 1.0, aPPFD = 1500.0, d = 0.03)
     )
 
-leaf2 = ModelList(
+leaf2 = ModelMapping(
         Monteith(),
         Fvcb(),
         Medlyn(0.03, 12.0),
@@ -35,7 +35,7 @@ output_vector = run!([leaf1, leaf2], meteo)
 
 ```
 
-Providing an array of `ModelList` object to the `run!` function returns an array of output data in the same order the `ModelList` objects were provided. 
+Providing an array of `ModelMapping` object to the `run!` function returns an array of output data in the same order the `ModelMapping` objects were provided. 
 A simulation over different time-steps would give:
 
 ```@example usepkg
@@ -49,7 +49,7 @@ meteo =
         date_format=DateFormat("yyyy/mm/dd")
     )
 
-leaf1 = ModelList(
+leaf1 = ModelMapping(
         Monteith(),
         Fvcb(),
         Medlyn(0.03, 12.0),
@@ -61,7 +61,7 @@ leaf1 = ModelList(
         )
     )
 
-leaf2 = ModelList(
+leaf2 = ModelMapping(
         Monteith(),
         Fvcb(),
         Medlyn(0.03, 12.0),

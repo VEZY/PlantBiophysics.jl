@@ -21,6 +21,12 @@ function PlantSimEngine.outputs_(::ConstantAGs)
     (A=-Inf, Gₛ=-Inf, Cᵢ=-Inf)
 end
 
+PlantSimEngine.output_policy(::Type{<:ConstantAGs}) = (
+    A=PlantSimEngine.Integrate(PlantMeteo.DurationSumReducer()), # from μmol m-2 s-1 to μmol m-2 timerstep-1
+    Cᵢ=PlantSimEngine.Integrate(PlantMeteo.MeanReducer()),
+    Gₛ=PlantSimEngine.Integrate(PlantMeteo.DurationSumReducer()),
+)
+
 Base.eltype(x::ConstantAGs) = typeof(x).parameters[1]
 
 """
@@ -39,7 +45,7 @@ Modify the leaf status in place for A, Gₛ and Cᵢ:
 # Arguments
 
 - `::ConstantAGs`: a constant assimilation model coupled to a stomatal conductance model
-- `models`: a `ModelList` struct holding the parameters for the model with
+- `models`: a `ModelMapping` struct holding the parameters for the model with
 initialisations for:
     - `Cₛ` (mol m-2 s-1): surface CO₂ concentration.
     - any other value needed by the stomatal conductance model.
@@ -52,7 +58,7 @@ initialisations for:
 ```julia
 using PlantBiophysics, PlantMeteo
 meteo = Atmosphere(T = 20.0, Wind = 1.0, P = 101.3, Rh = 0.65)
-leaf = ModelList(
+leaf = ModelMapping(
     photosynthesis = ConstantAGs(),
     stomatal_conductance = Medlyn(0.03, 12.0),
     status = (Cₛ = 400.0, Dₗ = 2.0)
@@ -79,3 +85,7 @@ end
 
 PlantSimEngine.ObjectDependencyTrait(::Type{<:ConstantAGs}) = PlantSimEngine.IsObjectIndependent()
 PlantSimEngine.TimeStepDependencyTrait(::Type{<:ConstantAGs}) = PlantSimEngine.IsTimeStepIndependent()
+PlantSimEngine.timestep_hint(::Type{<:ConstantAGs}) = (
+    required=(Dates.Minute(1), Dates.Hour(6)),
+    preferred=Dates.Hour(1)
+)

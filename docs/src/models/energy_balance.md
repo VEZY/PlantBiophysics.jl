@@ -19,7 +19,7 @@ using PlantBiophysics, PlantSimEngine
 
 meteo = Atmosphere(T = 20.0, Wind = 1.0, P = 101.3, Rh = 0.65)
 
-leaf = ModelList(
+leaf = ModelMapping(
     Monteith(),
     Fvcb(),
     Medlyn(0.03, 12.0),
@@ -28,6 +28,28 @@ leaf = ModelList(
 
 out_sim = run!(leaf,meteo)
 out_sim[:Rn]
+```
+
+## Multi-rate defaults
+
+The `Monteith` energy-balance model declares a multi-rate timestep hint:
+
+- required range: 1 minute to 2 hours
+- preferred timestep: 1 hour
+
+This hint is used by `PlantSimEngine` when no explicit `TimeStepModel(...)` is provided in a `ModelSpec`.
+
+```@example usepkg
+using Dates
+
+PlantSimEngine.timestep_hint(Monteith())
+```
+
+You can still enforce a specific model timestep in the mapping:
+
+```@example usepkg
+spec = ModelSpec(Monteith()) |> TimeStepModel(Dates.Minute(30))
+PlantSimEngine.timestep(spec)
 ```
 
 ## Monteith
@@ -83,7 +105,7 @@ Here is an example usage:
 ```@example usepkg
 meteo = Atmosphere(T = 22.0, Wind = 0.8333, P = 101.325, Rh = 0.4490995)
 
-leaf = ModelList(
+leaf = ModelMapping(
     Monteith(),
     Fvcb(),
     Medlyn(0.03, 12.0),

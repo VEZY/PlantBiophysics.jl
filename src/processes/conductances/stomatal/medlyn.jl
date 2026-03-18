@@ -15,7 +15,7 @@ using PlantMeteo, PlantSimEngine, PlantBiophysics
 meteo = Atmosphere(T = 20.0, Wind = 1.0, P = 101.3, Rh = 0.65)
 
 leaf =
-    ModelList(
+    ModelMapping(
         stomatal_conductance = Medlyn(0.03, 12.0),
         status = (A = A, Cₛ = 380.0, Dₗ = meteo.VPD)
     )
@@ -51,6 +51,10 @@ function PlantSimEngine.outputs_(::Medlyn)
     (Gₛ=-Inf,)
 end
 
+PlantSimEngine.output_policy(::Type{<:Medlyn}) = (
+    Gₛ=PlantSimEngine.Integrate(PlantMeteo.DurationSumReducer()),
+)
+
 Base.eltype(::Medlyn{T}) where T = T
 
 """
@@ -69,7 +73,7 @@ The result of this function is then used as:
 # Arguments
 
 - `::Medlyn`: an instance of the `Medlyn` model type
-- `models::ModelList`: A `ModelList` struct holding the parameters for the models.
+- `models::ModelMapping`: A `ModelMapping` struct holding the parameters for the models.
 - `status`: A status struct holding the variables for the models.
 - `meteo`: meteorology structure, see [`Atmosphere`](https://palmstudio.github.io/PlantMeteo.jl/stable/#PlantMeteo.Atmosphere). Is not used in this model.
 - `constants`: A constants struct holding the constants for the models. Is not used in this model.
@@ -78,7 +82,7 @@ The result of this function is then used as:
 # Details
 
 Use `variables()` on Medlyn to get the variables that must be instantiated in the
-`ModelList` struct.
+`ModelMapping` struct.
 
 # Notes
 
@@ -98,7 +102,7 @@ https://doi.org/10.1111/pce.14041
 meteo = Atmosphere(T = 20.0, Wind = 1.0, P = 101.3, Rh = 0.65)
 
 leaf =
-    ModelList(
+    ModelMapping(
         stomatal_conductance = Medlyn(0.03, 12.0),
         status = (Cₛ = 380.0, Dₗ = meteo.VPD)
     )
@@ -111,7 +115,7 @@ Gs = leaf.stomatal_conductance.g0 + gs_mod * A
 # Or more directly using `run!()`:
 
 leaf =
-    ModelList(
+    ModelMapping(
         stomatal_conductance = Medlyn(0.03, 12.0),
         status = (A = A, Cₛ = 380.0, Dₗ = meteo.VPD)
     )
@@ -133,3 +137,7 @@ end
 
 PlantSimEngine.ObjectDependencyTrait(::Type{<:Medlyn}) = PlantSimEngine.IsObjectIndependent()
 PlantSimEngine.TimeStepDependencyTrait(::Type{<:Medlyn}) = PlantSimEngine.IsTimeStepIndependent()
+PlantSimEngine.timestep_hint(::Type{<:Medlyn}) = (
+    required=(Dates.Minute(1), Dates.Hour(6)),
+    preferred=Dates.Hour(1)
+)
