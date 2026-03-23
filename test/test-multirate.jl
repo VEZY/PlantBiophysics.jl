@@ -1,5 +1,3 @@
-using Statistics
-
 PlantSimEngine.@process "dailyleafsummarytest" verbose = false
 struct DailyLeafSummaryTestModel <: AbstractDailyleafsummarytestModel end
 PlantSimEngine.inputs_(::DailyLeafSummaryTestModel) = (
