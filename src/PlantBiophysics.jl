@@ -22,7 +22,7 @@ import Base.getindex
 import Base.length
 import Base.iterate
 import Base.keys
-import LsqFit: curve_fit
+import LsqFit
 using RecipesBase
 import Statistics
 

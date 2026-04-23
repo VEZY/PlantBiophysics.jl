@@ -96,28 +96,28 @@ function PlantSimEngine.fit(
     end
 
     function model(x, p)
+        A = convert(eltype(p), -9999.0) #We promote the model output to `ForwardDiff.Dual` when the call passes the parameters as this type during optimisation.
+        #Note: This could be done via the promote_type argument to `ModelMapping` when it's ready in PlantSimEngine.
         leaf =
             ModelMapping(
                 photosynthesis=FvcbRaw(
                     Tᵣ=Tᵣ, VcMaxRef=p[1], JMaxRef=p[2], RdRef=p[3], TPURef=p[4],
                     Eₐᵣ=Eₐᵣ, O₂=O₂, Eₐⱼ=Eₐⱼ, Hdⱼ=Hdⱼ, Δₛⱼ=Δₛⱼ, Eₐᵥ=Eₐᵥ, Hdᵥ=Hdᵥ, Δₛᵥ=Δₛᵥ, α=α, θ=θ
                 ),
-                status=(Tₗ=x[:, 1], aPPFD=x[:, 2], Cᵢ=x[:, 3])
+                status=(Tₗ=x[:, 1], aPPFD=x[:, 2], Cᵢ=x[:, 3], A=fill(A, size(x, 1))) # We add A to the status to be able to use ForwardDiff.jl for the optimisation
             )
         outputs = PlantSimEngine.run!(leaf)
         outputs.A
     end
 
     # Fitting the A-Cᵢ curve using LsqFit.jl
-    # fits = curve_fit(model, df.Cᵢ[ind], df.A[ind], [VcMaxRef, JMaxRef, RdRef, TPURef])
-    fits = curve_fit(
+    # fits = LsqFit.curve_fit(model, df.Cᵢ[ind], df.A[ind], [VcMaxRef, JMaxRef, RdRef, TPURef])
+    fits = LsqFit.curve_fit(
         model,
         Array(select(df, :Tₗ, :aPPFD, :Cᵢ)),
         df.A,
         [VcMaxRef, JMaxRef, RdRef, TPURef],
-        lower=[VcMaxRef_bound[1], JMaxRef_bound[1], RdRef_bound[1], TPURef_bound[1]],
-        upper=[VcMaxRef_bound[2], JMaxRef_bound[2], RdRef_bound[2], TPURef_bound[2]],
-        show_trace=verbose)
+    )
 
     return (VcMaxRef=fits.param[1], JMaxRef=fits.param[2], RdRef=fits.param[3], TPURef=fits.param[4], Tᵣ=Tᵣ)
 end
