@@ -92,7 +92,7 @@ GsADₗ(g0, g1, gs_meas, Dₗ_meas, A_meas, Cₐ_meas) = GsADₗ(g0, g1, gs_meas
 
     m(t, p) = p[1] .+ t .* p[2]
     p0 = [0.1, 1.0]
-    linearfit = curve_fit(m, x, y, p0)
+    linearfit = LsqFit.curve_fit(m, x, y, p0)
     y3 = linearfit.param[1] .+ linearfit.param[2] .* x
 
     @series begin
