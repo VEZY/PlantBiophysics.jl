@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Multi-rate simulation · PlantBiophysics.jl</title><meta name="title" content="Multi-rate simulation · PlantBiophysics.jl"/><meta property="og:title" content="Multi-rate simulation · PlantBiophysics.jl"/><meta property="twitter:title" content="Multi-rate simulation · PlantBiophysics.jl"/><meta name="description" content="Documentation for PlantBiophysics.jl."/><meta property="og:description" content="Documentation for PlantBiophysics.jl."/><meta property="twitter:description" content="Documentation for PlantBiophysics.jl."/><meta property="og:url" content="https://VEZY.github.io/PlantBiophysics.jl/simulation/multirate_simulation/"/><meta property="twitter:url" content="https://VEZY.github.io/PlantBiophysics.jl/simulation/multirate_simulation/"/><link rel="canonical" href="https://VEZY.github.io/PlantBiophysics.jl/simulation/multirate_simulation/"/><script data-outdated-warner src="../../assets/warner.js"></script><link href="https://cdnjs.cloudflare.com/ajax/libs/lato-font/3.0.0/css/lato-font.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/juliamono/0.050/juliamono.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.8/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL="../.."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../../assets/documenter.js"></script><script src="../../search_index.js"></script><script src="../../siteinfo.js"></script><script src="../../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/catppuccin-mocha.css" data-theme-name="catppuccin-mocha"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/catppuccin-macchiato.css" data-theme-name="catppuccin-macchiato"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/catppuccin-frappe.css" data-theme-name="catppuccin-frappe"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/catppuccin-latte.css" data-theme-name="catppuccin-latte"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../../assets/themeswap.js"></script></head><body><div id="documenter"><nav class="docs-sidebar"><a class="docs-logo" href="../../"><img src="../../assets/logo.svg" alt="PlantBiophysics.jl logo"/></a><div class="docs-package-name"><span class="docs-autofit"><a href="../../">PlantBiophysics.jl</a></span></div><button class="docs-search-query input is-rounded is-small is-clickable my-2 mx-auto py-1 px-2" id="documenter-search-query">Search docs (Ctrl + /)</button><ul class="docs-menu"><li><a class="tocitem" href="../../">Home</a></li><li><span class="tocitem">Getting started</span><ul><li><a class="tocitem" href="../../getting_started/get_started/">TL;DR</a></li><li><a class="tocitem" href="../../getting_started/first_fit/">Parameter fitting</a></li></ul></li><li><a class="tocitem" href="../../concepts/package_design/">Design</a></li><li><a class="tocitem" href="../../variables/">Variables</a></li><li><span class="tocitem">Models</span><ul><li><a class="tocitem" href="../../models/photosynthesis/">Photosynthesis</a></li><li><a class="tocitem" href="../../models/gs/">Stomatal conductance</a></li><li><a class="tocitem" href="../../models/energy_balance/">Energy balance</a></li><li><a class="tocitem" href="../../models/light/">Light interception</a></li></ul></li><li><a class="tocitem" href="../../climate/microclimate/">Micro-climate</a></li><li><a class="tocitem" href="../../fitting/parameter_fitting/">Tutorial: Parameter fitting</a></li><li><span class="tocitem">Tutorial: Simulation</span><ul><li><a class="tocitem" href="../first_simulation/">Simple Simulation</a></li><li><a class="tocitem" href="../several_simulation/">Several time steps</a></li><li class="is-active"><a class="tocitem" href>Multi-rate simulation</a><ul class="internal"><li><a class="tocitem" href="#Define-the-daily-summary-model"><span>Define the daily summary model</span></a></li><li><a class="tocitem" href="#Build-a-minimal-MTG-and-hourly-weather"><span>Build a minimal MTG and hourly weather</span></a></li><li><a class="tocitem" href="#Configure-the-mapping-with-hourly-and-daily-clocks"><span>Configure the mapping with hourly and daily clocks</span></a></li><li><a class="tocitem" href="#Run-and-inspect-outputs"><span>Run and inspect outputs</span></a></li></ul></li><li><a class="tocitem" href="../several_objects_simulation/">Several objects</a></li><li><a class="tocitem" href="../mtg_simulation/">Whole-plant simulation</a></li></ul></li><li><a class="tocitem" href="../uncertainty_propagation/">Tutorial: Uncertainty propagation</a></li><li><span class="tocitem">Extending PlantBiophysics</span><ul><li><a class="tocitem" href="../../extending/implement_a_model/">Implement a model</a></li><li><a class="tocitem" href="../../extending/implement_a_process/">Implement a process</a></li></ul></li><li><a class="tocitem" href="../../functions/">API</a></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><a class="docs-sidebar-button docs-navbar-link fa-solid fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a><nav class="breadcrumb"><ul class="is-hidden-mobile"><li><a class="is-disabled">Tutorial: Simulation</a></li><li class="is-active"><a href>Multi-rate simulation</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>Multi-rate simulation</a></li></ul></nav><div class="docs-right"><a class="docs-navbar-link" href="https://github.com/VEZY/PlantBiophysics.jl" title="View the repository on GitHub"><span class="docs-icon fa-brands"></span><span class="docs-label is-hidden-touch">GitHub</span></a><a class="docs-navbar-link" href="https://github.com/VEZY/PlantBiophysics.jl/blob/master/docs/src/simulation/multirate_simulation.md" title="Edit source on GitHub"><span class="docs-icon fa-solid"></span></a><a class="docs-settings-button docs-navbar-link fa-solid fa-gear" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-article-toggle-button fa-solid fa-chevron-up" id="documenter-article-toggle-button" href="javascript:;" title="Collapse all docstrings"></a></div></header><article class="content" id="documenter-page"><h1 id="Multi-rate-simulation-(hourly-leaf-daily-summary)"><a class="docs-heading-anchor" href="#Multi-rate-simulation-(hourly-leaf-daily-summary)">Multi-rate simulation (hourly leaf + daily summary)</a><a id="Multi-rate-simulation-(hourly-leaf-daily-summary)-1"></a><a class="docs-heading-anchor-permalink" href="#Multi-rate-simulation-(hourly-leaf-daily-summary)" title="Permalink"></a></h1><p>This tutorial shows how to run:</p><ul><li>coupled leaf energy balance + photosynthesis + stomatal conductance at hourly rate</li><li>one daily model that summarizes hourly leaf outputs</li></ul><p>In this example, the daily model computes:</p><ul><li>daily integrated assimilation (<code>A_daily</code>, <code>μmol m⁻² d⁻¹</code>)</li><li>daily transpiration depth (<code>transpiration_daily</code>, <code>mm d⁻¹</code>)</li><li>daily mean, max and min leaf temperature (<code>Tₗ_mean_daily</code>, <code>Tₗ_max_daily</code>, <code>Tₗ_min_daily</code>)</li></ul><p>The daily reductions are declared explicitly in <code>InputBindings(...)</code>:</p><ul><li><code>A</code> is converted from <code>μmol m⁻² s⁻¹</code> to <code>μmol m⁻²</code> using timestep durations</li><li><code>λE</code> is converted from <code>W m⁻²</code> to <code>mm</code> of water over the day</li><li><code>Tₗ</code> is summarized with mean/max/min reducers</li></ul><p>The example keeps air temperature constant, so the latent heat of vaporization <code>λ</code> is constant too and can be reused in the transpiration reducer.</p><h2 id="Define-the-daily-summary-model"><a class="docs-heading-anchor" href="#Define-the-daily-summary-model">Define the daily summary model</a><a id="Define-the-daily-summary-model-1"></a><a class="docs-heading-anchor-permalink" href="#Define-the-daily-summary-model" title="Permalink"></a></h2><pre><code class="language-julia hljs">PlantSimEngine.@process &quot;dailyleafsummary&quot; verbose = false
+struct DailyLeafSummaryModel &lt;: AbstractDailyleafsummaryModel end
+PlantSimEngine.inputs_(::DailyLeafSummaryModel) = (
+    A_integrated = -Inf,
+    transpiration_integrated = -Inf,
+    Tₗ_mean = -Inf,
+    Tₗ_max = -Inf,
+    Tₗ_min = -Inf,
+)
+PlantSimEngine.outputs_(::DailyLeafSummaryModel) = (
+    A_daily = -Inf,
+    transpiration_daily = -Inf,
+    Tₗ_mean_daily = -Inf,
+    Tₗ_max_daily = -Inf,
+    Tₗ_min_daily = -Inf,
+)
+function PlantSimEngine.run!(::DailyLeafSummaryModel, models, status, meteo, constants = nothing, extra = nothing)
+    status.A_daily = status.A_integrated
+    status.transpiration_daily = status.transpiration_integrated
+    status.Tₗ_mean_daily = status.Tₗ_mean
+    status.Tₗ_max_daily = status.Tₗ_max
+    status.Tₗ_min_daily = status.Tₗ_min
+    nothing
+end</code></pre><h2 id="Build-a-minimal-MTG-and-hourly-weather"><a class="docs-heading-anchor" href="#Build-a-minimal-MTG-and-hourly-weather">Build a minimal MTG and hourly weather</a><a id="Build-a-minimal-MTG-and-hourly-weather-1"></a><a class="docs-heading-anchor-permalink" href="#Build-a-minimal-MTG-and-hourly-weather" title="Permalink"></a></h2><p>We use two days of hourly weather. The absorbed radiation remains fixed in the leaf status, while the humidity and wind profiles differ between the two days.</p><pre><code class="language-julia hljs">mtg = Node(NodeMTG(:/, :Scene, 1, 0))
+plant = Node(mtg, NodeMTG(:+, :Plant, 1, 1))
+internode = Node(plant, NodeMTG(:/, :Internode, 1, 2))
+Node(internode, NodeMTG(:+, :Leaf, 1, 2))
+
+rh_day1 = [0.75 - 0.20 * max(0.0, sin((hour - 6.0) / 12.0 * pi)) for hour in 0:23]
+rh_day2 = rh_day1 .- 0.10
+wind_day1 = [0.8 + 0.4 * max(0.0, sin((hour - 6.0) / 12.0 * pi)) for hour in 0:23]
+wind_day2 = wind_day1 .+ 0.2
+Rh = vcat(rh_day1, rh_day2)
+Wind = vcat(wind_day1, wind_day2)
+
+meteo = Weather([
+    Atmosphere(
+        T = 25.0,
+        Wind = Wind[i],
+        P = 101.3,
+        Rh = Rh[i],
+        Cₐ = 400.0,
+        Ri_SW_f = 300.0,
+        duration = Dates.Hour(1)
+    ) for i in 1:48
+])
+λ_ref = meteo[1].λ</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">2.441875e6</code></pre><h2 id="Configure-the-mapping-with-hourly-and-daily-clocks"><a class="docs-heading-anchor" href="#Configure-the-mapping-with-hourly-and-daily-clocks">Configure the mapping with hourly and daily clocks</a><a id="Configure-the-mapping-with-hourly-and-daily-clocks-1"></a><a class="docs-heading-anchor-permalink" href="#Configure-the-mapping-with-hourly-and-daily-clocks" title="Permalink"></a></h2><pre><code class="language-julia hljs">mapping = ModelMapping(
+    :Leaf =&gt; (
+        Monteith(),
+        Fvcb(),
+        Medlyn(0.03, 12.0),
+        ModelSpec(DailyLeafSummaryModel()) |&gt;
+        TimeStepModel(ClockSpec(24.0, 0.0)) |&gt;
+        InputBindings(
+            ;
+            A_integrated = (process = :energy_balance, var = :A, policy = Integrate((vals, durations) -&gt; sum(vals .* durations))),
+            transpiration_integrated = (process = :energy_balance, var = :λE, policy = Integrate((vals, durations) -&gt; sum(vals .* durations) / λ_ref)),
+            Tₗ_mean = (process = :energy_balance, var = :Tₗ, policy = Aggregate()),
+            Tₗ_max = (process = :energy_balance, var = :Tₗ, policy = Aggregate(MaxReducer())),
+            Tₗ_min = (process = :energy_balance, var = :Tₗ, policy = Aggregate(MinReducer())),
+        ),
+        Status(
+            d = 0.03,
+            Ra_SW_f = 150.0,
+            sky_fraction = 1.0,
+            aPPFD = 1200.0,
+            A_integrated = 0.0,
+            transpiration_integrated = 0.0,
+            Tₗ_mean = 0.0,
+            Tₗ_max = 0.0,
+            Tₗ_min = 0.0,
+        )
+    ),
+)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">ModelMapping
+  validated: true (valid)
+  multirate: true
+  scales (1): Leaf
+  - Leaf: 4 model(s), Processes=energy_balance, photosynthesis, stomatal_conductance, dailyleafsummary
+  Timing groups:
+  - explicit ClockSpec{Float64}(24.0, 0.0) (ModelSpec): 1 model(s)
+  - meteo base step (inferred at runtime): 3 model(s)
+  Get resolved timings with: `effective_rate_summary(modelmapping, meteo)`
+  Variables to initialize: none
+  Recommendations:
+  - Multirate is enabled from mapping metadata; `run!(mtg, mapping, ...)` auto-detects it.
+</code></pre><h2 id="Run-and-inspect-outputs"><a class="docs-heading-anchor" href="#Run-and-inspect-outputs">Run and inspect outputs</a><a id="Run-and-inspect-outputs-1"></a><a class="docs-heading-anchor-permalink" href="#Run-and-inspect-outputs" title="Permalink"></a></h2><pre><code class="language-julia hljs">outs = run!(
+    mtg,
+    mapping,
+    meteo,
+    tracked_outputs = Dict{Symbol,Any}(
+        :Leaf =&gt; (
+            :A,
+            :λE,
+            :Tₗ,
+            :A_daily,
+            :transpiration_daily,
+            :Tₗ_mean_daily,
+            :Tₗ_max_daily,
+            :Tₗ_min_daily,
+        )
+    )
+)
+leaf_df = PlantSimEngine.convert_outputs(outs, DataFrame)[:Leaf]
+
+leaf_df[[24, 48], [:A_daily, :transpiration_daily, :Tₗ_mean_daily, :Tₗ_max_daily, :Tₗ_min_daily]]</code></pre><div><div style = "float: left;"><span>2×5 DataFrame</span></div><div style = "clear: both;"></div></div><div class = "data-frame" style = "overflow-x: scroll;"><table class = "data-frame" style = "margin-bottom: 6px;"><thead><tr class = "columnLabelRow"><th class = "stubheadLabel" style = "font-weight: bold; text-align: right;">Row</th><th style = "text-align: left;">A_daily</th><th style = "text-align: left;">transpiration_daily</th><th style = "text-align: left;">Tₗ_mean_daily</th><th style = "text-align: left;">Tₗ_max_daily</th><th style = "text-align: left;">Tₗ_min_daily</th></tr><tr class = "columnLabelRow"><th class = "stubheadLabel" style = "font-weight: bold; text-align: right;"></th><th title = "Float64" style = "text-align: left;">Float64</th><th title = "Float64" style = "text-align: left;">Float64</th><th title = "Float64" style = "text-align: left;">Float64</th><th title = "Float64" style = "text-align: left;">Float64</th><th title = "Float64" style = "text-align: left;">Float64</th></tr></thead><tbody><tr class = "dataRow"><td class = "rowLabel" style = "font-weight: bold; text-align: right;">1</td><td style = "text-align: right;">2.97372e6</td><td style = "text-align: right;">7.5803</td><td style = "text-align: right;">23.8114</td><td style = "text-align: right;">24.3728</td><td style = "text-align: right;">22.6418</td></tr><tr class = "dataRow"><td class = "rowLabel" style = "font-weight: bold; text-align: right;">2</td><td style = "text-align: right;">2.9536e6</td><td style = "text-align: right;">9.50098</td><td style = "text-align: right;">22.9559</td><td style = "text-align: right;">23.4556</td><td style = "text-align: right;">21.9105</td></tr></tbody></table></div><p>The two days have different humidity and wind profiles, so the daily summaries are different too:</p><pre><code class="language-julia hljs">!isapprox(leaf_df.A_daily[48], leaf_df.A_daily[24]; atol = 1e-6) &amp;&amp;
+!isapprox(leaf_df.transpiration_daily[48], leaf_df.transpiration_daily[24]; atol = 1e-9)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">true</code></pre><p>The daily temperature summary behaves as expected too:</p><pre><code class="language-julia hljs">all(leaf_df.Tₗ_min_daily[[24, 48]] .&lt; leaf_df.Tₗ_mean_daily[[24, 48]]) &amp;&amp;
+all(leaf_df.Tₗ_mean_daily[[24, 48]] .&lt; leaf_df.Tₗ_max_daily[[24, 48]])</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">true</code></pre><p>With <code>ClockSpec(24.0, 0.0)</code>, the daily model runs at the end of each day (<code>t = 24, 48, ...</code>).</p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../several_simulation/">« Several time steps</a><a class="docs-footer-nextpage" href="../several_objects_simulation/">Several objects »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.17.0 on <span class="colophon-date" title="Friday 24 April 2026 13:31">Friday 24 April 2026</span>. Using Julia version 1.12.6.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>

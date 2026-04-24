@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Several objects · PlantBiophysics.jl</title><meta name="title" content="Several objects · PlantBiophysics.jl"/><meta property="og:title" content="Several objects · PlantBiophysics.jl"/><meta property="twitter:title" content="Several objects · PlantBiophysics.jl"/><meta name="description" content="Documentation for PlantBiophysics.jl."/><meta property="og:description" content="Documentation for PlantBiophysics.jl."/><meta property="twitter:description" content="Documentation for PlantBiophysics.jl."/><meta property="og:url" content="https://VEZY.github.io/PlantBiophysics.jl/simulation/several_objects_simulation/"/><meta property="twitter:url" content="https://VEZY.github.io/PlantBiophysics.jl/simulation/several_objects_simulation/"/><link rel="canonical" href="https://VEZY.github.io/PlantBiophysics.jl/simulation/several_objects_simulation/"/><script data-outdated-warner src="../../assets/warner.js"></script><link href="https://cdnjs.cloudflare.com/ajax/libs/lato-font/3.0.0/css/lato-font.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/juliamono/0.050/juliamono.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.8/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL="../.."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../../assets/documenter.js"></script><script src="../../search_index.js"></script><script src="../../siteinfo.js"></script><script src="../../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/catppuccin-mocha.css" data-theme-name="catppuccin-mocha"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/catppuccin-macchiato.css" data-theme-name="catppuccin-macchiato"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/catppuccin-frappe.css" data-theme-name="catppuccin-frappe"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/catppuccin-latte.css" data-theme-name="catppuccin-latte"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../../assets/themeswap.js"></script></head><body><div id="documenter"><nav class="docs-sidebar"><a class="docs-logo" href="../../"><img src="../../assets/logo.svg" alt="PlantBiophysics.jl logo"/></a><div class="docs-package-name"><span class="docs-autofit"><a href="../../">PlantBiophysics.jl</a></span></div><button class="docs-search-query input is-rounded is-small is-clickable my-2 mx-auto py-1 px-2" id="documenter-search-query">Search docs (Ctrl + /)</button><ul class="docs-menu"><li><a class="tocitem" href="../../">Home</a></li><li><span class="tocitem">Getting started</span><ul><li><a class="tocitem" href="../../getting_started/get_started/">TL;DR</a></li><li><a class="tocitem" href="../../getting_started/first_fit/">Parameter fitting</a></li></ul></li><li><a class="tocitem" href="../../concepts/package_design/">Design</a></li><li><a class="tocitem" href="../../variables/">Variables</a></li><li><span class="tocitem">Models</span><ul><li><a class="tocitem" href="../../models/photosynthesis/">Photosynthesis</a></li><li><a class="tocitem" href="../../models/gs/">Stomatal conductance</a></li><li><a class="tocitem" href="../../models/energy_balance/">Energy balance</a></li><li><a class="tocitem" href="../../models/light/">Light interception</a></li></ul></li><li><a class="tocitem" href="../../climate/microclimate/">Micro-climate</a></li><li><a class="tocitem" href="../../fitting/parameter_fitting/">Tutorial: Parameter fitting</a></li><li><span class="tocitem">Tutorial: Simulation</span><ul><li><a class="tocitem" href="../first_simulation/">Simple Simulation</a></li><li><a class="tocitem" href="../several_simulation/">Several time steps</a></li><li><a class="tocitem" href="../multirate_simulation/">Multi-rate simulation</a></li><li class="is-active"><a class="tocitem" href>Several objects</a><ul class="internal"><li><a class="tocitem" href="#Running-the-simulation"><span>Running the simulation</span></a></li></ul></li><li><a class="tocitem" href="../mtg_simulation/">Whole-plant simulation</a></li></ul></li><li><a class="tocitem" href="../uncertainty_propagation/">Tutorial: Uncertainty propagation</a></li><li><span class="tocitem">Extending PlantBiophysics</span><ul><li><a class="tocitem" href="../../extending/implement_a_model/">Implement a model</a></li><li><a class="tocitem" href="../../extending/implement_a_process/">Implement a process</a></li></ul></li><li><a class="tocitem" href="../../functions/">API</a></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><a class="docs-sidebar-button docs-navbar-link fa-solid fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a><nav class="breadcrumb"><ul class="is-hidden-mobile"><li><a class="is-disabled">Tutorial: Simulation</a></li><li class="is-active"><a href>Several objects</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>Several objects</a></li></ul></nav><div class="docs-right"><a class="docs-navbar-link" href="https://github.com/VEZY/PlantBiophysics.jl" title="View the repository on GitHub"><span class="docs-icon fa-brands"></span><span class="docs-label is-hidden-touch">GitHub</span></a><a class="docs-navbar-link" href="https://github.com/VEZY/PlantBiophysics.jl/blob/master/docs/src/simulation/several_objects_simulation.md" title="Edit source on GitHub"><span class="docs-icon fa-solid"></span></a><a class="docs-settings-button docs-navbar-link fa-solid fa-gear" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-article-toggle-button fa-solid fa-chevron-up" id="documenter-article-toggle-button" href="javascript:;" title="Collapse all docstrings"></a></div></header><article class="content" id="documenter-page"><h1 id="Simulation-over-several-components"><a class="docs-heading-anchor" href="#Simulation-over-several-components">Simulation over several components</a><a id="Simulation-over-several-components-1"></a><a class="docs-heading-anchor-permalink" href="#Simulation-over-several-components" title="Permalink"></a></h1><h2 id="Running-the-simulation"><a class="docs-heading-anchor" href="#Running-the-simulation">Running the simulation</a><a id="Running-the-simulation-1"></a><a class="docs-heading-anchor-permalink" href="#Running-the-simulation" title="Permalink"></a></h2><p>We saw in the previous sections how to run a simulation over one and several time-steps.</p><p>Now it is also very easy to run a simulation for different components by just providing an array of component instead:</p><pre><code class="language-julia hljs">using PlantBiophysics, PlantSimEngine, PlantMeteo
+using Dates, DataFrames
+
+meteo = Atmosphere(T = 22.0, Wind = 0.8333, P = 101.325, Rh = 0.4490995)
+
+leaf1 = ModelMapping(
+        Monteith(),
+        Fvcb(),
+        Medlyn(0.03, 12.0),
+        status = (Ra_SW_f = 13.747, sky_fraction = 1.0, aPPFD = 1500.0, d = 0.03)
+    )
+
+leaf2 = ModelMapping(
+        Monteith(),
+        Fvcb(),
+        Medlyn(0.03, 12.0),
+        status = (Ra_SW_f = 10., sky_fraction = 1.0, aPPFD = 1250.0, d = 0.02)
+    )
+
+output_vector = run!([leaf1, leaf2], meteo)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">2-element Vector{Any}:
+ TimeStepTable{Status{(:Ra_SW_f, :sky_fraction, :d, :Tₗ, :Rn, :Ra_LW_f, :H, :λE, :Cₛ, :Cᵢ, :A, :Gₛ, :Gbₕ, :Dₗ, :Gbc, :iter, :aPPFD), Tuple{Base.RefValue{Float64}, Base.RefValue{Float64}, Base.RefValue{Float64}, Base.RefValue{Float64}, Base.RefValue{Float64}, Base.RefValue{Float64}, Base.RefValue{Float64}, Base.RefValue{Float64}, Base.RefValue{Float64}, Base.RefValue{Float64}, Base.RefValue{Float64}, Base.RefValue{Float64}, Base.RefValue{Float64}, Base.RefValue{Float64}, Base.RefValue{Float64}, Base.RefValue{Int64}, Base.RefValue{Float64}}}}((:Ra_SW_f, :sky_fraction, :d, :Tₗ, :Rn, :Ra_LW_f, :H, :λE, :Cₛ, :Cᵢ, :A, :Gₛ, :Gbₕ, :Dₗ, :Gbc, :iter, :aPPFD), NamedTuple(), Status{(:Ra_SW_f, :sky_fraction, :d, :Tₗ, :Rn, :Ra_LW_f, :H, :λE, :Cₛ, :Cᵢ, :A, :Gₛ, :Gbₕ, :Dₗ, :Gbc, :iter, :aPPFD), Tuple{Base.RefValue{Float64}, Base.RefValue{Float64}, Base.RefValue{Float64}, Base.RefValue{Float64}, Base.RefValue{Float64}, Base.RefValue{Float64}, Base.RefValue{Float64}, Base.RefValue{Float64}, Base.RefValue{Float64}, Base.RefValue{Float64}, Base.RefValue{Float64}, Base.RefValue{Float64}, Base.RefValue{Float64}, Base.RefValue{Float64}, Base.RefValue{Float64}, Base.RefValue{Int64}, Base.RefValue{Float64}}}[Status(Ra_SW_f = 13.747, sky_fraction = 1.0, d = 0.03, Tₗ = 17.997367149395565, Rn = 26.312709644906413, Ra_LW_f = 12.565709644906415, H = -198.47860467447032, λE = 224.79131431937674, Cₛ = 350.02226579363736, Cᵢ = 312.07368512991275, A = 32.00581672793857, Gₛ = 1.3446766301139093, Gbₕ = 0.020472103924321854, Dₗ = 0.879389285329452, Gbc = 0.6404015155185633, iter = 1, aPPFD = 1500.0)], Base.RefValue{Union{Nothing, Tables.Schema}}(Tables.Schema:
+ :Ra_SW_f       Float64
+ :sky_fraction  Float64
+ :d             Float64
+ :Tₗ            Float64
+ :Rn            Float64
+ :Ra_LW_f       Float64
+ :H             Float64
+ :λE            Float64
+ :Cₛ            Float64
+ :Cᵢ            Float64
+ :A             Float64
+ :Gₛ            Float64
+ :Gbₕ           Float64
+ :Dₗ            Float64
+ :Gbc           Float64
+ :iter          Int64
+ :aPPFD         Float64), Base.RefValue{Bool}(true))
+ TimeStepTable{Status{(:Ra_SW_f, :sky_fraction, :d, :Tₗ, :Rn, :Ra_LW_f, :H, :λE, :Cₛ, :Cᵢ, :A, :Gₛ, :Gbₕ, :Dₗ, :Gbc, :iter, :aPPFD), Tuple{Base.RefValue{Float64}, Base.RefValue{Float64}, Base.RefValue{Float64}, Base.RefValue{Float64}, Base.RefValue{Float64}, Base.RefValue{Float64}, Base.RefValue{Float64}, Base.RefValue{Float64}, Base.RefValue{Float64}, Base.RefValue{Float64}, Base.RefValue{Float64}, Base.RefValue{Float64}, Base.RefValue{Float64}, Base.RefValue{Float64}, Base.RefValue{Float64}, Base.RefValue{Int64}, Base.RefValue{Float64}}}}((:Ra_SW_f, :sky_fraction, :d, :Tₗ, :Rn, :Ra_LW_f, :H, :λE, :Cₛ, :Cᵢ, :A, :Gₛ, :Gbₕ, :Dₗ, :Gbc, :iter, :aPPFD), NamedTuple(), Status{(:Ra_SW_f, :sky_fraction, :d, :Tₗ, :Rn, :Ra_LW_f, :H, :λE, :Cₛ, :Cᵢ, :A, :Gₛ, :Gbₕ, :Dₗ, :Gbc, :iter, :aPPFD), Tuple{Base.RefValue{Float64}, Base.RefValue{Float64}, Base.RefValue{Float64}, Base.RefValue{Float64}, Base.RefValue{Float64}, Base.RefValue{Float64}, Base.RefValue{Float64}, Base.RefValue{Float64}, Base.RefValue{Float64}, Base.RefValue{Float64}, Base.RefValue{Float64}, Base.RefValue{Float64}, Base.RefValue{Float64}, Base.RefValue{Float64}, Base.RefValue{Float64}, Base.RefValue{Int64}, Base.RefValue{Float64}}}[Status(Ra_SW_f = 10.0, sky_fraction = 1.0, d = 0.02, Tₗ = 18.113063204352787, Rn = 22.20969063162897, Ra_LW_f = 12.20969063162897, H = -230.62330528919128, λE = 252.83299592082025, Cₛ = 358.43440219710857, Cᵢ = 332.89322108297375, A = 31.836564493004904, Gₛ = 1.2457212823313566, Gbₕ = 0.024485123117510294, Dₗ = 0.8945075679317125, Gbc = 0.7659354412265967, iter = 3, aPPFD = 1250.0)], Base.RefValue{Union{Nothing, Tables.Schema}}(Tables.Schema:
+ :Ra_SW_f       Float64
+ :sky_fraction  Float64
+ :d             Float64
+ :Tₗ            Float64
+ :Rn            Float64
+ :Ra_LW_f       Float64
+ :H             Float64
+ :λE            Float64
+ :Cₛ            Float64
+ :Cᵢ            Float64
+ :A             Float64
+ :Gₛ            Float64
+ :Gbₕ           Float64
+ :Dₗ            Float64
+ :Gbc           Float64
+ :iter          Int64
+ :aPPFD         Float64), Base.RefValue{Bool}(true))</code></pre><p>Providing an array of <code>ModelMapping</code> object to the <code>run!</code> function returns an array of output data in the same order the <code>ModelMapping</code> objects were provided.  A simulation over different time-steps would give:</p><pre><code class="language-julia hljs">meteo =
+    read_weather(
+        joinpath(dirname(dirname(pathof(PlantMeteo))), &quot;test&quot;, &quot;data&quot;, &quot;meteo.csv&quot;),
+        :temperature =&gt; :T,
+        :relativeHumidity =&gt; (x -&gt; x ./ 100) =&gt; :Rh,
+        :wind =&gt; :Wind,
+        :atmosphereCO2_ppm =&gt; :Cₐ,
+        date_format=DateFormat(&quot;yyyy/mm/dd&quot;)
+    )
+
+leaf1 = ModelMapping(
+        Monteith(),
+        Fvcb(),
+        Medlyn(0.03, 12.0),
+        status = (
+            Ra_SW_f = [5., 10., 20.],
+            sky_fraction = 1.0,
+            aPPFD = [500., 1000., 1500.0],
+            d = 0.03
+        )
+    )
+
+leaf2 = ModelMapping(
+        Monteith(),
+        Fvcb(),
+        Medlyn(0.03, 12.0),
+        status = (
+            Ra_SW_f = [3., 7., 16.],
+            sky_fraction = 1.0,
+            aPPFD = [400., 800., 1200.0],
+            d = 0.03
+        )
+    )
+
+output_vector = run!([leaf1, leaf2], meteo)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">2-element Vector{Any}:
+ TimeStepTable{Status{(:Ra_SW_f, :sky_fraction, :d, :Tₗ, :Rn, :Ra_LW_f, :H, :λE, :Cₛ, :Cᵢ, :A, :Gₛ, :Gbₕ, :Dₗ, :Gbc, :iter, :aPPFD), Tuple{Base.RefValue{Float64}, Base.RefValue{Float64}, Base.RefValue{Float64}, Base.RefValue{Float64}, Base.RefValue{Float64}, Base.RefValue{Float64}, Base.RefValue{Float64}, Base.RefValue{Float64}, Base.RefValue{Float64}, Base.RefValue{Float64}, Base.RefValue{Float64}, Base.RefValue{Float64}, Base.RefValue{Float64}, Base.RefValue{Float64}, Base.RefValue{Float64}, Base.RefValue{Int64}, Base.RefValue{Float64}}}}((:Ra_SW_f, :sky_fraction, :d, :Tₗ, :Rn, :Ra_LW_f, :H, :λE, :Cₛ, :Cᵢ, :A, :Gₛ, :Gbₕ, :Dₗ, :Gbc, :iter, :aPPFD), NamedTuple(), Status{(:Ra_SW_f, :sky_fraction, :d, :Tₗ, :Rn, :Ra_LW_f, :H, :λE, :Cₛ, :Cᵢ, :A, :Gₛ, :Gbₕ, :Dₗ, :Gbc, :iter, :aPPFD), Tuple{Base.RefValue{Float64}, Base.RefValue{Float64}, Base.RefValue{Float64}, Base.RefValue{Float64}, Base.RefValue{Float64}, Base.RefValue{Float64}, Base.RefValue{Float64}, Base.RefValue{Float64}, Base.RefValue{Float64}, Base.RefValue{Float64}, Base.RefValue{Float64}, Base.RefValue{Float64}, Base.RefValue{Float64}, Base.RefValue{Float64}, Base.RefValue{Float64}, Base.RefValue{Int64}, Base.RefValue{Float64}}}[Status(Ra_SW_f = 5.0, sky_fraction = 1.0, d = 0.03, Tₗ = 21.83573153084025, Rn = 15.965283680361527, Ra_LW_f = 10.965283680361527, H = -165.13291928522207, λE = 181.09820296558362, Cₛ = 343.2102259282796, Cᵢ = 321.31043893452926, A = 24.830906670516264, Gₛ = 1.1254592707750168, Gbₕ = 0.02179553879423706, Dₗ = 0.7193502294172813, Gbc = 0.6749404500856484, iter = 2, aPPFD = 500.0), Status(Ra_SW_f = 10.0, sky_fraction = 1.0, d = 0.03, Tₗ = 22.84020211068735, Rn = 21.198501685131703, Ra_LW_f = 11.198501685131705, H = -193.86349456634008, λE = 215.06199625147178, Cₛ = 339.04379384844833, Cᵢ = 317.5976064559233, A = 32.50283493340968, Gₛ = 1.4992103985745588, Gbₕ = 0.025713303035379057, Dₗ = 0.7006386368513509, Gbc = 0.7935997492819119, iter = 2, aPPFD = 1000.0), Status(Ra_SW_f = 20.0, sky_fraction = 1.0, d = 0.03, Tₗ = 21.940135631873805, Rn = 31.639376277185356, Ra_LW_f = 11.639376277185358, H = -206.85399277211323, λE = 238.49336904929856, Cₛ = 336.54038618415206, Cᵢ = 314.38038349280896, A = 34.63853849836, Gₛ = 1.5423228111285296, Gbₕ = 0.025763960160421828, Dₗ = 0.7665023514958125, Gbc = 0.7970282167056153, iter = 2, aPPFD = 1500.0)], Base.RefValue{Union{Nothing, Tables.Schema}}(Tables.Schema:
+ :Ra_SW_f       Float64
+ :sky_fraction  Float64
+ :d             Float64
+ :Tₗ            Float64
+ :Rn            Float64
+ :Ra_LW_f       Float64
+ :H             Float64
+ :λE            Float64
+ :Cₛ            Float64
+ :Cᵢ            Float64
+ :A             Float64
+ :Gₛ            Float64
+ :Gbₕ           Float64
+ :Dₗ            Float64
+ :Gbc           Float64
+ :iter          Int64
+ :aPPFD         Float64), Base.RefValue{Bool}(true))
+ TimeStepTable{Status{(:Ra_SW_f, :sky_fraction, :d, :Tₗ, :Rn, :Ra_LW_f, :H, :λE, :Cₛ, :Cᵢ, :A, :Gₛ, :Gbₕ, :Dₗ, :Gbc, :iter, :aPPFD), Tuple{Base.RefValue{Float64}, Base.RefValue{Float64}, Base.RefValue{Float64}, Base.RefValue{Float64}, Base.RefValue{Float64}, Base.RefValue{Float64}, Base.RefValue{Float64}, Base.RefValue{Float64}, Base.RefValue{Float64}, Base.RefValue{Float64}, Base.RefValue{Float64}, Base.RefValue{Float64}, Base.RefValue{Float64}, Base.RefValue{Float64}, Base.RefValue{Float64}, Base.RefValue{Int64}, Base.RefValue{Float64}}}}((:Ra_SW_f, :sky_fraction, :d, :Tₗ, :Rn, :Ra_LW_f, :H, :λE, :Cₛ, :Cᵢ, :A, :Gₛ, :Gbₕ, :Dₗ, :Gbc, :iter, :aPPFD), NamedTuple(), Status{(:Ra_SW_f, :sky_fraction, :d, :Tₗ, :Rn, :Ra_LW_f, :H, :λE, :Cₛ, :Cᵢ, :A, :Gₛ, :Gbₕ, :Dₗ, :Gbc, :iter, :aPPFD), Tuple{Base.RefValue{Float64}, Base.RefValue{Float64}, Base.RefValue{Float64}, Base.RefValue{Float64}, Base.RefValue{Float64}, Base.RefValue{Float64}, Base.RefValue{Float64}, Base.RefValue{Float64}, Base.RefValue{Float64}, Base.RefValue{Float64}, Base.RefValue{Float64}, Base.RefValue{Float64}, Base.RefValue{Float64}, Base.RefValue{Float64}, Base.RefValue{Float64}, Base.RefValue{Int64}, Base.RefValue{Float64}}}[Status(Ra_SW_f = 3.0, sky_fraction = 1.0, d = 0.03, Tₗ = 21.905180236999048, Rn = 13.72837418527546, Ra_LW_f = 10.72837418527546, H = -161.39640111743302, λE = 175.12477530270849, Cₛ = 347.52067885419683, Cᵢ = 325.22283717660844, A = 21.896705442954676, Gₛ = 0.9773562588613921, Gbₕ = 0.02177077981441629, Dₗ = 0.7305134302240728, Gbc = 0.6741737410291917, iter = 2, aPPFD = 400.0), Status(Ra_SW_f = 7.0, sky_fraction = 1.0, d = 0.03, Tₗ = 22.856541089871975, Rn = 18.141509752971267, Ra_LW_f = 11.141509752971267, H = -192.88111783193096, λE = 211.0226275849022, Cₛ = 341.549183682953, Cᵢ = 319.88642214871663, A = 30.507641140236963, Gₛ = 1.3966042731695492, Gbₕ = 0.025707474336594975, Dₗ = 0.7034052887994511, Gbc = 0.7934198558669229, iter = 2, aPPFD = 800.0), Status(Ra_SW_f = 16.0, sky_fraction = 1.0, d = 0.03, Tₗ = 21.933366243216966, Rn = 27.662429536710544, Ra_LW_f = 11.662429536710544, H = -207.33873986071112, λE = 235.00116939742165, Cₛ = 338.1020812862871, Cᵢ = 315.83436451983005, A = 33.39679220907404, Gₛ = 1.4825119047979523, Gbₕ = 0.025766250624393847, Dₗ = 0.7654103783222683, Gbc = 0.7970990739963298, iter = 2, aPPFD = 1200.0)], Base.RefValue{Union{Nothing, Tables.Schema}}(Tables.Schema:
+ :Ra_SW_f       Float64
+ :sky_fraction  Float64
+ :d             Float64
+ :Tₗ            Float64
+ :Rn            Float64
+ :Ra_LW_f       Float64
+ :H             Float64
+ :λE            Float64
+ :Cₛ            Float64
+ :Cᵢ            Float64
+ :A             Float64
+ :Gₛ            Float64
+ :Gbₕ           Float64
+ :Dₗ            Float64
+ :Gbc           Float64
+ :iter          Int64
+ :aPPFD         Float64), Base.RefValue{Bool}(true))</code></pre></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../multirate_simulation/">« Multi-rate simulation</a><a class="docs-footer-nextpage" href="../mtg_simulation/">Whole-plant simulation »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.17.0 on <span class="colophon-date" title="Friday 24 April 2026 13:31">Friday 24 April 2026</span>. Using Julia version 1.12.6.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
