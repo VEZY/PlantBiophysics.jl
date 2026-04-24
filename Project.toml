@@ -1,6 +1,6 @@
 name = "PlantBiophysics"
 uuid = "7ae8fcfa-76ad-4ec6-9ea7-5f8f5e2d6ec9"
-version = "0.16.2"
+version = "0.17.0"
 authors = ["remi.vezy <VEZY@users.noreply.github.com> and contributors"]
 
 [deps]
