@@ -64,8 +64,6 @@ function PlantSimEngine.outputs_(::FvcbRaw)
 end
 
 Base.eltype(x::FvcbRaw) = typeof(x).parameters[1]
-PlantSimEngine.ObjectDependencyTrait(::Type{<:FvcbRaw}) = PlantSimEngine.IsObjectIndependent()
-PlantSimEngine.TimeStepDependencyTrait(::Type{<:FvcbRaw}) = PlantSimEngine.IsTimeStepIndependent()
 PlantSimEngine.timestep_hint(::Type{<:FvcbRaw}) = (
     required=(Dates.Minute(1), Dates.Hour(6)),
     preferred=Dates.Hour(1)
@@ -87,8 +85,8 @@ Modify the first argument in place for A, the carbon assimilation (μmol[CO₂] 
 # Arguments
 
 - `::FvcbRaw`: the Farquhar–von Caemmerer–Berry (FvCB) model (not coupled)
-- `models`: a `ModelMapping` struct holding the parameters for the model with
-initialisations for:
+- `models`: the compiled model bundle for the application, with status
+  initialisations for:
     - `Tₗ` (°C): leaf temperature
     - `aPPFD` (μmol m-2 s-1): absorbed Photosynthetic Photon Flux Density
     - `Cₛ` (ppm): Air CO₂ concentration at the leaf surface
@@ -107,24 +105,13 @@ balance of the leaf with the photosynthesis to get those variables. See
 # Examples
 
 ```julia
-using PlantSimEngine
-leaf = ModelMapping(photosynthesis = FvcbRaw(), status = (Tₗ = 25.0, aPPFD = 1000.0, Cᵢ = 400.0))
-# NB: we need Tₗ, aPPFD and Cᵢ as inputs (see [`inputs`](@ref))
-
-run!(leaf)
-leaf.status.A
-leaf.status.Cᵢ
-
-# using several time-steps:
-leaf =
-    ModelMapping(
-        photosynthesis = FvcbRaw(),
-        status = (Tₗ = [20., 25.0], aPPFD = 1000.0, Cᵢ = [380.,400.0])
-    )
-# NB: we need Tₗ, aPPFD and Cᵢ as inputs (see [`inputs`](@ref))
-
-out_sim = run!(leaf)
-PlantSimEngine.convert_outputs(out_sim, DataFrame) # fetch the leaf status as a DataFrame
+using PlantBiophysics, PlantSimEngine
+scene = leaf_scene(
+    FvcbRaw();
+    status=Status(Tₗ=25.0, aPPFD=1000.0, Cᵢ=400.0),
+)
+run!(scene)
+only(model_objects(scene; scale=:Leaf)).status.A
 ```
 
 # References

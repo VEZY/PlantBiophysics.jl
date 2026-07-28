@@ -2,7 +2,7 @@ module PlantBiophysics
 
 import PlantSimEngine
 import PlantSimEngine: @process, AbstractModel, TimeStepTable
-import PlantSimEngine: Status, ModelMapping
+import PlantSimEngine: Status
 
 import PlantMeteo
 import PlantMeteo: Weather, AbstractAtmosphere
@@ -34,6 +34,7 @@ include("processes/energy/energy_balance.jl")
 
 # Conversions
 include("conversions.jl")
+include("simulation.jl")
 
 # γ_star
 include("processes/γ_star.jl")
@@ -78,9 +79,6 @@ include("io/read_ess_dive.jl")
 include("fitting/fit_FvCB.jl")
 include("fitting/fit_Medlyn.jl")
 include("fitting/fit_Beer.jl")
-
-# Depreciations
-include("depreciations/models.jl")
 
 # File IO:
 export read_model
@@ -133,5 +131,6 @@ export ConstantGs
 export get_km, Γ_star, arrhenius, get_J, gs_closure, get_Cᵢⱼ, get_Cᵢᵥ, get_Dₕ
 export Fvcb_net_assimiliation
 export get_process, get_model, instantiate
+export leaf_scene
 
 end

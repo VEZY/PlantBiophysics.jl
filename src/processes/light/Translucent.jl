@@ -32,8 +32,6 @@ end
 PlantSimEngine.inputs_(::Translucent) = NamedTuple()
 PlantSimEngine.outputs_(::Translucent) = (aPPFD=-Inf, Ra_SW_f=-Inf, sky_fraction=-Inf,)
 
-PlantSimEngine.ObjectDependencyTrait(::Type{<:Translucent}) = PlantSimEngine.IsObjectIndependent()
-PlantSimEngine.TimeStepDependencyTrait(::Type{<:Translucent}) = PlantSimEngine.IsTimeStepIndependent()
 PlantSimEngine.output_policy(::Type{<:Translucent}) = (
     Ra_SW_f=PlantSimEngine.Integrate(PlantMeteo.RadiationEnergy()), # from W m-2 to J m-2 timerstep-1
     aPPFD=PlantSimEngine.Integrate(PlantMeteo.RadiationEnergy()),

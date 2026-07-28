@@ -27,15 +27,11 @@ The Beer-Lambert law for light interception for the shortwave radiation.
 ```julia
 using PlantSimEngine, PlantBiophysics, PlantMeteo
 
-m = ModelMapping(light_interception=BeerShortwave(0.5), status=(LAI=2.0,))
 meteo = Atmosphere(T=20.0, Wind=1.0, P=101.3, Rh=0.65, Ri_PAR_f=300.0, Ri_NIR_f=280.0)
-
-run!(m, meteo)
-
-m[:aPPFD]
-m[:Ra_SW_f]
-m[:Ra_PAR_f]
-m[:Ra_NIR_f]
+scene = leaf_scene(BeerShortwave(0.5); status=Status(LAI=2.0), environment=meteo)
+run!(scene)
+leaf = only(model_objects(scene; scale=:Leaf))
+(leaf.status.aPPFD, leaf.status.Ra_SW_f, leaf.status.Ra_PAR_f, leaf.status.Ra_NIR_f)
 ```
 """
 struct BeerShortwave{T} <: AbstractLight_InterceptionModel
@@ -46,8 +42,6 @@ end
 BeerShortwave(k) = BeerShortwave(k, 0.48)
 PlantSimEngine.inputs_(::BeerShortwave) = (LAI=-Inf,)
 PlantSimEngine.outputs_(::BeerShortwave) = (Ra_SW_f=-Inf, Ra_PAR_f=-Inf, Ra_NIR_f=-Inf, aPPFD=-Inf)
-PlantSimEngine.ObjectDependencyTrait(::Type{<:BeerShortwave}) = PlantSimEngine.IsObjectIndependent()
-PlantSimEngine.TimeStepDependencyTrait(::Type{<:BeerShortwave}) = PlantSimEngine.IsTimeStepIndependent()
 PlantSimEngine.output_policy(::Type{<:BeerShortwave}) = (
     Ra_SW_f=PlantSimEngine.Integrate(PlantMeteo.RadiationEnergy()), # from W m-2 to J m-2 timerstep-1
     Ra_PAR_f=PlantSimEngine.Integrate(PlantMeteo.RadiationEnergy()),

@@ -4,9 +4,8 @@
 Photosynthesis process to compute the CO₂ assimilation, and potentially
 hard-coupled with a stomatal conductance process.
 
-The models used are defined by the types of the `photosynthesis` and `stomatal_conductance`
-fields of the `ModelMapping`. For exemple to use the implementation of the Farquhar–von Caemmerer–Berry
-(FvCB) model, use the type `Fvcb` (see example below).
+The models used are selected as scene applications. For example, use `Fvcb`
+for photosynthesis and `Medlyn` for its stomatal-conductance hard dependency.
 
 # Examples
 
@@ -15,55 +14,19 @@ using PlantSimEngine, PlantMeteo, PlantBiophysics
 
 meteo = Atmosphere(T = 20.0, Wind = 1.0, P = 101.3, Rh = 0.65)
 
-# Using Fvcb model:
-leaf =
-    ModelMapping(
-        photosynthesis = Fvcb(),
-        stomatal_conductance = Medlyn(0.03, 12.0),
-        status = (Tₗ = 25.0, aPPFD = 1000.0, Cₛ = 400.0, Dₗ = meteo.VPD)
-    )
-
-run!(leaf, meteo)
-
-# ---Using several components---
-
-leaf2 = copy(leaf)
-leaf2.status.aPPFD = 800.0
-
-run!([leaf,leaf2],meteo)
-
-# ---Using several meteo time-steps---
-
-w = Weather(
-        [
-            Atmosphere(T = 20.0, Wind = 1.0, P = 101.3, Rh = 0.65),
-            Atmosphere(T = 25.0, Wind = 1.5, P = 101.3, Rh = 0.55)
-        ],
-        (site = "Test site,)
-    )
-
-run!(leaf, w)
-
-# ---Using several meteo time-steps and several components---
-
-run!(Dict(:leaf1 => leaf, :leaf2 => leaf2), w)
-
-# Using a model file:
-
-model = read_model("a-model-file.yml")
-
-# Initialising the mandatory variables:
-init_status!(model, Tₗ = 25.0, aPPFD = 1000.0, Cₛ = 400.0, Dₗ = meteo.VPD)
-
-# Running a simulation for all component types in the same scene:
-run!(model, meteo)
-model[:Leaf].status.A
-
+scene = leaf_scene(
+    Fvcb(),
+    Medlyn(0.03, 12.0);
+    status=Status(Tₗ=25.0, aPPFD=1000.0, Cₛ=400.0, Dₗ=meteo.VPD),
+    environment=meteo,
+)
+run!(scene)
+only(model_objects(scene; scale=:Leaf)).status.A
 ```
 
 Note that we use `VPD` as an approximation of `Dₗ` here because we don't have the leaf temperature (*i.e.* `Dₗ = VPD` when `Tₗ = T`).
 """ verbose = false
 
 # Default policy for assimilation rates when consumed at coarser clocks.
-# Mapping-level InputBindings policy still overrides this default when provided.
+# An explicit policy on a scene `Inputs(...)` selector overrides this default.
 PlantSimEngine.output_policy(::Type{<:AbstractPhotosynthesisModel}) = (A=PlantSimEngine.Integrate(PlantMeteo.DurationSumReducer()),)

@@ -72,22 +72,12 @@ end
 
     λ_ref = meteo[1].λ
 
-    mapping = ModelMapping(
-        :Leaf => (
-            Monteith(),
-            Fvcb(),
-            Medlyn(0.03, 12.0),
-            ModelSpec(DailyLeafSummaryTestModel()) |>
-            TimeStepModel(ClockSpec(24.0, 0.0)) |>
-            InputBindings(
-                ;
-                A_integrated=(process=:energy_balance, var=:A, policy=Integrate((vals, durations) -> sum(vals .* durations))),
-                transpiration_integrated=(process=:energy_balance, var=:λE, policy=Integrate((vals, durations) -> sum(vals .* durations) / λ_ref)),
-                Tₗ_mean=(process=:energy_balance, var=:Tₗ, policy=Aggregate()),
-                Tₗ_max=(process=:energy_balance, var=:Tₗ, policy=Aggregate(MaxReducer())),
-                Tₗ_min=(process=:energy_balance, var=:Tₗ, policy=Aggregate(MinReducer())),
-            ),
-            Status(
+    scene = CompositeModel(
+        Object(
+            :leaf;
+            scale=:Leaf,
+            kind=:plant,
+            status=Status(
                 d=0.03,
                 Ra_SW_f=150.0,
                 sky_fraction=1.0,
@@ -97,40 +87,91 @@ end
                 Tₗ_mean=0.0,
                 Tₗ_max=0.0,
                 Tₗ_min=0.0,
-            )
+            ),
         ),
+        applications=(
+            ModelSpec(Monteith(); name=:energy_balance) |>
+            AppliesTo(One(scale=:Leaf)) |>
+            TimeStep(Hour(1)),
+            ModelSpec(Fvcb(); name=:photosynthesis) |>
+            AppliesTo(One(scale=:Leaf)) |>
+            TimeStep(Hour(1)),
+            ModelSpec(Medlyn(0.03, 12.0); name=:stomatal_conductance) |>
+            AppliesTo(One(scale=:Leaf)) |>
+            TimeStep(Hour(1)),
+            ModelSpec(DailyLeafSummaryTestModel(); name=:daily_summary) |>
+            AppliesTo(One(scale=:Leaf)) |>
+            Inputs(
+                :A_integrated => One(
+                    within=Self(),
+                    application=:energy_balance,
+                    var=:A,
+                    policy=Integrate(
+                        (vals, durations) -> sum(vals .* durations),
+                    ),
+                    window=Day(1),
+                ),
+                :transpiration_integrated => One(
+                    within=Self(),
+                    application=:energy_balance,
+                    var=:λE,
+                    policy=Integrate(
+                        (vals, durations) -> sum(vals .* durations) / λ_ref,
+                    ),
+                    window=Day(1),
+                ),
+                :Tₗ_mean => One(
+                    within=Self(),
+                    application=:energy_balance,
+                    var=:Tₗ,
+                    policy=Aggregate(),
+                    window=Day(1),
+                ),
+                :Tₗ_max => One(
+                    within=Self(),
+                    application=:energy_balance,
+                    var=:Tₗ,
+                    policy=Aggregate(MaxReducer()),
+                    window=Day(1),
+                ),
+                :Tₗ_min => One(
+                    within=Self(),
+                    application=:energy_balance,
+                    var=:Tₗ,
+                    policy=Aggregate(MinReducer()),
+                    window=Day(1),
+                ),
+            ) |>
+            TimeStep(ClockSpec(24.0, 24.0)),
+        ),
+        environment=meteo,
     )
 
-    out = run!(
-        mtg,
-        mapping,
-        meteo,
-        tracked_outputs=Dict(
-            :Leaf => (:A, :λE, :Tₗ, :A_daily, :transpiration_daily, :Tₗ_mean_daily, :Tₗ_max_daily, :Tₗ_min_daily)
-        ),
-        executor=SequentialEx(),
+    sim = run!(scene; steps=48, constants=Constants(), outputs=:all)
+    rows = collect_outputs(sim; sink=nothing)
+    energy_rows = DataFrame(
+        filter(row -> row.application_id == :energy_balance, rows),
     )
-    out_df = convert_outputs(out, DataFrame)[:Leaf]
+    daily_rows = DataFrame(
+        filter(row -> row.application_id == :daily_summary, rows),
+    )
+    energy = unstack(energy_rows, :timestep, :variable, :value)
+    daily = unstack(daily_rows, :timestep, :variable, :value)
 
-    @test nrow(out_df) == 48
-    @test all(out_df.A_daily[24:47] .== out_df.A_daily[24])
-    @test out_df.A_daily[24] ≈ sum(out_df.A[1:24] .* 3600.0) atol = 1e-3
-    @test out_df.A_daily[48] ≈ sum(out_df.A[25:48] .* 3600.0) atol = 1e-3
-    @test !isapprox(out_df.A_daily[48], out_df.A_daily[24]; atol=1e-6, rtol=0.0)
-
-    @test all(out_df.transpiration_daily[24:47] .== out_df.transpiration_daily[24])
-    @test out_df.transpiration_daily[24] ≈ sum(out_df.λE[1:24] .* 3600.0) / λ_ref atol = 1e-6
-    @test out_df.transpiration_daily[48] ≈ sum(out_df.λE[25:48] .* 3600.0) / λ_ref atol = 1e-6
-    @test !isapprox(out_df.transpiration_daily[48], out_df.transpiration_daily[24]; atol=1e-9, rtol=0.0)
-
-    @test out_df.Tₗ_mean_daily[24] ≈ Statistics.mean(out_df.Tₗ[1:24]) atol = 1e-6
-    @test out_df.Tₗ_mean_daily[48] ≈ Statistics.mean(out_df.Tₗ[25:48]) atol = 1e-6
-    @test out_df.Tₗ_max_daily[24] ≈ maximum(out_df.Tₗ[1:24]) atol = 1e-6
-    @test out_df.Tₗ_max_daily[48] ≈ maximum(out_df.Tₗ[25:48]) atol = 1e-6
-    @test out_df.Tₗ_min_daily[24] ≈ minimum(out_df.Tₗ[1:24]) atol = 1e-6
-    @test out_df.Tₗ_min_daily[48] ≈ minimum(out_df.Tₗ[25:48]) atol = 1e-6
-    @test out_df.Tₗ_min_daily[24] < out_df.Tₗ_mean_daily[24] < out_df.Tₗ_max_daily[24]
-    @test out_df.Tₗ_min_daily[48] < out_df.Tₗ_mean_daily[48] < out_df.Tₗ_max_daily[48]
+    @test nrow(energy) == 48
+    @test daily.A_daily[1] ≈ sum(energy.A[1:24] .* 3600.0) atol = 1e-3
+    @test daily.A_daily[2] ≈ sum(energy.A[25:48] .* 3600.0) atol = 1e-3
+    @test !isapprox(daily.A_daily[2], daily.A_daily[1]; atol=1e-6, rtol=0.0)
+    @test daily.transpiration_daily[1] ≈
+          sum(energy.λE[1:24] .* 3600.0) / λ_ref atol = 1e-6
+    @test daily.transpiration_daily[2] ≈
+          sum(energy.λE[25:48] .* 3600.0) / λ_ref atol = 1e-6
+    @test daily.Tₗ_mean_daily[1] ≈ Statistics.mean(energy.Tₗ[1:24]) atol = 1e-6
+    @test daily.Tₗ_mean_daily[2] ≈ Statistics.mean(energy.Tₗ[25:48]) atol = 1e-6
+    @test daily.Tₗ_max_daily[1] ≈ maximum(energy.Tₗ[1:24]) atol = 1e-6
+    @test daily.Tₗ_max_daily[2] ≈ maximum(energy.Tₗ[25:48]) atol = 1e-6
+    @test daily.Tₗ_min_daily[1] ≈ minimum(energy.Tₗ[1:24]) atol = 1e-6
+    @test daily.Tₗ_min_daily[2] ≈ minimum(energy.Tₗ[25:48]) atol = 1e-6
 
     @test PlantSimEngine.timestep_hint(Monteith()).preferred == Dates.Hour(1)
 end

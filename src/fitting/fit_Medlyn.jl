@@ -34,15 +34,17 @@ filter!(x -> x.curve != "ligth Curve" && x.curve != "CO2 Curve", df)
 g0, g1 = fit(Medlyn, df)
 
 # Re-simulating Gₛ using the newly fitted parameters:
-w = Weather(select(df, :T, :P, :Rh, :Cₐ, :VPD, :T => (x -> 10) => :Wind))
-leaf = ModelMapping(
-        stomatal_conductance = Medlyn(g0, g1),
-        status = (A = df.A, Cₛ = df.Cₐ, Dₗ = df.Dₗ)
+gs_sim = map(eachrow(df)) do row
+    scene = leaf_scene(
+        Medlyn(g0, g1);
+        status = Status(A = row.A, Cₛ = row.Cₐ, Dₗ = row.Dₗ),
     )
-run!(leaf, w)
+    run!(scene)
+    only(model_objects(scene; scale = :Leaf)).status.Gₛ
+end
 
 # Visualising the results:
-gsAvpd = PlantBiophysics.GsADₗ(g0, g1, df.Gₛ, df.Dₗ, df.A, df.Cₐ, leaf[:Gₛ])
+gsAvpd = PlantBiophysics.GsADₗ(g0, g1, df.Gₛ, df.Dₗ, df.A, df.Cₐ, gs_sim)
 plot(gsAvpd,leg=:bottomright)
 # As in [`Medlyn`](@ref) reference paper, linear regression is also plotted.
 ```

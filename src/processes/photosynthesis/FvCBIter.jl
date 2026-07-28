@@ -59,8 +59,6 @@ function PlantSimEngine.outputs_(::FvcbIter)
 end
 
 Base.eltype(x::FvcbIter) = typeof(x).parameters[1]
-PlantSimEngine.ObjectDependencyTrait(::Type{<:FvcbIter}) = PlantSimEngine.IsObjectIndependent()
-PlantSimEngine.TimeStepDependencyTrait(::Type{<:FvcbIter}) = PlantSimEngine.IsTimeStepIndependent()
 PlantSimEngine.timestep_hint(::Type{<:FvcbIter}) = (
     required=(Dates.Minute(1), Dates.Hour(6)),
     preferred=Dates.Hour(1)
@@ -73,7 +71,11 @@ PlantSimEngine.output_policy(::Type{<:FvcbIter}) = (
     Cₛ=PlantSimEngine.Integrate(PlantMeteo.MeanReducer()),
 )
 
-PlantSimEngine.dep(::FvcbIter) = (stomatal_conductance=AbstractStomatal_ConductanceModel,)
+PlantSimEngine.dep(::FvcbIter) = (
+    stomatal_conductance=PlantSimEngine.Call(
+        PlantSimEngine.One(scale=:Leaf, process=:stomatal_conductance),
+    ),
+)
 
 """
     run!(::FvcbIter, models, status, meteo, constants=Constants())
@@ -97,8 +99,8 @@ Modify the first argument in place for A, Gₛ and Cᵢ:
 # Arguments
 
 - `::FvcbIter`: Farquhar–von Caemmerer–Berry (FvCB) model with iterative resolution.
-- `models`: a `ModelMapping` struct holding the parameters for the model with
-initialisations for:
+- `models`: the compiled model bundle containing the stomatal-conductance
+  dependency, with status initialisations for:
     - `Tₗ` (°C): leaf temperature
     - `aPPFD` (μmol m-2 s-1): absorbed Photosynthetic Photon Flux Density
     - `Gbc` (mol m-2 s-1): boundary conductance for CO₂
@@ -118,20 +120,17 @@ balance of the leaf with the photosynthesis to get those variables. See
 # Examples
 
 ```julia
-using PlantBiophysics, PlantMeteo
+using PlantBiophysics, PlantMeteo, PlantSimEngine
 meteo = Atmosphere(T = 20.0, Wind = 1.0, P = 101.3, Rh = 0.65)
-
-leaf =
-    ModelMapping(
-        photosynthesis = FvcbIter(),
-        stomatal_conductance = Medlyn(0.03, 12.0),
-        status = (Tₗ = 25.0, aPPFD = 1000.0, Gbc = 0.67, Dₗ = meteo.VPD)
-    )
-# NB: we need  to initalise Tₗ, aPPFD and Gbc.
-
-run!(leaf,meteo,PlantMeteo.Constants())
-leaf.status.A
-leaf.status.Cᵢ
+scene = leaf_scene(
+    FvcbIter(),
+    Medlyn(0.03, 12.0);
+    status=Status(Tₗ=25.0, aPPFD=1000.0, Gbc=0.67, Dₗ=meteo.VPD),
+    environment=meteo,
+)
+run!(scene)
+leaf = only(model_objects(scene; scale=:Leaf))
+(leaf.status.A, leaf.status.Cᵢ)
 ```
 
 Note that we use `VPD` as an approximation of `Dₗ` here because we don't have the leaf temperature (*i.e.* `Dₗ = VPD` when `Tₗ = T`).
@@ -191,7 +190,13 @@ function PlantSimEngine.run!(m::FvcbIter, models, status, meteo, constants=Plant
 
     while iter
         # Stomatal conductance (mol[CO₂] m-2 s-1)
-        PlantSimEngine.run!(models.stomatal_conductance, models, status, meteo, constants, extra)
+        # FvCBIter owns Gₛ; each stomatal evaluation is an unpublished trial.
+        PlantSimEngine.run_call!(
+            extra,
+            :stomatal_conductance;
+            meteo=meteo,
+            publish=false,
+        )
 
         # Surface CO₂ concentration (ppm):
         status.Cₛ = min(meteo.Cₐ, meteo.Cₐ - status.A / status.Gbc)

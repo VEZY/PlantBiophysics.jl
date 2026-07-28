@@ -1,31 +1,34 @@
-# [Light interception](@id light_page)
+# [Light Interception](@id light_page)
 
-```@setup usepkg
-using PlantBiophysics, PlantSimEngine
+PlantBiophysics provides two Beer-Lambert implementations:
+
+- [`Beer`](@ref) computes absorbed photosynthetic photon flux density
+  (`aPPFD`);
+- [`BeerShortwave`](@ref) also computes absorbed shortwave radiation
+  (`Ra_SW_f`) for energy-balance models.
+
+```@example light
+using PlantBiophysics, PlantSimEngine, PlantMeteo, Dates
+
+scene = leaf_scene(
+    BeerShortwave(0.6);
+    status=Status(LAI=2.0),
+    environment=Atmosphere(
+        T=20.0,
+        Wind=1.0,
+        P=101.3,
+        Rh=0.65,
+        Ri_PAR_f=300.0,
+        Ri_SW_f=650.0,
+        duration=Hour(1),
+    ),
+)
+
+run!(scene)
+leaf = only(model_objects(scene; scale=:Leaf))
+(aPPFD=leaf.status.aPPFD, Ra_SW_f=leaf.status.Ra_SW_f)
 ```
 
-The light interception process is the process of computing the radiation interception of components for different wavelength such as PAR (Photosynthetically Active Radication), NIR (Near-Infrared Radiation) and eventually TIR (Thermal Infrared Radiation). Users can also compute particular wavelengths (*e.g.* red, far-red) depending on the model used.
-
-There are two light interception models implemented in PlantBiophysics at the time, both derived from the Beer-Lambert law of light extinction. 
-
-- [Beer model](@ref Beer): The first one is the Beer model, which is a simple model that computes the light interception (`aPPFD`) of a component as a function of the leaf area index (`LAI`) and the extinction coefficient (`k`). The Beer model is implemented in the `Beer` type. This model is recommended if you need to compute the photosynthesis of the plant, but not the energy balance.
-
-- [Beer model with shortwave radiation](@ref BeerShortwave): the second one is the same model as the `Beer` model, but with a computation of the intercepted shortwave radiation (`Ra_SW_f`) added to the computation of the `aPPFD`. This model needs the `k` coefficient, and the `f` coefficient, which is a proportionality factor between the shortwave radiation and the aPPFD (usually 0.48, the default).
-This model is recommended if you need to compute the energy balance of the object. The model is implemented in the `BeerShortwave` type.
-
-Here's an example usage:
-
-```@example usepkg
-using PlantBiophysics, PlantSimEngine
-
-m = ModelMapping(BeerShortwave(0.6), status=(LAI=2.0,))
-
-meteo = Atmosphere(T=20.0, Wind=1.0, P=101.3, Rh=0.65, Ri_PAR_f=300.0)
-
-out = run!(m, meteo)
-
-out
-```
-
-!!! note
-    If you have a 3D plant in the OPF format, you can use [Archimed-ϕ](https://archimed-platform.github.io/archimed-phys-user-doc/).
+For geometrically explicit plants, radiation interception is normally computed
+by a dedicated 3D radiation package and supplied to PlantBiophysics leaf
+models through object status or compiled `Inputs(...)`.

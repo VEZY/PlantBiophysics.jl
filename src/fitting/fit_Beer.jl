@@ -27,15 +27,16 @@ df = DataFrame(
 # Fit the parameters values:
 k = fit(Beer, df)
 
-# Re-simulating aPPFD using the newly fitted parameters:
-w = Weather(df)
-leaf = ModelMapping(
-        Beer(k.k),
-        status = (LAI = df.LAI,)
-    )
-run!(leaf, w)
-
-leaf
+# Re-simulating the first observation using the newly fitted parameter:
+meteo = Atmosphere(
+    T = df.T[1],
+    Rh = df.Rh[1],
+    Wind = df.Wind[1],
+    Ri_PAR_f = df.Ri_PAR_f[1],
+)
+scene = leaf_scene(Beer(k.k); status = Status(LAI = df.LAI[1]), environment = meteo)
+run!(scene)
+only(model_objects(scene; scale = :Leaf)).status.aPPFD
 ```
 """
 function PlantSimEngine.fit(::Type{Beer}, df; J_to_umol=PlantMeteo.Constants().J_to_umol)

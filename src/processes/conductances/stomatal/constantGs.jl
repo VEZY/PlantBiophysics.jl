@@ -58,8 +58,6 @@ function PlantSimEngine.run!(::ConstantGs, models, status, meteo, constants, ext
     status.Gₛ = models.stomatal_conductance.Gₛ
 end
 
-PlantSimEngine.ObjectDependencyTrait(::Type{<:ConstantGs}) = PlantSimEngine.IsObjectIndependent()
-PlantSimEngine.TimeStepDependencyTrait(::Type{<:ConstantGs}) = PlantSimEngine.IsTimeStepIndependent()
 PlantSimEngine.timestep_hint(::Type{<:ConstantGs}) = (
     required=(Dates.Minute(1), Dates.Hour(6)),
     preferred=Dates.Hour(1)

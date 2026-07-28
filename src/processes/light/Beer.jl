@@ -21,9 +21,8 @@ Computes the light interception of an object using the Beer-Lambert law.
 # Arguments
 
 - `::Beer`: a Beer model, from the model list (*i.e.* m.light_interception)
-- `models`: A `ModelMapping` struct holding the parameters for the model with
-initialisations for `LAI` (m² m⁻²): the leaf area index.
-- `status`: the status of the model, usually the model list status (*i.e.* m.status)
+- `models`: the compiled model bundle for the leaf application.
+- `status`: leaf state, with `LAI` initialized in m² m⁻².
 - `meteo`: meteorology structure, see [`Atmosphere`](https://palmstudio.github.io/PlantMeteo.jl/stable/#PlantMeteo.Atmosphere)
 - `constants = PlantMeteo.Constants()`: physical constants. See `PlantMeteo.Constants` for more details
 
@@ -31,13 +30,10 @@ initialisations for `LAI` (m² m⁻²): the leaf area index.
 
 ```julia
 using PlantSimEngine, PlantBiophysics, PlantMeteo
-m = ModelMapping(light_interception=Beer(0.5), status=(LAI=2.0,))
-
 meteo = Atmosphere(T=20.0, Wind=1.0, P=101.3, Rh=0.65, Ri_PAR_f=300.0)
-
-run!(m, meteo)
-
-m[:aPPFD]
+scene = leaf_scene(Beer(0.5); status=Status(LAI=2.0), environment=meteo)
+run!(scene)
+only(model_objects(scene; scale=:Leaf)).status.aPPFD
 ```
 """
 function PlantSimEngine.run!(::Beer, models, status, meteo, constants, extra=nothing)
@@ -55,8 +51,6 @@ function PlantSimEngine.outputs_(::Beer)
     (aPPFD=-Inf,)
 end
 
-PlantSimEngine.ObjectDependencyTrait(::Type{<:Beer}) = PlantSimEngine.IsObjectIndependent()
-PlantSimEngine.TimeStepDependencyTrait(::Type{<:Beer}) = PlantSimEngine.IsTimeStepIndependent()
 PlantSimEngine.output_policy(::Type{<:Beer}) = (
     aPPFD=PlantSimEngine.Integrate(PlantMeteo.RadiationEnergy()),
 )

@@ -6,15 +6,15 @@ that are not visible anyway (e.g. inside others).
 struct LightIgnore <: AbstractLight_InterceptionModel end
 
 """
-    run!(::LightIgnore, models::ModelMapping, status, meteo,constants = Constants())
+    run!(::LightIgnore, models, status, meteo, constants=Constants(), extra=nothing)
 
 Method for when light interception should be explicitely ignored (do nothing).
 
 # Arguments
 
 - `::LightIgnore`: an `Ignore` model.
-- `models`: a `ModelMapping` struct with a missing energy model.
-- `status`: the status of the model, usually the one from the models (*i.e.* models.status)
+- `models`: the compiled model bundle for the application.
+- `status`: object state.
 - `meteo`: meteorology structure, see [`Atmosphere`](https://palmstudio.github.io/PlantMeteo.jl/stable/#PlantMeteo.Atmosphere)
 - `constants = PlantMeteo.Constants()`: physical constants. See `PlantMeteo.Constants` for more details
 
@@ -22,6 +22,3 @@ Method for when light interception should be explicitely ignored (do nothing).
 function PlantSimEngine.run!(::LightIgnore, models, status, meteo, constants=PlantMeteo.Constants(), extra=nothing)
     nothing
 end
-
-PlantSimEngine.ObjectDependencyTrait(::Type{<:LightIgnore}) = PlantSimEngine.IsObjectIndependent()
-PlantSimEngine.TimeStepDependencyTrait(::Type{<:LightIgnore}) = PlantSimEngine.IsTimeStepIndependent()

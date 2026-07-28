@@ -6,6 +6,19 @@ using CSV
 using PlantMeteo
 using PlantSimEngine
 
+function regenerate_evaluation_figures()
+    project = joinpath(@__DIR__, "figures")
+    script = joinpath(project, "generate_evaluation_figures.jl")
+    code = "using Pkg; Pkg.instantiate(); include($(repr(script))); " *
+           "EvaluationFigures.generate_evaluation_figures()"
+    command = `$(Base.julia_cmd()) --project=$project --startup-file=no -e $code`
+    @info "Regenerating evaluation figures"
+    run(addenv(command, "GKSwstype" => get(ENV, "GKSwstype", "100")))
+    return nothing
+end
+
+regenerate_evaluation_figures()
+
 DocMeta.setdocmeta!(PlantBiophysics, :DocTestSetup, :(using PlantBiophysics, DataFrames, CSV, PlantMeteo, PlantSimEngine); recursive=true)
 
 makedocs(;
@@ -32,14 +45,13 @@ makedocs(;
             "Energy balance" => "./models/energy_balance.md",
             "Light interception" => "./models/light.md",
         ],
+        "Evaluation" => "evaluation.md",
         "Micro-climate" => "./climate/microclimate.md",
         "Tutorial: Parameter fitting" => "./fitting/parameter_fitting.md",
         "Tutorial: Simulation" => [
             "Simple Simulation" => "./simulation/first_simulation.md",
-            "Several time steps" => "./simulation/several_simulation.md",
             "Multi-rate simulation" => "./simulation/multirate_simulation.md",
-            "Several objects" => "./simulation/several_objects_simulation.md",
-            "Whole-plant simulation" => "./simulation/mtg_simulation.md",
+            "Multiple objects and plants" => "./simulation/mtg_simulation.md",
         ],
         "Tutorial: Uncertainty propagation" => "./simulation/uncertainty_propagation.md",
         "Extending PlantBiophysics" => [

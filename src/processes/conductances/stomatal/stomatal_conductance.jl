@@ -12,8 +12,7 @@ allowed to go below `leaf.stomatal_conductance.gs_min`.
 # Arguments
 
 - `Gs::Gsm`: a stomatal conductance model, usually the leaf model (*i.e.* leaf.stomatal_conductance)
-- `models::ModelMapping`: A leaf struct holding the parameters for the model. See
-`ModelMapping`, and `Medlyn` or `ConstantGs` for the conductance models.
+- `models`: the compiled model bundle holding the selected conductance model.
 - `status::Status`: A status, usually the leaf status (*i.e.* leaf.status)
 - `gs_mod`: the output from a `gs_closure` implementation (the conductance models
 generally only implement this function)
@@ -27,14 +26,13 @@ meteo = Atmosphere(T = 22.0, Wind = 0.8333, P = 101.325, Rh = 0.4490995)
 
 # Using a constant value for Gs:
 
-leaf =
-    ModelMapping(
-        stomatal_conductance = Medlyn(0.03,12.0), # Instance of a Medlyn type
-        status = (A = 20.0, Cₛ = 380.0, Dₗ = meteo.VPD)
-    )
-
-# Computing the stomatal conductance using the Medlyn et al. (2011) model:
-run!(leaf,meteo)
+scene = leaf_scene(
+    Medlyn(0.03,12.0);
+    status=Status(A=20.0, Cₛ=380.0, Dₗ=meteo.VPD),
+    environment=meteo,
+)
+run!(scene)
+only(model_objects(scene; scale=:Leaf)).status.Gₛ
 ```
 """ verbose = false
 

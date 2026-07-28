@@ -1,39 +1,95 @@
-using PlantBiophysics, MultiScaleTreeGraph, PlantGeom, CairoMakie, Dates, PlantMeteo
+module PlantBiophysicsLogo
 
-mtg = read_opf(joinpath(dirname(dirname(pathof(PlantBiophysics))), "test", "inputs", "scene", "opf", "coffee.opf"))
-weather = read_weather(
-    joinpath(dirname(dirname(pathof(PlantMeteo))), "test", "data", "meteo.csv"),
-    :temperature => :T,
-    :relativeHumidity => (x -> x ./ 100) => :Rh,
-    :wind => :Wind,
-    :atmosphereCO2_ppm => :Cₐ,
-    date_format=DateFormat("yyyy/mm/dd")
-)
-models = read_model(joinpath(dirname(dirname(pathof(PlantBiophysics))), "test", "inputs", "models", "plant_coffee.yml"))
+# From the repository root:
+#   julia --project=docs -e 'using Pkg; Pkg.instantiate()'
+#   julia --project=docs docs/src/assets/logo.jl
 
-transform!(
-    mtg,
-    [:Ra_PAR_f, :Ra_NIR_f] => ((x, y) -> x + y) => :Ra_SW_f,
-    :Ra_PAR_f => (x -> x * 4.57) => :aPPFD,
-    (x -> 0.3) => :d,
-    ignore_nothing=true
-)
+using CairoMakie
+using Dates
+using MultiScaleTreeGraph
+using PlantBiophysics
+using PlantGeom
+using PlantMeteo
+using PlantSimEngine
 
-init_mtg_models!(mtg, models, length(weather))
+const ROOT = normpath(joinpath(@__DIR__, "..", "..", ".."))
+const DEFAULT_OUTPUT = joinpath(@__DIR__, "logo.svg")
 
-run!(mtg, weather)
+"""
+    generate_logo(; output=DEFAULT_OUTPUT)
 
-transform!(
-    mtg,
-    :Tₗ => (x -> x[1]) => :Tₗ_1,
-    ignore_nothing=true
-)
+Regenerate the PlantBiophysics logo from the bundled coffee-plant geometry,
+model configuration, and the first meteorological timestep used by the
+original logo.
+"""
+function generate_logo(; output=DEFAULT_OUTPUT)
+    mtg = read_opf(
+        joinpath(ROOT, "test", "inputs", "scene", "opf", "coffee.opf"),
+    )
+    models = read_model(
+        joinpath(ROOT, "test", "inputs", "models", "plant_coffee.yml"),
+    )
 
-f = Figure(backgroundcolor=:transparent)
-ax = Axis(f[1, 1], backgroundcolor=:transparent)
-plantviz!(f[1, 1], mtg, color=:Tₗ_1)
-hidespines!(ax)
-hidedecorations!(ax)
-f
+    # These conditions are the first row of the meteorological fixture used by
+    # the original script. Keeping them here avoids depending on another
+    # package's test data.
+    meteo = Atmosphere(
+        T=25.0,
+        Rh=0.60,
+        Wind=1.0,
+        Cₐ=380.0,
+        duration=Minute(30),
+    )
 
-save("./docs/src/assets/logo.svg", f)
+    # Translucent only copied these values from the MTG in the legacy runner.
+    # Initializing them directly lets the current CompositeModel API simulate
+    # exactly the first timestep that was used to color the original logo.
+    leaf_models = filter(
+        model -> process(model) != :light_interception,
+        models[:Leaf],
+    )
+    applications = Tuple(
+        ModelSpec(model; name=process(model)) |>
+        AppliesTo(Many(scale=:Leaf))
+        for model in leaf_models
+    )
+    scene = CompositeModel(
+        mtg;
+        applications=applications,
+        environment=meteo,
+        status=node -> symbol(node) == :Leaf ? Status(
+            Ra_SW_f=node[:Ra_PAR_f] + node[:Ra_NIR_f],
+            aPPFD=node[:Ra_PAR_f] * 4.57,
+            sky_fraction=node[:sky_fraction],
+            d=0.3,
+        ) : nothing,
+    )
+
+    run!(scene)
+
+    # CompositeModel keeps simulation state on model objects. PlantGeom colors
+    # the MTG, so copy the first-timestep leaf temperatures back to its nodes.
+    for leaf in model_objects(scene; scale=:Leaf)
+        get_node(mtg, leaf.id.value)[:Tₗ_1] = leaf.status.Tₗ
+    end
+
+    figure = Figure(size=(600, 450), backgroundcolor=:transparent)
+    axis = Axis3(
+        figure[1, 1];
+        aspect=:data,
+        backgroundcolor=:transparent,
+    )
+    plantviz!(axis, mtg; color=:Tₗ_1)
+    hidedecorations!(axis)
+    hidespines!(axis)
+
+    mkpath(dirname(output))
+    save(output, figure)
+    return output
+end
+
+if abspath(PROGRAM_FILE) == abspath(@__FILE__)
+    generate_logo()
+end
+
+end

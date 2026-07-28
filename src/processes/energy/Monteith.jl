@@ -42,8 +42,6 @@ function PlantSimEngine.outputs_(::Monteith)
 end
 
 Base.eltype(x::Monteith) = typeof(x).parameters[1]
-PlantSimEngine.ObjectDependencyTrait(::Type{<:Monteith}) = PlantSimEngine.IsObjectIndependent()
-PlantSimEngine.TimeStepDependencyTrait(::Type{<:Monteith}) = PlantSimEngine.IsTimeStepIndependent()
 # Multi-rate default for energy balance: keep relatively fine cadence.
 PlantSimEngine.timestep_hint(::Type{<:Monteith}) = (
     required=(Dates.Minute(1), Dates.Hour(2)),
@@ -65,7 +63,11 @@ PlantSimEngine.output_policy(::Type{<:Monteith}) = (
     iter=PlantSimEngine.Integrate(PlantMeteo.MeanReducer())
 )
 
-PlantSimEngine.dep(::Monteith) = (photosynthesis=AbstractPhotosynthesisModel,)
+PlantSimEngine.dep(::Monteith) = (
+    photosynthesis=PlantSimEngine.Call(
+        PlantSimEngine.One(scale=:Leaf, process=:photosynthesis),
+    ),
+)
 
 """
     run!(::Monteith, models, status, meteo, constants=Constants())
@@ -78,8 +80,8 @@ the energy balance using the mass flux (~ Rn - λE).
 # Arguments
 
 - `::Monteith`: a Monteith model, usually from a model list (*i.e.* m.energy_balance)
-- `models`: A `ModelMapping` struct holding the parameters for the model with
-initialisations for:
+- `models`: the compiled model bundle containing the photosynthesis and
+  stomatal-conductance dependencies, with status initialisations for:
     - `Ra_SW_f` (W m-2): net shortwave radiation (PAR + NIR). Often computed from a light interception model
     - `sky_fraction` (0-2): view factor between the object and the sky for both faces (see details).
     - `d` (m): characteristic dimension, *e.g.* leaf width (see eq. 10.9 from Monteith and Unsworth, 2013).
@@ -104,34 +106,18 @@ More information [here](https://docs.julialang.org/en/v1/stdlib/Logging/#Environ
 # Examples
 
 ```julia
+using PlantBiophysics, PlantMeteo, PlantSimEngine
 meteo = Atmosphere(T = 22.0, Wind = 0.8333, P = 101.325, Rh = 0.4490995)
-
-# Using a constant value for Gs:
-leaf = ModelMapping(
-    energy_balance = Monteith(),
-    photosynthesis = Fvcb(),
-    stomatal_conductance = ConstantGs(0.0, 0.0011),
-    status = (Ra_SW_f = 13.747, sky_fraction = 1.0, d = 0.03)
+scene = leaf_scene(
+    Monteith(),
+    Fvcb(),
+    Medlyn(0.03, 12.0);
+    status=Status(Ra_SW_f=13.747, sky_fraction=1.0, aPPFD=1500.0, d=0.03),
+    environment=meteo,
 )
-
-run!(leaf,meteo)
-leaf.status.Rn
-julia> 12.902547446281233
-
-# Using the model from Medlyn et al. (2011) for Gs:
-leaf = ModelMapping(
-    energy_balance = Monteith(),
-    photosynthesis = Fvcb(),
-    stomatal_conductance = Medlyn(0.03, 12.0),
-    status = (Ra_SW_f = 13.747, sky_fraction = 1.0, aPPFD = 1500.0, d = 0.03)
-)
-
-out_sim = run!(leaf,meteo)
-out_sim[:Rn]
-out_sim[:Ra_LW_f]
-out_sim[:A]
-
-df = PlantSimEngine.convert_outputs(out_sim, DataFrame)
+run!(scene)
+leaf = only(model_objects(scene; scale=:Leaf))
+(leaf.status.Rn, leaf.status.Ra_LW_f, leaf.status.A)
 ```
 
 # References
@@ -171,7 +157,13 @@ function PlantSimEngine.run!(::Monteith, models, status, meteo, constants=PlantM
     for i in 1:models.energy_balance.maxiter
 
         # Update A, Gₛ, Cᵢ from models.status:
-        PlantSimEngine.run!(models.photosynthesis, models, status, meteo, constants, extra)
+        # Monteith owns A, Gₛ, and Cᵢ; photosynthesis calls are unpublished trials.
+        PlantSimEngine.run_call!(
+            extra,
+            :photosynthesis;
+            meteo=meteo,
+            publish=false,
+        )
 
         # Stomatal resistance to water vapor
         Rsᵥ = 1.0 / (gsc_to_gsw(mol_to_ms(status.Gₛ, meteo.T, meteo.P, constants.R, constants.K₀),

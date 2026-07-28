@@ -1,81 +1,65 @@
+A = Fvcb(α=0.24)
+Gs = Medlyn(0.03, 12.0)
 
-# Testing the ModelMapping struct
-A = Fvcb(α=0.24) # because I set-up the tests with this value for α
-g0 = 0.03;
-g1 = 12.0;
-Gs = Medlyn(g0, g1) # Instance of a Medlyn type with g0 = 0.03 and g1 = 0.1
+@testset "leaf_scene" begin
+    scene = leaf_scene(A, Gs)
+    applications = explain_applications(Advanced.compile_composite_model(scene))
+    @test Set(row.application_id for row in applications) ==
+          Set([:photosynthesis, :stomatal_conductance])
+    @test only(
+        row for row in applications
+        if row.application_id == :photosynthesis
+    ).model_type == Fvcb{Float64}
+    @test only(
+        row for row in applications
+        if row.application_id == :stomatal_conductance
+    ).model_type == Medlyn{Float64}
+end
 
-@testset "ModelMapping()" begin
-    leaf = ModelMapping(photosynthesis=A, stomatal_conductance=Gs)
-    @test typeof(leaf) <: ModelMapping
-    @test typeof(leaf.models.photosynthesis) == Fvcb{Float64}
-    @test typeof(leaf.models.stomatal_conductance) == Medlyn{Float64}
-    @test leaf.models.photosynthesis.Tᵣ == 25.0
-    @test leaf.models.stomatal_conductance.g0 ≈ g0
-    @test leaf.models.stomatal_conductance.g1 ≈ g1
-end;
-
-
-@testset "init_status!" begin
-    leaf = ModelMapping(photosynthesis=A, stomatal_conductance=Gs)
-    @test leaf.status.Tₗ == -Inf
-
-    PlantSimEngine.init_status!(leaf, Tₗ=25.0)
-    @test leaf.status.Tₗ == 25.0
-end;
-
-
-@testset "Vars to initialize" begin
-    leaf = ModelMapping(photosynthesis=A, stomatal_conductance=Gs)
-    @test to_initialize(leaf) == (photosynthesis=(:aPPFD, :Tₗ, :Cₛ), stomatal_conductance=(:Dₗ, :Cₛ))
-    @test to_initialize(leaf) == to_initialize(photosynthesis=A, stomatal_conductance=Gs)
-    @test to_initialize(photosynthesis=A) == (photosynthesis=(:aPPFD, :Tₗ, :Cₛ),)
-
-    @test leaf.status.Tₗ == -Inf
-    @test is_initialized(leaf) == false
-
-    leaf =
-        ModelMapping(
-            photosynthesis=A,
-            stomatal_conductance=Gs,
-            status=(Tₗ=25.0, aPPFD=1000.0, Cₛ=400.0, Dₗ=1.2)
-        )
-
-    @test is_initialized(leaf) == true
-end;
-
-
-using CSV
-
-# NOTE(Samuel): this test checking outputs as DataFrames is mostly obsolete as statuses are Status objects, and not TimeStepTables
-# HOWEVER, it does test for providing a DataFrame as a Status, which is now unusual behaviour
-# Usually only some values are initialized fully and provided as vectors, so we don't usually get a Tables-like input for the status
-# So keeping it and renaming it
-@testset "Inputs as DataFrame" begin
-    st = (:Ra_SW_f => [13.747, 13.8], :sky_fraction => [1.0, 1.0], :d => [0.03, 0.03], :aPPFD => [1300.0, 1500.0])
-    df = DataFrame(:Ra_SW_f => [13.747, 13.8], :sky_fraction => [1.0, 1.0], :d => [0.03, 0.03], :aPPFD => [1300.0, 1500.0])
-
-    # Reference ModelMapping
-    m = ModelMapping(
-        energy_balance=Monteith(),
-        photosynthesis=Fvcb(α=0.24), # because I set-up the tests with this value for α
-        stomatal_conductance=Medlyn(0.03, 12.0),
-        status=df  #st
+@testset "Generated and initialized status" begin
+    scene = leaf_scene(
+        A,
+        Gs;
+        status=Status(Tₗ=25.0, aPPFD=1000.0, Cₛ=400.0, Dₗ=1.2),
     )
+    compiled = Advanced.compile_composite_model(scene)
+    @test compiled isa Advanced.CompiledCompositeModel
+    @test leaf_status(scene).Tₗ == 25.0
+end
 
-    m2 = ModelMapping(
-        energy_balance=Monteith(),
-        photosynthesis=Fvcb(α=0.24), # because I set-up the tests with this value for α
-        stomatal_conductance=Medlyn(0.03, 12.0),
-        status=st
+@testset "NamedTuple and DataFrame rows initialize equivalently" begin
+    meteo = Atmosphere(
+        T=20.0,
+        Wind=1.0,
+        P=101.3,
+        Rh=0.65,
+        duration=Hour(1),
     )
+    values = (
+        Ra_SW_f=13.747,
+        sky_fraction=1.0,
+        d=0.03,
+        aPPFD=1300.0,
+    )
+    dataframe = DataFrame([values])
+    dataframe_values = NamedTuple(first(eachrow(dataframe)))
 
-    meteo = Atmosphere(T=20.0, Wind=1.0, P=101.3, Rh=0.65)
-    constants = Constants()
-
-    out_st = run!(m, meteo, constants, nothing) # 1.525 μs
-    out_df = run!(m2, meteo, constants, nothing) # 1.525 μs
-    df_st = PlantSimEngine.convert_outputs(out_st, DataFrame)
-    df_df = PlantSimEngine.convert_outputs(out_df, DataFrame)
-    @test df_df == df_st
-end;
+    scene_named = leaf_scene(
+        Monteith(),
+        Fvcb(α=0.24),
+        Medlyn(0.03, 12.0);
+        status=Status(; values...),
+        environment=meteo,
+    )
+    scene_dataframe = leaf_scene(
+        Monteith(),
+        Fvcb(α=0.24),
+        Medlyn(0.03, 12.0);
+        status=Status(; dataframe_values...),
+        environment=meteo,
+    )
+    run!(scene_named; constants=Constants())
+    run!(scene_dataframe; constants=Constants())
+    @test NamedTuple(leaf_status(scene_named)) ==
+          NamedTuple(leaf_status(scene_dataframe))
+end

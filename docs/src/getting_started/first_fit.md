@@ -25,4 +25,6 @@ The fitting method uses the leaf temperature (`Tₗ`, °C), the Photosynthetic P
 
 ## Wrap-up
 
-We learned to make a simple parameter fitting. For more information, you can head over the [Parameter fitting](@ref) section.
+We learned to make a simple parameter fit. Continue with the
+[parameter-fitting tutorial](@ref parameter_fitting_page) for a complete
+workflow.

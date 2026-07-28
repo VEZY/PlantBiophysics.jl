@@ -1,86 +1,52 @@
-m = ModelMapping(
-    energy_balance=Monteith(),
-    photosynthesis=Fvcb(α=0.24), # because I set-up the tests with this value for α
-    stomatal_conductance=Medlyn(0.0, 0.0011),
-    status=(Ra_SW_f=13.747, sky_fraction=1.0, d=0.03)
-)
-
-@testset "Single model dependency" begin
-    # Should only return the type of model it depends on as a vector
-    @test dep(m.models.energy_balance) == [AbstractPhotosynthesisModel]
-    @test dep(m.models.photosynthesis) == [AbstractStomatal_ConductanceModel]
-    @test dep(m.models.stomatal_conductance) == []
+@testset "Model hard-call defaults" begin
+    @test dep(Monteith()).photosynthesis isa Call
+    @test dep(Fvcb()).stomatal_conductance isa Call
+    @test dep(FvcbIter()).stomatal_conductance isa Call
+    @test dep(ConstantAGs()).stomatal_conductance isa Call
 end
 
-@testset "ModelMapping model dependency tree" begin
-    # Should return the type of model it depends on as a dependency tree
-    dep_tree = dep(m)
-    dep_root = dep_tree.roots
-    @test dep_root.value == typeof(m.models.energy_balance)
-    @test dep_root.children[1].value == typeof(m.models.photosynthesis)
-    @test dep_root.children[1].children[1].value == typeof(m.models.stomatal_conductance)
-
-    @test dep_root.parent === nothing
-    @test dep_root.children[1].parent === dep_root
-
-    # All dependencies found in this case:
-    @test dep_tree.not_found == DataType[]
-end
-
-
-@testset "ModelMapping dependency tree -> missing dep" begin
-    # There is a missing dependency for the Monteith model:
-    dep_tree = dep(ModelMapping(energy_balance=Monteith()))
-    dep_root = dep_tree.root
-
-    @test dep_root.value == typeof(m.models.energy_balance)
-    @test dep_root.children == PlantBiophysics.DependencyNode[]
-end
-
-@testset "ModelMapping dependency tree -> missing dep with two models" begin
-    # Two models are given, but still no photosynthesis is given:
-    dep_tree = dep(ModelMapping(energy_balance=Monteith(), stomatal_conductance=Medlyn(0.0, 0.0011)))
-    dep_root = dep_tree.root
-
-    @test dep_root.value == typeof(m.models.energy_balance)
-    @test dep_root.children[1].value == typeof(m.models.photosynthesis)
-    @test dep_root.children[1].children[1].value == typeof(m.models.stomatal_conductance)
-
-    @test dep_tree.parent === nothing
-    @test dep_tree.children[1].parent === dep_tree
-end
-
-
-@testset "ModelMapping dependency tree printing" begin
-    # Defining a dummy energy model that takes 2 dependencies:
-    struct dummy_E{T} <: AbstractEnergy_BalanceModel
-        A::T
-    end
-    PlantBiophysics.inputs_(::dummy_E) = (aPPFD=-Inf, Tₗ=-Inf, Cₛ=-Inf)
-    PlantBiophysics.outputs_(::dummy_E) = (A=-Inf, Gₛ=-Inf, Cᵢ=-Inf)
-    PlantBiophysics.dep(::dummy_E) = (light_interception=AbstractLight_InterceptionModel, photosynthesis=AbstractPhotosynthesisModel)
-    function PlantSimEngine.run!(::dummy_E, models, status, meteo, constants=Constants())
-        return nothing
-    end
-
-    dep_tree = dep(ModelMapping(energy_balance=dummy_E(20.0), stomatal_conductance=Medlyn(0.0, 0.0011)))
-    @test dep_tree.not_found == Dict{Symbol,DataType}(:light_interception => AbstractLight_InterceptionModel, :photosynthesis => AbstractPhotosynthesisModel)
-    @test length(dep_tree.roots) == 2
-    @test dep_tree.roots[:energy_balance].missing_dependency == Int[1, 2]
-    @test dep_tree.roots[:energy_balance].dependency == (light_interception=AbstractLight_InterceptionModel, photosynthesis=AbstractPhotosynthesisModel)
-
-    dep_tree_two_dep = dep(
-        ModelMapping(
-            light_interception=Beer(0.5),
-            energy_balance=dummy_E(20.0),
-            photosynthesis=Fvcb(α=0.24), # because I set-up the tests with this value for α
-            stomatal_conductance=Medlyn(0.0, 0.0011)
-        )
+@testset "Compiled leaf hard-call graph" begin
+    scene = leaf_scene(
+        Monteith(),
+        Fvcb(α=0.24),
+        Medlyn(0.03, 12.0);
+        status=Status(
+            Ra_SW_f=13.747,
+            sky_fraction=1.0,
+            d=0.03,
+            aPPFD=1500.0,
+        ),
+        environment=Atmosphere(
+            T=20.0,
+            Wind=1.0,
+            P=101.3,
+            Rh=0.65,
+            duration=Hour(1),
+        ),
     )
+    compiled = Advanced.compile_composite_model(scene)
+    calls = explain_calls(compiled)
+    @test only(
+        row for row in calls
+        if row.application_id == :energy_balance
+    ).callee_application_ids == [:photosynthesis]
+    @test only(
+        row for row in calls
+        if row.application_id == :photosynthesis
+    ).callee_application_ids == [:stomatal_conductance]
 
-    @test dep_tree_two_dep.roots[:energy_balance].missing_dependency == Int[]
-    @test dep_tree_two_dep.roots[:energy_balance].dependency == (
-        light_interception=AbstractLight_InterceptionModel,
-        photosynthesis=AbstractPhotosynthesisModel
+    bundle = only(
+        row for row in explain_model_bundles(compiled)
+        if row.application_id == :energy_balance
     )
+    @test bundle.processes ==
+          [:energy_balance, :photosynthesis, :stomatal_conductance]
+
+    simulation = run!(scene; outputs=:all)
+    published_applications = Set(
+        row.application_id for row in collect_outputs(simulation; sink=nothing)
+    )
+    @test :energy_balance in published_applications
+    @test :photosynthesis ∉ published_applications
+    @test :stomatal_conductance ∉ published_applications
 end
