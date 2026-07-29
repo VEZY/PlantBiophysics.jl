@@ -38,10 +38,10 @@ PlantSimEngine.output_policy(::Type{<:Translucent}) = (
     sky_fraction=PlantSimEngine.Integrate(PlantMeteo.MeanReducer()),
 )
 
-function PlantSimEngine.run!(::Translucent, models, status, meteo, constants, extra=nothing)
-    status.Ra_SW_f = status.node.Ra_SW_f[PlantMeteo.rownumber(meteo)]
-    status.sky_fraction = status.node.sky_fraction[PlantMeteo.rownumber(meteo)]
-    status.aPPFD = status.node.Ra_PAR_f[PlantMeteo.rownumber(meteo)] * 4.57
+function PlantSimEngine.run!(::Translucent, status, environment, constants, context=nothing)
+    status.Ra_SW_f = status.node.Ra_SW_f[PlantMeteo.rownumber(environment)]
+    status.sky_fraction = status.node.sky_fraction[PlantMeteo.rownumber(environment)]
+    status.aPPFD = status.node.Ra_PAR_f[PlantMeteo.rownumber(environment)] * 4.57
 
     return nothing
 end

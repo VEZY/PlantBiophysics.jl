@@ -78,7 +78,7 @@ PlantSimEngine.dep(::FvcbIter) = (
 )
 
 """
-    run!(::FvcbIter, models, status, meteo, constants=Constants())
+    run!(model::FvcbIter, status, environment, constants=Constants(), context=nothing)
 
 Photosynthesis using the Farquhar–von Caemmerer–Berry (FvCB) model for C3 photosynthesis
  (Farquhar et al., 1980; von Caemmerer and Farquhar, 1981).
@@ -98,16 +98,16 @@ Modify the first argument in place for A, Gₛ and Cᵢ:
 
 # Arguments
 
-- `::FvcbIter`: Farquhar–von Caemmerer–Berry (FvCB) model with iterative resolution.
-- `models`: the compiled model bundle containing the stomatal-conductance
-  dependency, with status initialisations for:
+- `model::FvcbIter`: Farquhar–von Caemmerer–Berry (FvCB) model with iterative resolution.
+- the declared stomatal-conductance hard-call target owns its model parameters;
+  the shared status provides initial values for:
     - `Tₗ` (°C): leaf temperature
     - `aPPFD` (μmol m-2 s-1): absorbed Photosynthetic Photon Flux Density
     - `Gbc` (mol m-2 s-1): boundary conductance for CO₂
     - `Dₗ` (kPa): is the difference between the vapour pressure at the leaf surface and the
     saturated air vapour pressure in case you're using the stomatal conductance model of [`Medlyn`](@ref).
 - `status`: A status, usually the leaf status (*i.e.* leaf.status)
-- `meteo`: meteorology structure, see [`Atmosphere`](https://palmstudio.github.io/PlantMeteo.jl/stable/#PlantMeteo.Atmosphere)
+- `environment`: meteorology structure, see [`Atmosphere`](https://palmstudio.github.io/PlantMeteo.jl/stable/#PlantMeteo.Atmosphere)
 - `constants = PlantMeteo.Constants()`: physical constants. See `PlantMeteo.Constants` for more details
 
 # Note
@@ -121,12 +121,12 @@ balance of the leaf with the photosynthesis to get those variables. See
 
 ```julia
 using PlantBiophysics, PlantMeteo, PlantSimEngine
-meteo = Atmosphere(T = 20.0, Wind = 1.0, P = 101.3, Rh = 0.65)
+environment = Atmosphere(T = 20.0, Wind = 1.0, P = 101.3, Rh = 0.65)
 scene = leaf_scene(
     FvcbIter(),
     Medlyn(0.03, 12.0);
-    status=Status(Tₗ=25.0, aPPFD=1000.0, Gbc=0.67, Dₗ=meteo.VPD),
-    environment=meteo,
+    status=Status(Tₗ=25.0, aPPFD=1000.0, Gbc=0.67, Dₗ=environment.VPD),
+    environment=environment,
 )
 run!(scene)
 leaf = only(model_objects(scene; scale=:Leaf))
@@ -148,10 +148,10 @@ Leuning, R., F. M. Kelliher, DGG de Pury, et E.D. Schulze. 1995. Leaf nitrogen,
 photosynthesis, conductance and transpiration: scaling from leaves to canopies ». Plant,
 Cell & Environment 18 (10): 1183‑1200.
 """
-function PlantSimEngine.run!(m::FvcbIter, models, status, meteo, constants=PlantMeteo.Constants(), extra=nothing)
+function PlantSimEngine.run!(m::FvcbIter, status, environment, constants=PlantMeteo.Constants(), context=nothing)
 
     # Start with a probable value for Cₛ and Cᵢ:
-    status.Cₛ = meteo.Cₐ
+    status.Cₛ = environment.Cₐ
     status.Cᵢ = status.Cₛ * 0.75
     # Tranform Celsius temperatures in Kelvin:
     Tₖ = status.Tₗ - constants.K₀
@@ -191,12 +191,12 @@ function PlantSimEngine.run!(m::FvcbIter, models, status, meteo, constants=Plant
     while iter
         # Stomatal conductance (mol[CO₂] m-2 s-1)
         # FvCBIter owns Gₛ; each stomatal evaluation is an unpublished trial.
-        for target in PlantSimEngine.call_targets(extra, :stomatal_conductance)
-            PlantSimEngine.run_call!(target; meteo=meteo, publish=false)
+        for target in PlantSimEngine.call_targets(context, :stomatal_conductance)
+            PlantSimEngine.run_call!(target; sampled_environment=environment, publish=false)
         end
 
         # Surface CO₂ concentration (ppm):
-        status.Cₛ = min(meteo.Cₐ, meteo.Cₐ - status.A / status.Gbc)
+        status.Cₛ = min(environment.Cₐ, environment.Cₐ - status.A / status.Gbc)
         # Intercellular CO₂ concentration (ppm):
         status.Cᵢ = min(status.Cₛ, status.Cₛ - status.A / status.Gₛ)
 

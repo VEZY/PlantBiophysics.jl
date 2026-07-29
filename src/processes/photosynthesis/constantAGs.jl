@@ -36,7 +36,7 @@ PlantSimEngine.output_policy(::Type{<:ConstantAGs}) = (
 Base.eltype(x::ConstantAGs) = typeof(x).parameters[1]
 
 """
-    run!(::ConstantAGs, models, status, meteo, constants=Constants())
+    run!(model::ConstantAGs, status, environment, constants=Constants(), context=nothing)
 
 Constant photosynthesis coupled with a stomatal conductance model.
 
@@ -51,39 +51,38 @@ Modify the leaf status in place for A, Gₛ and Cᵢ:
 # Arguments
 
 - `::ConstantAGs`: a constant assimilation model coupled to a stomatal conductance model
-- `models`: the compiled model bundle containing the coupled stomatal
-  conductance application, with status initialisations for:
+- The declared stomatal-conductance call target shares status initialisations for:
     - `Cₛ` (mol m-2 s-1): surface CO₂ concentration.
     - any other value needed by the stomatal conductance model.
 - `status`: A status, usually the leaf status (*i.e.* leaf.status)
-- `meteo`: meteorology structure, see [`Atmosphere`](https://palmstudio.github.io/PlantMeteo.jl/stable/#PlantMeteo.Atmosphere)
+- `environment`: meteorology structure, see [`Atmosphere`](https://palmstudio.github.io/PlantMeteo.jl/stable/#PlantMeteo.Atmosphere)
 - `constants = PlantMeteo.Constants()`: physical constants. See `PlantMeteo.Constants` for more details
 
 # Examples
 
 ```julia
 using PlantBiophysics, PlantMeteo, PlantSimEngine
-meteo = Atmosphere(T = 20.0, Wind = 1.0, P = 101.3, Rh = 0.65)
+environment = Atmosphere(T = 20.0, Wind = 1.0, P = 101.3, Rh = 0.65)
 scene = leaf_scene(
     ConstantAGs(),
     Medlyn(0.03, 12.0);
     status=Status(Cₛ=400.0, Dₗ=2.0),
-    environment=meteo,
+    environment=environment,
 )
 run!(scene)
 leaf = only(model_objects(scene; scale=:Leaf))
 (leaf.status.A, leaf.status.Cᵢ)
 ```
 """
-function PlantSimEngine.run!(::ConstantAGs, models, status, meteo, constants=PlantMeteo.Constants(), extra=nothing)
+function PlantSimEngine.run!(model::ConstantAGs, status, environment, constants=PlantMeteo.Constants(), context=nothing)
 
     # Net assimilation (μmol m-2 s-1)
-    status.A = models.photosynthesis.A
+    status.A = model.A
 
     # Stomatal conductance (mol[CO₂] m-2 s-1)
     # ConstantAGs owns Gₛ; the stomatal model updates the shared trial status only.
-    for target in PlantSimEngine.call_targets(extra, :stomatal_conductance)
-        PlantSimEngine.run_call!(target; meteo=meteo, publish=false)
+    for target in PlantSimEngine.call_targets(context, :stomatal_conductance)
+        PlantSimEngine.run_call!(target; sampled_environment=environment, publish=false)
     end
     # Intercellular CO₂ concentration (Cᵢ, μmol mol)
     status.Cᵢ = min(status.Cₛ, status.Cₛ - status.A / status.Gₛ)

@@ -30,11 +30,10 @@ object, plant, species, or timestep supplies `driver`.
 ```julia
 function PlantSimEngine.run!(
     model::ExampleFlux,
-    models,
     status,
-    meteo,
+    environment,
     constants,
-    extra=nothing,
+    context=nothing,
 )
     status.flux = model.coefficient * status.driver
     return nothing
@@ -42,7 +41,7 @@ end
 ```
 
 Fixed parameters belong in the model. Timestep-varying values belong in
-`status`. Weather belongs in `meteo`.
+`status`. Sampled environment values belong in `environment`.
 
 ## Manual Dependencies
 
@@ -57,16 +56,16 @@ PlantSimEngine.dep(::ParentModel) = (
 Inside `run!`, retrieve the compiled dependency and execute its targets:
 
 ```julia
-for target in call_targets(extra, :child)
-    run_call!(target; meteo=meteo, publish=true)
+for target in call_targets(context, :child)
+    run_call!(target; sampled_environment=environment, publish=true)
 end
 ```
 
 `call_targets` is always vector-like; use `only(targets)` for a declared `One`
 call when exactly one target is required. Iterative models should execute
 individual targets with `publish=false` for trials and publish only the
-accepted state. Passing `meteo=trial_meteo` forwards that sampled or trial
-meteorology directly to the selected target; omit it to use the target's
+accepted state. Passing `sampled_environment=trial_environment` forwards that sampled or
+trial environment directly to the selected target; omit it to use the target's
 compiled environment binding.
 
 Value dependencies that the model merely reads are soft dependencies. Declare

@@ -59,7 +59,7 @@ PlantSimEngine.output_policy(::Type{<:Medlyn}) = (
 Base.eltype(::Medlyn{T}) where T = T
 
 """
-    gs_closure(::Medlyn, models, status, meteo, constants=nothing, extra=nothing)
+    gs_closure(model::Medlyn, status, environment, constants=nothing, context=nothing)
 
 Stomatal closure for CO₂ according to Medlyn et al. (2011). Carefull, this is just a part of
 the computation of the stomatal conductance.
@@ -74,11 +74,10 @@ The result of this function is then used as:
 # Arguments
 
 - `::Medlyn`: an instance of the `Medlyn` model type
-- `models`: the compiled model bundle holding application parameters.
 - `status`: A status struct holding the variables for the models.
-- `meteo`: meteorology structure, see [`Atmosphere`](https://palmstudio.github.io/PlantMeteo.jl/stable/#PlantMeteo.Atmosphere). Is not used in this model.
+- `environment`: sampled environment, see [`Atmosphere`](https://palmstudio.github.io/PlantMeteo.jl/stable/#PlantMeteo.Atmosphere). Is not used in this model.
 - `constants`: A constants struct holding the constants for the models. Is not used in this model.
-- `extra`: A struct holding the extra variables for the models. Is not used in this model.
+- `context`: PlantSimEngine runtime context. It is not used in this model.
 
 # Details
 
@@ -121,8 +120,8 @@ Craig V. M. Barton, Kristine Y. Crous, Paolo De Angelis, Michael Freeman, et Lis
 2011. « Reconciling the optimal and empirical approaches to modelling stomatal conductance ».
 Global Change Biology 17 (6): 2134‑44. https://doi.org/10.1111/j.1365-2486.2010.02375.x.
 """
-function gs_closure(::Medlyn, models, status, meteo, constants=nothing, extra=nothing)
-    (1.0 + models.stomatal_conductance.g1 / sqrt(max(1e-9, status.Dₗ))) / status.Cₛ
+function gs_closure(model::Medlyn, status, environment, constants=nothing, context=nothing)
+    (1.0 + model.g1 / sqrt(max(1e-9, status.Dₗ))) / status.Cₛ
 end
 
 PlantSimEngine.timestep_hint(::Type{<:Medlyn}) = (

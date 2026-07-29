@@ -35,13 +35,6 @@ end
         if row.application_id == :photosynthesis
     ).callee_application_ids == [:stomatal_conductance]
 
-    bundle = only(
-        row for row in explain_model_bundles(compiled)
-        if row.application_id == :energy_balance
-    )
-    @test bundle.processes ==
-          [:energy_balance, :photosynthesis, :stomatal_conductance]
-
     simulation = run!(scene; outputs=:all)
     published_applications = Set(
         row.application_id for row in collect_outputs(simulation; sink=nothing)

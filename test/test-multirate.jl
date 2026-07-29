@@ -14,7 +14,7 @@ PlantSimEngine.outputs_(::DailyLeafSummaryTestModel) = (
     Tₗ_max_daily=-Inf,
     Tₗ_min_daily=-Inf,
 )
-function PlantSimEngine.run!(::DailyLeafSummaryTestModel, models, status, meteo, constants=nothing, extra=nothing)
+function PlantSimEngine.run!(::DailyLeafSummaryTestModel, status, environment, constants=nothing, context=nothing)
     status.A_daily = status.A_integrated
     status.transpiration_daily = status.transpiration_integrated
     status.Tₗ_mean_daily = status.Tₗ_mean
@@ -58,7 +58,7 @@ end
     Rh = vcat(rh_day1, rh_day2)
     Wind = vcat(wind_day1, wind_day2)
 
-    meteo = Weather([
+    environment = Weather([
         Atmosphere(
             T=25.0,
             Wind=Wind[i],
@@ -70,7 +70,7 @@ end
         ) for i in 1:48
     ])
 
-    λ_ref = meteo[1].λ
+    λ_ref = environment[1].λ
 
     scene = CompositeModel(
         Object(
@@ -144,7 +144,7 @@ end
             ) |>
             TimeStep(ClockSpec(24.0, 24.0)),
         ),
-        environment=meteo,
+        environment=environment,
     )
 
     sim = run!(scene; steps=48, constants=Constants(), outputs=:all)

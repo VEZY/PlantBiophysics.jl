@@ -17,15 +17,14 @@ PaperForcedGs() = PaperForcedGs(0.0)
 # Preserve the closure used by the paper's daily evaluation instead of silently
 # replacing it with the package's general-purpose ConstantGs implementation.
 function PlantBiophysics.gs_closure(
-    ::PaperForcedGs,
-    models,
+    model::PaperForcedGs,
     status,
-    meteo=missing,
+    environment=missing,
     constants=nothing,
-    extra=nothing,
+    context=nothing,
 )
     status.A < 1.0e-9 && return status.Gₛ
-    return status.A / (status.Gₛ - models.stomatal_conductance.g0)
+    return status.A / (status.Gₛ - model.g0)
 end
 
 PlantSimEngine.inputs_(::PaperForcedGs) = (Gₛ=-Inf,)
@@ -33,11 +32,10 @@ PlantSimEngine.outputs_(::PaperForcedGs) = (Gₛ=-Inf,)
 
 function PlantSimEngine.run!(
     ::PaperForcedGs,
-    models,
     status,
-    meteo,
+    environment,
     constants=nothing,
-    extra=nothing,
+    context=nothing,
 )
     return nothing
 end
@@ -82,7 +80,7 @@ function run_global_evaluation()
     simulated_Tl = similar(simulated_A)
 
     for (index, row) in enumerate(eachrow(evaluation))
-        meteo = Atmosphere(
+        environment = Atmosphere(
             T=row.T,
             Wind=20.0,
             P=row.P,
@@ -108,13 +106,13 @@ function run_global_evaluation()
                 aPPFD=row.aPPFD,
                 d=sqrt(row.area) / 100,
             ),
-            environment=meteo,
+            environment=environment,
         )
         run!(scene; constants=constants)
         status = evaluation_leaf_status(scene)
 
         simulated_A[index] = status.A
-        simulated_E[index] = status.λE / (meteo.λ * constants.Mₕ₂ₒ) * 1000
+        simulated_E[index] = status.λE / (environment.λ * constants.Mₕ₂ₒ) * 1000
         simulated_Gs[index] = status.Gₛ
         simulated_Tl[index] = status.Tₗ
     end
@@ -167,7 +165,7 @@ function run_daily_evaluation(; seed=0x5eed)
     constants = Constants()
 
     rows = MonteCarloMeasurements.@unsafe map(eachrow(observations)) do row
-        meteo = Atmosphere(
+        environment = Atmosphere(
             T=row.T ± 0.1,
             Wind=40.0 ± 10.0,
             P=row.P ± (0.001 * row.P),
@@ -188,7 +186,7 @@ function run_daily_evaluation(; seed=0x5eed)
                 d=MonteCarloMeasurements.:..(0.01, 0.10),
                 Gₛ=measured_Gs ± 0.0,
             ),
-            environment=meteo,
+            environment=environment,
         )
         run!(scene; constants=constants)
         status = evaluation_leaf_status(scene)
@@ -197,7 +195,7 @@ function run_daily_evaluation(; seed=0x5eed)
             Dl=status.Dₗ,
             Tl=status.Tₗ,
             A=status.A,
-            E=status.λE / (meteo.λ * constants.Mₕ₂ₒ) * 1000,
+            E=status.λE / (environment.λ * constants.Mₕ₂ₒ) * 1000,
         )
     end
 
@@ -245,7 +243,7 @@ function run_schymanski_evaluation()
     rows = map(eachrow(observations)) do row
         temperature = row.T_a - parameters["T0"]
         pressure = row.P_a / 1000
-        meteo = Atmosphere(
+        environment = Atmosphere(
             T=temperature,
             Wind=row.v_w,
             P=pressure,
@@ -262,7 +260,7 @@ function run_schymanski_evaluation()
                 d=row.L_l,
                 Gₛ=measured_Gs,
             ),
-            environment=meteo,
+            environment=environment,
         )
         run!(scene; constants=constants)
         status = evaluation_leaf_status(scene)

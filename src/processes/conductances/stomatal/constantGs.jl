@@ -36,10 +36,10 @@ Constant stomatal closure. Usually called from a photosynthesis model.
 
 # Note
 
-`meteo` is just declared here for compatibility with other formats of calls.
+`environment` is just declared here for compatibility with other formats of calls.
 """
-function gs_closure(::ConstantGs, models, status, meteo=missing, constants=nothing, extra=nothing)
-    (models.stomatal_conductance.Gₛ - models.stomatal_conductance.g0) / status.A
+function gs_closure(model::ConstantGs, status, environment=missing, constants=nothing, context=nothing)
+    (model.Gₛ - model.g0) / status.A
 end
 
 """
@@ -47,15 +47,11 @@ Constant stomatal conductance for CO₂ (mol m-2 s-1).
 
 # Note
 
-`meteo` or `gs_mod` are just declared here for compatibility with the call from
+`environment` or `gs_mod` are just declared here for compatibility with the call from
 photosynthesis (need a constant way of calling the functions).
 """
-function PlantSimEngine.run!(::ConstantGs, models, status, gs_closure)
-    status.Gₛ = models.stomatal_conductance.Gₛ
-end
-
-function PlantSimEngine.run!(::ConstantGs, models, status, meteo, constants, extra=nothing)
-    status.Gₛ = models.stomatal_conductance.Gₛ
+function PlantSimEngine.run!(model::ConstantGs, status, environment, constants, context=nothing)
+    status.Gₛ = model.Gₛ
 end
 
 PlantSimEngine.timestep_hint(::Type{<:ConstantGs}) = (

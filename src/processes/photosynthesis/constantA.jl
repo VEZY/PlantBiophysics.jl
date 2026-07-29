@@ -30,7 +30,7 @@ PlantSimEngine.output_policy(::Type{<:ConstantA}) = (
 Base.eltype(x::ConstantA) = typeof(x).parameters[1]
 
 """
-    run!(::ConstantA; models, status, meteo, constants=Constants())
+    run!(model::ConstantA, status, environment, constants=Constants(), context=nothing)
 
 Constant photosynthesis (forcing the value).
 
@@ -43,25 +43,24 @@ Modify the leaf status in place for A with a constant value:
 # Arguments
 
 - `::ConstantA`: a constant assimilation model
-- `models`: the compiled model bundle for the leaf application.
 - `status`: A status, usually the leaf status (*i.e.* leaf.status)
-- `meteo`: meteorology structure, see [`Atmosphere`](https://palmstudio.github.io/PlantMeteo.jl/stable/#PlantMeteo.Atmosphere)
+- `environment`: meteorology structure, see [`Atmosphere`](https://palmstudio.github.io/PlantMeteo.jl/stable/#PlantMeteo.Atmosphere)
 - `constants = PlantMeteo.Constants()`: physical constants. See `PlantMeteo.Constants` for more details
 
 # Examples
 
 ```julia
 using PlantBiophysics, PlantMeteo, PlantSimEngine
-meteo = Atmosphere(T = 20.0, Wind = 1.0, P = 101.3, Rh = 0.65)
-scene = leaf_scene(ConstantA(26.0); environment=meteo)
+environment = Atmosphere(T = 20.0, Wind = 1.0, P = 101.3, Rh = 0.65)
+scene = leaf_scene(ConstantA(26.0); environment=environment)
 run!(scene)
 only(model_objects(scene; scale=:Leaf)).status.A
 ```
 """
-function PlantSimEngine.run!(::ConstantA, models, status, meteo, constants=PlantMeteo.Constants(), extra=nothing)
+function PlantSimEngine.run!(model::ConstantA, status, environment, constants=PlantMeteo.Constants(), context=nothing)
 
     # Net assimilation (μmol m-2 s-1)
-    status.A = models.photosynthesis.A
+    status.A = model.A
 
     return nothing
 end

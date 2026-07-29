@@ -73,7 +73,7 @@ PlantSimEngine.output_policy(::Type{<:FvcbRaw}) = (
 )
 
 """
-    run!(::FvcbRaw, models, status, meteo=nothing, constants=Constants())
+    run!(model::FvcbRaw, status, environment=nothing, constants=Constants(), context=nothing)
 
 Direct implementation of the photosynthesis model for C3 photosynthesis from Farquhar–von
 Caemmerer–Berry (Farquhar et al., 1980; von Caemmerer and Farquhar, 1981).
@@ -85,8 +85,7 @@ Modify the first argument in place for A, the carbon assimilation (μmol[CO₂] 
 # Arguments
 
 - `::FvcbRaw`: the Farquhar–von Caemmerer–Berry (FvCB) model (not coupled)
-- `models`: the compiled model bundle for the application, with status
-  initialisations for:
+- The target status provides initial values for:
     - `Tₗ` (°C): leaf temperature
     - `aPPFD` (μmol m-2 s-1): absorbed Photosynthetic Photon Flux Density
     - `Cₛ` (ppm): Air CO₂ concentration at the leaf surface
@@ -136,7 +135,7 @@ Lombardozzi, L. D. et al. 2018.« Triose phosphate limitation in photosynthesis 
 reduces leaf photosynthesis and global terrestrial carbon storage ». Environmental Research
 Letters 13.7: 1748-9326. https://doi.org/10.1088/1748-9326/aacf68.
 """
-function PlantSimEngine.run!(m::FvcbRaw, models, status, meteo=nothing, constants=PlantMeteo.Constants(), extra=nothing)
+function PlantSimEngine.run!(m::FvcbRaw, status, environment=nothing, constants=PlantMeteo.Constants(), context=nothing)
 
     Tₖ = status.Tₗ - constants.K₀
     Tᵣₖ = m.Tᵣ - constants.K₀

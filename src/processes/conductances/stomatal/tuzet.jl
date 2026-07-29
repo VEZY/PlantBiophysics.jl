@@ -65,18 +65,17 @@ end
 Base.eltype(::Tuzet{T}) where T = T
 
 """
-    gs_closure(::Tuzet, models, status, meteo, constants=nothing, extra=nothing)
+    gs_closure(model::Tuzet, status, environment, constants=nothing, context=nothing)
 
 Stomatal closure for CO₂ according to Tuzet et al. (2003).
 
 # Arguments
 
 - `::Tuzet`: an instance of the `Tuzet` model type.
-- `models`: the compiled model bundle holding application parameters.
 - `status`: A status struct holding the variables for the models.
-- `meteo`: meteorology structure, see [`Atmosphere`](https://palmstudio.github.io/PlantMeteo.jl/stable/#PlantMeteo.Atmosphere). Is not used in this model.
+- `environment`: sampled environment, see [`Atmosphere`](https://palmstudio.github.io/PlantMeteo.jl/stable/#PlantMeteo.Atmosphere). Is not used in this model.
 - `constants`: A constants struct holding the constants for the models. Is not used in this model.
-- `extra`: A struct holding the extra variables for the models. Is not used in this model.
+- `context`: PlantSimEngine runtime context. It is not used in this model.
 
 # Details
 
@@ -87,7 +86,7 @@ The stomatal conductance is calculated as:
 
 where `Γ` is the CO₂ compensation point.
 """
-function gs_closure(m::Tuzet, models, status, meteo, constants=nothing, extra=nothing)
+function gs_closure(m::Tuzet, status, environment, constants=nothing, context=nothing)
     fpsif = (1 + exp(m.sf * m.Ψᵥ)) /
             (1 + exp(m.sf * (m.Ψᵥ - status.Ψₗ)))
     (m.g1 / (status.Cₛ - m.Γ)) * fpsif

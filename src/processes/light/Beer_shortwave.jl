@@ -27,8 +27,8 @@ The Beer-Lambert law for light interception for the shortwave radiation.
 ```julia
 using PlantSimEngine, PlantBiophysics, PlantMeteo
 
-meteo = Atmosphere(T=20.0, Wind=1.0, P=101.3, Rh=0.65, Ri_PAR_f=300.0, Ri_NIR_f=280.0)
-scene = leaf_scene(BeerShortwave(0.5); status=Status(LAI=2.0), environment=meteo)
+environment = Atmosphere(T=20.0, Wind=1.0, P=101.3, Rh=0.65, Ri_PAR_f=300.0, Ri_NIR_f=280.0)
+scene = leaf_scene(BeerShortwave(0.5); status=Status(LAI=2.0), environment=environment)
 run!(scene)
 leaf = only(model_objects(scene; scale=:Leaf))
 (leaf.status.aPPFD, leaf.status.Ra_SW_f, leaf.status.Ra_PAR_f, leaf.status.Ra_NIR_f)
@@ -49,9 +49,9 @@ PlantSimEngine.output_policy(::Type{<:BeerShortwave}) = (
     aPPFD=PlantSimEngine.Integrate(PlantMeteo.RadiationEnergy()),
 )
 
-function PlantSimEngine.run!(::BeerShortwave, models, status, meteo, constants, extra)
-    status.Ra_PAR_f = meteo.Ri_PAR_f * (1.0 - exp(-models.light_interception.k_PAR * status.LAI))
-    status.Ra_NIR_f = meteo.Ri_NIR_f * (1.0 - exp(-models.light_interception.k_NIR * status.LAI))
+function PlantSimEngine.run!(model::BeerShortwave, status, environment, constants, context)
+    status.Ra_PAR_f = environment.Ri_PAR_f * (1.0 - exp(-model.k_PAR * status.LAI))
+    status.Ra_NIR_f = environment.Ri_NIR_f * (1.0 - exp(-model.k_NIR * status.LAI))
     status.aPPFD = status.Ra_PAR_f * constants.J_to_umol
     status.Ra_SW_f = status.Ra_PAR_f + status.Ra_NIR_f
 end
