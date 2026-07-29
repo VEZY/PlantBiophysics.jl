@@ -3,19 +3,16 @@
 PlantBiophysics models are ordinary PlantSimEngine model kernels. The
 `leaf_scene` helper assembles a one-leaf scene and resolves their hard calls.
 
-```@example simulation
+```@example first_simulation
 using PlantBiophysics, PlantSimEngine, PlantMeteo, Dates, DataFrames
 
-weather = Weather([
-    Atmosphere(
-        T=20.0 + 0.5 * hour,
-        Wind=1.0,
-        P=101.3,
-        Rh=0.65,
-        duration=Hour(1),
-    )
-    for hour in 0:5
-])
+meteo = Atmosphere(
+    T=22.0,
+    Wind=0.8333,
+    P=101.325,
+    Rh=0.45,
+    duration=Hour(1),
+)
 
 scene = leaf_scene(
     Monteith(),
@@ -27,27 +24,22 @@ scene = leaf_scene(
         aPPFD=1500.0,
         d=0.03,
     ),
-    environment=weather,
+    environment=meteo,
 )
 
-simulation = run!(scene; steps=6);
-nothing
-```
-
-Inspect the latest state directly:
-
-```@example simulation
+simulation = run!(scene; outputs=:all)
 leaf = only(model_objects(scene; scale=:Leaf))
 (Tₗ=leaf.status.Tₗ, A=leaf.status.A, Gₛ=leaf.status.Gₛ)
 ```
 
-Or collect retained output streams:
+The latest values remain on the leaf status. Because output retention is
+explicit, the same run can also be collected as a long table:
 
-```@example simulation
+```@example first_simulation
 rows = DataFrame(collect_outputs(simulation; sink=nothing))
 first(rows, 8)
 ```
 
-The long-form table identifies the publishing application, object, timestep,
-variable, and value. Filter by `application_id` before reshaping when several
-applications publish related variables.
+Each row identifies its publishing application, object, timestep, variable,
+and value. Continue with [Simulation over several time steps](several_simulation.md)
+to advance a `Weather` series and match retained results to their input rows.

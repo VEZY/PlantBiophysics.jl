@@ -79,13 +79,13 @@ the energy balance using the mass flux (~ Rn - λE).
 
 # Arguments
 
-- `::Monteith`: a Monteith model, usually from a model list (*i.e.* m.energy_balance)
+- `::Monteith`: the selected Monteith energy-balance model.
 - `models`: the compiled model bundle containing the photosynthesis and
-  stomatal-conductance dependencies, with status initialisations for:
+  stomatal-conductance dependencies.
+- `status`: the state shared by the coupled leaf applications, including:
     - `Ra_SW_f` (W m-2): net shortwave radiation (PAR + NIR). Often computed from a light interception model
     - `sky_fraction` (0-2): view factor between the object and the sky for both faces (see details).
     - `d` (m): characteristic dimension, *e.g.* leaf width (see eq. 10.9 from Monteith and Unsworth, 2013).
-- `status`: the status of the model, usually the model list status (*i.e.* leaf.status)
 - `meteo`: meteorology structure, see [`Atmosphere`](https://palmstudio.github.io/PlantMeteo.jl/stable/#PlantMeteo.Atmosphere)
 - `constants = PlantMeteo.Constants()`: physical constants. See `PlantMeteo.Constants` for more details
 
@@ -156,14 +156,11 @@ function PlantSimEngine.run!(::Monteith, models, status, meteo, constants=PlantM
     # Iterative resolution of the energy balance
     for i in 1:models.energy_balance.maxiter
 
-        # Update A, Gₛ, Cᵢ from models.status:
+        # Update A, Gₛ, Cᵢ on the shared status:
         # Monteith owns A, Gₛ, and Cᵢ; photosynthesis calls are unpublished trials.
-        PlantSimEngine.run_call!(
-            extra,
-            :photosynthesis;
-            meteo=meteo,
-            publish=false,
-        )
+        for target in PlantSimEngine.call_targets(extra, :photosynthesis)
+            PlantSimEngine.run_call!(target; meteo=meteo, publish=false)
+        end
 
         # Stomatal resistance to water vapor
         Rsᵥ = 1.0 / (gsc_to_gsw(mol_to_ms(status.Gₛ, meteo.T, meteo.P, constants.R, constants.K₀),

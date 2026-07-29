@@ -304,12 +304,9 @@ function PlantSimEngine.run!(m::Fvcb, models, status, meteo, constants=PlantMete
 
     # Stomatal conductance (mol[CO₂] m-2 s-1)
     # FvCB owns Gₛ; the stomatal model updates the shared trial status only.
-    PlantSimEngine.run_call!(
-        extra,
-        :stomatal_conductance;
-        meteo=st_closure,
-        publish=false,
-    )
+    for target in PlantSimEngine.call_targets(extra, :stomatal_conductance)
+        PlantSimEngine.run_call!(target; meteo=st_closure, publish=false)
+    end
 
     # Intercellular CO₂ concentration (Cᵢ, μmol mol)
     status.Cᵢ = min(status.Cₛ, status.Cₛ - status.A / status.Gₛ)

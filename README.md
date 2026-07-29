@@ -55,6 +55,37 @@ PlantBiophysics models preserve generic numeric types, which supports units,
 automatic differentiation, and uncertainty propagation when the supplied
 operations support those types.
 
+## Development with PlantSimEngine
+
+Until PlantSimEngine 0.15 is released, check out its `multi-plants` branch
+wherever you keep development packages, then point the PlantBiophysics
+environment to that working tree:
+
+```julia-repl
+pkg> activate .
+pkg> develop /path/to/PlantSimEngine
+pkg> test
+```
+
+`Pkg.develop` records the working-tree path only in the local `Manifest.toml`;
+the repository does not assume where PlantSimEngine is cloned. Once a
+compatible PlantSimEngine release is available, run `free` in each environment
+where it was developed:
+
+```julia-repl
+pkg> free PlantSimEngine
+```
+
+The documentation uses the same workflow:
+
+```julia-repl
+pkg> activate docs
+pkg> develop /path/to/PlantSimEngine
+pkg> instantiate
+```
+
+Then build it with `julia --project=docs docs/make.jl`.
+
 ## Questions
 
 Use the [issue tracker](https://github.com/VEZY/PlantBiophysics.jl/issues) or

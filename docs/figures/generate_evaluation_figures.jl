@@ -346,13 +346,28 @@ function schymanski_figure(scenario)
     return figure
 end
 
+"""
+    generate_schymanski_figure(; output)
+
+Regenerate only the Schymanski et al. (2017) evaluation figure from the shared
+evaluation scenario. By default, overwrite the SVG used by the documentation.
+"""
+function generate_schymanski_figure(;
+    output=joinpath(OUTPUT_DIR, "schymanski_energy_fluxes.svg"),
+)
+    mkpath(dirname(output))
+    CairoMakie.activate!(type="svg")
+    scenario = run_schymanski_evaluation()
+    save(output, schymanski_figure(scenario); pt_per_unit=1)
+    return output
+end
+
 function generate_evaluation_figures()
     mkpath(OUTPUT_DIR)
     CairoMakie.activate!(type="svg")
 
     global_scenario = run_global_evaluation()
     daily_scenario = run_daily_evaluation()
-    schymanski_scenario = run_schymanski_evaluation()
 
     outputs = (
         medlyn_global=joinpath(OUTPUT_DIR, "medlyn_global.svg"),
@@ -361,11 +376,7 @@ function generate_evaluation_figures()
     )
     save(outputs.medlyn_global, global_figure(global_scenario); pt_per_unit=1)
     save(outputs.medlyn_daily, daily_figure(daily_scenario); pt_per_unit=1)
-    save(
-        outputs.schymanski_energy_fluxes,
-        schymanski_figure(schymanski_scenario);
-        pt_per_unit=1,
-    )
+    generate_schymanski_figure(; output=outputs.schymanski_energy_fluxes)
     return outputs
 end
 

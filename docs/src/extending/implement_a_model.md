@@ -54,12 +54,20 @@ PlantSimEngine.dep(::ParentModel) = (
 )
 ```
 
-Inside `run!`, execute the compiled dependency with
-`run_call!(extra, :child; meteo=meteo, publish=true)`. This always returns a
-vector-like target collection; use `only(targets)` for a declared `One` call.
-Iterative models should retrieve `call_targets(extra, :child)`, execute
-individual targets with `publish=false` for trials, and publish only the
-accepted state.
+Inside `run!`, retrieve the compiled dependency and execute its targets:
+
+```julia
+for target in call_targets(extra, :child)
+    run_call!(target; meteo=meteo, publish=true)
+end
+```
+
+`call_targets` is always vector-like; use `only(targets)` for a declared `One`
+call when exactly one target is required. Iterative models should execute
+individual targets with `publish=false` for trials and publish only the
+accepted state. Passing `meteo=trial_meteo` forwards that sampled or trial
+meteorology directly to the selected target; omit it to use the target's
+compiled environment binding.
 
 Value dependencies that the model merely reads are soft dependencies. Declare
 the input in `inputs_`; scenario assembly or same-object inference determines

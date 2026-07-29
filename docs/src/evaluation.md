@@ -42,7 +42,7 @@ The figure therefore evaluates the photosynthesis and energy-balance response
 conditional on measured conductance; it is not an independent validation of
 stomatal conductance.
 
-## Schymanski et al. (2017)
+## [Schymanski et al. (2017)](@id schymanski-evaluation)
 
 ![Observed and simulated leaf energy fluxes across wind speeds](assets/evaluation/schymanski_energy_fluxes.svg)
 
@@ -59,16 +59,27 @@ leaf model. The source data come from the
 [`Schymanski_leaf-scale_2016`](https://github.com/schymans/Schymanski_leaf-scale_2016)
 repository.
 
-## Reproducing the figures
-
-The SVG files are regenerated at the start of every Documenter build. Once the
-dedicated figure environment is instantiated, generation uses only the
-committed offline test fixtures. To regenerate the figures without building
-the rest of the documentation, run:
+To reproduce only this panel, run the
+[standalone Schymanski wrapper](models/schymanski.jl) from the repository root:
 
 ```bash
-julia --project=docs/figures -e 'using Pkg; Pkg.instantiate()'
-julia --project=docs/figures docs/figures/generate_evaluation_figures.jl
+julia --project=docs docs/src/models/schymanski.jl
+```
+
+The wrapper calls the same scenario as the numerical regression tests and the
+same plotting code as the complete documentation build; it does not maintain a
+second copy of the scientific computation.
+
+## Reproducing the figures
+
+The SVG files are regenerated at the start of every Documenter build.
+Generation uses only the committed offline test fixtures. To regenerate the
+figures without building the rest of the documentation, first instantiate the
+`docs` environment with the same developed PlantSimEngine checkout used for
+package testing, then run:
+
+```bash
+julia --project=docs docs/figures/generate_evaluation_figures.jl
 ```
 
 The Medlyn fixtures are distributed under CC BY 4.0. Their file identifiers,

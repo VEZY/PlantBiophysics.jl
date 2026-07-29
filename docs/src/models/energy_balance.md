@@ -51,3 +51,12 @@ Important status inputs are absorbed shortwave radiation (`Ra_SW_f`), visible
 sky fraction (`sky_fraction`), absorbed PPFD (`aPPFD`), and characteristic leaf
 dimension (`d`). Use `inputs(model)` and `outputs(model)` for the complete
 contract.
+
+## Evaluation and reproducibility
+
+The [Schymanski et al. evaluation](@ref schymanski-evaluation)
+compares the simulated latent heat, sensible heat, and net radiation fluxes
+with chamber observations across wind speeds. Its
+[standalone wrapper](schymanski.jl) calls the same current-API scenario as the
+numerical regression test and the same plotting implementation as the
+documentation build.

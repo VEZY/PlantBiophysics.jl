@@ -1,7 +1,6 @@
 module PlantBiophysicsLogo
 
 # From the repository root:
-#   julia --project=docs -e 'using Pkg; Pkg.instantiate()'
 #   julia --project=docs docs/src/assets/logo.jl
 
 using CairoMakie
@@ -57,7 +56,7 @@ function generate_logo(; output=DEFAULT_OUTPUT)
         mtg;
         applications=applications,
         environment=meteo,
-        status=node -> symbol(node) == :Leaf ? Status(
+        status=node -> Symbol(symbol(node)) == :Leaf ? Status(
             Ra_SW_f=node[:Ra_PAR_f] + node[:Ra_NIR_f],
             aPPFD=node[:Ra_PAR_f] * 4.57,
             sky_fraction=node[:sky_fraction],

@@ -12,11 +12,17 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
+      - name: Check out the PlantSimEngine development branch
+        uses: actions/checkout@v6
+        with:
+          repository: VirtualPlantLab/PlantSimEngine.jl
+          ref: multi-plants
+          path: PlantSimEngine
       - uses: julia-actions/setup-julia@latest
         with:
           version: "1"
       - name: Install dependencies
-        run: julia --project=docs/ -e 'using Pkg; Pkg.develop(PackageSpec(path=pwd())); Pkg.instantiate()'
+        run: julia --project=docs/ -e 'using Pkg; Pkg.develop(PackageSpec(path="PlantSimEngine")); Pkg.instantiate()'
       - name: Build and deploy
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # For authentication with GitHub Actions token
