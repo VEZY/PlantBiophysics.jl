@@ -41,7 +41,7 @@ leaf = only(model_objects(scene; scale=:Leaf))
 call can be inspected with:
 
 ```@example photosynthesis
-explain_calls(PlantSimEngine.compile_composite_model(scene))
+Diagnostics.explain_calls(Advanced.compile_composite_model(scene))
 ```
 
 ## Raw FvCB Example

@@ -1,5 +1,5 @@
 """
-    fit(
+    Evaluation.fit(
         ::Type{Fvcb}, df; 
         Tᵣ = nothing, 
         VcMaxRef = 0.0, JMaxRef = 0.0, RdRef = 0.0, TPURef = 0.0, 
@@ -30,7 +30,7 @@ boundary can be set using [-Inf, Inf].
 # Examples
 
 ```julia
-using PlantBiophysics, PlantSimEngine, PlantMeteo, Plots, DataFrames
+using PlantBiophysics, PlantSimEngine, PlantSimEngine.Evaluation, PlantMeteo, Plots, DataFrames
 
 file = joinpath(dirname(dirname(pathof(PlantBiophysics))),"test","inputs","data","P1F20129.csv")
 df = read_walz(file)
@@ -38,7 +38,7 @@ df = read_walz(file)
 filter!(x -> x.curve != "Rh Curve" && x.curve != "ligth Curve", df)
 
 # Fit the parameter values:
-VcMaxRef, JMaxRef, RdRef, TPURef = fit(Fvcb, df; Tᵣ = 25.0)
+VcMaxRef, JMaxRef, RdRef, TPURef = Evaluation.fit(Fvcb, df; Tᵣ = 25.0)
 # Note that Tᵣ was set to 25 °C in our response curve. You should adapt its value to what you
 # had during the response curves
 
@@ -84,7 +84,7 @@ plot(ACi_struct_full,leg=:bottomright)
 # Note that the results differ a bit because there are more variables that are re-simulated (e.g. Cᵢ)
 ```
 """
-function PlantSimEngine.fit(
+function PlantSimEngine.Evaluation.fit(
     ::T, df;
     Tᵣ=nothing,
     VcMaxRef=0.0, JMaxRef=0.0, RdRef=0.0, TPURef=0.0,
@@ -169,9 +169,9 @@ ACi(VcMaxRef, JMaxRef, RdRef, A_meas, A_sim, Cᵢ_meas) = ACi(VcMaxRef, JMaxRef,
     xguide --> "Cᵢ (ppm)"
     yguide --> "A (μmol m⁻² s⁻¹)"
 
-    EF_ = round(PlantSimEngine.EF(y, y2), digits=3)
-    dr_ = round(PlantSimEngine.dr(y, y2), digits=3)
-    RMSE_ = round(PlantSimEngine.RMSE(y, y2), digits=3)
+    EF_ = round(PlantSimEngine.Evaluation.EF(y, y2), digits=3)
+    dr_ = round(PlantSimEngine.Evaluation.dr(y, y2), digits=3)
+    RMSE_ = round(PlantSimEngine.Evaluation.RMSE(y, y2), digits=3)
 
     @series begin
         seriestype := :scatter

@@ -25,7 +25,7 @@ end
         ),
     )
     compiled = Advanced.compile_composite_model(scene)
-    calls = explain_calls(compiled)
+    calls = PlantSimEngine.Diagnostics.explain_calls(compiled)
     @test only(
         row for row in calls
         if row.application_id == :energy_balance

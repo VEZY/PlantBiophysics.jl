@@ -37,7 +37,7 @@ conductance. These applications are compiled as manual call targets and are
 not independently run by the root scheduler.
 
 ```@example energy
-explain_calls(PlantSimEngine.compile_composite_model(scene))
+Diagnostics.explain_calls(Advanced.compile_composite_model(scene))
 ```
 
 The required timestep range is one minute to two hours, with one hour

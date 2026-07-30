@@ -41,5 +41,5 @@ leaf = only(model_objects(scene; scale=:Leaf))
 (Tₗ=leaf.status.Tₗ, A=leaf.status.A, λE=leaf.status.λE)
 ```
 
-Use `explain_calls(compile_composite_model(scene))` to inspect the manually controlled
+Use `Diagnostics.explain_calls(Advanced.compile_composite_model(scene))` to inspect the manually controlled
 energy-balance call stack.

@@ -1,5 +1,5 @@
 """
-    fit(::Type{Beer}, df; J_to_umol=PlantMeteo.Constants().J_to_umol)
+    Evaluation.fit(::Type{Beer}, df; J_to_umol=PlantMeteo.Constants().J_to_umol)
 
 Optimize `k`, the coefficient of the Beer-Lambert law of light extinction.
 
@@ -12,7 +12,7 @@ names should match exactly.
 # Examples
 
 ```julia
-using PlantSimEngine, PlantBiophysics, DataFrames, PlantMeteo
+using PlantSimEngine, PlantSimEngine.Evaluation, PlantBiophysics, DataFrames, PlantMeteo
 
 # Defining dummy data:
 df = DataFrame(
@@ -25,7 +25,7 @@ df = DataFrame(
 )
 
 # Fit the parameters values:
-k = fit(Beer, df)
+k = Evaluation.fit(Beer, df)
 
 # Re-simulating the first observation using the newly fitted parameter:
 meteo = Atmosphere(
@@ -39,7 +39,7 @@ run!(scene)
 only(model_objects(scene; scale = :Leaf)).status.aPPFD
 ```
 """
-function PlantSimEngine.fit(::Type{Beer}, df; J_to_umol=PlantMeteo.Constants().J_to_umol)
+function PlantSimEngine.Evaluation.fit(::Type{Beer}, df; J_to_umol=PlantMeteo.Constants().J_to_umol)
     k = Statistics.mean(log.(df.Ri_PAR_f ./ (df.aPPFD ./ J_to_umol)) ./ df.LAI)
     return (k=k,)
 end

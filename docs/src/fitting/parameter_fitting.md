@@ -1,12 +1,12 @@
 # [Parameter Fitting](@id parameter_fitting_page)
 
-PlantBiophysics implements `PlantSimEngine.fit` methods for selected models.
+PlantBiophysics implements `PlantSimEngine.Evaluation.fit` methods for selected models.
 Fitting consumes tabular observations and returns a named tuple of parameters.
 
 ## Beer Extinction Coefficient
 
 ```@example fitting
-using PlantBiophysics, PlantSimEngine, DataFrames
+using PlantBiophysics, PlantSimEngine, PlantSimEngine.Evaluation, DataFrames
 
 observations = DataFrame(
     LAI=[1.0, 2.0, 3.0],
@@ -14,7 +14,7 @@ observations = DataFrame(
     aPPFD=[480.0, 770.0, 940.0],
 )
 
-fit(Beer, observations)
+Evaluation.fit(Beer, observations)
 ```
 
 ## Model Validation
@@ -40,5 +40,5 @@ predictions = map(eachrow(observations)) do row
 end
 ```
 
-`fit(Fvcb, data)` and `fit(Medlyn, data)` use the same interface. Consult their
+`Evaluation.fit(Fvcb, data)` and `Evaluation.fit(Medlyn, data)` use the same interface. Consult their
 docstrings for required columns and optional fitting parameters.
