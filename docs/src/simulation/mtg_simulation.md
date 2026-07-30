@@ -19,12 +19,9 @@ weather = Weather([
 ])
 
 applications = (
-    ModelSpec(Monteith(); name=:energy_balance) |>
-        AppliesTo(Many(scale=:Leaf)),
-    ModelSpec(Fvcb(); name=:photosynthesis) |>
-        AppliesTo(Many(scale=:Leaf)),
-    ModelSpec(Medlyn(0.03, 12.0); name=:stomatal_conductance) |>
-        AppliesTo(Many(scale=:Leaf)),
+    ModelSpec(Monteith(); name=:energy_balance, on=Many(scale=:Leaf)),
+    ModelSpec(Fvcb(); name=:photosynthesis, on=Many(scale=:Leaf)),
+    ModelSpec(Medlyn(0.03, 12.0); name=:stomatal_conductance, on=Many(scale=:Leaf)),
 )
 
 mtg_root = Node(MultiScaleTreeGraph.NodeMTG("/", "Scene", 1, 0))

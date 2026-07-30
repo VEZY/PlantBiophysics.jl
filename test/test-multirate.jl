@@ -90,19 +90,10 @@ end
             ),
         ),
         applications=(
-            ModelSpec(Monteith(); name=:energy_balance) |>
-            AppliesTo(One(scale=:Leaf)) |>
-            TimeStep(Hour(1)),
-            ModelSpec(Fvcb(); name=:photosynthesis) |>
-            AppliesTo(One(scale=:Leaf)) |>
-            TimeStep(Hour(1)),
-            ModelSpec(Medlyn(0.03, 12.0); name=:stomatal_conductance) |>
-            AppliesTo(One(scale=:Leaf)) |>
-            TimeStep(Hour(1)),
-            ModelSpec(DailyLeafSummaryTestModel(); name=:daily_summary) |>
-            AppliesTo(One(scale=:Leaf)) |>
-            Inputs(
-                :A_integrated => One(
+            ModelSpec(Monteith(); name=:energy_balance, on=One(scale=:Leaf), every=Hour(1)),
+            ModelSpec(Fvcb(); name=:photosynthesis, on=One(scale=:Leaf), every=Hour(1)),
+            ModelSpec(Medlyn(0.03, 12.0); name=:stomatal_conductance, on=One(scale=:Leaf), every=Hour(1)),
+            ModelSpec(DailyLeafSummaryTestModel(); name=:daily_summary, on=One(scale=:Leaf), inputs=(:A_integrated => One(
                     within=Self(),
                     application=:energy_balance,
                     var=:A,
@@ -140,9 +131,7 @@ end
                     var=:Tₗ,
                     policy=Aggregate(MinReducer()),
                     window=Day(1),
-                ),
-            ) |>
-            TimeStep(ClockSpec(24.0, 24.0)),
+                ),), every=ClockSpec(24.0, 24.0)),
         ),
         environment=environment,
     )

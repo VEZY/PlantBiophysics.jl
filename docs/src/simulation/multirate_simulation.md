@@ -5,9 +5,11 @@ windows. The same scene can run leaf biophysics hourly and a summary model
 daily.
 
 ```julia
-daily = ModelSpec(DailySummary(); name=:daily_summary) |>
-    AppliesTo(One(scale=:Leaf)) |>
-    Inputs(
+daily = ModelSpec(
+    DailySummary();
+    name=:daily_summary,
+    on=One(scale=:Leaf),
+    inputs=(
         :assimilation => One(
             within=Self(),
             application=:energy_balance,
@@ -22,16 +24,17 @@ daily = ModelSpec(DailySummary(); name=:daily_summary) |>
             policy=Aggregate(),
             window=Day(1),
         ),
-    ) |>
-    TimeStep(ClockSpec(24.0, 24.0))
+    ),
+    every=ClockSpec(24.0, 24.0),
+)
 ```
 
-Hourly applications use `TimeStep(Hour(1))`. At compilation, PlantSimEngine
+Hourly applications use `every=Hour(1)`. At compilation, PlantSimEngine
 resolves the source application and creates typed temporal streams. The daily
 consumer receives integrated assimilation and mean temperature without
 changing either producer model.
 
-`TimeStep(Day(1))` runs every 24 hourly steps with the default phase. Use
+`every=Day(1)` runs every 24 hourly steps with the default phase. Use
 `ClockSpec(24.0, 24.0)` when the daily consumer should run at the end of each
 24-hour window.
 
@@ -46,5 +49,5 @@ using PlantBiophysics, PlantSimEngine, Dates
  photosynthesis=PlantSimEngine.timestep_hint(Fvcb()))
 ```
 
-Scenario-level `TimeStep(...)` is authoritative; hints validate whether an
+Scenario-level `every=...` is authoritative; hints validate whether an
 inferred cadence is scientifically supported.

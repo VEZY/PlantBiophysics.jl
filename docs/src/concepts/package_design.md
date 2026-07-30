@@ -19,7 +19,8 @@ knowing its plant, species, timestep, or coupling context.
 
 When one application produces a variable consumed by another application on
 the same object, PlantSimEngine infers the value binding when it is unique.
-Cross-object values are declared explicitly with `Inputs(...)`.
+Cross-object values are declared explicitly with
+`ModelSpec(...; inputs=...)`.
 
 ## Manual Calls
 
@@ -48,9 +49,7 @@ after preparing PlantBiophysics model defaults. Larger simulations use
 PlantSimEngine directly:
 
 ```julia
-ModelSpec(model; name=:application) |>
-    AppliesTo(Many(scale=:Leaf)) |>
-    TimeStep(Dates.Hour(1))
+ModelSpec(model; name=:application, on=Many(scale=:Leaf), every=Dates.Hour(1))
 ```
 
 Plant architecture and scene composition remain outside PlantBiophysics.

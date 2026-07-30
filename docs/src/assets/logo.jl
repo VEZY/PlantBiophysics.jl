@@ -88,8 +88,7 @@ function generate_logo(; output=DEFAULT_OUTPUT)
         models[:Leaf],
     )
     applications = Tuple(
-        ModelSpec(model; name=process(model)) |>
-        AppliesTo(Many(scale=:Leaf))
+        ModelSpec(model; name=process(model), on=Many(scale=:Leaf))
         for model in leaf_models
     )
     scene = CompositeModel(

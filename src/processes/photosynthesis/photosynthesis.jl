@@ -28,5 +28,5 @@ Note that we use `VPD` as an approximation of `Dₗ` here because we don't have 
 """ verbose = false
 
 # Default policy for assimilation rates when consumed at coarser clocks.
-# An explicit policy on a scene `Inputs(...)` selector overrides this default.
+# An explicit policy on a scene `ModelSpec(...; inputs=...)` selector overrides this default.
 PlantSimEngine.output_policy(::Type{<:AbstractPhotosynthesisModel}) = (A=PlantSimEngine.Integrate(PlantMeteo.DurationSumReducer()),)

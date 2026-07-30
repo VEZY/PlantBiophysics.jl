@@ -57,5 +57,5 @@ only(model_objects(raw_scene; scale=:Leaf)).status.A
 ```
 
 Photosynthesis models prefer an hourly timestep and accept timesteps from one
-minute to six hours. Use `TimeStep(...)` on the scenario application when an
-explicit cadence is required.
+minute to six hours. Use `ModelSpec(...; every=...)` on the scenario
+application when an explicit cadence is required.

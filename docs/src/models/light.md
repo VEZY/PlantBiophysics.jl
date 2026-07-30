@@ -31,4 +31,5 @@ leaf = only(model_objects(scene; scale=:Leaf))
 
 For geometrically explicit plants, radiation interception is normally computed
 by a dedicated 3D radiation package and supplied to PlantBiophysics leaf
-models through object status or compiled `Inputs(...)`.
+models through object status or compiled `ModelSpec(...; inputs=...)`
+bindings.

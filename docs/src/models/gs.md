@@ -42,9 +42,7 @@ PlantSimEngine.timestep_hint(Medlyn(0.03, 12.0))
 A scenario can override the cadence:
 
 ```@example gs
-spec = ModelSpec(Medlyn(0.03, 12.0)) |>
-    AppliesTo(One(scale=:Leaf)) |>
-    TimeStep(Hour(3))
+spec = ModelSpec(Medlyn(0.03, 12.0); on=One(scale=:Leaf), every=Hour(3))
 spec.timestep
 ```
 
