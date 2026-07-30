@@ -1,11 +1,11 @@
 PlantSimEngine.@process "dailyleafsummarytest" verbose = false
 struct DailyLeafSummaryTestModel <: AbstractDailyleafsummarytestModel end
 PlantSimEngine.inputs_(::DailyLeafSummaryTestModel) = (
-    A_integrated=-Inf,
-    transpiration_integrated=-Inf,
-    Tₗ_mean=-Inf,
-    Tₗ_max=-Inf,
-    Tₗ_min=-Inf,
+    A_integrated=PlantSimEngine.Required(Real),
+    transpiration_integrated=PlantSimEngine.Required(Real),
+    Tₗ_mean=PlantSimEngine.Required(Real),
+    Tₗ_max=PlantSimEngine.Required(Real),
+    Tₗ_min=PlantSimEngine.Required(Real),
 )
 PlantSimEngine.outputs_(::DailyLeafSummaryTestModel) = (
     A_daily=-Inf,

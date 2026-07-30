@@ -56,7 +56,11 @@ function FvcbRaw(; kwargs...)
 end
 
 function PlantSimEngine.inputs_(::FvcbRaw)
-    (aPPFD=-Inf, Tₗ=-Inf, Cᵢ=-Inf)
+    (
+        aPPFD=PlantSimEngine.Required(Real),
+        Tₗ=PlantSimEngine.Required(Real),
+        Cᵢ=PlantSimEngine.Required(Real),
+    )
 end
 
 function PlantSimEngine.outputs_(::FvcbRaw)

@@ -45,7 +45,11 @@ end
 Medlyn(; g0, g1, gs_min=0.001) = Medlyn(g0, g1, gs_min)
 
 function PlantSimEngine.inputs_(::Medlyn)
-    (Dₗ=-Inf, Cₛ=-Inf, A=-Inf)
+    (
+        Dₗ=PlantSimEngine.Required(Real),
+        Cₛ=PlantSimEngine.Required(Real),
+        A=PlantSimEngine.Required(Real),
+    )
 end
 
 function PlantSimEngine.outputs_(::Medlyn)

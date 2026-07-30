@@ -22,7 +22,7 @@ end
 ConstantGs(; g0=0.0, Gₛ) = ConstantGs(g0, Gₛ)
 
 function PlantSimEngine.inputs_(::ConstantGs)
-    (Gₛ=-Inf,)
+    (A=PlantSimEngine.Required(Real),)
 end
 
 function PlantSimEngine.outputs_(::ConstantGs)

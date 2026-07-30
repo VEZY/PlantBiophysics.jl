@@ -2,7 +2,11 @@ A = Fvcb(α=0.24)
 Gs = Medlyn(0.03, 12.0)
 
 @testset "leaf_scene" begin
-    scene = leaf_scene(A, Gs)
+    scene = leaf_scene(
+        A,
+        Gs;
+        status=Status(Tₗ=25.0, aPPFD=1000.0, Cₛ=400.0, Dₗ=1.2),
+    )
     applications = explain_applications(Advanced.compile_composite_model(scene))
     @test Set(row.application_id for row in applications) ==
           Set([:photosynthesis, :stomatal_conductance])

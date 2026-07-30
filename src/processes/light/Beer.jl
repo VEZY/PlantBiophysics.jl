@@ -43,7 +43,7 @@ function PlantSimEngine.run!(model::Beer, status, environment, constants, contex
 end
 
 function PlantSimEngine.inputs_(::Beer)
-    (LAI=-Inf,)
+    (LAI=PlantSimEngine.Required(Real),)
 end
 
 function PlantSimEngine.outputs_(::Beer)

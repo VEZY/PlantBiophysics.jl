@@ -18,12 +18,16 @@ uncertainty wrappers.
 ## Declare Variables
 
 ```julia
-PlantSimEngine.inputs_(::ExampleFlux) = (driver=0.0,)
+PlantSimEngine.inputs_(::ExampleFlux) = (
+    driver=PlantSimEngine.Required(Real),
+)
 PlantSimEngine.outputs_(::ExampleFlux) = (flux=0.0,)
 ```
 
-These declarations are the coupling contract. The model should not know which
-object, plant, species, or timestep supplies `driver`.
+Use `Required(T)` when object state or another application must supply an
+input, and `Default(value)` only for a genuine model fallback. These
+declarations are the coupling contract. The model should not know which object,
+plant, species, or timestep supplies `driver`.
 
 ## Implement One Timestep
 

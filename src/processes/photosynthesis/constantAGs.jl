@@ -14,7 +14,7 @@ Base.@kwdef struct ConstantAGs{T} <: AbstractPhotosynthesisModel
 end
 
 function PlantSimEngine.inputs_(::ConstantAGs)
-    (Cₛ=-Inf,)
+    (Cₛ=PlantSimEngine.Required(Real),)
 end
 
 function PlantSimEngine.outputs_(::ConstantAGs)

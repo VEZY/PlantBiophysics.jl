@@ -27,7 +27,7 @@ function PlantBiophysics.gs_closure(
     return status.A / (status.Gₛ - model.g0)
 end
 
-PlantSimEngine.inputs_(::PaperForcedGs) = (Gₛ=-Inf,)
+PlantSimEngine.inputs_(::PaperForcedGs) = (Gₛ=PlantSimEngine.Required(Real),)
 PlantSimEngine.outputs_(::PaperForcedGs) = (Gₛ=-Inf,)
 
 function PlantSimEngine.run!(

@@ -16,7 +16,7 @@ Base.@kwdef struct ConstantA{T} <: AbstractPhotosynthesisModel
 end
 
 function PlantSimEngine.inputs_(::ConstantA)
-    (A=-Inf,)
+    NamedTuple()
 end
 
 function PlantSimEngine.outputs_(::ConstantA)

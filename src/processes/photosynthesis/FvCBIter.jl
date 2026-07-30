@@ -51,7 +51,11 @@ function FvcbIter(; iter_A_max=20, ΔT_A=1.0, kwargs...)
 end
 
 function PlantSimEngine.inputs_(::FvcbIter)
-    (aPPFD=-Inf, Tₗ=-Inf, Gbc=-Inf)
+    (
+        aPPFD=PlantSimEngine.Required(Real),
+        Tₗ=PlantSimEngine.Required(Real),
+        Gbc=PlantSimEngine.Required(Real),
+    )
 end
 
 function PlantSimEngine.outputs_(::FvcbIter)

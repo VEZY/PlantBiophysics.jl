@@ -31,11 +31,12 @@ function _leaf_scene_status(status::Status, models)
     status_values = Dict{Symbol,Any}(pairs(NamedTuple(status)))
     prototype = _leaf_scene_numeric_prototype(values(status_values))
     for model in models
-        for (variable, default) in pairs(PlantSimEngine.inputs_(model))
-            get!(status_values, Symbol(variable), _leaf_scene_default(default, prototype))
-        end
-        for (variable, default) in pairs(PlantSimEngine.outputs_(model))
-            get!(status_values, Symbol(variable), _leaf_scene_default(default, prototype))
+        for (variable, initial_value) in pairs(PlantSimEngine.init_variables(model))
+            get!(
+                status_values,
+                Symbol(variable),
+                _leaf_scene_default(initial_value, prototype),
+            )
         end
     end
     return Status((; status_values...))
