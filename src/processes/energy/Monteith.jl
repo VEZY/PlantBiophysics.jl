@@ -161,9 +161,12 @@ function PlantSimEngine.run!(model::Monteith, status, environment, constants=Pla
 
         # Update A, Gₛ, Cᵢ on the shared status:
         # Monteith owns A, Gₛ, and Cᵢ; photosynthesis calls are unpublished trials.
-        for target in PlantSimEngine.call_targets(context, :photosynthesis)
-            PlantSimEngine.run_call!(target; sampled_environment=environment, publish=false)
-        end
+        PlantSimEngine.run_call!(
+            context,
+            :photosynthesis;
+            sampled_environment=environment,
+            publish=false,
+        )
 
         # Stomatal resistance to water vapor
         Rsᵥ = 1.0 / (gsc_to_gsw(mol_to_ms(status.Gₛ, environment.T, environment.P, constants.R, constants.K₀),

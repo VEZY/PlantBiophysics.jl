@@ -195,9 +195,12 @@ function PlantSimEngine.run!(m::FvcbIter, status, environment, constants=PlantMe
     while iter
         # Stomatal conductance (mol[CO₂] m-2 s-1)
         # FvCBIter owns Gₛ; each stomatal evaluation is an unpublished trial.
-        for target in PlantSimEngine.call_targets(context, :stomatal_conductance)
-            PlantSimEngine.run_call!(target; sampled_environment=environment, publish=false)
-        end
+        PlantSimEngine.run_call!(
+            context,
+            :stomatal_conductance;
+            sampled_environment=environment,
+            publish=false,
+        )
 
         # Surface CO₂ concentration (ppm):
         status.Cₛ = min(environment.Cₐ, environment.Cₐ - status.A / status.Gbc)
