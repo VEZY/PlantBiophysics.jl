@@ -24,13 +24,15 @@
     restored_tutorials = (
         "several_simulation.md" => "step!(simulation)",
         "several_objects_simulation.md" => "CompositeModel(",
-        "mtg_simulation.md" => "objects_from_mtg(",
+        "mtg_simulation.md" => "source_node(scene, model_status(scene, node))",
     )
     for (filename, marker) in restored_tutorials
         tutorial = joinpath(simulation_dir, filename)
         @test isfile(tutorial)
         @test occursin(marker, read(tutorial, String))
     end
+    mtg_tutorial = read(joinpath(simulation_dir, "mtg_simulation.md"), String)
+    @test !occursin("plantsimengine_status", mtg_tutorial)
 end
 
 @testset "Documentation logo source and asset" begin

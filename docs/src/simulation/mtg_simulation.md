@@ -29,17 +29,19 @@ mtg_plant = Node(mtg_root, MultiScaleTreeGraph.NodeMTG("+", "Plant", 1, 1))
 mtg_sun = Node(mtg_plant, MultiScaleTreeGraph.NodeMTG("+", "Leaf", 1, 2))
 mtg_shade = Node(mtg_plant, MultiScaleTreeGraph.NodeMTG("+", "Leaf", 2, 2))
 
-mtg_sun[:plantsimengine_status] = Status(
-    Ra_SW_f=20.0,
-    sky_fraction=1.0,
-    aPPFD=1500.0,
-    d=0.03,
-)
-mtg_shade[:plantsimengine_status] = Status(
-    Ra_SW_f=8.0,
-    sky_fraction=0.5,
-    aPPFD=600.0,
-    d=0.02,
+initial_statuses = IdDict(
+    mtg_sun => Status(
+        Ra_SW_f=20.0,
+        sky_fraction=1.0,
+        aPPFD=1500.0,
+        d=0.03,
+    ),
+    mtg_shade => Status(
+        Ra_SW_f=8.0,
+        sky_fraction=0.5,
+        aPPFD=600.0,
+        d=0.02,
+    ),
 )
 
 readable_id = node -> Symbol(lowercase(string(symbol(node))), "_", node_id(node))
@@ -49,9 +51,16 @@ scene = CompositeModel(
     mtg_root;
     id=readable_id,
     kind=node_kind,
+    status=node -> get(initial_statuses, node, nothing),
     applications=applications,
     environment=weather,
 )
+
+[(
+    object_id=object_id(scene, node),
+    source_node_id=node_id(source_node(scene, node)),
+    aPPFD=model_status(scene, node).aPPFD,
+) for node in (mtg_sun, mtg_shade)]
 
 simulation = run!(
     scene;
@@ -71,20 +80,20 @@ DataFrame(collect_outputs(
 ))
 ```
 
-If an MTG node has a `:plantsimengine_status` attribute, the adapter uses it as
-the node's initial state. Compilation may extend an incomplete status with
-declared output fields while preserving references to existing fields. The
-live compiled state is therefore inspected through `model_objects(scene)`.
+Runtime `Status` belongs to the `CompositeModel` registry, never to MTG
+attributes. Here `status=` is an explicit import accessor used while the model
+registers each MTG node. Compilation may extend an incomplete status with
+declared output fields while preserving references to existing fields.
 
-Use the same accessors when inspecting the adapter separately:
+The registry resolves an exact source node, an object identity, or its registered
+status without copying state back into the topology:
 
 ```@example mtg_simulation
-adapted_objects = objects_from_mtg(
-    mtg_root;
-    id=readable_id,
-    kind=node_kind,
-)
-[(object.id, object.scale, object.kind) for object in adapted_objects]
+[(
+    object_id=object_id(scene, node),
+    source_is_exact=source_node(scene, model_status(scene, node)) === node,
+    leaf_temperature=model_status(scene, node).Tₗ,
+) for node in (mtg_sun, mtg_shade)]
 ```
 
 For growing MTGs, `add_organ!` creates the node and registers its model object
