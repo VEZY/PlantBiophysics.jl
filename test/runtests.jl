@@ -42,6 +42,10 @@ end
         include("test-model-dependency.jl")
     end
 
+    @testset "Environment contracts" begin
+        include("test-environment-contracts.jl")
+    end
+
     @testset "Temperature dependence" begin
         include("test-temp-dependence.jl")
     end

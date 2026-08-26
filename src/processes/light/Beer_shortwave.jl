@@ -41,6 +41,7 @@ end
 
 BeerShortwave(k) = BeerShortwave(k, 0.48)
 PlantSimEngine.inputs_(::BeerShortwave) = (LAI=PlantSimEngine.Required(Real),)
+PlantSimEngine.environment_inputs_(::BeerShortwave) = (Ri_PAR_f=0.0, Ri_NIR_f=0.0)
 PlantSimEngine.outputs_(::BeerShortwave) = (Ra_SW_f=-Inf, Ra_PAR_f=-Inf, Ra_NIR_f=-Inf, aPPFD=-Inf)
 PlantSimEngine.output_policy(::Type{<:BeerShortwave}) = (
     Ra_SW_f=PlantSimEngine.Integrate(PlantMeteo.RadiationEnergy()), # from W m-2 to J m-2 timerstep-1

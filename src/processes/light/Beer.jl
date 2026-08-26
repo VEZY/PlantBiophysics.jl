@@ -46,6 +46,8 @@ function PlantSimEngine.inputs_(::Beer)
     (LAI=PlantSimEngine.Required(Real),)
 end
 
+PlantSimEngine.environment_inputs_(::Beer) = (Ri_PAR_f=0.0,)
+
 function PlantSimEngine.outputs_(::Beer)
     (aPPFD=-Inf,)
 end

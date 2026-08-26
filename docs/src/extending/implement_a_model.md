@@ -29,6 +29,17 @@ input, and `Default(value)` only for a genuine model fallback. These
 declarations are the coupling contract. The model should not know which object,
 plant, species, or timestep supplies `driver`.
 
+If the implementation reads sampled forcing directly, declare that separately:
+
+```julia
+PlantSimEngine.environment_inputs_(::ExampleFlux) = (T=0.0,)
+```
+
+Here `0.0` represents the environment field's schema; it is not a runtime
+default. A missing `T` is reported by `validate_environment_inputs` or during
+scene compilation, before the numerical method runs. Do not declare a forcing
+field that the implementation never reads.
+
 ## Implement One Timestep
 
 ```julia
@@ -45,7 +56,10 @@ end
 ```
 
 Fixed parameters belong in the model. Timestep-varying values belong in
-`status`. Sampled environment values belong in `environment`.
+`status` when they describe object state or come from another application.
+Sampled meteorological forcing belongs in `environment`, shared physical
+constants in `constants`, and each direct environment read must appear in
+`environment_inputs_`.
 
 ## Manual Dependencies
 
@@ -80,8 +94,8 @@ its source.
 
 Test:
 
-1. `inputs`, `outputs`, and `process`;
+1. `inputs`, `environment_inputs`, `outputs`, and `process`;
 2. direct equations on a minimal `Status`;
-3. one-object scene execution;
+3. missing-forcing diagnostics before one-object scene execution;
 4. manual call compilation when applicable;
 5. generic numeric values when the model claims to support them.

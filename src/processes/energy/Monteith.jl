@@ -38,6 +38,19 @@ function PlantSimEngine.inputs_(::Monteith)
     )
 end
 
+PlantSimEngine.environment_inputs_(::Monteith) = (
+    T=0.0,
+    Cₐ=0.0,
+    Rh=0.0,
+    P=0.0,
+    ε=0.0,
+    Wind=0.0,
+    γ=0.0,
+    VPD=0.0,
+    Δ=0.0,
+    ρ=0.0,
+)
+
 function PlantSimEngine.outputs_(::Monteith)
     (
         Tₗ=-Inf, Rn=-Inf, Ra_LW_f=-Inf, H=-Inf, λE=-Inf, Cₛ=-Inf, Cᵢ=-Inf,

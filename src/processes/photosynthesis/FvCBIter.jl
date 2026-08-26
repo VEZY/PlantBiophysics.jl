@@ -58,6 +58,8 @@ function PlantSimEngine.inputs_(::FvcbIter)
     )
 end
 
+PlantSimEngine.environment_inputs_(::FvcbIter) = (Cₐ=0.0,)
+
 function PlantSimEngine.outputs_(::FvcbIter)
     (A=-Inf, Gₛ=-Inf, Cᵢ=-Inf, Cₛ=-Inf)
 end

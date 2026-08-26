@@ -15,6 +15,25 @@ Each model declares:
 The same kernel can therefore run on one leaf or on millions of leaves without
 knowing its plant, species, timestep, or coupling context.
 
+## Variable Ownership
+
+Keep each value in the contract that owns its lifecycle:
+
+- `inputs_` declares object state read through `status`, including values bound
+  from another application;
+- `environment_inputs_` declares forcing read directly through `environment`;
+- model fields hold fixed parameters, while the `constants` argument holds
+  shared physical constants;
+- `dep` declares hard calls that a model invokes itself;
+- distributed outputs remain outputs of their producer application and are
+  connected with `ModelSpec(...; inputs=...)` or `outputs_to=...`. They do not
+  become meteorological inputs merely because they vary over time.
+
+The values in `environment_inputs_` are schema representatives, not fallback
+forcing. PlantSimEngine validates their names against the bound environment
+before numerical execution. For example, `Beer` declares `Ri_PAR_f`, while
+`Monteith` declares the meteorological fields used by its energy-balance loop.
+
 ## Soft Value Dependencies
 
 When one application produces a variable consumed by another application on
