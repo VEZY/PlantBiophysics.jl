@@ -58,15 +58,24 @@ end
     generate_logo(; output=DEFAULT_OUTPUT)
 
 Regenerate the PlantBiophysics logo from the bundled coffee-plant geometry,
-model configuration, and the first meteorological timestep used by the
-original logo.
+explicit physiology configuration, and the first meteorological timestep used
+by the original logo.
 """
 function generate_logo(; output=DEFAULT_OUTPUT)
     mtg = read_opf(
         joinpath(ROOT, "test", "inputs", "scene", "opf", "coffee.opf"),
     )
-    models = read_model(
-        joinpath(ROOT, "test", "inputs", "models", "plant_coffee.yml"),
+    leaf_models = (
+        Monteith(aₛₕ=2, aₛᵥ=1, ε=0.955, maxiter=10, ΔT=0.01),
+        Fvcb(
+            Tᵣ=25.0,
+            JMaxRef=250.0,
+            VcMaxRef=200.0,
+            RdRef=0.6,
+            θ=0.853,
+            α=0.24,
+        ),
+        Medlyn(-0.03, 12.0),
     )
 
     # These conditions are the first row of the meteorological fixture used by
@@ -80,13 +89,9 @@ function generate_logo(; output=DEFAULT_OUTPUT)
         duration=Minute(30),
     )
 
-    # Translucent only copied these values from the MTG in the legacy runner.
-    # Initializing them directly lets the current CompositeModel API simulate
-    # exactly the first timestep that was used to color the original logo.
-    leaf_models = filter(
-        model -> process(model) != :light_interception,
-        models[:Leaf],
-    )
+    # The original logo sourced absorbed-light values from the MTG. Initializing
+    # them explicitly lets the current CompositeModel API simulate exactly the
+    # first timestep that was used to color it.
     applications = Tuple(
         ModelSpec(model; name=process(model), on=Many(scale=:Leaf))
         for model in leaf_models

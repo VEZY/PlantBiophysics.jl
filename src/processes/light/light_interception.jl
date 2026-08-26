@@ -1,11 +1,13 @@
 @process "light_interception" """
 Light interception process. Available as `object.light_interception`.
 
-At the moment, two models are implemented in the package:
+Two Beer-Lambert models are implemented in the package:
 
-- `Beer`: the Beer-Lambert law of ligth extinction
-- `LightIgnore`: ignore the computation of light interception (this one is for backward
-compatibility with ARCHIMED-ϕ)
+- `Beer`: the Beer-Lambert law of light extinction
+- `BeerShortwave`: Beer-Lambert interception for PAR and NIR
+
+Geometrically explicit light interception belongs to a light package such as
+ArchimedLight. Its outputs are coupled to PlantBiophysics through PlantSimEngine.
 
 # Examples
 

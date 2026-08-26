@@ -29,6 +29,13 @@ leaf = only(model_objects(scene; scale=:Leaf))
 (aPPFD=leaf.status.aPPFD, Ra_SW_f=leaf.status.Ra_SW_f)
 ```
 
+!!! compat "Historical ARCHIMED model files"
+    PlantBiophysics does not parse ARCHIMED light-model YAML or provide a
+    per-organ `Translucent` copier. Use `ArchimedLight.read_models` for those
+    optical definitions and distribute the computed light outputs as shown
+    below. To ignore light interception, omit the light application; a no-op
+    model is unnecessary.
+
 ## Couple one 3D light simulation to many leaves
 
 For geometrically explicit plants, use one scene-scale ArchimedLight writer and

@@ -189,7 +189,7 @@ function PlantSimEngine.run!(m::FvcbIter, status, environment, constants=PlantMe
 
     # First iteration to initialize the values for A and Gₛ:
     # Net assimilation (μmol m-2 s-1)
-    status.A = Fvcb_net_assimiliation(status.Cᵢ, Vⱼ, Γˢ, VcMax, Km, Rd, m.TPURef)
+    status.A = Fvcb_net_assimilation(status.Cᵢ, Vⱼ, Γˢ, VcMax, Km, Rd, m.TPURef)
 
     iter = true
     iter_inc = 1
@@ -214,7 +214,7 @@ function PlantSimEngine.run!(m::FvcbIter, status, environment, constants=PlantMe
             A_new = -Rd
         else
             # Net assimilation (μmol m-2 s-1):
-            A_new = Fvcb_net_assimiliation(status.Cᵢ, Vⱼ, Γˢ, VcMax, Km, Rd, m.TPURef)
+            A_new = Fvcb_net_assimilation(status.Cᵢ, Vⱼ, Γˢ, VcMax, Km, Rd, m.TPURef)
         end
 
         if abs(A_new - status.A) / status.A <= m.ΔT_A ||
@@ -230,12 +230,12 @@ function PlantSimEngine.run!(m::FvcbIter, status, environment, constants=PlantMe
 end
 
 """
-    Fvcb_net_assimiliation(Cᵢ,Vⱼ,Γˢ,VcMax,Km,Rd)
+    Fvcb_net_assimilation(Cᵢ, Vⱼ, Γˢ, VcMax, Km, Rd, TPU)
 
 Net assimilation following the Farquhar–von Caemmerer–Berry (FvCB) model for C3 photosynthesis
 (Farquhar et al., 1980; von Caemmerer and Farquhar, 1981)
 """
-function Fvcb_net_assimiliation(Cᵢ, Vⱼ, Γˢ, VcMax, Km, Rd, TPU)
+function Fvcb_net_assimilation(Cᵢ, Vⱼ, Γˢ, VcMax, Km, Rd, TPU)
     # Electron-transport-limited rate of CO₂ assimilation (RuBP regeneration-limited):
     Wⱼ = Vⱼ * (Cᵢ - Γˢ) / (Cᵢ + 2.0 * Γˢ)
     # See Von Caemmerer, Susanna. 2000. Biochemical models of leaf photosynthesis.
@@ -251,4 +251,20 @@ function Fvcb_net_assimiliation(Cᵢ, Vⱼ, Γˢ, VcMax, Km, Rd, TPU)
     # Net assimilation (μmol m-2 s-1):
     A = min(Wᵥ, Wⱼ, Wₚ) - Rd
     return A
+end
+
+"""
+    Fvcb_net_assimiliation(Cᵢ, Vⱼ, Γˢ, VcMax, Km, Rd, TPU)
+
+Deprecated misspelling of [`Fvcb_net_assimilation`](@ref). This compatibility
+boundary will be removed in PlantBiophysics v0.20.
+"""
+function Fvcb_net_assimiliation(Cᵢ, Vⱼ, Γˢ, VcMax, Km, Rd, TPU)
+    Base.depwarn(
+        "`Fvcb_net_assimiliation` is deprecated; use " *
+        "`Fvcb_net_assimilation`. Compatibility will be removed in " *
+        "PlantBiophysics v0.20.",
+        :Fvcb_net_assimiliation,
+    )
+    return Fvcb_net_assimilation(Cᵢ, Vⱼ, Γˢ, VcMax, Km, Rd, TPU)
 end

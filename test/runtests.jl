@@ -2,7 +2,6 @@ using PlantBiophysics
 using Test, Aqua
 using Documenter # for doctests
 
-using OrderedCollections
 using Dates
 using CSV
 using DataFrames
@@ -36,6 +35,10 @@ end
 
     @testset "Structures" begin
         include("test-structs.jl")
+    end
+
+    @testset "Public API boundaries" begin
+        include("test-api-boundaries.jl")
     end
 
     @testset "Compiled hard dependencies" begin
