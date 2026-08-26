@@ -14,19 +14,28 @@ observations = DataFrame(
     aPPFD=[480.0, 770.0, 940.0],
 )
 
-Evaluation.fit(Beer, observations)
+fitted = Evaluation.fit(Beer, observations)
 ```
+
+`Ri_PAR_f` and `aPPFD` are both expressed per unit ground area in this canopy
+fit. `LAI` is leaf area per unit ground area.
 
 ## Model Validation
 
 Use the fitted parameters to construct a new scene. For observations with
-different drivers, build and run one leaf scene per observation:
+different drivers, build and run one Plant-scale canopy scene per observation:
 
 ```julia
 predictions = map(eachrow(observations)) do row
-    scene = leaf_scene(
-        Beer(fitted.k);
-        status=Status(LAI=row.LAI),
+    scene = CompositeModel(
+        Object(:plant; scale=:Plant, status=Status(LAI=row.LAI));
+        applications=(
+            ModelSpec(
+                Beer(fitted.k);
+                name=:canopy_light,
+                on=One(scale=:Plant),
+            ),
+        ),
         environment=Atmosphere(
             T=25.0,
             Wind=1.0,
@@ -36,7 +45,7 @@ predictions = map(eachrow(observations)) do row
         ),
     )
     run!(scene)
-    only(model_objects(scene; scale=:Leaf)).status.aPPFD
+    model_object(scene, :plant).status.aPPFD
 end
 ```
 
