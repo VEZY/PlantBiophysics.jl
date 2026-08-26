@@ -19,7 +19,7 @@ scene = leaf_scene(
         P=101.3,
         Rh=0.65,
         Ri_PAR_f=300.0,
-        Ri_SW_f=650.0,
+        Ri_NIR_f=350.0,
         duration=Hour(1),
     ),
 )
