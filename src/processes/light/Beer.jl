@@ -3,11 +3,13 @@
 
 Beer-Lambert law for light interception.
 
-Required inputs: `LAI` in m² m⁻².
+Required inputs: `LAI` in m[leaf]² m[ground]⁻².
 Required meteorology data: `Ri_PAR_f`, the incident flux of atmospheric radiation in the
-PAR, in W m[soil]⁻² (== J m[soil]⁻² s⁻¹).
+PAR, in W m[ground]⁻² (== J m[ground]⁻² s⁻¹).
 
-Output: aPPFD, the absorbed Photosynthetic Photon Flux Density in μmol[PAR] m[leaf]⁻² s⁻¹.
+Output: `aPPFD`, the canopy-absorbed Photosynthetic Photon Flux Density in
+μmol[PAR] m[ground]⁻² s⁻¹. Use [`GroundToMeanLeafPPFD`](@ref) before coupling
+this output to a leaf-scale photosynthesis model.
 """
 struct Beer{T} <: AbstractLight_InterceptionModel
     k::T
@@ -30,9 +32,15 @@ Computes the light interception of an object using the Beer-Lambert law.
 ```julia
 using PlantSimEngine, PlantBiophysics, PlantMeteo
 environment = Atmosphere(T=20.0, Wind=1.0, P=101.3, Rh=0.65, Ri_PAR_f=300.0)
-scene = leaf_scene(Beer(0.5); status=Status(LAI=2.0), environment=environment)
+scene = CompositeModel(
+    Object(:plant; scale=:Plant, status=Status(LAI=2.0));
+    applications=(
+        ModelSpec(Beer(0.5); name=:canopy_light, on=One(scale=:Plant)),
+    ),
+    environment=environment,
+)
 run!(scene)
-only(model_objects(scene; scale=:Leaf)).status.aPPFD
+model_object(scene, :plant).status.aPPFD
 ```
 """
 function PlantSimEngine.run!(model::Beer, status, environment, constants, context=nothing)
@@ -52,6 +60,7 @@ function PlantSimEngine.outputs_(::Beer)
     (aPPFD=-Inf,)
 end
 
-PlantSimEngine.output_policy(::Type{<:Beer}) = (
-    aPPFD=PlantSimEngine.Integrate(PlantMeteo.RadiationEnergy()),
+PlantSimEngine.variable_contracts_(::Beer) = (
+    LAI=LEAF_AREA_INDEX_CONTRACT,
+    aPPFD=GROUND_PAR_PHOTON_FLUX_CONTRACT,
 )

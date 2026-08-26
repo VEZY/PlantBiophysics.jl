@@ -25,6 +25,7 @@ import Statistics
 
 # Generic process methods
 include("processes/light/light_interception.jl")
+include("processes/light/radiation_basis.jl")
 include("processes/photosynthesis/photosynthesis.jl")
 include("processes/conductances/stomatal/stomatal_conductance.jl")
 include("processes/energy/energy_balance.jl")
@@ -87,7 +88,10 @@ export gsc_to_gsw
 
 # Light interception
 export AbstractLight_InterceptionModel
+export AbstractRadiation_Basis_ConversionModel
 export Beer, BeerShortwave  # structs to hold the values for the Beer-Lambert law of light extinction
+export GroundToMeanLeafPPFD, GroundToMeanLeafShortwave
+export RadiativeMeshToLeafPPFD, RadiativeMeshToLeafShortwave
 
 # Energy balance
 export AbstractEnergy_BalanceModel

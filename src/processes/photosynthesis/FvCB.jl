@@ -121,6 +121,10 @@ function PlantSimEngine.inputs_(::Fvcb)
     )
 end
 
+PlantSimEngine.variable_contracts_(::Fvcb) = (
+    aPPFD=LEAF_PAR_PHOTON_FLUX_CONTRACT,
+)
+
 function PlantSimEngine.outputs_(::Fvcb)
     (A=-Inf, Gₛ=-Inf, Cᵢ=-Inf)
 end
@@ -198,7 +202,8 @@ Modify the first argument in place for A, Gₛ and Cᵢ:
 - the declared stomatal-conductance hard-call target owns its model parameters;
   the shared status provides initial values for:
     - `Tₗ` (°C): leaf temperature
-    - `aPPFD` (μmol m-2 s-1): absorbed Photosynthetic Photon Flux Density
+    - `aPPFD` (μmol[photon] m[leaf]⁻² s⁻¹): absorbed Photosynthetic
+      Photon Flux Density on the botanical leaf-area basis
     - `Cₛ` (ppm): Air CO₂ concentration at the leaf surface
     - `Dₗ` (kPa): vapour pressure difference between the surface and the saturated
     air vapour pressure in case you're using the stomatal conductance model of [`Medlyn`](@ref).
@@ -343,7 +348,8 @@ A tuple with (A, Gₛ, Cᵢ):
 - Cᵢ: intercellular CO₂ concentration (ppm)
 # Arguments
 
-- `aPPFD`: absorbed photon irradiance (``μmol_{quanta}\\ m^{-2}\\ s^{-1}``)
+- `aPPFD`: absorbed photon irradiance
+  (``μmol_{quanta}\\ m_{leaf}^{-2}\\ s^{-1}``)
 - `α`: quantum yield of electron transport (``mol_e\\ mol^{-1}_{quanta}``)
 - `JMax`: maximum rate of electron transport (``μmol\\ m^{-2}\\ s^{-1}``)
 - `θ`: determines the shape of the non-rectangular hyperbola (-)

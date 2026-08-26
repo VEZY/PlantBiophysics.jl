@@ -38,6 +38,10 @@ function PlantSimEngine.inputs_(::Monteith)
     )
 end
 
+PlantSimEngine.variable_contracts_(::Monteith) = (
+    Ra_SW_f=LEAF_IRRADIANCE_CONTRACT,
+)
+
 PlantSimEngine.environment_inputs_(::Monteith) = (
     T=0.0,
     Cₐ=0.0,
@@ -99,7 +103,9 @@ the energy balance using the mass flux (~ Rn - λE).
 - `model::Monteith`: the selected energy-balance model.
 - the declared photosynthesis hard-call target owns its coupled model parameters.
 - `status`: the state shared by the coupled leaf applications, including:
-    - `Ra_SW_f` (W m-2): net shortwave radiation (PAR + NIR). Often computed from a light interception model
+    - `Ra_SW_f` (W m[leaf]⁻²): net shortwave radiation (PAR + NIR) on
+      the botanical leaf-area basis. Convert canopy or radiative-mesh outputs
+      explicitly before coupling them here.
     - `sky_fraction` (0-2): view factor between the object and the sky for both faces (see details).
     - `d` (m): characteristic dimension, *e.g.* leaf width (see eq. 10.9 from Monteith and Unsworth, 2013).
 - `environment`: meteorology structure, see [`Atmosphere`](https://palmstudio.github.io/PlantMeteo.jl/stable/#PlantMeteo.Atmosphere)

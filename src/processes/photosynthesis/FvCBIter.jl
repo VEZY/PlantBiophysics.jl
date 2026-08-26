@@ -58,6 +58,10 @@ function PlantSimEngine.inputs_(::FvcbIter)
     )
 end
 
+PlantSimEngine.variable_contracts_(::FvcbIter) = (
+    aPPFD=LEAF_PAR_PHOTON_FLUX_CONTRACT,
+)
+
 PlantSimEngine.environment_inputs_(::FvcbIter) = (Cₐ=0.0,)
 
 function PlantSimEngine.outputs_(::FvcbIter)
@@ -108,7 +112,8 @@ Modify the first argument in place for A, Gₛ and Cᵢ:
 - the declared stomatal-conductance hard-call target owns its model parameters;
   the shared status provides initial values for:
     - `Tₗ` (°C): leaf temperature
-    - `aPPFD` (μmol m-2 s-1): absorbed Photosynthetic Photon Flux Density
+    - `aPPFD` (μmol[photon] m[leaf]⁻² s⁻¹): absorbed Photosynthetic
+      Photon Flux Density on the botanical leaf-area basis
     - `Gbc` (mol m-2 s-1): boundary conductance for CO₂
     - `Dₗ` (kPa): is the difference between the vapour pressure at the leaf surface and the
     saturated air vapour pressure in case you're using the stomatal conductance model of [`Medlyn`](@ref).

@@ -11,6 +11,7 @@ using Statistics
 
 const LEAF_IDS = (:leaf_beta, :leaf_alpha)
 const SKY_FRACTIONS = Dict(:leaf_alpha => 1.0, :leaf_beta => 0.65)
+const BOTANICAL_LEAF_AREAS = Dict(:leaf_alpha => 0.72, :leaf_beta => 0.64)
 const COUPLING_OUTPUTS = (
     :Ri_PAR_f,
     :Ri_NIR_f,
@@ -191,17 +192,90 @@ function light_application(kernel)
     )
 end
 
+function radiation_adapter_applications(source_application::Symbol)
+    radiative_source(variable) = PlantSimEngine.One(
+        within=PlantSimEngine.Self(),
+        application=source_application,
+        var=variable,
+        policy=PlantSimEngine.HoldLast(),
+    )
+    return (
+        PlantSimEngine.ModelSpec(
+            PlantBiophysics.RadiativeMeshToLeafPPFD();
+            name=:radiative_to_leaf_ppfd,
+            on=PlantSimEngine.Many(scale=:Leaf),
+            inputs=(
+                :aPPFD_radiative => radiative_source(:aPPFD),
+                :radiative_mesh_area =>
+                    radiative_source(:radiative_mesh_area),
+            ),
+            every=Dates.Minute(1),
+        ),
+        PlantSimEngine.ModelSpec(
+            PlantBiophysics.RadiativeMeshToLeafShortwave();
+            name=:radiative_to_leaf_shortwave,
+            on=PlantSimEngine.Many(scale=:Leaf),
+            inputs=(
+                :Ra_SW_f_radiative => radiative_source(:Ra_SW_f),
+                :radiative_mesh_area =>
+                    radiative_source(:radiative_mesh_area),
+            ),
+            every=Dates.Minute(1),
+        ),
+    )
+end
+
+function manual_radiation_adapter_applications()
+    status_input(variable) = PlantSimEngine.One(
+        within=PlantSimEngine.Self(),
+        from_status=true,
+        var=variable,
+    )
+    return (
+        PlantSimEngine.ModelSpec(
+            PlantBiophysics.RadiativeMeshToLeafPPFD();
+            name=:radiative_to_leaf_ppfd,
+            on=PlantSimEngine.Many(scale=:Leaf),
+            inputs=(
+                :aPPFD_radiative =>
+                    status_input(:manual_aPPFD_radiative),
+                :radiative_mesh_area =>
+                    status_input(:manual_radiative_mesh_area),
+            ),
+            every=Dates.Minute(1),
+        ),
+        PlantSimEngine.ModelSpec(
+            PlantBiophysics.RadiativeMeshToLeafShortwave();
+            name=:radiative_to_leaf_shortwave,
+            on=PlantSimEngine.Many(scale=:Leaf),
+            inputs=(
+                :Ra_SW_f_radiative =>
+                    status_input(:manual_Ra_SW_f_radiative),
+                :radiative_mesh_area =>
+                    status_input(:manual_radiative_mesh_area),
+            ),
+            every=Dates.Minute(1),
+        ),
+    )
+end
+
 function leaf_objects(; manual_light::Bool=false)
     function leaf_status(id)
         base = (
             sky_fraction=SKY_FRACTIONS[id],
+            botanical_leaf_area=BOTANICAL_LEAF_AREAS[id],
             d=id === :leaf_alpha ? 0.03 : 0.04,
             Tₗ=id === :leaf_alpha ? 24.0 : 25.0,
             Cₛ=id === :leaf_alpha ? 398.0 : 392.0,
             Dₗ=id === :leaf_alpha ? 1.0 : 1.2,
         )
+        manual_inputs = (
+            manual_aPPFD_radiative=0.0,
+            manual_Ra_SW_f_radiative=0.0,
+            manual_radiative_mesh_area=1.0,
+        )
         return PlantSimEngine.Status(
-            manual_light ? merge(base, (aPPFD=0.0, Ra_SW_f=0.0)) : base,
+            manual_light ? merge(base, manual_inputs) : base,
         )
     end
 
@@ -230,6 +304,14 @@ function physiology_applications(mode::Symbol)
         PlantBiophysics.Fvcb(α=0.24);
         name=:photosynthesis,
         on=PlantSimEngine.Many(scale=:Leaf),
+        inputs=(
+            :aPPFD => PlantSimEngine.One(
+                within=PlantSimEngine.Self(),
+                application=:radiative_to_leaf_ppfd,
+                var=:aPPFD_leaf_mean,
+                policy=PlantSimEngine.HoldLast(),
+            ),
+        ),
         every=Dates.Minute(1),
     )
     stomatal_conductance = PlantSimEngine.ModelSpec(
@@ -243,6 +325,14 @@ function physiology_applications(mode::Symbol)
         PlantBiophysics.Monteith();
         name=:energy_balance,
         on=PlantSimEngine.Many(scale=:Leaf),
+        inputs=(
+            :Ra_SW_f => PlantSimEngine.One(
+                within=PlantSimEngine.Self(),
+                application=:radiative_to_leaf_shortwave,
+                var=:Ra_SW_f_leaf_mean,
+                policy=PlantSimEngine.HoldLast(),
+            ),
+        ),
         every=Dates.Minute(1),
     )
     return (energy_balance, photosynthesis, stomatal_conductance)
@@ -254,6 +344,9 @@ function build_scenario(mode::Symbol; distributed_light::Bool=true)
     initial_values = source_values(light)
     owner_to_leaf = destinations(initial_values)
     physiology = physiology_applications(mode)
+    adapters = distributed_light ?
+               radiation_adapter_applications(:archimed_light) :
+               manual_radiation_adapter_applications()
     applications = if distributed_light
         kernel = ArchimedLight.ArchimedLightModel(
             light;
@@ -261,9 +354,9 @@ function build_scenario(mode::Symbol; distributed_light::Bool=true)
         )
         # Put the scene writer last in declaration order. The compiled dependency, not
         # declaration order, must schedule it before ordinary leaf consumers.
-        (physiology..., light_application(kernel))
+        (physiology..., adapters..., light_application(kernel))
     else
-        physiology
+        (physiology..., adapters...)
     end
     runtime = PlantSimEngine.CompositeModel(
         leaf_objects(; manual_light=!distributed_light)...;
@@ -278,12 +371,80 @@ function build_scenario(mode::Symbol; distributed_light::Bool=true)
     )
 end
 
+function build_unconverted_scenario(mode::Symbol)
+    mode in (:fvcb, :monteith) || throw(ArgumentError("Unknown mode $mode."))
+    scene, models, options = radiative_fixture()
+    light = ArchimedLight.LightSimulation(scene, models; options=options)
+    values = source_values(light)
+    owner_to_leaf = destinations(values)
+    kernel = ArchimedLight.ArchimedLightModel(
+        light;
+        object_resolver=owner -> owner_to_leaf[owner],
+    )
+    applications = if mode === :fvcb
+        (
+            PlantSimEngine.ModelSpec(
+                PlantBiophysics.Fvcb();
+                name=:photosynthesis,
+                on=PlantSimEngine.Many(scale=:Leaf),
+                inputs=(
+                    :aPPFD => PlantSimEngine.One(
+                        within=PlantSimEngine.Self(),
+                        application=:archimed_light,
+                        var=:aPPFD,
+                        policy=PlantSimEngine.HoldLast(),
+                    ),
+                ),
+            ),
+            PlantSimEngine.ModelSpec(
+                PlantBiophysics.Medlyn(0.03, 12.0);
+                name=:stomatal_conductance,
+                on=PlantSimEngine.Many(scale=:Leaf),
+            ),
+            light_application(kernel),
+        )
+    else
+        (
+            PlantSimEngine.ModelSpec(
+                PlantBiophysics.Monteith();
+                name=:energy_balance,
+                on=PlantSimEngine.Many(scale=:Leaf),
+                inputs=(
+                    :Ra_SW_f => PlantSimEngine.One(
+                        within=PlantSimEngine.Self(),
+                        application=:archimed_light,
+                        var=:Ra_SW_f,
+                        policy=PlantSimEngine.HoldLast(),
+                    ),
+                ),
+            ),
+            PlantSimEngine.ModelSpec(
+                PlantBiophysics.ConstantAGs();
+                name=:photosynthesis,
+                on=PlantSimEngine.Many(scale=:Leaf),
+            ),
+            PlantSimEngine.ModelSpec(
+                PlantBiophysics.ConstantGs(0.0, 0.2);
+                name=:stomatal_conductance,
+                on=PlantSimEngine.Many(scale=:Leaf),
+            ),
+            light_application(kernel),
+        )
+    end
+    return PlantSimEngine.CompositeModel(
+        leaf_objects()...;
+        applications=applications,
+        environment=coupled_environment(),
+    )
+end
+
 function assign_manual_light!(runtime, values, owner_to_leaf)
     for row in eachindex(values.source_owner)
         object_id = owner_to_leaf[values.source_owner[row]]
         status = PlantSimEngine.model_object(runtime, object_id).status
-        status.aPPFD = values.aPPFD[row]
-        status.Ra_SW_f = values.Ra_SW_f[row]
+        status.manual_aPPFD_radiative = values.aPPFD[row]
+        status.manual_Ra_SW_f_radiative = values.Ra_SW_f[row]
+        status.manual_radiative_mesh_area = values.radiative_mesh_area[row]
     end
     return nothing
 end
@@ -313,6 +474,9 @@ history(simulation, application, id, variable) =
     PlantSimEngine.outputs(simulation)[
         (application, PlantSimEngine.ObjectId(id), variable)
     ]
+
+last_published(simulation, application, id, variable) =
+    last(history(simulation, application, id, variable))[2]
 
 function steady_path_comparison(; samples::Int=30)
     samples > 0 || throw(ArgumentError("samples must be positive."))
@@ -360,7 +524,16 @@ end
 
 const CouplingSupport = PlantBiophysicsArchimedLightIntegrationSupport
 
-@testset "ArchimedLight automatically feeds ordinary leaf FvCB" begin
+@testset "Raw ArchimedLight fluxes cannot bypass the area boundary" begin
+    for mode in (:fvcb, :monteith)
+        scenario = CouplingSupport.build_unconverted_scenario(mode)
+        @test_throws "Incompatible variable contracts" PlantSimEngine.Advanced.refresh_bindings!(
+            scenario,
+        )
+    end
+end
+
+@testset "ArchimedLight converts radiative-mesh PPFD before leaf FvCB" begin
     scenario = CouplingSupport.build_scenario(:fvcb)
     @test !isapprox(
         scenario.initial_values.aPPFD[1],
@@ -375,7 +548,9 @@ const CouplingSupport = PlantBiophysicsArchimedLightIntegrationSupport
         row.application_id => row.execution_index
         for row in schedule_rows
     )
-    @test schedule[:archimed_light] < schedule[:photosynthesis]
+    @test schedule[:archimed_light] < schedule[:radiative_to_leaf_ppfd]
+    @test schedule[:archimed_light] < schedule[:radiative_to_leaf_shortwave]
+    @test schedule[:radiative_to_leaf_ppfd] < schedule[:photosynthesis]
     @test all(row.timestep == Dates.Minute(1) for row in schedule_rows)
     @test all(row.dt_seconds == 60.0 for row in schedule_rows)
     @test only(
@@ -394,8 +569,18 @@ const CouplingSupport = PlantBiophysicsArchimedLightIntegrationSupport
     ]
     @test length(aPPFD_bindings) == 2
     @test all(
-        row.source_application_ids == [:archimed_light]
+        row.source_application_ids == [:radiative_to_leaf_ppfd]
         for row in aPPFD_bindings
+    )
+    raw_aPPFD_bindings = [
+        row for row in PlantSimEngine.Diagnostics.explain_bindings(compiled)
+        if row.application_id == :radiative_to_leaf_ppfd &&
+           row.input == :aPPFD_radiative
+    ]
+    @test length(raw_aPPFD_bindings) == 2
+    @test all(
+        row.source_application_ids == [:archimed_light]
+        for row in raw_aPPFD_bindings
     )
 
     writers = PlantSimEngine.Diagnostics.explain_writers(compiled)
@@ -428,15 +613,52 @@ const CouplingSupport = PlantBiophysicsArchimedLightIntegrationSupport
     simulation = PlantSimEngine.run!(scenario.runtime; steps=2, outputs=:all)
     for id in CouplingSupport.LEAF_IDS
         state = PlantSimEngine.final_state(simulation, id)
-        @test state.aPPFD ≈ CouplingSupport.expected_for_leaf(
+        raw_aPPFD = CouplingSupport.last_published(
+            simulation,
+            :archimed_light,
+            id,
+            :aPPFD,
+        )
+        raw_Ra_PAR_f = CouplingSupport.last_published(
+            simulation,
+            :archimed_light,
+            id,
+            :Ra_PAR_f,
+        )
+        raw_Ra_NIR_f = CouplingSupport.last_published(
+            simulation,
+            :archimed_light,
+            id,
+            :Ra_NIR_f,
+        )
+        raw_Ra_SW_f = CouplingSupport.last_published(
+            simulation,
+            :archimed_light,
+            id,
+            :Ra_SW_f,
+        )
+        raw_radiative_area = CouplingSupport.last_published(
+            simulation,
+            :archimed_light,
+            id,
+            :radiative_mesh_area,
+        )
+        @test raw_aPPFD ≈ CouplingSupport.expected_for_leaf(
             scenario,
             id,
             :aPPFD,
         )
+        @test state.aPPFD ≈ state.aPPFD_leaf_mean
         @test state.sky_fraction == CouplingSupport.SKY_FRACTIONS[id]
         @test 0.0 <= state.sky_fraction <= 2.0
-        @test state.Ra_SW_f ≈ state.Ra_PAR_f + state.Ra_NIR_f
-        @test state.aPPFD ≈ 4.57 * state.Ra_PAR_f
+        @test raw_Ra_SW_f ≈ raw_Ra_PAR_f + raw_Ra_NIR_f
+        @test raw_aPPFD ≈ 4.57 * raw_Ra_PAR_f
+        @test raw_aPPFD * raw_radiative_area ≈
+              state.aPPFD_leaf_mean * state.botanical_leaf_area
+        @test raw_Ra_SW_f * raw_radiative_area ≈
+              state.Ra_SW_f_leaf_mean * state.botanical_leaf_area
+        @test state.botanical_leaf_area ==
+              CouplingSupport.BOTANICAL_LEAF_AREAS[id]
         @test isfinite(state.A) && state.A > 0.0
         @test isfinite(state.Gₛ) && state.Gₛ > 0.0
         @test 0.0 < state.Cᵢ <= state.Cₛ
@@ -453,14 +675,23 @@ const CouplingSupport = PlantBiophysicsArchimedLightIntegrationSupport
             id,
             :A,
         )
+        converted_history = CouplingSupport.history(
+            simulation,
+            :radiative_to_leaf_ppfd,
+            id,
+            :aPPFD_leaf_mean,
+        )
         @test length(light_history) == 2
+        @test length(converted_history) == 2
         @test length(assimilation_history) == 2
-        @test last(light_history)[2] ≈ state.aPPFD
+        @test last(light_history)[2] ≈ raw_aPPFD
+        @test last(converted_history)[2] ≈ state.aPPFD_leaf_mean
+        @test last(converted_history)[2] ≈ state.aPPFD
         @test last(assimilation_history)[2] ≈ state.A
     end
 end
 
-@testset "ArchimedLight feeds the Monteith to FvCB to Medlyn hard-call chain" begin
+@testset "ArchimedLight converts both radiative bases before the leaf chain" begin
     scenario = CouplingSupport.build_scenario(:chain)
     compiled = PlantSimEngine.Advanced.refresh_bindings!(scenario.runtime)
 
@@ -469,7 +700,10 @@ end
         row.application_id => row.execution_index
         for row in schedule_rows
     )
-    @test schedule[:archimed_light] < schedule[:energy_balance]
+    @test schedule[:archimed_light] < schedule[:radiative_to_leaf_ppfd]
+    @test schedule[:archimed_light] < schedule[:radiative_to_leaf_shortwave]
+    @test schedule[:radiative_to_leaf_shortwave] < schedule[:energy_balance]
+    @test schedule[:radiative_to_leaf_ppfd] < schedule[:energy_balance]
     @test all(row.timestep == Dates.Minute(1) for row in schedule_rows)
     @test all(row.dt_seconds == 60.0 for row in schedule_rows)
     @test only(
@@ -491,8 +725,18 @@ end
     ]
     @test length(shortwave_bindings) == 2
     @test all(
-        row.source_application_ids == [:archimed_light]
+        row.source_application_ids == [:radiative_to_leaf_shortwave]
         for row in shortwave_bindings
+    )
+    raw_shortwave_bindings = [
+        row for row in PlantSimEngine.Diagnostics.explain_bindings(compiled)
+        if row.application_id == :radiative_to_leaf_shortwave &&
+           row.input == :Ra_SW_f_radiative
+    ]
+    @test length(raw_shortwave_bindings) == 2
+    @test all(
+        row.source_application_ids == [:archimed_light]
+        for row in raw_shortwave_bindings
     )
 
     calls = PlantSimEngine.Diagnostics.explain_calls(compiled)
@@ -529,24 +773,60 @@ end
 
     for id in CouplingSupport.LEAF_IDS
         state = PlantSimEngine.final_state(simulation, id)
-        @test state.aPPFD ≈ CouplingSupport.expected_for_leaf(
+        raw_aPPFD = CouplingSupport.last_published(
+            simulation,
+            :archimed_light,
+            id,
+            :aPPFD,
+        )
+        raw_Ra_PAR_f = CouplingSupport.last_published(
+            simulation,
+            :archimed_light,
+            id,
+            :Ra_PAR_f,
+        )
+        raw_Ra_NIR_f = CouplingSupport.last_published(
+            simulation,
+            :archimed_light,
+            id,
+            :Ra_NIR_f,
+        )
+        raw_Ra_SW_f = CouplingSupport.last_published(
+            simulation,
+            :archimed_light,
+            id,
+            :Ra_SW_f,
+        )
+        raw_radiative_area = CouplingSupport.last_published(
+            simulation,
+            :archimed_light,
+            id,
+            :radiative_mesh_area,
+        )
+        @test raw_aPPFD ≈ CouplingSupport.expected_for_leaf(
             scenario,
             id,
             :aPPFD,
         )
-        @test state.Ra_SW_f ≈ CouplingSupport.expected_for_leaf(
+        @test raw_Ra_SW_f ≈ CouplingSupport.expected_for_leaf(
             scenario,
             id,
             :Ra_SW_f,
         )
+        @test state.aPPFD ≈ state.aPPFD_leaf_mean
+        @test state.Ra_SW_f ≈ state.Ra_SW_f_leaf_mean
         @test state.sky_fraction == CouplingSupport.SKY_FRACTIONS[id]
         @test 0.0 <= state.sky_fraction <= 2.0
-        @test state.Ra_SW_f ≈ state.Ra_PAR_f + state.Ra_NIR_f
-        @test state.aPPFD ≈ 4.57 * state.Ra_PAR_f
+        @test raw_Ra_SW_f ≈ raw_Ra_PAR_f + raw_Ra_NIR_f
+        @test raw_aPPFD ≈ 4.57 * raw_Ra_PAR_f
+        @test raw_aPPFD * raw_radiative_area ≈
+              state.aPPFD_leaf_mean * state.botanical_leaf_area
+        @test raw_Ra_SW_f * raw_radiative_area ≈
+              state.Ra_SW_f_leaf_mean * state.botanical_leaf_area
         @test all(isfinite, (state.Tₗ, state.Rn, state.H, state.λE, state.A, state.Gₛ))
         @test state.A > 0.0
         @test state.Gₛ > 0.0
-        @test state.Rn ≈ state.Ra_SW_f + state.Ra_LW_f
+        @test state.Rn ≈ state.Ra_SW_f_leaf_mean + state.Ra_LW_f
         @test state.Rn ≈ state.H + state.λE atol = 1.0
 
         @test length(CouplingSupport.history(
@@ -579,6 +859,9 @@ end
         for variable in (
             :aPPFD,
             :Ra_SW_f,
+            :radiative_mesh_area,
+            :aPPFD_leaf_mean,
+            :Ra_SW_f_leaf_mean,
             :Tₗ,
             :Rn,
             :H,
@@ -590,6 +873,30 @@ end
             @test getproperty(distributed_state, variable) ≈
                   getproperty(manual_state, variable)
         end
+        for state in (distributed_state, manual_state)
+            @test state.aPPFD ≈ state.aPPFD_leaf_mean
+            @test state.Ra_SW_f ≈ state.Ra_SW_f_leaf_mean
+        end
+        distributed_raw_aPPFD = CouplingSupport.expected_for_leaf(
+            distributed,
+            id,
+            :aPPFD,
+        )
+        distributed_raw_Ra_SW_f = CouplingSupport.expected_for_leaf(
+            distributed,
+            id,
+            :Ra_SW_f,
+        )
+        @test distributed_raw_aPPFD * distributed_state.radiative_mesh_area ≈
+              distributed_state.aPPFD_leaf_mean *
+              distributed_state.botanical_leaf_area
+        @test distributed_raw_Ra_SW_f * distributed_state.radiative_mesh_area ≈
+              distributed_state.Ra_SW_f_leaf_mean *
+              distributed_state.botanical_leaf_area
+        @test manual_state.manual_aPPFD_radiative * manual_state.radiative_mesh_area ≈
+              manual_state.aPPFD_leaf_mean * manual_state.botanical_leaf_area
+        @test manual_state.manual_Ra_SW_f_radiative * manual_state.radiative_mesh_area ≈
+              manual_state.Ra_SW_f_leaf_mean * manual_state.botanical_leaf_area
     end
 end
 
@@ -639,10 +946,21 @@ end
     )
     low_template = PlantSimEngine.CompositeModelTemplate(
         (
+            CouplingSupport.radiation_adapter_applications(
+                :archimed_light,
+            )...,
             PlantSimEngine.ModelSpec(
                 low_fvcb;
                 name=:photosynthesis,
                 on=PlantSimEngine.Many(scale=:Leaf),
+                inputs=(
+                    :aPPFD => PlantSimEngine.One(
+                        within=PlantSimEngine.Self(),
+                        application=:radiative_to_leaf_ppfd,
+                        var=:aPPFD_leaf_mean,
+                        policy=PlantSimEngine.HoldLast(),
+                    ),
+                ),
                 every=Dates.Minute(1),
             ),
             PlantSimEngine.ModelSpec(
@@ -657,10 +975,21 @@ end
     )
     high_template = PlantSimEngine.CompositeModelTemplate(
         (
+            CouplingSupport.radiation_adapter_applications(
+                :archimed_light,
+            )...,
             PlantSimEngine.ModelSpec(
                 high_fvcb;
                 name=:photosynthesis,
                 on=PlantSimEngine.Many(scale=:Leaf),
+                inputs=(
+                    :aPPFD => PlantSimEngine.One(
+                        within=PlantSimEngine.Self(),
+                        application=:radiative_to_leaf_ppfd,
+                        var=:aPPFD_leaf_mean,
+                        policy=PlantSimEngine.HoldLast(),
+                    ),
+                ),
                 every=Dates.Minute(1),
             ),
             PlantSimEngine.ModelSpec(
@@ -683,6 +1012,7 @@ end
         Dₗ=1.0,
         sky_fraction=1.0,
         d=0.03,
+        botanical_leaf_area=0.70,
     )
     low_instance = PlantSimEngine.ObjectInstance(
         :low_capacity,
@@ -734,7 +1064,17 @@ end
         for row in initial_instances
         if row.name == :low_capacity
     )
+    @test :low_capacity__radiative_to_leaf_ppfd in only(
+        row.application_ids
+        for row in initial_instances
+        if row.name == :low_capacity
+    )
     @test :high_capacity__photosynthesis in only(
+        row.application_ids
+        for row in initial_instances
+        if row.name == :high_capacity
+    )
+    @test :high_capacity__radiative_to_leaf_shortwave in only(
         row.application_ids
         for row in initial_instances
         if row.name == :high_capacity
@@ -744,8 +1084,33 @@ end
     @test provider_calls[] == 0
     low_state = PlantSimEngine.final_state(simulation, :low_leaf)
     high_state = PlantSimEngine.final_state(simulation, :high_leaf)
+    low_raw_aPPFD = CouplingSupport.last_published(
+        simulation,
+        :archimed_light,
+        :low_leaf,
+        :aPPFD,
+    )
+    high_raw_aPPFD = CouplingSupport.last_published(
+        simulation,
+        :archimed_light,
+        :high_leaf,
+        :aPPFD,
+    )
     @test low_state.aPPFD ≈ high_state.aPPFD
     @test low_state.Ra_SW_f ≈ high_state.Ra_SW_f
+    @test low_state.aPPFD_leaf_mean ≈ high_state.aPPFD_leaf_mean
+    @test low_state.Ra_SW_f_leaf_mean ≈ high_state.Ra_SW_f_leaf_mean
+    @test low_raw_aPPFD ≈ high_raw_aPPFD
+    for (state, raw_aPPFD) in (
+        (low_state, low_raw_aPPFD),
+        (high_state, high_raw_aPPFD),
+    )
+        @test state.aPPFD ≈ state.aPPFD_leaf_mean
+        @test raw_aPPFD * state.radiative_mesh_area ≈
+              state.aPPFD_leaf_mean * state.botanical_leaf_area
+        @test state.Ra_SW_f * state.radiative_mesh_area ≈
+              state.Ra_SW_f_leaf_mean * state.botanical_leaf_area
+    end
     @test !isapprox(low_state.A, high_state.A; rtol=1.0e-3, atol=1.0e-6)
     @test low_state.A > 0.0
     @test high_state.A > low_state.A
@@ -776,13 +1141,23 @@ end
     )
     @test Set(high_photosynthesis.target_ids) ==
           Set((:high_leaf, :high_leaf_new))
+    high_ppfd_boundary = only(
+        row for row in PlantSimEngine.Diagnostics.explain_applications(refreshed)
+        if row.application_id == :high_capacity__radiative_to_leaf_ppfd
+    )
+    @test Set(high_ppfd_boundary.target_ids) ==
+          Set((:high_leaf, :high_leaf_new))
 
     high_state = PlantSimEngine.final_state(simulation, :high_leaf)
     new_state = PlantSimEngine.final_state(simulation, :high_leaf_new)
     @test new_state.aPPFD > 0.0
+    @test new_state.aPPFD_leaf_mean > 0.0
     @test new_state.A > 0.0
     @test new_state.Gₛ > 0.0
     @test new_state.aPPFD ≈ high_state.aPPFD
+    @test new_state.aPPFD_leaf_mean ≈ high_state.aPPFD_leaf_mean
+    @test new_state.Ra_SW_f * new_state.radiative_mesh_area ≈
+          new_state.Ra_SW_f_leaf_mean * new_state.botanical_leaf_area
     @test new_state.A ≈ high_state.A
     @test new_state.Gₛ ≈ high_state.Gₛ
 
@@ -798,6 +1173,12 @@ end
         :high_leaf_new,
         :A,
     )
+    new_conversion_history = CouplingSupport.history(
+        simulation,
+        :high_capacity__radiative_to_leaf_ppfd,
+        :high_leaf_new,
+        :aPPFD_leaf_mean,
+    )
     new_conductance_history = CouplingSupport.history(
         simulation,
         :high_capacity__photosynthesis,
@@ -805,9 +1186,14 @@ end
         :Gₛ,
     )
     @test first.(new_light_history) == [3.0]
+    @test first.(new_conversion_history) == [3.0]
     @test first.(new_assimilation_history) == [3.0]
     @test first.(new_conductance_history) == [3.0]
-    @test last(new_light_history)[2] ≈ new_state.aPPFD
+    @test new_state.aPPFD ≈ new_state.aPPFD_leaf_mean
+    @test last(new_light_history)[2] * new_state.radiative_mesh_area ≈
+          new_state.aPPFD_leaf_mean * new_state.botanical_leaf_area
+    @test last(new_conversion_history)[2] ≈ new_state.aPPFD_leaf_mean
+    @test last(new_conversion_history)[2] ≈ new_state.aPPFD
     @test last(new_assimilation_history)[2] ≈ new_state.A
     @test last(new_conductance_history)[2] ≈ new_state.Gₛ
 end
