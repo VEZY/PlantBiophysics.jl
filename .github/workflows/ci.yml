@@ -17,9 +17,9 @@ jobs:
           - macOS-latest
           - windows-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - name: Check out the PlantSimEngine development branch
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           repository: VirtualPlantLab/PlantSimEngine.jl
           ref: multi-plants
@@ -27,7 +27,7 @@ jobs:
       - uses: julia-actions/setup-julia@v3
         with:
           version: ${{ matrix.version }}
-      - uses: actions/cache@v5
+      - uses: actions/cache@v6
         env:
           cache-name: cache-artifacts
         with:
