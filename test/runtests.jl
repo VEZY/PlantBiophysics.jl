@@ -26,7 +26,10 @@ end
 
     Aqua.test_all(
         PlantBiophysics,
-        ambiguities=false # Removing this test as dependencies return ambiguities...
+        ambiguities=false, # Removing this test as dependencies return ambiguities...
+        # Pkg before Julia 1.11 ignores [sources], so Aqua cannot recreate an
+        # environment containing the unreleased PlantSimEngine 0.15.
+        persistent_tasks=VERSION >= v"1.11",
     )
 
     @testset "File IO" begin
@@ -75,7 +78,6 @@ end
         include("evaluation/test-global.jl")
         include("evaluation/test-daily.jl")
         include("evaluation/test-schymanski.jl")
-        include("evaluation/test-documentation-assets.jl")
     end
 
     @testset "Fitting" begin

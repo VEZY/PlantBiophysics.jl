@@ -32,5 +32,8 @@ jobs:
             ${{ runner.os }}-test-${{ env.cache-name }}-
             ${{ runner.os }}-test-
             ${{ runner.os }}-
+      - name: Resolve PlantSimEngine on Julia 1.10
+        if: matrix.version == '1.10'
+        run: julia --project=. -e 'using Pkg; Pkg.add(PackageSpec(url="https://github.com/VirtualPlantLab/PlantSimEngine.jl", rev="82786fba91fad644d8068d75afc64d88282400c4"))'
       - uses: julia-actions/julia-buildpkg@latest
       - uses: julia-actions/julia-runtest@latest
