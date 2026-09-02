@@ -13,10 +13,12 @@ PlantSimEngine = "9a576370-710b-4269-adf9-4f603a9c6423"
 
 [sources]
 PlantBiophysics = {path = ".."}
+PlantGeom = {rev = "0438dd3a5a633112328644fd3e7d2422f682f882", url = "https://github.com/VEZY/PlantGeom.jl"}
+PlantSimEngine = {rev = "82786fb", url = "https://github.com/VirtualPlantLab/PlantSimEngine.jl"}
 
 [compat]
 CairoMakie = "0.15"
-PlantGeom = "0.17"
+PlantGeom = "0.19"
 PlantSimEngine = "0.15"
 
 [extras]
