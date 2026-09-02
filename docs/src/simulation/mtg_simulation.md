@@ -1,128 +1,102 @@
-# Simulation on a plant (MTG)
+# Whole-Plant Simulation From An MTG
 
-```@setup usepkg
-using PlantBiophysics, PlantSimEngine, PlantMeteo, MultiScaleTreeGraph, PlantGeom
-using CairoMakie, Dates
+PlantBiophysics does not prescribe plant topology. A
+`MultiScaleTreeGraph` (MTG) can provide the hierarchy and node metadata, while
+PlantSimEngine supplies the same objects, compiler, applications, environment,
+and output retention used in the [several-object tutorial](several_objects_simulation.md).
 
-mtg = read_opf(joinpath(dirname(dirname(pathof(PlantBiophysics))), "test", "inputs", "scene", "opf", "coffee.opf"))
+This complete example constructs a small in-memory MTG with one plant and two
+leaves, then runs the coupled leaf model over three weather timesteps.
 
-weather = read_weather(
-    joinpath(dirname(dirname(pathof(PlantMeteo))), "test", "data", "meteo.csv"),
-    :temperature => :T,
-    :relativeHumidity => (x -> x ./ 100) => :Rh,
-    :wind => :Wind,
-    :atmosphereCO2_ppm => :Cₐ,
-    date_format = DateFormat("yyyy/mm/dd")
-)
-
-models = read_model(joinpath(dirname(dirname(pathof(PlantBiophysics))), "test", "inputs", "models", "plant_coffee.yml"));
-
-MultiScaleTreeGraph.transform!(
-    mtg,
-    :Ra_PAR_f => (x -> fill(x, length(weather))) => :Ra_PAR_f,
-    :sky_fraction => (x -> fill(x, length(weather))) => :sky_fraction,
-    [:Ra_PAR_f, :Ra_NIR_f] => ((x, y) -> x .+ y) => :Ra_SW_f,
-    (x -> 0.3) => :d,
-    ignore_nothing = true
-)
-
-out = run!(mtg, ModelMapping(models), weather, tracked_outputs=Dict{Symbol,Any}(:Leaf => (:Tₗ,)))
-outputs_leaves = out[:Leaf]
-for ts in outputs_leaves
-    ts.node.Tₗ = ts.Tₗ
-end
-```
-
-## Multi-scale Tree Graph
-
-The Multi-scale Tree Graph, or MTG for short is a data structure that helps represent a plant topology, and optionally its geometry.
-
-The OPF is a file format that stores an MTG with geometry onto the disk. Let's read an example OPF using `read_opf()`, a function from the `PlantGeom` package:
-
-```@example usepkg
-using PlantGeom
-mtg = read_opf(joinpath(dirname(dirname(pathof(PlantBiophysics))), "test", "inputs", "scene", "opf", "coffee.opf"))
-```
-
-The result is an MTG defining the plant at several scales using a tree graph. You can read the introduction to the MTG from [MultiScaleTreeGraph.jl](https://vezy.github.io/MultiScaleTreeGraph.jl/stable/the_mtg/mtg_concept/)'s documentation if you want to understand how it works.
-
-Now let's import the weather data:
-
-```@example usepkg
-using PlantBiophysics, PlantSimEngine, PlantMeteo, Dates
-
-weather = read_weather(
-    joinpath(dirname(dirname(pathof(PlantMeteo))), "test", "data", "meteo.csv"),
-    :temperature => :T,
-    :relativeHumidity => (x -> x ./ 100) => :Rh,
-    :wind => :Wind,
-    :atmosphereCO2_ppm => :Cₐ,
-    date_format = DateFormat("yyyy/mm/dd")
-)
-```
-
-And read the models associated to the MTG from a YAML file:
-
-```@example usepkg
-file = joinpath(dirname(dirname(pathof(PlantBiophysics))), "test", "inputs", "models", "plant_coffee.yml")
-models = read_model(file)
-```
-
-Let's check which variables we need to provide for our model configuration:
-
-```@example usepkg
-to_initialize(models, mtg)
-```
-
-OK, only the `:Leaf` component must be initialized before computation for the coupled energy balance, with the characteristic dimension of the object `d`.
-
-But we also know that the `Translucent` model reads some variables from the MTG nodes directly: the absorbed shortwave radiation flux `Ra_SW_f`, the visible sky fraction seen by the object `sky_fraction`, and the photosynthetically active absorbed radiation flux `Ra_PAR_f`. We are in luck, we used [Archimed-ϕ](https://archimed-platform.github.io/archimed-phys-user-doc/) to compute the radiation interception of each organ in the example coffee plant we are using. So the only thing we need to do is to transform the variables given by Archimed-ϕ in each node to compute the ones we need. We use `transform!` from `MultiScaleTreeGraph.jl` to traverse the MTG and compute the right variable for each node:
-
-```@example usepkg
+```@example mtg_simulation
+using PlantBiophysics, PlantSimEngine, PlantMeteo, Dates, DataFrames
 using MultiScaleTreeGraph
 
-MultiScaleTreeGraph.transform!(
-    mtg,
-    :Ra_PAR_f => (x -> fill(x, length(weather))) => :Ra_PAR_f,
-    :sky_fraction => (x -> fill(x, length(weather))) => :sky_fraction,
-    [:Ra_PAR_f, :Ra_NIR_f] => ((x, y) -> x .+ y) => :Ra_SW_f,
-    (x -> 0.3) => :d,
-    ignore_nothing = true
+weather = Weather([
+    Atmosphere(T=20.0, Wind=1.0, P=101.3, Rh=0.65, duration=Hour(1)),
+    Atmosphere(T=23.0, Wind=1.5, P=101.3, Rh=0.60, duration=Hour(1)),
+    Atmosphere(T=25.0, Wind=2.0, P=101.3, Rh=0.55, duration=Hour(1)),
+])
+
+applications = (
+    ModelSpec(Monteith(); name=:energy_balance, on=Many(scale=:Leaf)),
+    ModelSpec(Fvcb(); name=:photosynthesis, on=Many(scale=:Leaf)),
+    ModelSpec(Medlyn(0.03, 12.0); name=:stomatal_conductance, on=Many(scale=:Leaf)),
 )
+
+mtg_root = Node(MultiScaleTreeGraph.NodeMTG("/", "Scene", 1, 0))
+mtg_plant = Node(mtg_root, MultiScaleTreeGraph.NodeMTG("+", "Plant", 1, 1))
+mtg_sun = Node(mtg_plant, MultiScaleTreeGraph.NodeMTG("+", "Leaf", 1, 2))
+mtg_shade = Node(mtg_plant, MultiScaleTreeGraph.NodeMTG("+", "Leaf", 2, 2))
+
+initial_statuses = IdDict(
+    mtg_sun => Status(
+        Ra_SW_f=20.0,
+        sky_fraction=1.0,
+        aPPFD=1500.0,
+        d=0.03,
+    ),
+    mtg_shade => Status(
+        Ra_SW_f=8.0,
+        sky_fraction=0.5,
+        aPPFD=600.0,
+        d=0.02,
+    ),
+)
+
+readable_id = node -> Symbol(lowercase(string(symbol(node))), "_", node_id(node))
+node_kind = node -> Symbol(symbol(node)) == :Scene ? :scene : :plant
+
+scene = CompositeModel(
+    mtg_root;
+    id=readable_id,
+    kind=node_kind,
+    status=node -> get(initial_statuses, node, nothing),
+    applications=applications,
+    environment=weather,
+)
+
+[(
+    object_id=object_id(scene, node),
+    source_node_id=node_id(source_node(scene, node)),
+    aPPFD=model_status(scene, node).aPPFD,
+) for node in (mtg_sun, mtg_shade)]
+
+simulation = run!(
+    scene;
+    steps=length(weather),
+    outputs=OutputRequest(
+        Many(scale=:Leaf),
+        :Tₗ;
+        name=:leaf_temperature,
+        application=:energy_balance,
+    ),
+)
+
+DataFrame(collect_outputs(
+    simulation,
+    :leaf_temperature;
+    sink=nothing,
+))
 ```
 
-The design of `MultiScaleTreeGraph.transform!` is very close to the one from `DataFrames`. It helps us compute new variables (or attributes) from others, modify their units or rename them. Here we compute a value for each time-step by repeating the values of `Ra_PAR_f` and `sky_fraction` 3 times, and compute `Ra_SW_f` from the sum of `Ra_PAR_f` (absorbed radiation flux in the PAR) and `Ra_NIR_f` (...in the NIR). We also put a single constant value for `d`: 0.3 m.
+Runtime `Status` belongs to the `CompositeModel` registry, never to MTG
+attributes. Here `status=` is an explicit import accessor used while the model
+registers each MTG node. Compilation may extend an incomplete status with
+declared output fields while preserving references to existing fields.
 
-Now let's choose the outputs we want to save. Here we choose to only output the leaf temperature `Tₗ`:
+The registry resolves an exact source node, an object identity, or its registered
+status without copying state back into the topology:
 
-```@example usepkg
-vars=Dict{Symbol,Any}(:Leaf => (:Tₗ,))
+```@example mtg_simulation
+[(
+    object_id=object_id(scene, node),
+    source_is_exact=source_node(scene, model_status(scene, node)) === node,
+    leaf_temperature=model_status(scene, node).Tₗ,
+) for node in (mtg_sun, mtg_shade)]
 ```
 
-Now we can run a simulation using `run!` from `PlantSimEngine`:
-
-```@example usepkg
-outs = run!(mtg, ModelMapping(models), weather, tracked_outputs=vars);
-nothing # hide
-```
-
-We can now extract the outputs from the simulation and store them in the MTG:
-
-```@example usepkg
-for ts in outs[:Leaf]
-    ts.node.Tₗ = ts.Tₗ
-end
-```
-
-!!! note
-    The outputs are stored in the MTG nodes. The node is also accessible from the simulation output as the `node` field.
-
-And finally, we can visualize the outputs in 3D using PlantGeom's `plantviz` function:
-
-```@example usepkg
-f, ax, p = plantviz(mtg, color = :Tₗ, index = 2)
-colorbar(f[1, 2], p)
-f
-```
-
-Note that we use the `index` keyword argument to select the time-step we want to visualize.
+For growing MTGs, `add_organ!` creates the node and registers its model object
+together. Other topology backends can use `register_object!`,
+`remove_object!`, and `reparent_object!`; PlantSimEngine refreshes application
+targets before the next timestep.

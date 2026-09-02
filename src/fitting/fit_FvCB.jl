@@ -1,5 +1,5 @@
 """
-    fit(
+    Evaluation.fit(
         ::Type{Fvcb}, df; 
         Tᵣ = nothing, 
         VcMaxRef = 0.0, JMaxRef = 0.0, RdRef = 0.0, TPURef = 0.0, 
@@ -30,7 +30,7 @@ boundary can be set using [-Inf, Inf].
 # Examples
 
 ```julia
-using PlantBiophysics, PlantSimEngine, PlantMeteo, Plots, DataFrames
+using PlantBiophysics, PlantSimEngine, PlantSimEngine.Evaluation, PlantMeteo, Plots, DataFrames
 
 file = joinpath(dirname(dirname(pathof(PlantBiophysics))),"test","inputs","data","P1F20129.csv")
 df = read_walz(file)
@@ -38,7 +38,7 @@ df = read_walz(file)
 filter!(x -> x.curve != "Rh Curve" && x.curve != "ligth Curve", df)
 
 # Fit the parameter values:
-VcMaxRef, JMaxRef, RdRef, TPURef = fit(Fvcb, df; Tᵣ = 25.0)
+VcMaxRef, JMaxRef, RdRef, TPURef = Evaluation.fit(Fvcb, df; Tᵣ = 25.0)
 # Note that Tᵣ was set to 25 °C in our response curve. You should adapt its value to what you
 # had during the response curves
 
@@ -49,40 +49,42 @@ filter!(x -> x.curve == "CO2 Curve", df)
 sort!(df, :Cᵢ)
 
 # Re-simulating A using the newly fitted parameters:
-leaf =
-    ModelMapping(
-        photosynthesis = FvcbRaw(VcMaxRef = VcMaxRef, JMaxRef = JMaxRef, RdRef = RdRef, TPURef = TPURef),
-        status = (Tₗ = df.Tₗ, aPPFD = df.aPPFD, Cᵢ = df.Cᵢ)
+A_sim = map(eachrow(df)) do row
+    scene = leaf_scene(
+        FvcbRaw(VcMaxRef = VcMaxRef, JMaxRef = JMaxRef, RdRef = RdRef, TPURef = TPURef);
+        status = Status(Tₗ = row.Tₗ, aPPFD = row.aPPFD, Cᵢ = row.Cᵢ),
     )
-out_sim = run!(leaf)
-df_sim = PlantSimEngine.convert_outputs(out_sim, DataFrame)
+    run!(scene)
+    only(model_objects(scene; scale = :Leaf)).status.A
+end
 
 # Visualising the results:
-ACi_struct = PlantBiophysics.ACi(VcMaxRef, JMaxRef, RdRef, df.A, df_sim.A, df[:,:Cᵢ], df_sim.Cᵢ)
+ACi_struct = PlantBiophysics.ACi(VcMaxRef, JMaxRef, RdRef, df.A, A_sim, df[:,:Cᵢ])
 plot(ACi_struct,leg=:bottomright)
 
 # Note that we can also simulate the results using the full photosynthesis model too (Fvcb):
 # Adding the windspeed to simulate the boundary-layer conductance (we put a high value):
 df[!, :Wind] .= 10.0
 
-leaf = ModelMapping(
-        photosynthesis = Fvcb(VcMaxRef = VcMaxRef, JMaxRef = JMaxRef, RdRef = RdRef, Tᵣ = 25.0, TPURef = TPURef),
-        # stomatal_conductance = ConstantGs(0.0, df[i,:Gₛ]),
-        stomatal_conductance = Medlyn(0.03, 12.),
-        status = (Tₗ = df.Tₗ, aPPFD = df.aPPFD, Cₛ = df.Cₐ, Dₗ = 0.1)
+A_sim2 = map(eachrow(df)) do row
+    meteo = Atmosphere(T = row.T, P = row.P, Rh = row.Rh, Cₐ = row.Cₐ, Wind = 10.0)
+    scene = leaf_scene(
+        Fvcb(VcMaxRef = VcMaxRef, JMaxRef = JMaxRef, RdRef = RdRef, Tᵣ = 25.0, TPURef = TPURef),
+        Medlyn(0.03, 12.0);
+        status = Status(Tₗ = row.Tₗ, aPPFD = row.aPPFD, Cₛ = row.Cₐ, Dₗ = 0.1),
+        environment = meteo,
     )
-
-w = Weather(select(df, :T, :P, :Rh, :Cₐ, :T => (x -> 10) => :Wind))
-out_sim2 = run!(leaf, w)
-df_sim2 = PlantSimEngine.convert_outputs(out_sim2, DataFrame)
+    run!(scene)
+    only(model_objects(scene; scale = :Leaf)).status.A
+end
 
 # And finally we plot the results:
-ACi_struct_full = PlantBiophysics.ACi(VcMaxRef, JMaxRef, RdRef, df.A, df_sim2.A, df[:,:Cᵢ], df_sim2.Cᵢ)
+ACi_struct_full = PlantBiophysics.ACi(VcMaxRef, JMaxRef, RdRef, df.A, A_sim2, df[:,:Cᵢ])
 plot(ACi_struct_full,leg=:bottomright)
 # Note that the results differ a bit because there are more variables that are re-simulated (e.g. Cᵢ)
 ```
 """
-function PlantSimEngine.fit(
+function PlantSimEngine.Evaluation.fit(
     ::T, df;
     Tᵣ=nothing,
     VcMaxRef=0.0, JMaxRef=0.0, RdRef=0.0, TPURef=0.0,
@@ -97,17 +99,40 @@ function PlantSimEngine.fit(
 
     function model(x, p)
         A = convert(eltype(p), -9999.0) #We promote the model output to `ForwardDiff.Dual` when the call passes the parameters as this type during optimisation.
-        #Note: This could be done via the promote_type argument to `ModelMapping` when it's ready in PlantSimEngine.
-        leaf =
-            ModelMapping(
-                photosynthesis=FvcbRaw(
-                    Tᵣ=Tᵣ, VcMaxRef=p[1], JMaxRef=p[2], RdRef=p[3], TPURef=p[4],
-                    Eₐᵣ=Eₐᵣ, O₂=O₂, Eₐⱼ=Eₐⱼ, Hdⱼ=Hdⱼ, Δₛⱼ=Δₛⱼ, Eₐᵥ=Eₐᵥ, Hdᵥ=Hdᵥ, Δₛᵥ=Δₛᵥ, α=α, θ=θ
+        photosynthesis = FvcbRaw(
+            Tᵣ=Tᵣ,
+            VcMaxRef=p[1],
+            JMaxRef=p[2],
+            RdRef=p[3],
+            TPURef=p[4],
+            Eₐᵣ=Eₐᵣ,
+            O₂=O₂,
+            Eₐⱼ=Eₐⱼ,
+            Hdⱼ=Hdⱼ,
+            Δₛⱼ=Δₛⱼ,
+            Eₐᵥ=Eₐᵥ,
+            Hdᵥ=Hdᵥ,
+            Δₛᵥ=Δₛᵥ,
+            α=α,
+            θ=θ,
+        )
+        simulated = Vector{typeof(A)}(undef, size(x, 1))
+        for i in axes(x, 1)
+            leaf = leaf_scene(
+                photosynthesis;
+                status=Status(
+                    Tₗ=x[i, 1],
+                    aPPFD=x[i, 2],
+                    Cᵢ=x[i, 3],
+                    A=A,
                 ),
-                status=(Tₗ=x[:, 1], aPPFD=x[:, 2], Cᵢ=x[:, 3], A=fill(A, size(x, 1))) # We add A to the status to be able to use ForwardDiff.jl for the optimisation
             )
-        outputs = PlantSimEngine.run!(leaf)
-        outputs.A
+            PlantSimEngine.run!(leaf)
+            simulated[i] = only(
+                PlantSimEngine.model_objects(leaf; scale=:Leaf),
+            ).status.A
+        end
+        return simulated
     end
 
     # Fitting the A-Cᵢ curve using LsqFit.jl
@@ -144,9 +169,9 @@ ACi(VcMaxRef, JMaxRef, RdRef, A_meas, A_sim, Cᵢ_meas) = ACi(VcMaxRef, JMaxRef,
     xguide --> "Cᵢ (ppm)"
     yguide --> "A (μmol m⁻² s⁻¹)"
 
-    EF_ = round(PlantSimEngine.EF(y, y2), digits=3)
-    dr_ = round(PlantSimEngine.dr(y, y2), digits=3)
-    RMSE_ = round(PlantSimEngine.RMSE(y, y2), digits=3)
+    EF_ = round(PlantSimEngine.Evaluation.EF(y, y2), digits=3)
+    dr_ = round(PlantSimEngine.Evaluation.dr(y, y2), digits=3)
+    RMSE_ = round(PlantSimEngine.Evaluation.RMSE(y, y2), digits=3)
 
     @series begin
         seriestype := :scatter

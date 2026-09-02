@@ -1,5 +1,5 @@
 """
-    fit(::Type{Medlyn}, df)
+    Evaluation.fit(::Type{Medlyn}, df)
 
 Optimize the parameters of the [`Medlyn`](@ref) model. Note that here Gₛ is stomatal conductance for CO2, not H2O.
 
@@ -23,7 +23,7 @@ which gives Dₗ = VPD.
 # Examples
 
 ```julia
-using PlantBiophysics, PlantMeteo, Plots, DataFrames
+using PlantBiophysics, PlantSimEngine, PlantSimEngine.Evaluation, PlantMeteo, Plots, DataFrames
 
 file = joinpath(dirname(dirname(pathof(PlantBiophysics))),"test","inputs","data","P1F20129.csv")
 df = read_walz(file)
@@ -31,23 +31,25 @@ df = read_walz(file)
 filter!(x -> x.curve != "ligth Curve" && x.curve != "CO2 Curve", df)
 
 # Fit the parameters values:
-g0, g1 = fit(Medlyn, df)
+g0, g1 = Evaluation.fit(Medlyn, df)
 
 # Re-simulating Gₛ using the newly fitted parameters:
-w = Weather(select(df, :T, :P, :Rh, :Cₐ, :VPD, :T => (x -> 10) => :Wind))
-leaf = ModelMapping(
-        stomatal_conductance = Medlyn(g0, g1),
-        status = (A = df.A, Cₛ = df.Cₐ, Dₗ = df.Dₗ)
+gs_sim = map(eachrow(df)) do row
+    scene = leaf_scene(
+        Medlyn(g0, g1);
+        status = Status(A = row.A, Cₛ = row.Cₐ, Dₗ = row.Dₗ),
     )
-run!(leaf, w)
+    run!(scene)
+    only(model_objects(scene; scale = :Leaf)).status.Gₛ
+end
 
 # Visualising the results:
-gsAvpd = PlantBiophysics.GsADₗ(g0, g1, df.Gₛ, df.Dₗ, df.A, df.Cₐ, leaf[:Gₛ])
+gsAvpd = PlantBiophysics.GsADₗ(g0, g1, df.Gₛ, df.Dₗ, df.A, df.Cₐ, gs_sim)
 plot(gsAvpd,leg=:bottomright)
 # As in [`Medlyn`](@ref) reference paper, linear regression is also plotted.
 ```
 """
-function PlantSimEngine.fit(::T, df) where {T<:Type{Medlyn}}
+function PlantSimEngine.Evaluation.fit(::T, df) where {T<:Type{Medlyn}}
     # Fitting the A/(Cₐ√Dₗ) - Gₛ curve using least squares method
     x = df.A ./ df.Cₐ
     y = sqrt.(df.Dₗ)
@@ -86,9 +88,9 @@ GsADₗ(g0, g1, gs_meas, Dₗ_meas, A_meas, Cₐ_meas) = GsADₗ(g0, g1, gs_meas
     xguide --> "A/(Cₐ√Dₗ) (ppm)"
     yguide --> "gₛ (mol m⁻² s⁻¹)"
 
-    EF_ = round(PlantSimEngine.EF(y, y2), digits=3)
-    dr_ = round(PlantSimEngine.dr(y, y2), digits=3)
-    RMSE_ = round(PlantSimEngine.RMSE(y, y2), digits=3)
+    EF_ = round(PlantSimEngine.Evaluation.EF(y, y2), digits=3)
+    dr_ = round(PlantSimEngine.Evaluation.dr(y, y2), digits=3)
+    RMSE_ = round(PlantSimEngine.Evaluation.RMSE(y, y2), digits=3)
 
     m(t, p) = p[1] .+ t .* p[2]
     p0 = [0.1, 1.0]

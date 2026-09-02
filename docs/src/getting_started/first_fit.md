@@ -11,18 +11,20 @@ The package provides a `fit` method that helps fitting model parameters to data.
 For example we provide a method to fit the parameters from the Farquhar et al. (1980) model ([`Fvcb`](@ref)). Here is an example usage:
 
 ```@example usepkg
-using PlantBiophysics, PlantSimEngine, DataFrames
+using PlantBiophysics, PlantSimEngine, PlantSimEngine.Evaluation, DataFrames
 
 df = read_walz(joinpath(dirname(dirname(pathof(PlantBiophysics))),"test","inputs","data","P1F20129.csv"))
 # Removing the Rh and light curves for the fitting because temperature varies
 filter!(x -> x.curve != "Rh Curve" && x.curve != "ligth Curve", df)
 
 # Fit the parameter values:
-VcMaxRef, JMaxRef, RdRef, TPURef = fit(Fvcb, df; Tᵣ = 25.0)
+VcMaxRef, JMaxRef, RdRef, TPURef = Evaluation.fit(Fvcb, df; Tᵣ = 25.0)
 ```
 
 The fitting method uses the leaf temperature (`Tₗ`, °C), the Photosynthetic Photon Flux Density (`aPPFD`, μmol m⁻² s⁻¹) and the intercellular CO₂ concentration (`Cᵢ`, ppm) from the data to fit the four main parameters of the model.
 
 ## Wrap-up
 
-We learned to make a simple parameter fitting. For more information, you can head over the [Parameter fitting](@ref) section.
+We learned to make a simple parameter fit. Continue with the
+[parameter-fitting tutorial](@ref parameter_fitting_page) for a complete
+workflow.

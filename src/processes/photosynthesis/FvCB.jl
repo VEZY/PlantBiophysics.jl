@@ -114,8 +114,16 @@ function Fvcb(; Tᵣ=25.0, VcMaxRef=200.0, JMaxRef=250.0, RdRef=0.6, TPURef=9999
 end
 
 function PlantSimEngine.inputs_(::Fvcb)
-    (aPPFD=-Inf, Tₗ=-Inf, Cₛ=-Inf)
+    (
+        aPPFD=PlantSimEngine.Required(Real),
+        Tₗ=PlantSimEngine.Required(Real),
+        Cₛ=PlantSimEngine.Required(Real),
+    )
 end
+
+PlantSimEngine.variable_contracts_(::Fvcb) = (
+    aPPFD=LEAF_PAR_PHOTON_FLUX_CONTRACT,
+)
 
 function PlantSimEngine.outputs_(::Fvcb)
     (A=-Inf, Gₛ=-Inf, Cᵢ=-Inf)
@@ -123,9 +131,11 @@ end
 
 Base.eltype(x::Fvcb) = typeof(x).parameters[1]
 
-PlantSimEngine.dep(::Fvcb) = (stomatal_conductance=AbstractStomatal_ConductanceModel,)
-PlantSimEngine.ObjectDependencyTrait(::Type{<:Fvcb}) = PlantSimEngine.IsObjectIndependent()
-PlantSimEngine.TimeStepDependencyTrait(::Type{<:Fvcb}) = PlantSimEngine.IsTimeStepIndependent()
+PlantSimEngine.dep(::Fvcb) = (
+    stomatal_conductance=PlantSimEngine.Call(
+        PlantSimEngine.One(scale=:Leaf, process=:stomatal_conductance),
+    ),
+)
 PlantSimEngine.timestep_hint(::Type{<:Fvcb}) = (
     required=(Dates.Minute(1), Dates.Hour(6)),
     preferred=Dates.Hour(1)
@@ -138,7 +148,7 @@ PlantSimEngine.output_policy(::Type{<:Fvcb}) = (
 )
 
 """
-    run!(::Fvcb, models, status, meteo, constants=Constants())
+    run!(model::Fvcb, status, environment, constants=Constants(), context=nothing)
 
 Coupled photosynthesis and conductance model using the Farquhar–von Caemmerer–Berry (FvCB) model
 for C3 photosynthesis (Farquhar et al., 1980; von Caemmerer and Farquhar, 1981) that models
@@ -188,16 +198,17 @@ Modify the first argument in place for A, Gₛ and Cᵢ:
 
 # Arguments
 
-- `::Fvcb`: the Farquhar–von Caemmerer–Berry (FvCB) model
-- `models`: a `ModelMapping` struct holding the parameters for the model with
-initialisations for:
+- `model::Fvcb`: the Farquhar–von Caemmerer–Berry (FvCB) model
+- the declared stomatal-conductance hard-call target owns its model parameters;
+  the shared status provides initial values for:
     - `Tₗ` (°C): leaf temperature
-    - `aPPFD` (μmol m-2 s-1): absorbed Photosynthetic Photon Flux Density
+    - `aPPFD` (μmol[photon] m[leaf]⁻² s⁻¹): absorbed Photosynthetic
+      Photon Flux Density on the botanical leaf-area basis
     - `Cₛ` (ppm): Air CO₂ concentration at the leaf surface
     - `Dₗ` (kPa): vapour pressure difference between the surface and the saturated
     air vapour pressure in case you're using the stomatal conductance model of [`Medlyn`](@ref).
 - `status`: A status, usually the leaf status (*i.e.* leaf.status)
-- `meteo`: meteorology structure, see [`Atmosphere`](https://palmstudio.github.io/PlantMeteo.jl/stable/#PlantMeteo.Atmosphere)
+- `environment`: meteorology structure, see [`Atmosphere`](https://palmstudio.github.io/PlantMeteo.jl/stable/#PlantMeteo.Atmosphere)
 - `constants = PlantMeteo.Constants()`: physical constants. See `PlantMeteo.Constants` for more details
 
 # Note
@@ -210,21 +221,17 @@ balance of the leaf with the photosynthesis to get those variables. See
 # Examples
 
 ```julia
-using PlantBiophysics, PlantMeteo
-meteo = Atmosphere(T = 20.0, Wind = 1.0, P = 101.3, Rh = 0.65)
-
-leaf =
-    ModelMapping(
-        photosynthesis = Fvcb(),
-        stomatal_conductance = Medlyn(0.03, 12.0),
-        status = (Tₗ = 25.0, aPPFD = 1000.0, Cₛ = 400.0, Dₗ = meteo.VPD)
-    )
-# NB: we need to initalise Tₗ, aPPFD and Cₛ.
-# NB2: we provide the name of the process before the model but it is not mandatory.
-
-run!(leaf,meteo,PlantMeteo.Constants())
-leaf.status.A
-leaf.status.Cᵢ
+using PlantBiophysics, PlantMeteo, PlantSimEngine
+environment = Atmosphere(T = 20.0, Wind = 1.0, P = 101.3, Rh = 0.65)
+scene = leaf_scene(
+    Fvcb(),
+    Medlyn(0.03, 12.0);
+    status=Status(Tₗ=25.0, aPPFD=1000.0, Cₛ=400.0, Dₗ=environment.VPD),
+    environment=environment,
+)
+run!(scene)
+leaf = only(model_objects(scene; scale=:Leaf))
+(leaf.status.A, leaf.status.Cᵢ)
 ```
 
 Note that we use `VPD` as an approximation of `Dₗ` here because we don't have the leaf temperature (*i.e.* `Dₗ = VPD` when `Tₗ = T`).
@@ -251,7 +258,7 @@ Lombardozzi, L. D. et al. 2018.« Triose phosphate limitation in photosynthesis 
 reduces leaf photosynthesis and global terrestrial carbon storage ». Environmental Research
 Letters 13.7: 1748-9326. https://doi.org/10.1088/1748-9326/aacf68.
 """
-function PlantSimEngine.run!(m::Fvcb, models, status, meteo, constants=PlantMeteo.Constants(), extra=nothing)
+function PlantSimEngine.run!(m::Fvcb, status, environment, constants=PlantMeteo.Constants(), context=nothing)
 
     # Tranform Celsius temperatures in Kelvin:
     Tₖ = status.Tₗ - constants.K₀
@@ -263,7 +270,7 @@ function PlantSimEngine.run!(m::Fvcb, models, status, meteo, constants=PlantMete
 
     # Maximum electron transport rate at the given leaf temperature (μmol m-2 s-1):
     JMax = arrhenius(m.JMaxRef, m.Eₐⱼ, Tₖ, Tᵣₖ, m.Hdⱼ, m.Δₛⱼ, constants.R)
-    # Maximum rate of Rubisco activity at the given models temperature (μmol m-2 s-1):
+    # Maximum rate of Rubisco activity at the modelled temperature (μmol m-2 s-1):
     VcMax = arrhenius(m.VcMaxRef, m.Eₐᵥ, Tₖ, Tᵣₖ, m.Hdᵥ, m.Δₛᵥ, constants.R)
     # Rate of mitochondrial respiration at the given leaf temperature (μmol m-2 s-1):
     Rd = arrhenius(m.RdRef, m.Eₐᵣ, Tₖ, Tᵣₖ, constants.R)
@@ -276,9 +283,12 @@ function PlantSimEngine.run!(m::Fvcb, models, status, meteo, constants=PlantMete
     Vⱼ = J / 4
 
     # Stomatal conductance (mol[CO₂] m-2 s-1), dispatched on type of first argument (gs_closure):
-    st_closure = gs_closure(models.stomatal_conductance, models, status, meteo, extra)
+    stomatal_model =
+        PlantSimEngine.call_model(context, :stomatal_conductance)
+    st_closure =
+        gs_closure(stomatal_model, status, environment, constants, context)
 
-    Cᵢⱼ = get_Cᵢⱼ(Vⱼ, Γˢ, status.Cₛ, Rd, models.stomatal_conductance.g0, st_closure)
+    Cᵢⱼ = get_Cᵢⱼ(Vⱼ, Γˢ, status.Cₛ, Rd, stomatal_model.g0, st_closure)
 
     # Electron-transport-limited rate of CO2 assimilation (RuBP regeneration-limited):
     Wⱼ = Vⱼ * (Cᵢⱼ - Γˢ) / (Cᵢⱼ + 2.0 * Γˢ) # also called Aⱼ
@@ -292,7 +302,7 @@ function PlantSimEngine.run!(m::Fvcb, models, status, meteo, constants=PlantMete
         Wⱼ = Vⱼ * (Cᵢⱼ - Γˢ) / (Cᵢⱼ + 2.0 * Γˢ)
     end
 
-    Cᵢᵥ = get_Cᵢᵥ(VcMax, Γˢ, status.Cₛ, Rd, models.stomatal_conductance.g0, st_closure, Km)
+    Cᵢᵥ = get_Cᵢᵥ(VcMax, Γˢ, status.Cₛ, Rd, stomatal_model.g0, st_closure, Km)
 
     # Rubisco-carboxylation-limited rate of CO₂ assimilation (RuBP activity-limited):
     if Cᵢᵥ <= 0.0 || Cᵢᵥ > status.Cₛ
@@ -305,7 +315,13 @@ function PlantSimEngine.run!(m::Fvcb, models, status, meteo, constants=PlantMete
     status.A = min(Wᵥ, Wⱼ, 3 * m.TPURef) - Rd
 
     # Stomatal conductance (mol[CO₂] m-2 s-1)
-    PlantSimEngine.run!(models.stomatal_conductance, models, status, st_closure, extra)
+    # FvCB owns Gₛ; the stomatal model updates the shared trial status only.
+    PlantSimEngine.run_call!(
+        context,
+        :stomatal_conductance;
+        sampled_environment=st_closure,
+        publish=false,
+    )
 
     # Intercellular CO₂ concentration (Cᵢ, μmol mol)
     status.Cᵢ = min(status.Cₛ, status.Cₛ - status.A / status.Gₛ)
@@ -332,7 +348,8 @@ A tuple with (A, Gₛ, Cᵢ):
 - Cᵢ: intercellular CO₂ concentration (ppm)
 # Arguments
 
-- `aPPFD`: absorbed photon irradiance (``μmol_{quanta}\\ m^{-2}\\ s^{-1}``)
+- `aPPFD`: absorbed photon irradiance
+  (``μmol_{quanta}\\ m_{leaf}^{-2}\\ s^{-1}``)
 - `α`: quantum yield of electron transport (``mol_e\\ mol^{-1}_{quanta}``)
 - `JMax`: maximum rate of electron transport (``μmol\\ m^{-2}\\ s^{-1}``)
 - `θ`: determines the shape of the non-rectangular hyperbola (-)

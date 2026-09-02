@@ -15,11 +15,12 @@ using PlantMeteo, PlantSimEngine, PlantBiophysics
 meteo = Atmosphere(T = 20.0, Wind = 1.0, P = 101.3, Rh = 0.65)
 
 leaf =
-    ModelMapping(
-        stomatal_conductance = Medlyn(0.03, 12.0),
-        status = (A = A, Cₛ = 380.0, Dₗ = meteo.VPD)
+    leaf_scene(
+        Medlyn(0.03, 12.0);
+        status=Status(A=20.0, Cₛ=380.0, Dₗ=meteo.VPD),
+        environment=meteo,
     )
-run!(leaf,meteo)
+run!(leaf)
 ```
 
 Note that we use `VPD` as an approximation of `Dₗ` here because we don't have the leaf temperature (*i.e.* `Dₗ = VPD` when `Tₗ = T`).
@@ -44,7 +45,11 @@ end
 Medlyn(; g0, g1, gs_min=0.001) = Medlyn(g0, g1, gs_min)
 
 function PlantSimEngine.inputs_(::Medlyn)
-    (Dₗ=-Inf, Cₛ=-Inf, A=-Inf)
+    (
+        Dₗ=PlantSimEngine.Required(Real),
+        Cₛ=PlantSimEngine.Required(Real),
+        A=PlantSimEngine.Required(Real),
+    )
 end
 
 function PlantSimEngine.outputs_(::Medlyn)
@@ -58,7 +63,7 @@ PlantSimEngine.output_policy(::Type{<:Medlyn}) = (
 Base.eltype(::Medlyn{T}) where T = T
 
 """
-    gs_closure(::Medlyn, models, status, meteo, constants=nothing, extra=nothing)
+    gs_closure(model::Medlyn, status, environment, constants=nothing, context=nothing)
 
 Stomatal closure for CO₂ according to Medlyn et al. (2011). Carefull, this is just a part of
 the computation of the stomatal conductance.
@@ -73,16 +78,15 @@ The result of this function is then used as:
 # Arguments
 
 - `::Medlyn`: an instance of the `Medlyn` model type
-- `models::ModelMapping`: A `ModelMapping` struct holding the parameters for the models.
 - `status`: A status struct holding the variables for the models.
-- `meteo`: meteorology structure, see [`Atmosphere`](https://palmstudio.github.io/PlantMeteo.jl/stable/#PlantMeteo.Atmosphere). Is not used in this model.
+- `environment`: sampled environment, see [`Atmosphere`](https://palmstudio.github.io/PlantMeteo.jl/stable/#PlantMeteo.Atmosphere). Is not used in this model.
 - `constants`: A constants struct holding the constants for the models. Is not used in this model.
-- `extra`: A struct holding the extra variables for the models. Is not used in this model.
+- `context`: PlantSimEngine runtime context. It is not used in this model.
 
 # Details
 
-Use `variables()` on Medlyn to get the variables that must be instantiated in the
-`ModelMapping` struct.
+Use `variables(Medlyn(...))` to inspect the model contract. Variables not
+provided by another application must be initialized in the target `Status`.
 
 # Notes
 
@@ -101,25 +105,14 @@ https://doi.org/10.1111/pce.14041
 ```julia
 meteo = Atmosphere(T = 20.0, Wind = 1.0, P = 101.3, Rh = 0.65)
 
-leaf =
-    ModelMapping(
-        stomatal_conductance = Medlyn(0.03, 12.0),
-        status = (Cₛ = 380.0, Dₗ = meteo.VPD)
-    )
-
-gs_mod = gs_closure(leaf, meteo)
-
 A = 20 # example assimilation (μmol m-2 s-1)
-Gs = leaf.stomatal_conductance.g0 + gs_mod * A
-
-# Or more directly using `run!()`:
-
-leaf =
-    ModelMapping(
-        stomatal_conductance = Medlyn(0.03, 12.0),
-        status = (A = A, Cₛ = 380.0, Dₗ = meteo.VPD)
-    )
-run!(leaf,meteo)
+scene = leaf_scene(
+    Medlyn(0.03, 12.0);
+    status=Status(A=A, Cₛ=380.0, Dₗ=meteo.VPD),
+    environment=meteo,
+)
+run!(scene)
+only(model_objects(scene; scale=:Leaf)).status.Gₛ
 ```
 
 Note that we use `VPD` as an approximation of `Dₗ` here because we don't have the leaf temperature (*i.e.* `Dₗ = VPD` when `Tₗ = T`).
@@ -131,12 +124,10 @@ Craig V. M. Barton, Kristine Y. Crous, Paolo De Angelis, Michael Freeman, et Lis
 2011. « Reconciling the optimal and empirical approaches to modelling stomatal conductance ».
 Global Change Biology 17 (6): 2134‑44. https://doi.org/10.1111/j.1365-2486.2010.02375.x.
 """
-function gs_closure(::Medlyn, models, status, meteo, constants=nothing, extra=nothing)
-    (1.0 + models.stomatal_conductance.g1 / sqrt(max(1e-9, status.Dₗ))) / status.Cₛ
+function gs_closure(model::Medlyn, status, environment, constants=nothing, context=nothing)
+    (1.0 + model.g1 / sqrt(max(1e-9, status.Dₗ))) / status.Cₛ
 end
 
-PlantSimEngine.ObjectDependencyTrait(::Type{<:Medlyn}) = PlantSimEngine.IsObjectIndependent()
-PlantSimEngine.TimeStepDependencyTrait(::Type{<:Medlyn}) = PlantSimEngine.IsTimeStepIndependent()
 PlantSimEngine.timestep_hint(::Type{<:Medlyn}) = (
     required=(Dates.Minute(1), Dates.Hour(6)),
     preferred=Dates.Hour(1)

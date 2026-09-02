@@ -1,46 +1,40 @@
-# Importing the physical constants:
 constants = Constants()
-
-# Defining the variables we need:
-A = 20.0 # assimilation (umol m-2 s-1)
-Cₛ = 300.0 # Air CO₂ concentration at the leaf surface (ppm)
-Gs = Medlyn(0.03, 12.0, 0.0) # Instance of a Medlyn type with g0 = 0.03 and g1 = 0.1
-
-# Defining the meteorology:
-meteo = Atmosphere(T=28.0, Wind=0.8333, P=101.325, Rh=0.47)
-
-# Defining the leaf struct:
-leaf = ModelMapping(
-    stomatal_conductance=Gs, # Instance of a Medlyn type
-    status=(A=A, Cₛ=Cₛ, Dₗ=meteo.VPD)
+A = 20.0
+Cₛ = 300.0
+meteo = Atmosphere(
+    T=28.0,
+    Wind=0.8333,
+    P=101.325,
+    Rh=0.47,
+    duration=Hour(1),
 )
 
-# Computing the stomatal conductance using the Medlyn et al. (2011) model:
-
 @testset "Medlyn et al. (2011)" begin
-    outputs = run!(leaf, meteo)
-    @test outputs.Gₛ[1] ≈ 0.6607197172920005 # in mol[CO₂] m-2 s-1
-end;
+    scene = leaf_scene(
+        Medlyn(0.03, 12.0, 0.0);
+        status=Status(A=A, Cₛ=Cₛ, Dₗ=meteo.VPD),
+        environment=meteo,
+    )
+    run!(scene; constants=constants)
+    @test leaf_status(scene).Gₛ ≈ 0.6607197172920005
+end
+
+@testset "Constant stomatal conductance" begin
+    scene = leaf_scene(ConstantGs(0.0, 0.2); environment=meteo)
+    run!(scene; constants=constants)
+    @test leaf_status(scene).Gₛ == 0.2
+end
 
 @testset "Tuzet et al. (2003)" begin
-    leaf = ModelMapping(
-        stomatal_conductance=Tuzet(0.03, 12.0, -1.5, 2.0, 30.0),
-        status=(A=A, Cₛ=Cₛ, Ψₗ=[0.0, -1.0, -2.0])
-    )
-    outputs = run!(leaf, meteo)
-    @test outputs.Gₛ ≈ [0.918888888888889, 0.7121829707245958, 0.2809610900468388] # in mol[CO₂] m-2 s-1
-end;
-
-# VPD = 0.1:0.1:3.0
-# plot(x -> stomatal_conductance(Gs,A,Cₛ,VPD = x), VPD, xlabel = "VPD (kPa)",
-#             ylab = "Gs (μmol[CO₂] m⁻² s⁻¹)",
-#             label = "A = 20, Cₛ = 300.0, g0 = 0.03, g1 = 12.0",
-#             legend = :topright)
-# plot!(x -> stomatal_conductance(Medlyn(0.03,15.0),A,Cₛ,VPD = x), VPD,
-#     label = "A = 20, Cₛ = 300.0, g0 = 0.03, g1 = 15.0")
-# plot!(x -> stomatal_conductance(Medlyn(0.01,12.0),A,Cₛ,VPD = x), VPD,
-#     label = "A = 20, Cₛ = 300.0, g0 = 0.01, g1 = 12.0")
-# plot!(x -> stomatal_conductance(Gs,15,Cₛ,VPD = x), VPD,
-#     label = "A = 15, Cₛ = 300.0, g0 = 0.03, g1 = 12.0")
-# plot!(x -> stomatal_conductance(Gs,A,200,VPD = x), VPD,
-#         label = "A = 20, Cₛ = 200.0, g0 = 0.01, g1 = 12.0")
+    values = map((0.0, -1.0, -2.0)) do Ψₗ
+        scene = leaf_scene(
+            Tuzet(0.03, 12.0, -1.5, 2.0, 30.0);
+            status=Status(A=A, Cₛ=Cₛ, Ψₗ=Ψₗ),
+            environment=meteo,
+        )
+        run!(scene; constants=constants)
+        return leaf_status(scene).Gₛ
+    end
+    @test collect(values) ≈
+          [0.918888888888889, 0.7121829707245958, 0.2809610900468388]
+end

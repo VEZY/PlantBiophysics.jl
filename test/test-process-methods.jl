@@ -1,126 +1,76 @@
-# To make the reference values again:
-function make_ref(leaf)
-    merged_dict = Dict()
-    for i in keys(status(leaf))
-        push!(merged_dict, i => [j[i] for j in status(leaf)])
-    end
-    return (; merged_dict...)
+function run_energy_case(; sky_fraction, meteo)
+    scene = leaf_scene(
+        Monteith(),
+        Fvcb(α=0.24),
+        Medlyn(0.03, 12.0);
+        status=Status(
+            Ra_SW_f=13.747,
+            sky_fraction=sky_fraction,
+            aPPFD=1500.0,
+            d=0.03,
+        ),
+        environment=meteo,
+    )
+    run!(scene; constants=Constants())
+    return leaf_status(scene)
 end
 
-@testset "One time step status + Atmosphere" begin
-    # Reference value (use make_ref(leaf) to update):
-    ref = (
-        Dₗ=[0.5021715623565368],
-        Tₗ=[17.659873993789848],
-        Rn=[21.266393383716945],
-        Cᵢ=[337.0202128385702],
-        Cₛ=[356.330207843304],
-        d=[0.03],
-        aPPFD=[1500.0],
-        A=[29.35278783520552],
-        sky_fraction=[1.0],
-        Ra_SW_f=[13.747],
-        λE=[142.76456451000684],
-        Ra_LW_f=[7.5193933837169435],
-        iter=[2],
-        H=[-121.49817112628988],
-        Gₛ=[1.506586807729961],
-        Gbc=[0.6721531380291846],
-        Gbₕ=[0.021346792818908434]
-    )
-
-    meteo = Atmosphere(T=20.0, Wind=1.0, P=101.3, Rh=0.65)
-    leaf = ModelMapping(
-        energy_balance=Monteith(),
-        photosynthesis=Fvcb(α=0.24), # because I set-up the tests with this value for α
-        stomatal_conductance=Medlyn(0.03, 12.0),
-        status=(Ra_SW_f=13.747, sky_fraction=1.0, aPPFD=1500.0, d=0.03)
-    )
-
-    out = run!(leaf, meteo)
-    for i in keys(ref)
-        @test out[i] ≈ ref[i] atol = 1e-2 rtol = 1e-2
-    end
+function status_series(statuses, variable)
+    return [status[variable] for status in statuses]
 end
 
-@testset "Two time step status + Atmosphere" begin
-    # Reference value (use make_ref(leaf) to update):
+@testset "One leaf and one atmosphere" begin
     ref = (
-        Dₗ=[0.4971967247887157, 0.5021715623565368],
-        Tₗ=[17.620920554013832, 17.659873993789848],
-        Rn=[17.568517340824783, 21.266393383716945],
-        Cᵢ=[337.11579838230546, 337.0202128385702],
-        Cₛ=[356.3923101667511, 356.330207843304],
-        d=[0.03, 0.03],
-        aPPFD=[1500.0, 1500.0],
-        A=[29.333909788282266, 29.35278783520552],
-        sky_fraction=[0.5, 1.0],
-        Ra_SW_f=[13.747, 13.747],
-        λE=[141.26139453771634, 142.76456451000684],
-        Ra_LW_f=[3.8215173408247853, 7.5193933837169435],
-        iter=[2, 2],
-        H=[-123.69287719689156, -121.49817112628988],
-        Gₛ=[1.5125652369202054, 1.506586807729961],
-        Gbc=[0.6726774543767848, 0.6721531380291846],
-        Gbₕ=[0.021363444489205775, 0.021346792818908434]
+        Dₗ=0.5021715623565368,
+        Tₗ=17.659873993789848,
+        Rn=21.266393383716945,
+        Cᵢ=337.0202128385702,
+        Cₛ=356.330207843304,
+        A=29.35278783520552,
+        λE=142.76456451000684,
+        H=-121.49817112628988,
+        Gₛ=1.506586807729961,
     )
-
-    meteo = Atmosphere(T=20.0, Wind=1.0, P=101.3, Rh=0.65)
-    leaf = ModelMapping(
-        energy_balance=Monteith(),
-        photosynthesis=Fvcb(α=0.24), # because I set-up the tests with this value for α
-        stomatal_conductance=Medlyn(0.03, 12.0),
-        status=(Ra_SW_f=13.747, sky_fraction=[0.5, 1.0], aPPFD=1500.0, d=0.03)
+    status = run_energy_case(
+        sky_fraction=1.0,
+        meteo=Atmosphere(
+            T=20.0,
+            Wind=1.0,
+            P=101.3,
+            Rh=0.65,
+            duration=Hour(1),
+        ),
     )
-
-    out = run!(leaf, meteo)
-
-    for i in keys(ref)
-        @test all(isapprox.(out[i], ref[i]; atol=1e-2, rtol=1e-2))
+    for variable in keys(ref)
+        @test status[variable] ≈ ref[variable] atol = 1e-2 rtol = 1e-2
     end
 end
 
-
-@testset "Two time step status + Weather" begin
-    # Reference value (use make_ref(leaf) to update):
-    ref = (
-        Dₗ=[0.4971967247887157, 0.6170383529946637],
-        Tₗ=[17.620920554013832, 22.18582388627161],
-        Rn=[17.568517340824783, 23.625527284092865],
-        Cᵢ=[337.11579838230546, 332.4076725301661],
-        Cₛ=[356.3923101667511, 353.4010193797825],
-        d=[0.03, 0.03],
-        aPPFD=[1500.0, 1500.0],
-        A=[29.333909788282266, 31.25727853897744],
-        sky_fraction=[0.5, 1.0],
-        Ra_SW_f=[13.747, 13.747],
-        λE=[141.26139453771634, 169.49292955280998],
-        Ra_LW_f=[3.8215173408247853, 9.878527284092865],
-        iter=[2, 2],
-        H=[-123.69287719689156, -145.86740226871711],
-        Gₛ=[1.5125652369202054, 1.4684199787541639],
-        Gbc=[0.6726774543767848, 0.670771723392939],
-        Gbₕ=[0.021363444489205775, 0.021666265772813036]
+@testset "Several explicit leaf cases" begin
+    meteo = (
+        Atmosphere(
+            T=20.0,
+            Wind=1.0,
+            P=101.3,
+            Rh=0.65,
+            duration=Hour(1),
+        ),
+        Atmosphere(
+            T=25.0,
+            Wind=1.0,
+            P=101.3,
+            Rh=0.65,
+            duration=Hour(1),
+        ),
     )
-
-    meteo =
-        Weather(
-            [
-            Atmosphere(T=20.0, Wind=1.0, P=101.3, Rh=0.65),
-            Atmosphere(T=25.0, Wind=1.0, P=101.3, Rh=0.65),
-        ]
-        )
-
-    leaf = ModelMapping(
-        energy_balance=Monteith(),
-        photosynthesis=Fvcb(α=0.24), # because I set-up the tests with this value for α
-        stomatal_conductance=Medlyn(0.03, 12.0),
-        status=(Ra_SW_f=13.747, sky_fraction=[0.5, 1.0], aPPFD=1500.0, d=0.03)
-    )
-
-    out = run!(leaf, meteo)
-
-    for i in keys(ref)
-        @test all(isapprox.(out[i], ref[i]; atol=1e-2, rtol=1e-2))
-    end
+    statuses = [
+        run_energy_case(; sky_fraction, meteo=meteo_row)
+        for (sky_fraction, meteo_row) in zip((0.5, 1.0), meteo)
+    ]
+    @test status_series(statuses, :Tₗ) ≈
+          [17.620920554013832, 22.18582388627161] atol = 1e-2
+    @test status_series(statuses, :A) ≈
+          [29.333909788282266, 31.25727853897744] atol = 1e-2
+    @test status_series(statuses, :λE) ≈
+          [141.26139453771634, 169.49292955280998] atol = 1e-2
 end

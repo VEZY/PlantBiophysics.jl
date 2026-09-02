@@ -2,15 +2,12 @@ module PlantBiophysics
 
 import PlantSimEngine
 import PlantSimEngine: @process, AbstractModel, TimeStepTable
-import PlantSimEngine: Status, ModelMapping
+import PlantSimEngine: Status
 
 import PlantMeteo
 import PlantMeteo: Weather, AbstractAtmosphere
 
-# For IO:
-import YAML
 import CSV
-import OrderedCollections: OrderedDict
 import Dates
 
 import DataFrames.DataFrame # For convenience transformations
@@ -28,21 +25,21 @@ import Statistics
 
 # Generic process methods
 include("processes/light/light_interception.jl")
+include("processes/light/radiation_basis.jl")
 include("processes/photosynthesis/photosynthesis.jl")
 include("processes/conductances/stomatal/stomatal_conductance.jl")
 include("processes/energy/energy_balance.jl")
 
 # Conversions
 include("conversions.jl")
+include("simulation.jl")
 
 # γ_star
 include("processes/γ_star.jl")
 
 # Light interception
-include("processes/light/Ignore.jl")
 include("processes/light/Beer.jl")
 include("processes/light/Beer_shortwave.jl")
-include("processes/light/Translucent.jl")
 
 # Photosynthesis related files:
 include("processes/photosynthesis/constantA.jl")
@@ -67,7 +64,6 @@ include("processes/energy/Monteith.jl")
 
 # File IO
 include("io/read_file.jl")
-include("io/read_model.jl")
 include("io/read_walz.jl")
 include("io/read_licor6400.jl")
 include("io/read_licor6800.jl")
@@ -79,12 +75,7 @@ include("fitting/fit_FvCB.jl")
 include("fitting/fit_Medlyn.jl")
 include("fitting/fit_Beer.jl")
 
-# Depreciations
-include("depreciations/models.jl")
-
-# File IO:
-export read_model
-export is_model
+# File IO
 export read_walz, read_licor6400, read_licor6800, read_ess_dive, read_ciras4
 
 # Conversions
@@ -97,7 +88,10 @@ export gsc_to_gsw
 
 # Light interception
 export AbstractLight_InterceptionModel
+export AbstractRadiation_Basis_ConversionModel
 export Beer, BeerShortwave  # structs to hold the values for the Beer-Lambert law of light extinction
+export GroundToMeanLeafPPFD, GroundToMeanLeafShortwave
+export RadiativeMeshToLeafPPFD, RadiativeMeshToLeafShortwave
 
 # Energy balance
 export AbstractEnergy_BalanceModel
@@ -106,13 +100,6 @@ export grey_body
 export net_longwave_radiation
 export Monteith       # a struct to hold the values for the model of Monteith and Unsworth (2013)
 export latent_heat, sensible_heat
-
-# structure for light interception
-export Translucent
-export LightIgnore
-export OpticalProperties
-export σ
-export AbstractLight_InterceptionModel
 
 # Photosynthesis
 export AbstractPhotosynthesisModel
@@ -123,15 +110,13 @@ export FvcbRaw # Parameters for the original Farquhar et al. (1980) model
 
 # Conductances
 export AbstractStomatal_ConductanceModel
-export gbh_to_gbw
 export gbₕ_free
 export gbₕ_forced
 export Medlyn, Tuzet, ConstantGs
-export ConstantGs
 
 # Model helpers
 export get_km, Γ_star, arrhenius, get_J, gs_closure, get_Cᵢⱼ, get_Cᵢᵥ, get_Dₕ
-export Fvcb_net_assimiliation
-export get_process, get_model, instantiate
+export Fvcb_net_assimilation, Fvcb_net_assimiliation
+export leaf_scene
 
 end

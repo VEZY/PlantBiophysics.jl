@@ -1,278 +1,73 @@
-# Package design
+# Package Design
 
-`PlantBiophysics.jl` is designed to ease the computations of biophysical processes in plants and other objects. It uses `PlantSimEngine.jl`, so it shares the same ontology (same concepts and terms).
+PlantBiophysics owns scientific model kernels. PlantSimEngine owns scenario
+assembly, dependency compilation, scheduling, object selection, environments,
+and output retention.
 
-```@setup usepkg
-using PlantBiophysics, PlantSimEngine, PlantMeteo
-using DataFrames
-```
+Each model declares:
 
-## Definitions
+- a process identity;
+- `inputs_` and `outputs_`;
+- optional meteorology inputs;
+- optional model-author dependency defaults through `dep`;
+- one-timestep equations through `run!`.
 
-### Processes
+The same kernel can therefore run on one leaf or on millions of leaves without
+knowing its plant, species, timestep, or coupling context.
 
-A process is defined in PlantSimEngine as a biological or a physical phenomena. At this time `PlantBiophysics.jl` implements four processes:
+## Variable Ownership
 
-- light interception
-- energy balance
-- photosynthesis
-- stomatal conductance
+Keep each value in the contract that owns its lifecycle:
 
-### Models
+- `inputs_` declares object state read through `status`, including values bound
+  from another application;
+- `environment_inputs_` declares forcing read directly through `environment`;
+- model fields hold fixed parameters, while the `constants` argument holds
+  shared physical constants;
+- `dep` declares hard calls that a model invokes itself;
+- distributed outputs remain outputs of their producer application and are
+  connected with `ModelSpec(...; inputs=...)` or `outputs_to=...`. They do not
+  become meteorological inputs merely because they vary over time.
 
-A process is simulated using a particular implementation of a model. Each model is implemented using a structure that lists the parameters of the model. For example, PlantBiophysics provides the [`Beer`](@ref) structure for the implementation of the Beer-Lambert law of light extinction.
+The values in `environment_inputs_` are schema representatives, not fallback
+forcing. PlantSimEngine validates their names against the bound environment
+before numerical execution. For example, `Beer` declares `Ri_PAR_f`, while
+`Monteith` declares the meteorological fields used by its energy-balance loop.
 
-You can see the list of available models for each process in the sections about the models, *e.g.* [here for photosynthesis](@ref photosynthesis_page).
+## Soft Value Dependencies
 
-Models can use three types of entries:
+When one application produces a variable consumed by another application on
+the same object, PlantSimEngine infers the value binding when it is unique.
+Cross-object values are declared explicitly with
+`ModelSpec(...; inputs=...)`.
 
-- Parameters
-- Meteorological information
-- Variables
+## Manual Calls
 
-Parameters are constant values that are used by the model to compute its outputs. Meteorological information are values that are provided by the user and are used as inputs to the model. Variables are computed by the model and can optionally be initialized before the simulation.
+Some PlantBiophysics models control an iterative call stack:
 
-Users can choose which model is used to simulate a process using the `ModelMapping` structure from PlantSimEngine. `ModelMapping` is also used to store the values of the parameters, and to initialize variables.
+- `Monteith` calls a photosynthesis model while solving leaf temperature;
+- `Fvcb`, `FvcbIter`, and `ConstantAGs` call stomatal conductance.
 
-Let's instantiate a `ModelMapping` with the Beer-Lambert model of light extinction. The model is implemented with the [`Beer`](@ref) structure and has only one parameter: the extinction coefficient (`k`).
+These are `Call(...)` defaults returned by `dep(model)`. PlantSimEngine
+compiles them to concrete call targets. The parent model decides when to call
+them and when an accepted result should be published.
 
-```@example usepkg
-using PlantSimEngine, PlantBiophysics
-ModelMapping(Beer(0.5))
-```
+## State And Generic Values
 
-What happened here? We provided an instance of a model to a `ModelMapping` that automatically associates it to the process it simulates (*i.e.* the light interception).
+Runtime variables live in `Status`. Same-rate coupling uses shared references
+where possible, and multi-object inputs use reference vectors. PlantBiophysics
+does not require `Float64`; units, dual numbers, and uncertainty wrappers can
+flow through models when their operations are defined.
 
-!!! tip
-    We see that we only instantiated the `ModelMapping` for the light extinction process. What about the others like photosynthesis or energy balance ? Well there is no need to give models if we have no intention to simulate them.
+## Scenario Assembly
 
-## Parameters
-
-A parameter is a constant value that is used by a model to compute its outputs. For example, the Beer-Lambert model uses the extinction coefficient (`k`) to compute the light extinction. The Beer-Lambert model is implemented with the [`Beer`](@ref) structure, which has only one field: `k`. We can see that using `fieldnames`:
-
-```@example usepkg
-fieldnames(Beer)
-```
-
-Some models are shipped with default values for their parameters. For example, the [`Monteith`](@ref) model that simulates the energy balance has a default value for all its parameters. Here are the parameter names:
-
-```@example usepkg
-fieldnames(Monteith)
-```
-
-And their default values:
-
-```@example usepkg
-Monteith()
-```
-
-But if we need to change the values of some parameters, we can usually give them as keyword arguments:
-
-```@example usepkg
-Monteith(maxiter = 100, ΔT = 0.001)
-```
-
-Perfect! Now is that all we need to make a simulation? Well, usually no. Models need parameters, but also input variables.
-
-## Variables (inputs, outputs)
-
-Variables are computed by models, and can optionally be initialized before the simulation. Variables and their values are stored in the `ModelMapping`, and are initialized automatically or manually.
-
-`ModelMapping` stores both process declarations and status information. For example the [`Beer`](@ref) model needs the leaf area index (`LAI`, m^{2} \cdot m^{-2}) to run.
-
-We can see which variables are needed as inputs using `inputs` from PlantSimEngine:
-
-```@example usepkg
-using PlantSimEngine
-inputs(Beer(0.5))
-```
-
-We can also see the outputs of the model using `outputs` from PlantSimEngine:
-
-```@example usepkg
-using PlantSimEngine
-outputs(Beer(0.5))
-```
-
-If we instantiate a `ModelMapping` with the Beer-Lambert model, we can see that the `:status` field has two variables: `LAI` and `PPDF`. The first is an input, the second an output.
-
-```@example usepkg
-using PlantSimEngine, PlantBiophysics
-m = ModelMapping(Beer(0.5))
-keys(status(m))
-```
-
-To know which variables should be initialized, we can use `to_initialize` from PlantSimEngine:
-
-```@example usepkg
-m = ModelMapping(Beer(0.5))
-
-to_initialize(m)
-```
-
-Their values are uninitialized though (hence the warnings):
-
-```@example usepkg
-(m[:LAI], m[:aPPFD])
-```
-
-Uninitialized variables have often the value returned by `typemin()`, *e.g.* `-Inf` for `Float64`:
-
-```@example usepkg
-typemin(Float64)
-```
-
-!!! tip
-    Prefer using `to_initialize` rather than `inputs` to check which variables should be initialized. `inputs` returns the variables that are needed by the model to run, but `to_initialize` returns the variables that are needed by the model to run and that are not initialized. Also `to_initialize` is more clever when coupling models (see below).
-
-We can initialize the variables by providing their values to the status at instantiation:
-
-```@example usepkg
-m = ModelMapping(Beer(0.5), status = (LAI = 2.0,))
-```
-
-Or after instantiation by updating the status:
-
-```@example usepkg
-m = ModelMapping(Beer(0.5))
-
-m.status.LAI = 2.0
-m
-```
-
-We can check if a component is correctly initialized using `is_initialized` (from PlantSimEngine):
-
-```@example usepkg
-is_initialized(m)
-```
-
-Some variables are inputs of models, but outputs of other models. When we couple models, we have to be careful to initialize only the variables that are not computed.
-
-## Climate forcing
-
-To make a simulation, we usually need the climatic/meteorological conditions measured close to the object or component.
-
-The `PlantMeteo.jl` package provides a data structure to declare those conditions, and to pre-compute other required variables. The most basic data structure is a type called `Atmosphere`, which defines the conditions for a steady-state, *i.e.* the conditions are considered at equilibrium. Another structure is available to define different consecutive time-steps: `Weather`.
-
-The mandatory variables to provide for an `Atmosphere` are: `T` (air temperature in °C), `Rh` (relative humidity, 0-1), `Wind` (the wind speed in m s-1) and `P` (the air pressure in kPa). We can declare such conditions like so:
-
-```@example usepkg
-using PlantMeteo
-meteo = Atmosphere(T = 20.0, Wind = 1.0, P = 101.3, Rh = 0.65)
-```
-
-More details are available from the [dedicated section](@ref microclimate_page).
-
-## Simulation
-
-### Simulation of processes
-
-Making a simulation is rather simple, we simply use the `run!` function provided by `PlantSimEngine`:
+`leaf_scene(models...; status, environment, timestep, type_promotion,
+status_transform)` is the convenience API for one leaf. It delegates to
+PlantSimEngine's concise `CompositeModel` constructor after preparing
+PlantBiophysics model defaults. Larger simulations use PlantSimEngine directly:
 
 ```julia
-run!(model_mapping, meteo)
+ModelSpec(model; name=:application, on=Many(scale=:Leaf), every=Dates.Hour(1))
 ```
 
-The first argument is the model mapping (see `ModelMapping` from `PlantSimEngine`), and the second defines the micro-climatic conditions (more details below in [Climate forcing](@ref)).
-
-The `ModelMapping` should be initialized for the given process before calling `run!`. See [Variables (inputs, outputs)](@ref) for more details.
-
-### Example simulation
-
-For example we can simulate the `stomatal_conductance` of a leaf like so:
-
-```@example usepkg
-using PlantMeteo, PlantSimEngine, PlantBiophysics
-meteo = Atmosphere(T = 20.0, Wind = 1.0, P = 101.3, Rh = 0.65)
-
-leaf = ModelMapping(
-    Medlyn(0.03, 12.0),
-    status = (A = 20.0, Dₗ = meteo.VPD, Cₛ = 400.0)
-)
-
-out_sim = run!(leaf, meteo)
-
-out_sim[:Gₛ]
-```
-
-### Outputs
-
-The outputs of a simulation are returned as a `TimeStepTable{Status}`, which you can think of as a type-stable `DataFrame` with some extra features.
-
-You can index into it like a `DataFrame` with a symbol to get the values of a variable across all time-steps:
-
-```@example usepkg
-out_sim[:Gₛ]
-```
-
-Indexing both rows and columns is also possible, like in a `DataFrame`:
-
-```@example usepkg
-out_sim[1, :Gₛ]
-```
-
-But also indexing a single timestep by indexing with one integer, a range or `begin` and `end`:
-
-```@example usepkg
-out_sim[end]
-```
-
-You can still easily transform it into a `DataFrame` if you prefer:
-
-```@example usepkg
-using DataFrames
-df = PlantSimEngine.convert_outputs(out_sim, DataFrame)
-```
-
-## [Model coupling](@id model_coupling_page)
-
-A model can work either independently or in conjunction with other models. For example a stomatal conductance model is often associated with a photosynthesis model, *i.e.* it is called from the photosynthesis model.
-
-Several models proposed in `PlantBiophysics.jl` are hard-coupled models, *i.e.* one model calls another. For example, the [`Fvcb`](@ref) structure is the implementation of the Farquhar–von Caemmerer–Berry model for C3 photosynthesis (Farquhar et al., 1980; von Caemmerer and Farquhar, 1981) calls a stomatal conductance model. Hence, using [`Fvcb`](@ref) requires a stomatal conductance model in the `ModelMapping` to compute Gₛ.
-
-We can use the stomatal conductance model of Medlyn et al. (2011) as an example to compute it. It is implemented with the [`Medlyn`](@ref) structure. We can then create a `ModelMapping` with the two models:
-
-```@example usepkg
-ModelMapping(Fvcb(), Medlyn(0.03, 12.0))
-```
-
-Now this instantiation returns some warnings saying we need to initialize some variables.
-
-The [`Fvcb`](@ref) model requires the following variables as inputs:
-
-```@example usepkg
-inputs(Fvcb())
-```
-
-And the [`Medlyn`](@ref) model requires the following variables:
-
-```@example usepkg
-inputs(Medlyn(0.03, 12.0))
-```
-
-We see that `A` is needed as input of `Medlyn`, but we also know that it is an output of `Fvcb`. This is why we prefer using `to_initialize` from `PlantSimEngine.jl` instead of `inputs`, because it returns only the variables that need to be initialized, considering that some inputs are duplicated between models, and some are computed by other models (they are outputs of a model):
-
-```@example usepkg
-to_initialize(ModelMapping(Fvcb(), Medlyn(0.03, 12.0)))
-```
-
-The most straightforward way of initializing a model mapping is by giving the initializations to the `status` keyword argument during instantiation:
-
-```@example usepkg
-m = ModelMapping(
-    Fvcb(),
-    Medlyn(0.03, 12.0),
-    status = (Tₗ = 25.0, aPPFD = 1000.0, Cₛ = 400.0, Dₗ = 0.82)
-)
-```
-
-Our component models structure is now fully parameterized and initialized for a simulation!
-
-Let's simulate it:
-
-```@example usepkg
-out_sim = run!(m)
-```
-
-!!! tip
-    The models included in the package are listed in their own section, *i.e.* [here for photosynthesis](@ref photosynthesis_page).
+Plant architecture and scene composition remain outside PlantBiophysics.

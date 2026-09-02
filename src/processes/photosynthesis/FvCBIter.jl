@@ -51,16 +51,24 @@ function FvcbIter(; iter_A_max=20, ΔT_A=1.0, kwargs...)
 end
 
 function PlantSimEngine.inputs_(::FvcbIter)
-    (aPPFD=-Inf, Tₗ=-Inf, Gbc=-Inf)
+    (
+        aPPFD=PlantSimEngine.Required(Real),
+        Tₗ=PlantSimEngine.Required(Real),
+        Gbc=PlantSimEngine.Required(Real),
+    )
 end
+
+PlantSimEngine.variable_contracts_(::FvcbIter) = (
+    aPPFD=LEAF_PAR_PHOTON_FLUX_CONTRACT,
+)
+
+PlantSimEngine.environment_inputs_(::FvcbIter) = (Cₐ=0.0,)
 
 function PlantSimEngine.outputs_(::FvcbIter)
     (A=-Inf, Gₛ=-Inf, Cᵢ=-Inf, Cₛ=-Inf)
 end
 
 Base.eltype(x::FvcbIter) = typeof(x).parameters[1]
-PlantSimEngine.ObjectDependencyTrait(::Type{<:FvcbIter}) = PlantSimEngine.IsObjectIndependent()
-PlantSimEngine.TimeStepDependencyTrait(::Type{<:FvcbIter}) = PlantSimEngine.IsTimeStepIndependent()
 PlantSimEngine.timestep_hint(::Type{<:FvcbIter}) = (
     required=(Dates.Minute(1), Dates.Hour(6)),
     preferred=Dates.Hour(1)
@@ -73,10 +81,14 @@ PlantSimEngine.output_policy(::Type{<:FvcbIter}) = (
     Cₛ=PlantSimEngine.Integrate(PlantMeteo.MeanReducer()),
 )
 
-PlantSimEngine.dep(::FvcbIter) = (stomatal_conductance=AbstractStomatal_ConductanceModel,)
+PlantSimEngine.dep(::FvcbIter) = (
+    stomatal_conductance=PlantSimEngine.Call(
+        PlantSimEngine.One(scale=:Leaf, process=:stomatal_conductance),
+    ),
+)
 
 """
-    run!(::FvcbIter, models, status, meteo, constants=Constants())
+    run!(model::FvcbIter, status, environment, constants=Constants(), context=nothing)
 
 Photosynthesis using the Farquhar–von Caemmerer–Berry (FvCB) model for C3 photosynthesis
  (Farquhar et al., 1980; von Caemmerer and Farquhar, 1981).
@@ -96,16 +108,17 @@ Modify the first argument in place for A, Gₛ and Cᵢ:
 
 # Arguments
 
-- `::FvcbIter`: Farquhar–von Caemmerer–Berry (FvCB) model with iterative resolution.
-- `models`: a `ModelMapping` struct holding the parameters for the model with
-initialisations for:
+- `model::FvcbIter`: Farquhar–von Caemmerer–Berry (FvCB) model with iterative resolution.
+- the declared stomatal-conductance hard-call target owns its model parameters;
+  the shared status provides initial values for:
     - `Tₗ` (°C): leaf temperature
-    - `aPPFD` (μmol m-2 s-1): absorbed Photosynthetic Photon Flux Density
+    - `aPPFD` (μmol[photon] m[leaf]⁻² s⁻¹): absorbed Photosynthetic
+      Photon Flux Density on the botanical leaf-area basis
     - `Gbc` (mol m-2 s-1): boundary conductance for CO₂
     - `Dₗ` (kPa): is the difference between the vapour pressure at the leaf surface and the
     saturated air vapour pressure in case you're using the stomatal conductance model of [`Medlyn`](@ref).
 - `status`: A status, usually the leaf status (*i.e.* leaf.status)
-- `meteo`: meteorology structure, see [`Atmosphere`](https://palmstudio.github.io/PlantMeteo.jl/stable/#PlantMeteo.Atmosphere)
+- `environment`: meteorology structure, see [`Atmosphere`](https://palmstudio.github.io/PlantMeteo.jl/stable/#PlantMeteo.Atmosphere)
 - `constants = PlantMeteo.Constants()`: physical constants. See `PlantMeteo.Constants` for more details
 
 # Note
@@ -118,20 +131,17 @@ balance of the leaf with the photosynthesis to get those variables. See
 # Examples
 
 ```julia
-using PlantBiophysics, PlantMeteo
-meteo = Atmosphere(T = 20.0, Wind = 1.0, P = 101.3, Rh = 0.65)
-
-leaf =
-    ModelMapping(
-        photosynthesis = FvcbIter(),
-        stomatal_conductance = Medlyn(0.03, 12.0),
-        status = (Tₗ = 25.0, aPPFD = 1000.0, Gbc = 0.67, Dₗ = meteo.VPD)
-    )
-# NB: we need  to initalise Tₗ, aPPFD and Gbc.
-
-run!(leaf,meteo,PlantMeteo.Constants())
-leaf.status.A
-leaf.status.Cᵢ
+using PlantBiophysics, PlantMeteo, PlantSimEngine
+environment = Atmosphere(T = 20.0, Wind = 1.0, P = 101.3, Rh = 0.65)
+scene = leaf_scene(
+    FvcbIter(),
+    Medlyn(0.03, 12.0);
+    status=Status(Tₗ=25.0, aPPFD=1000.0, Gbc=0.67, Dₗ=environment.VPD),
+    environment=environment,
+)
+run!(scene)
+leaf = only(model_objects(scene; scale=:Leaf))
+(leaf.status.A, leaf.status.Cᵢ)
 ```
 
 Note that we use `VPD` as an approximation of `Dₗ` here because we don't have the leaf temperature (*i.e.* `Dₗ = VPD` when `Tₗ = T`).
@@ -149,10 +159,10 @@ Leuning, R., F. M. Kelliher, DGG de Pury, et E.D. Schulze. 1995. Leaf nitrogen,
 photosynthesis, conductance and transpiration: scaling from leaves to canopies ». Plant,
 Cell & Environment 18 (10): 1183‑1200.
 """
-function PlantSimEngine.run!(m::FvcbIter, models, status, meteo, constants=PlantMeteo.Constants(), extra=nothing)
+function PlantSimEngine.run!(m::FvcbIter, status, environment, constants=PlantMeteo.Constants(), context=nothing)
 
     # Start with a probable value for Cₛ and Cᵢ:
-    status.Cₛ = meteo.Cₐ
+    status.Cₛ = environment.Cₐ
     status.Cᵢ = status.Cₛ * 0.75
     # Tranform Celsius temperatures in Kelvin:
     Tₖ = status.Tₗ - constants.K₀
@@ -184,17 +194,23 @@ function PlantSimEngine.run!(m::FvcbIter, models, status, meteo, constants=Plant
 
     # First iteration to initialize the values for A and Gₛ:
     # Net assimilation (μmol m-2 s-1)
-    status.A = Fvcb_net_assimiliation(status.Cᵢ, Vⱼ, Γˢ, VcMax, Km, Rd, m.TPURef)
+    status.A = Fvcb_net_assimilation(status.Cᵢ, Vⱼ, Γˢ, VcMax, Km, Rd, m.TPURef)
 
     iter = true
     iter_inc = 1
 
     while iter
         # Stomatal conductance (mol[CO₂] m-2 s-1)
-        PlantSimEngine.run!(models.stomatal_conductance, models, status, meteo, constants, extra)
+        # FvCBIter owns Gₛ; each stomatal evaluation is an unpublished trial.
+        PlantSimEngine.run_call!(
+            context,
+            :stomatal_conductance;
+            sampled_environment=environment,
+            publish=false,
+        )
 
         # Surface CO₂ concentration (ppm):
-        status.Cₛ = min(meteo.Cₐ, meteo.Cₐ - status.A / status.Gbc)
+        status.Cₛ = min(environment.Cₐ, environment.Cₐ - status.A / status.Gbc)
         # Intercellular CO₂ concentration (ppm):
         status.Cᵢ = min(status.Cₛ, status.Cₛ - status.A / status.Gₛ)
 
@@ -203,7 +219,7 @@ function PlantSimEngine.run!(m::FvcbIter, models, status, meteo, constants=Plant
             A_new = -Rd
         else
             # Net assimilation (μmol m-2 s-1):
-            A_new = Fvcb_net_assimiliation(status.Cᵢ, Vⱼ, Γˢ, VcMax, Km, Rd, m.TPURef)
+            A_new = Fvcb_net_assimilation(status.Cᵢ, Vⱼ, Γˢ, VcMax, Km, Rd, m.TPURef)
         end
 
         if abs(A_new - status.A) / status.A <= m.ΔT_A ||
@@ -219,12 +235,12 @@ function PlantSimEngine.run!(m::FvcbIter, models, status, meteo, constants=Plant
 end
 
 """
-    Fvcb_net_assimiliation(Cᵢ,Vⱼ,Γˢ,VcMax,Km,Rd)
+    Fvcb_net_assimilation(Cᵢ, Vⱼ, Γˢ, VcMax, Km, Rd, TPU)
 
 Net assimilation following the Farquhar–von Caemmerer–Berry (FvCB) model for C3 photosynthesis
 (Farquhar et al., 1980; von Caemmerer and Farquhar, 1981)
 """
-function Fvcb_net_assimiliation(Cᵢ, Vⱼ, Γˢ, VcMax, Km, Rd, TPU)
+function Fvcb_net_assimilation(Cᵢ, Vⱼ, Γˢ, VcMax, Km, Rd, TPU)
     # Electron-transport-limited rate of CO₂ assimilation (RuBP regeneration-limited):
     Wⱼ = Vⱼ * (Cᵢ - Γˢ) / (Cᵢ + 2.0 * Γˢ)
     # See Von Caemmerer, Susanna. 2000. Biochemical models of leaf photosynthesis.
@@ -240,4 +256,20 @@ function Fvcb_net_assimiliation(Cᵢ, Vⱼ, Γˢ, VcMax, Km, Rd, TPU)
     # Net assimilation (μmol m-2 s-1):
     A = min(Wᵥ, Wⱼ, Wₚ) - Rd
     return A
+end
+
+"""
+    Fvcb_net_assimiliation(Cᵢ, Vⱼ, Γˢ, VcMax, Km, Rd, TPU)
+
+Deprecated misspelling of [`Fvcb_net_assimilation`](@ref). This compatibility
+boundary will be removed in PlantBiophysics v0.20.
+"""
+function Fvcb_net_assimiliation(Cᵢ, Vⱼ, Γˢ, VcMax, Km, Rd, TPU)
+    Base.depwarn(
+        "`Fvcb_net_assimiliation` is deprecated; use " *
+        "`Fvcb_net_assimilation`. Compatibility will be removed in " *
+        "PlantBiophysics v0.20.",
+        :Fvcb_net_assimiliation,
+    )
+    return Fvcb_net_assimilation(Cᵢ, Vⱼ, Γˢ, VcMax, Km, Rd, TPU)
 end

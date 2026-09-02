@@ -1,86 +1,53 @@
-# Parameter fitting
+# [Parameter Fitting](@id parameter_fitting_page)
 
-```@setup usepkg
-using PlantBiophysics, PlantSimEngine
+PlantBiophysics implements `PlantSimEngine.Evaluation.fit` methods for selected models.
+Fitting consumes tabular observations and returns a named tuple of parameters.
+
+## Beer Extinction Coefficient
+
+```@example fitting
+using PlantBiophysics, PlantSimEngine, PlantSimEngine.Evaluation, DataFrames
+
+observations = DataFrame(
+    LAI=[1.0, 2.0, 3.0],
+    Ri_PAR_f=[300.0, 300.0, 300.0],
+    aPPFD=[480.0, 770.0, 940.0],
+)
+
+fitted = Evaluation.fit(Beer, observations)
 ```
 
-## The fit method
+`Ri_PAR_f` and `aPPFD` are both expressed per unit ground area in this canopy
+fit. `LAI` is leaf area per unit ground area.
 
-The package provides methods to the generic `fit` function from `PlantSimEngine` to calibrate a model with data.
+## Model Validation
 
-The arguments depends on the methods, but usually takes several parameters:
+Use the fitted parameters to construct a new scene. For observations with
+different drivers, build and run one Plant-scale canopy scene per observation:
 
-- the model type, *e.g.* `FvCB`
-- a `DataFrame` with the data (depends on the given method)
-- keyword arguments (also depend on the fit method)
-
-## Example with FvCB
-
-A fit method is provided by the package to calibrate the parameters of the `FvCB` model (Farquhar et al., 1980).
-
-Here is an example usage from the documentation of the method:
-
-```@example usepkg
-using PlantBiophysics, PlantSimEngine
-using DataFrames, Plots
-
-df = read_walz(joinpath(dirname(dirname(pathof(PlantBiophysics))),"test","inputs","data","P1F20129.csv"))
-# Removing the Rh and light curves for the fitting because temperature varies
-filter!(x -> x.curve != "Rh Curve" && x.curve != "ligth Curve", df)
-
-# Fit the parameter values:
-VcMaxRef, JMaxRef, RdRef, TPURef = fit(Fvcb, df; Tᵣ = 25.0)
-```
-
-Now that our parameters are optimized, we can check how close to the data a simulation would get.
-
-First, let's select only the data used for the CO₂ curve:
-
-```@example usepkg
-# Checking the results:
-filter!(x -> x.curve == "CO2 Curve", df)
-nothing # hide
-```
-
-!!! note
-    Several functions are provided to read the data from LiCOR 6400 or 6800, WALZ GFS-3000, PPSystem CIRAS-4, or the standard [ESS-DIVE](https://ess-dive.gitbook.io/leaf-level-gas-exchange). The functions are respectively [`read_licor6400`](@ref), [`read_licor6800`](@ref), [`read_walz`](@ref), [`read_ciras4`](@ref) and [`read_ess_dive`](@ref). The data is returned as a `DataFrame` with the following columns: `Tₗ`, `aPPFD`, `Cᵢ`, `A`, `Cₐ`, `Dₗ`, and `Gₛ`.
-
-Now let's re-simulate the assimilation with our optimized parameter values:
-
-```@example usepkg
-leaf =
-    ModelMapping(
-        FvcbRaw(VcMaxRef = VcMaxRef, JMaxRef = JMaxRef, RdRef = RdRef, TPURef = TPURef),
-        status = (Tₗ = df.Tₗ, aPPFD = df.aPPFD, Cᵢ = df.Cᵢ)
+```julia
+predictions = map(eachrow(observations)) do row
+    scene = CompositeModel(
+        Object(:plant; scale=:Plant, status=Status(LAI=row.LAI));
+        applications=(
+            ModelSpec(
+                Beer(fitted.k);
+                name=:canopy_light,
+                on=One(scale=:Plant),
+            ),
+        ),
+        environment=Atmosphere(
+            T=25.0,
+            Wind=1.0,
+            P=101.3,
+            Rh=0.5,
+            Ri_PAR_f=row.Ri_PAR_f,
+        ),
     )
-outs_sim = run!(leaf)
-df_sim = PlantSimEngine.convert_outputs(outs_sim, DataFrame);
+    run!(scene)
+    model_object(scene, :plant).status.aPPFD
+end
 ```
 
-Finally, we can make an A-Cᵢ plot using our custom `ACi` structure as follows:
-
-```@example usepkg
-aci = PlantBiophysics.ACi(VcMaxRef, JMaxRef, RdRef, df[:,:A], df_sim[:,:A], df[:,:Cᵢ], df_sim[:,:Cᵢ])
-plot(aci, leg=:bottomright)
-```
-
-Our simulation fits very closely the observations, nice!
-
-There are another implementation of the FvCB model in our package. One that couples the photosynthesis with the stomatal conductance. And this one computes Cᵢ too. Let's check if it works with this one too by using dummy parameter values for the conductance model:
-
-```@example usepkg
-leaf = ModelMapping(
-        Fvcb(VcMaxRef = VcMaxRef, JMaxRef = JMaxRef, RdRef = RdRef, Tᵣ = 25.0, TPURef = TPURef),
-        Medlyn(0.03, 12.),
-        status = (Tₗ = df.Tₗ, aPPFD = df.aPPFD, Cₛ = df.Cₐ, Dₗ = 0.1)
-    )
-
-w = Weather(select(df, :T, :P, :Rh, :Cₐ, :T => (x -> 10) => :Wind))
-outs_sim2 = run!(leaf, w)
-df_sim2 = PlantSimEngine.convert_outputs(outs_sim2, DataFrame);
-
-aci2 = PlantBiophysics.ACi(VcMaxRef, JMaxRef, RdRef, df[:,:A], df_sim2[:,:A], df[:,:Cᵢ], df_sim2[:,:Cᵢ])
-plot(aci2, leg = :bottomright)
-```
-
-We can see the results differ a bit, but it is because we add a lot more computation here, hence adding some degrees of liberty.
+`Evaluation.fit(Fvcb, data)` and `Evaluation.fit(Medlyn, data)` use the same interface. Consult their
+docstrings for required columns and optional fitting parameters.

@@ -56,16 +56,22 @@ function FvcbRaw(; kwargs...)
 end
 
 function PlantSimEngine.inputs_(::FvcbRaw)
-    (aPPFD=-Inf, Tₗ=-Inf, Cᵢ=-Inf)
+    (
+        aPPFD=PlantSimEngine.Required(Real),
+        Tₗ=PlantSimEngine.Required(Real),
+        Cᵢ=PlantSimEngine.Required(Real),
+    )
 end
+
+PlantSimEngine.variable_contracts_(::FvcbRaw) = (
+    aPPFD=LEAF_PAR_PHOTON_FLUX_CONTRACT,
+)
 
 function PlantSimEngine.outputs_(::FvcbRaw)
     (A=-Inf,)
 end
 
 Base.eltype(x::FvcbRaw) = typeof(x).parameters[1]
-PlantSimEngine.ObjectDependencyTrait(::Type{<:FvcbRaw}) = PlantSimEngine.IsObjectIndependent()
-PlantSimEngine.TimeStepDependencyTrait(::Type{<:FvcbRaw}) = PlantSimEngine.IsTimeStepIndependent()
 PlantSimEngine.timestep_hint(::Type{<:FvcbRaw}) = (
     required=(Dates.Minute(1), Dates.Hour(6)),
     preferred=Dates.Hour(1)
@@ -75,7 +81,7 @@ PlantSimEngine.output_policy(::Type{<:FvcbRaw}) = (
 )
 
 """
-    run!(::FvcbRaw, models, status, meteo=nothing, constants=Constants())
+    run!(model::FvcbRaw, status, environment=nothing, constants=Constants(), context=nothing)
 
 Direct implementation of the photosynthesis model for C3 photosynthesis from Farquhar–von
 Caemmerer–Berry (Farquhar et al., 1980; von Caemmerer and Farquhar, 1981).
@@ -87,10 +93,10 @@ Modify the first argument in place for A, the carbon assimilation (μmol[CO₂] 
 # Arguments
 
 - `::FvcbRaw`: the Farquhar–von Caemmerer–Berry (FvCB) model (not coupled)
-- `models`: a `ModelMapping` struct holding the parameters for the model with
-initialisations for:
+- The target status provides initial values for:
     - `Tₗ` (°C): leaf temperature
-    - `aPPFD` (μmol m-2 s-1): absorbed Photosynthetic Photon Flux Density
+    - `aPPFD` (μmol[photon] m[leaf]⁻² s⁻¹): absorbed Photosynthetic
+      Photon Flux Density on the botanical leaf-area basis
     - `Cₛ` (ppm): Air CO₂ concentration at the leaf surface
     - `Dₗ` (kPa): vapour pressure difference between the surface and the saturated
     air vapour pressure in case you're using the stomatal conductance model of [`Medlyn`](@ref).
@@ -107,24 +113,13 @@ balance of the leaf with the photosynthesis to get those variables. See
 # Examples
 
 ```julia
-using PlantSimEngine
-leaf = ModelMapping(photosynthesis = FvcbRaw(), status = (Tₗ = 25.0, aPPFD = 1000.0, Cᵢ = 400.0))
-# NB: we need Tₗ, aPPFD and Cᵢ as inputs (see [`inputs`](@ref))
-
-run!(leaf)
-leaf.status.A
-leaf.status.Cᵢ
-
-# using several time-steps:
-leaf =
-    ModelMapping(
-        photosynthesis = FvcbRaw(),
-        status = (Tₗ = [20., 25.0], aPPFD = 1000.0, Cᵢ = [380.,400.0])
-    )
-# NB: we need Tₗ, aPPFD and Cᵢ as inputs (see [`inputs`](@ref))
-
-out_sim = run!(leaf)
-PlantSimEngine.convert_outputs(out_sim, DataFrame) # fetch the leaf status as a DataFrame
+using PlantBiophysics, PlantSimEngine
+scene = leaf_scene(
+    FvcbRaw();
+    status=Status(Tₗ=25.0, aPPFD=1000.0, Cᵢ=400.0),
+)
+run!(scene)
+only(model_objects(scene; scale=:Leaf)).status.A
 ```
 
 # References
@@ -149,7 +144,7 @@ Lombardozzi, L. D. et al. 2018.« Triose phosphate limitation in photosynthesis 
 reduces leaf photosynthesis and global terrestrial carbon storage ». Environmental Research
 Letters 13.7: 1748-9326. https://doi.org/10.1088/1748-9326/aacf68.
 """
-function PlantSimEngine.run!(m::FvcbRaw, models, status, meteo=nothing, constants=PlantMeteo.Constants(), extra=nothing)
+function PlantSimEngine.run!(m::FvcbRaw, status, environment=nothing, constants=PlantMeteo.Constants(), context=nothing)
 
     Tₖ = status.Tₗ - constants.K₀
     Tᵣₖ = m.Tᵣ - constants.K₀

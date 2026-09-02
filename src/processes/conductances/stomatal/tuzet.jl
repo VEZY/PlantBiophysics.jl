@@ -30,12 +30,12 @@ This implementation uses Cₛ instead of Cᵢ.
 using PlantMeteo, PlantSimEngine, PlantBiophysics
 meteo = Atmosphere(T = 20.0, Wind = 1.0, P = 101.3, Rh = 0.65)
 
-leaf =
-    ModelMapping(
-        stomatal_conductance = Tuzet(0.03, 12.0, -1.5, 2.0, 30.0),
-        status = (Cₛ = 380.0, Ψₗ = -1.0)
-    )
-run!(leaf, meteo)
+scene = leaf_scene(
+    Tuzet(0.03, 12.0, -1.5, 2.0, 30.0);
+    status=Status(Cₛ=380.0, Ψₗ=-1.0),
+    environment=meteo,
+)
+run!(scene)
 ```
 
 # References
@@ -55,7 +55,7 @@ Tuzet(g0, g1, Ψᵥ, sf, Γ, gs_min=oftype(g0, 0.001)) = Tuzet(promote(g0, g1, �
 Tuzet(; g0, g1, Ψᵥ, sf, Γ, gs_min=0.001) = Tuzet(g0, g1, Ψᵥ, sf, Γ, gs_min)
 
 function PlantSimEngine.inputs_(::Tuzet)
-    (Ψₗ=-Inf, Cₛ=-Inf)
+    (Ψₗ=PlantSimEngine.Required(Real), Cₛ=PlantSimEngine.Required(Real))
 end
 
 function PlantSimEngine.outputs_(::Tuzet)
@@ -65,18 +65,17 @@ end
 Base.eltype(::Tuzet{T}) where T = T
 
 """
-    gs_closure(::Tuzet, models, status, meteo, constants=nothing, extra=nothing)
+    gs_closure(model::Tuzet, status, environment, constants=nothing, context=nothing)
 
 Stomatal closure for CO₂ according to Tuzet et al. (2003).
 
 # Arguments
 
 - `::Tuzet`: an instance of the `Tuzet` model type.
-- `models::ModelMapping`: A `ModelMapping` struct holding the parameters for the models.
 - `status`: A status struct holding the variables for the models.
-- `meteo`: meteorology structure, see [`Atmosphere`](https://palmstudio.github.io/PlantMeteo.jl/stable/#PlantMeteo.Atmosphere). Is not used in this model.
+- `environment`: sampled environment, see [`Atmosphere`](https://palmstudio.github.io/PlantMeteo.jl/stable/#PlantMeteo.Atmosphere). Is not used in this model.
 - `constants`: A constants struct holding the constants for the models. Is not used in this model.
-- `extra`: A struct holding the extra variables for the models. Is not used in this model.
+- `context`: PlantSimEngine runtime context. It is not used in this model.
 
 # Details
 
@@ -87,14 +86,12 @@ The stomatal conductance is calculated as:
 
 where `Γ` is the CO₂ compensation point.
 """
-function gs_closure(m::Tuzet, models, status, meteo, constants=nothing, extra=nothing)
+function gs_closure(m::Tuzet, status, environment, constants=nothing, context=nothing)
     fpsif = (1 + exp(m.sf * m.Ψᵥ)) /
             (1 + exp(m.sf * (m.Ψᵥ - status.Ψₗ)))
     (m.g1 / (status.Cₛ - m.Γ)) * fpsif
 end
 
-PlantSimEngine.ObjectDependencyTrait(::Type{<:Tuzet}) = PlantSimEngine.IsObjectIndependent()
-PlantSimEngine.TimeStepDependencyTrait(::Type{<:Tuzet}) = PlantSimEngine.IsTimeStepIndependent()
 PlantSimEngine.timestep_hint(::Type{<:Tuzet}) = (
     required=(Dates.Minute(1), Dates.Hour(6)),
     preferred=Dates.Hour(1)

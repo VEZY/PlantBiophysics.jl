@@ -6,6 +6,15 @@ using CSV
 using PlantMeteo
 using PlantSimEngine
 
+include(joinpath(@__DIR__, "src", "assets", "logo.jl"))
+include(joinpath(@__DIR__, "figures", "generate_evaluation_figures.jl"))
+
+@info "Regenerating documentation logo"
+PlantBiophysicsLogo.generate_logo()
+
+@info "Regenerating evaluation figures"
+EvaluationFigures.generate_evaluation_figures()
+
 DocMeta.setdocmeta!(PlantBiophysics, :DocTestSetup, :(using PlantBiophysics, DataFrames, CSV, PlantMeteo, PlantSimEngine); recursive=true)
 
 makedocs(;
@@ -32,6 +41,7 @@ makedocs(;
             "Energy balance" => "./models/energy_balance.md",
             "Light interception" => "./models/light.md",
         ],
+        "Evaluation" => "evaluation.md",
         "Micro-climate" => "./climate/microclimate.md",
         "Tutorial: Parameter fitting" => "./fitting/parameter_fitting.md",
         "Tutorial: Simulation" => [

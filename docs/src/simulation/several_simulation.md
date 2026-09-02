@@ -1,87 +1,124 @@
-# Simulation over several time-steps
+# Simulation Over Several Time Steps
 
-```@setup usepkg
-using PlantBiophysics, PlantSimEngine, PlantMeteo
-using Dates, DataFrames
+This page runs the coupled leaf model over six hourly timesteps. It shows how
+meteorology advances through a `Weather` series, how an external control loop
+can update nonmeteorological drivers between steps, and how retained model
+outputs map back to the input table.
 
-```
+```@example several_steps
+using PlantBiophysics, PlantSimEngine, PlantMeteo, Dates, DataFrames
 
-## Running the simulation
-
-We saw in the previous section how to run a simulation over one time step. We can also easily perform computations over several time steps from a weather file:
-
-```@example usepkg
-using PlantBiophysics, PlantSimEngine, PlantMeteo
-using Dates, DataFrames
-
-meteo =
-    read_weather(
-        joinpath(dirname(dirname(pathof(PlantMeteo))), "test", "data", "meteo.csv"),
-        :temperature => :T,
-        :relativeHumidity => (x -> x ./ 100) => :Rh,
-        :wind => :Wind,
-        :atmosphereCO2_ppm => :Cₐ,
-        date_format=DateFormat("yyyy/mm/dd")
-    )
-
-leaf = ModelMapping(
-        Monteith(),
-        Fvcb(),
-        Medlyn(0.03, 12.0),
-        status = (
-            Ra_SW_f = [5., 10., 20.],
-            sky_fraction = 1.0,
-            aPPFD = [500., 1000., 1500.0],
-            d = 0.03
-        )
-    )
-
-out_sim = run!(leaf,meteo)
-
-df = PlantSimEngine.convert_outputs(out_sim, DataFrame)
-```
-
-The only difference is that we use the `Weather` structure instead of the `Atmosphere`, and that we provide the models inputs as an Array in the status for the ones that change over time.
-
-Then `PlantBiophysics.jl` takes care of the rest and simulate the energy balance over each time-step. Then the output DataFrame has a row for each time-step.
-
-Note that `Weather` is in fact just an array of `Atmosphere`, with some optional metadata attached to it. We could declare one manually either by using an array of `Atmosphere` like so:
-
-```julia
-meteo = Weather(
-    [
-        Atmosphere(T = 20.0, Wind = 1.0, P = 101.3, Rh = 0.65),
-        Atmosphere(T = 23.0, Wind = 1.5, P = 101.3, Rh = 0.60),
-        Atmosphere(T = 25.0, Wind = 3.0, P = 101.3, Rh = 0.55)
-    ]
-)
-```
-
-Or by passing a `DataFrame`:
-
-```julia
-using DataFrames
-
-df = DataFrame(
-    T = [20.0, 23.0, 25.0],
-    Wind = [1.0, 1.5, 3.0],
-    P = [101.3, 101.3, 101.3],
-    Rh = [0.65, 0.6, 0.55]
+forcing = DataFrame(
+    timestep=1:6,
+    T=[20.0, 21.0, 23.0, 25.0, 24.0, 22.0],
+    Wind=[1.0, 1.0, 1.5, 2.0, 1.5, 1.0],
+    Rh=[0.65, 0.62, 0.58, 0.55, 0.58, 0.63],
+    Ra_SW_f=[5.0, 10.0, 20.0, 25.0, 15.0, 5.0],
+    aPPFD=[500.0, 1000.0, 1500.0, 1800.0, 1000.0, 400.0],
 )
 
-meteo = Weather(df)
+weather = Weather([
+    Atmosphere(
+        T=row.T,
+        Wind=row.Wind,
+        P=101.3,
+        Rh=row.Rh,
+        duration=Hour(1),
+    )
+    for row in eachrow(forcing)
+])
+first(forcing, 3)
 ```
 
-You'll have to be careful about the names and the units you are using though, they must match exactly the ones expected for `Atmosphere`. See the documentation of the structure if in doubt.
+The values are a compact illustrative sequence, not a calibrated experiment.
+`T`, `Wind`, and `Rh` are meteorological variables, so `Weather` supplies the
+appropriate row automatically at each timestep. Absorbed shortwave radiation
+(`Ra_SW_f`) and absorbed photosynthetic photon flux (`aPPFD`) are externally
+prescribed leaf drivers in this example.
 
-The status argument of the ModelMapping can also be provided as a DataFrame, or any other type that implements the [Tables.jl](https://github.com/JuliaData/Tables.jl) interface. Here's an example using a DataFrame:
+## Assemble the leaf model
 
-```@example usepkg
-using DataFrames
-df = DataFrame(:Ra_SW_f => [13.747, 13.8], :sky_fraction => [1.0, 1.0], :d => [0.03, 0.03], :aPPFD => [1300.0, 1500.0])
+```@example several_steps
+scene = leaf_scene(
+    Monteith(),
+    Fvcb(),
+    Medlyn(0.03, 12.0);
+    status=Status(
+        Ra_SW_f=forcing.Ra_SW_f[1],
+        sky_fraction=1.0,
+        aPPFD=forcing.aPPFD[1],
+        d=0.03,
+    ),
+    environment=weather,
+)
 
-m = ModelMapping(Monteith(), Fvcb(), Medlyn(0.03, 12.0), status=df)
+leaf = only(model_objects(scene; scale=:Leaf))
+nothing
 ```
 
-Note that computations will be slower, so if performance is an issue, use
-`TimeStepTable` instead (or a NamedTuple as shown in the example above).
+A value in `Status` may itself be scalar or vector-valued, but it is one state
+value and is never interpreted implicitly as a timestep series. In an
+externally controlled stepping loop, update prescribed state before advancing
+the simulation. For a reusable, declarative scenario, represent time-varying
+forcing with an environment backend or a source application. A unique
+same-object source binds automatically; use `ModelSpec(...; inputs=...)` for
+cross-object, renamed, ambiguous, or explicitly time-aggregated values.
+
+## Run and retain the results
+
+`run!` starts the timeline and consumes the first row of `Weather`. Subsequent
+calls to `step!` preserve the environment position, scheduler state, and
+retained output streams.
+
+```@example several_steps
+simulation = run!(scene; outputs=:all)
+
+for timestep in 2:nrow(forcing)
+    leaf.status.Ra_SW_f = forcing.Ra_SW_f[timestep]
+    leaf.status.aPPFD = forcing.aPPFD[timestep]
+    step!(simulation)
+end
+
+current_step(simulation)
+```
+
+Output retention is explicit in PlantSimEngine 0.15: the default is
+`outputs=:none`. Here `outputs=:all` keeps every output published by the
+energy-balance application. For a large simulation, use `OutputRequest` to
+retain only the variables you need.
+
+The latest state is always available directly on the leaf:
+
+```@example several_steps
+(Tₗ=leaf.status.Tₗ, A=leaf.status.A, Gₛ=leaf.status.Gₛ, λE=leaf.status.λE)
+```
+
+## Match outputs to input timesteps
+
+`collect_outputs` returns a long table. Its `timestep` column uses the same
+one-based scheduler steps as the input table, so the retained results can be
+reshaped and joined without relying on row order:
+
+```@example several_steps
+rows = DataFrame(collect_outputs(simulation; sink=nothing))
+
+leaf_rows = subset(
+    rows,
+    :application_id => ByRow(==(:energy_balance)),
+    :variable => ByRow(in((:Tₗ, :A, :Gₛ, :λE))),
+)
+
+outputs_wide = unstack(
+    select(leaf_rows, :timestep, :variable, :value),
+    :timestep,
+    :variable,
+    :value,
+)
+
+results = leftjoin(forcing, outputs_wide; on=:timestep)
+select(results, :timestep, :T, :Ra_SW_f, :aPPFD, :Tₗ, :A, :Gₛ, :λE)
+```
+
+The long-form representation also records the publishing application and
+object. Filter by `application_id` before reshaping whenever several
+applications may publish variables with the same name.
