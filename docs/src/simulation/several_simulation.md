@@ -61,8 +61,8 @@ value and is never interpreted implicitly as a timestep series. In an
 externally controlled stepping loop, update prescribed state before advancing
 the simulation. For a reusable, declarative scenario, represent time-varying
 forcing with an environment backend or a source application. A unique
-same-object source binds automatically; use `Inputs` for cross-object, renamed,
-ambiguous, or explicitly time-aggregated values.
+same-object source binds automatically; use `ModelSpec(...; inputs=...)` for
+cross-object, renamed, ambiguous, or explicitly time-aggregated values.
 
 ## Run and retain the results
 

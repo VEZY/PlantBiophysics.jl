@@ -19,6 +19,12 @@ meteo = Atmosphere(
     @test leaf_status(scene).Gₛ ≈ 0.6607197172920005
 end
 
+@testset "Constant stomatal conductance" begin
+    scene = leaf_scene(ConstantGs(0.0, 0.2); environment=meteo)
+    run!(scene; constants=constants)
+    @test leaf_status(scene).Gₛ == 0.2
+end
+
 @testset "Tuzet et al. (2003)" begin
     values = map((0.0, -1.0, -2.0)) do Ψₗ
         scene = leaf_scene(

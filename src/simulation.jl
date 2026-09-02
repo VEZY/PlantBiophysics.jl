@@ -1,5 +1,6 @@
 """
-    leaf_scene(models...; status=Status(), environment=(duration=Dates.Hour(1),), timestep=nothing)
+    leaf_scene(models...; status=Status(), environment=(duration=Dates.Hour(1),),
+               timestep=nothing, type_promotion=nothing, status_transform=nothing)
 
 Build a one-leaf `PlantSimEngine.CompositeModel` using PlantBiophysics model
 kernels. The returned scene can be combined with the regular scene/object
@@ -7,6 +8,9 @@ inspection and execution APIs.
 
 Hard dependencies declared by the models are resolved on the leaf object.
 Use `timestep` to override the application clock for every supplied model.
+Use `type_promotion` for scenario-wide status type conversion and
+`status_transform` for variable-specific conversion. Both policies are passed
+directly to `PlantSimEngine.CompositeModel`.
 """
 function _leaf_scene_numeric_prototype(values)
     for value in values
@@ -49,6 +53,8 @@ function leaf_scene(
     status=Status(),
     environment=(duration=Dates.Hour(1),),
     timestep=nothing,
+    type_promotion=nothing,
+    status_transform=nothing,
 )
     return PlantSimEngine.CompositeModel(
         models...;
@@ -58,5 +64,7 @@ function leaf_scene(
         kind=:plant,
         environment=environment,
         timestep=timestep,
+        type_promotion=type_promotion,
+        status_transform=status_transform,
     )
 end

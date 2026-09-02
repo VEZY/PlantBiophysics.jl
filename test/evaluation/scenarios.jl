@@ -14,8 +14,9 @@ end
 
 PaperForcedGs() = PaperForcedGs(0.0)
 
-# Preserve the closure used by the paper's daily evaluation instead of silently
-# replacing it with the package's general-purpose ConstantGs implementation.
+# FvCB requests the closure before assimilation is initialized, so use the
+# prescribed conductance as a first-iteration proxy. Once A is available,
+# recover the coefficient in Gₛ = g0 + closure * A.
 function PlantBiophysics.gs_closure(
     model::PaperForcedGs,
     status,
@@ -24,7 +25,7 @@ function PlantBiophysics.gs_closure(
     context=nothing,
 )
     status.A < 1.0e-9 && return status.Gₛ
-    return status.A / (status.Gₛ - model.g0)
+    return (status.Gₛ - model.g0) / status.A
 end
 
 PlantSimEngine.inputs_(::PaperForcedGs) = (Gₛ=PlantSimEngine.Required(Real),)

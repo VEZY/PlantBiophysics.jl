@@ -49,11 +49,14 @@ leaf = only(model_objects(scene; scale=:Leaf))
 
 `leaf_scene` is a convenience constructor. The returned value is an ordinary
 `PlantSimEngine.CompositeModel`, so applications can also be assembled explicitly with
-`ModelSpec`, `AppliesTo`, `Inputs`, `Calls`, and `TimeStep`.
+`Object`, `ModelSpec`, selectors such as `One` and `Many`, explicit `inputs=`,
+`Call` dependencies, and `every=` timestep policies.
 
 PlantBiophysics models preserve generic numeric types, which supports units,
 automatic differentiation, and uncertainty propagation when the supplied
-operations support those types.
+operations support those types. Model parameter types do not implicitly change
+runtime status carriers: use `type_promotion` for a general mapping or
+`status_transform` for variable-specific conversion.
 
 ## Development with PlantSimEngine
 

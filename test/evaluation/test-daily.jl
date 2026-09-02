@@ -35,6 +35,16 @@ const DAILY_EVALUATION_REFERENCE = Dict(
     ),
 )
 
+@testset "Paper forced-Gs closure" begin
+    model = PaperForcedGs(0.02)
+    status = (A=10.0, Gₛ=0.2)
+    closure = PlantBiophysics.gs_closure(model, status)
+
+    @test closure ≈ 0.018
+    @test model.g0 + closure * status.A ≈ status.Gₛ
+    @test PlantBiophysics.gs_closure(model, (A=-Inf, Gₛ=0.2)) == 0.2
+end
+
 @testset "Medlyn daily forced-Gs evaluation" begin
     scenario = run_daily_evaluation()
     @test scenario.metadata.n_observations == 6

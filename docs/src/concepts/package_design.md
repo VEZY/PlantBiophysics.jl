@@ -61,11 +61,10 @@ flow through models when their operations are defined.
 
 ## Scenario Assembly
 
-`leaf_scene(models...; status, environment, timestep)` is the convenience API
-for one leaf. It delegates to PlantSimEngine's concise
-`CompositeModel(models...; status, id, scale, kind, environment, timestep)` constructor
-after preparing PlantBiophysics model defaults. Larger simulations use
-PlantSimEngine directly:
+`leaf_scene(models...; status, environment, timestep, type_promotion,
+status_transform)` is the convenience API for one leaf. It delegates to
+PlantSimEngine's concise `CompositeModel` constructor after preparing
+PlantBiophysics model defaults. Larger simulations use PlantSimEngine directly:
 
 ```julia
 ModelSpec(model; name=:application, on=Many(scale=:Leaf), every=Dates.Hour(1))

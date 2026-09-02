@@ -22,3 +22,16 @@
     )
     @test_nowarn run!(scene; constants=Constants())
 end
+
+@testset "Particle-valued model parameter and status carrier" begin
+    assimilation = 25.0 ± 2.0
+    scene = leaf_scene(
+        ConstantA(assimilation);
+        status_transform=(variable, value) ->
+            variable === :A ? assimilation : value,
+    )
+    run!(scene)
+    simulated = leaf_status(scene).A
+    @test nparticles(simulated) == 2000
+    @test pmean(simulated) ≈ 25.0
+end

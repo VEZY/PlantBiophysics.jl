@@ -23,7 +23,7 @@ which gives Dₗ = VPD.
 # Examples
 
 ```julia
-using PlantBiophysics, PlantSimEngine.Evaluation, PlantMeteo, Plots, DataFrames
+using PlantBiophysics, PlantSimEngine, PlantSimEngine.Evaluation, PlantMeteo, Plots, DataFrames
 
 file = joinpath(dirname(dirname(pathof(PlantBiophysics))),"test","inputs","data","P1F20129.csv")
 df = read_walz(file)

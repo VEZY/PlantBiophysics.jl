@@ -31,6 +31,16 @@ end
     @test leaf_status(scene).Tₗ == 25.0
 end
 
+@testset "leaf_scene forwards status type policies" begin
+    scene = leaf_scene(
+        ConstantA(Float32(25));
+        type_promotion=Dict(Float64 => Float32),
+    )
+    run!(scene)
+    @test leaf_status(scene).A isa Float32
+    @test leaf_status(scene).A == Float32(25)
+end
+
 @testset "NamedTuple and DataFrame rows initialize equivalently" begin
     meteo = Atmosphere(
         T=20.0,
