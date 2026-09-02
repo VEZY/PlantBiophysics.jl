@@ -1,43 +1,152 @@
 <!DOCTYPE html>
-<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Light interception · PlantBiophysics.jl</title><meta name="title" content="Light interception · PlantBiophysics.jl"/><meta property="og:title" content="Light interception · PlantBiophysics.jl"/><meta property="twitter:title" content="Light interception · PlantBiophysics.jl"/><meta name="description" content="Documentation for PlantBiophysics.jl."/><meta property="og:description" content="Documentation for PlantBiophysics.jl."/><meta property="twitter:description" content="Documentation for PlantBiophysics.jl."/><meta property="og:url" content="https://VEZY.github.io/PlantBiophysics.jl/models/light/"/><meta property="twitter:url" content="https://VEZY.github.io/PlantBiophysics.jl/models/light/"/><link rel="canonical" href="https://VEZY.github.io/PlantBiophysics.jl/models/light/"/><script data-outdated-warner src="../../assets/warner.js"></script><link href="https://cdnjs.cloudflare.com/ajax/libs/lato-font/3.0.0/css/lato-font.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/juliamono/0.050/juliamono.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.8/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL="../.."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../../assets/documenter.js"></script><script src="../../search_index.js"></script><script src="../../siteinfo.js"></script><script src="../../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/catppuccin-mocha.css" data-theme-name="catppuccin-mocha"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/catppuccin-macchiato.css" data-theme-name="catppuccin-macchiato"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/catppuccin-frappe.css" data-theme-name="catppuccin-frappe"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/catppuccin-latte.css" data-theme-name="catppuccin-latte"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../../assets/themeswap.js"></script></head><body><div id="documenter"><nav class="docs-sidebar"><a class="docs-logo" href="../../"><img src="../../assets/logo.svg" alt="PlantBiophysics.jl logo"/></a><div class="docs-package-name"><span class="docs-autofit"><a href="../../">PlantBiophysics.jl</a></span></div><button class="docs-search-query input is-rounded is-small is-clickable my-2 mx-auto py-1 px-2" id="documenter-search-query">Search docs (Ctrl + /)</button><ul class="docs-menu"><li><a class="tocitem" href="../../">Home</a></li><li><span class="tocitem">Getting started</span><ul><li><a class="tocitem" href="../../getting_started/get_started/">TL;DR</a></li><li><a class="tocitem" href="../../getting_started/first_fit/">Parameter fitting</a></li></ul></li><li><a class="tocitem" href="../../concepts/package_design/">Design</a></li><li><a class="tocitem" href="../../variables/">Variables</a></li><li><span class="tocitem">Models</span><ul><li><a class="tocitem" href="../photosynthesis/">Photosynthesis</a></li><li><a class="tocitem" href="../gs/">Stomatal conductance</a></li><li><a class="tocitem" href="../energy_balance/">Energy balance</a></li><li class="is-active"><a class="tocitem" href>Light interception</a></li></ul></li><li><a class="tocitem" href="../../climate/microclimate/">Micro-climate</a></li><li><a class="tocitem" href="../../fitting/parameter_fitting/">Tutorial: Parameter fitting</a></li><li><span class="tocitem">Tutorial: Simulation</span><ul><li><a class="tocitem" href="../../simulation/first_simulation/">Simple Simulation</a></li><li><a class="tocitem" href="../../simulation/several_simulation/">Several time steps</a></li><li><a class="tocitem" href="../../simulation/multirate_simulation/">Multi-rate simulation</a></li><li><a class="tocitem" href="../../simulation/several_objects_simulation/">Several objects</a></li><li><a class="tocitem" href="../../simulation/mtg_simulation/">Whole-plant simulation</a></li></ul></li><li><a class="tocitem" href="../../simulation/uncertainty_propagation/">Tutorial: Uncertainty propagation</a></li><li><span class="tocitem">Extending PlantBiophysics</span><ul><li><a class="tocitem" href="../../extending/implement_a_model/">Implement a model</a></li><li><a class="tocitem" href="../../extending/implement_a_process/">Implement a process</a></li></ul></li><li><a class="tocitem" href="../../functions/">API</a></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><a class="docs-sidebar-button docs-navbar-link fa-solid fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a><nav class="breadcrumb"><ul class="is-hidden-mobile"><li><a class="is-disabled">Models</a></li><li class="is-active"><a href>Light interception</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>Light interception</a></li></ul></nav><div class="docs-right"><a class="docs-navbar-link" href="https://github.com/VEZY/PlantBiophysics.jl" title="View the repository on GitHub"><span class="docs-icon fa-brands"></span><span class="docs-label is-hidden-touch">GitHub</span></a><a class="docs-navbar-link" href="https://github.com/VEZY/PlantBiophysics.jl/blob/master/docs/src/models/light.md" title="Edit source on GitHub"><span class="docs-icon fa-solid"></span></a><a class="docs-settings-button docs-navbar-link fa-solid fa-gear" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-article-toggle-button fa-solid fa-chevron-up" id="documenter-article-toggle-button" href="javascript:;" title="Collapse all docstrings"></a></div></header><article class="content" id="documenter-page"><h1 id="light_page"><a class="docs-heading-anchor" href="#light_page">Light interception</a><a id="light_page-1"></a><a class="docs-heading-anchor-permalink" href="#light_page" title="Permalink"></a></h1><p>The light interception process is the process of computing the radiation interception of components for different wavelength such as PAR (Photosynthetically Active Radication), NIR (Near-Infrared Radiation) and eventually TIR (Thermal Infrared Radiation). Users can also compute particular wavelengths (<em>e.g.</em> red, far-red) depending on the model used.</p><p>There are two light interception models implemented in PlantBiophysics at the time, both derived from the Beer-Lambert law of light extinction. </p><ul><li><p><a href="../../functions/#PlantBiophysics.Beer">Beer model</a>: The first one is the Beer model, which is a simple model that computes the light interception (<code>aPPFD</code>) of a component as a function of the leaf area index (<code>LAI</code>) and the extinction coefficient (<code>k</code>). The Beer model is implemented in the <code>Beer</code> type. This model is recommended if you need to compute the photosynthesis of the plant, but not the energy balance.</p></li><li><p><a href="../../functions/#PlantBiophysics.BeerShortwave">Beer model with shortwave radiation</a>: the second one is the same model as the <code>Beer</code> model, but with a computation of the intercepted shortwave radiation (<code>Ra_SW_f</code>) added to the computation of the <code>aPPFD</code>. This model needs the <code>k</code> coefficient, and the <code>f</code> coefficient, which is a proportionality factor between the shortwave radiation and the aPPFD (usually 0.48, the default).</p></li></ul><p>This model is recommended if you need to compute the energy balance of the object. The model is implemented in the <code>BeerShortwave</code> type.</p><p>Here&#39;s an example usage:</p><pre><code class="language-julia hljs">using PlantBiophysics, PlantSimEngine
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Light interception · PlantBiophysics.jl</title><meta name="title" content="Light interception · PlantBiophysics.jl"/><meta property="og:title" content="Light interception · PlantBiophysics.jl"/><meta property="twitter:title" content="Light interception · PlantBiophysics.jl"/><meta name="description" content="Documentation for PlantBiophysics.jl."/><meta property="og:description" content="Documentation for PlantBiophysics.jl."/><meta property="twitter:description" content="Documentation for PlantBiophysics.jl."/><meta property="og:url" content="https://VEZY.github.io/PlantBiophysics.jl/models/light/"/><meta property="twitter:url" content="https://VEZY.github.io/PlantBiophysics.jl/models/light/"/><link rel="canonical" href="https://VEZY.github.io/PlantBiophysics.jl/models/light/"/><script data-outdated-warner src="../../assets/warner.js"></script><link href="https://cdnjs.cloudflare.com/ajax/libs/lato-font/3.0.0/css/lato-font.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/juliamono/0.63.2/juliamono.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.8/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL="../.."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../../assets/documenter.js"></script><script src="../../search_index.js"></script><script src="../../siteinfo.js"></script><script src="../../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/catppuccin-mocha.css" data-theme-name="catppuccin-mocha"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/catppuccin-macchiato.css" data-theme-name="catppuccin-macchiato"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/catppuccin-frappe.css" data-theme-name="catppuccin-frappe"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/catppuccin-latte.css" data-theme-name="catppuccin-latte"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../../assets/themeswap.js"></script></head><body><div id="documenter"><nav class="docs-sidebar"><a class="docs-logo" href="../../"><img src="../../assets/logo.png" alt="PlantBiophysics.jl logo"/></a><div class="docs-package-name"><span class="docs-autofit"><a href="../../">PlantBiophysics.jl</a></span></div><button class="docs-search-query input is-rounded is-small is-clickable my-2 mx-auto py-1 px-2" id="documenter-search-query">Search docs (Ctrl + /)</button><ul class="docs-menu"><li><a class="tocitem" href="../../">Home</a></li><li><span class="tocitem">Getting started</span><ul><li><a class="tocitem" href="../../getting_started/get_started/">TL;DR</a></li><li><a class="tocitem" href="../../getting_started/first_fit/">Parameter fitting</a></li></ul></li><li><a class="tocitem" href="../../concepts/package_design/">Design</a></li><li><a class="tocitem" href="../../variables/">Variables</a></li><li><span class="tocitem">Models</span><ul><li><a class="tocitem" href="../photosynthesis/">Photosynthesis</a></li><li><a class="tocitem" href="../gs/">Stomatal conductance</a></li><li><a class="tocitem" href="../energy_balance/">Energy balance</a></li><li class="is-active"><a class="tocitem" href>Light interception</a><ul class="internal"><li><a class="tocitem" href="#Convert-canopy-radiation-before-leaf-physiology"><span>Convert canopy radiation before leaf physiology</span></a></li><li><a class="tocitem" href="#Convert-3D-light-on-its-own-area-boundary"><span>Convert 3D light on its own area boundary</span></a></li></ul></li></ul></li><li><a class="tocitem" href="../../evaluation/">Evaluation</a></li><li><a class="tocitem" href="../../climate/microclimate/">Micro-climate</a></li><li><a class="tocitem" href="../../fitting/parameter_fitting/">Tutorial: Parameter fitting</a></li><li><span class="tocitem">Tutorial: Simulation</span><ul><li><a class="tocitem" href="../../simulation/first_simulation/">Simple Simulation</a></li><li><a class="tocitem" href="../../simulation/several_simulation/">Several time steps</a></li><li><a class="tocitem" href="../../simulation/multirate_simulation/">Multi-rate simulation</a></li><li><a class="tocitem" href="../../simulation/several_objects_simulation/">Several objects</a></li><li><a class="tocitem" href="../../simulation/mtg_simulation/">Whole-plant simulation</a></li></ul></li><li><a class="tocitem" href="../../simulation/uncertainty_propagation/">Tutorial: Uncertainty propagation</a></li><li><span class="tocitem">Extending PlantBiophysics</span><ul><li><a class="tocitem" href="../../extending/implement_a_model/">Implement a model</a></li><li><a class="tocitem" href="../../extending/implement_a_process/">Implement a process</a></li></ul></li><li><a class="tocitem" href="../../functions/">API</a></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><a class="docs-sidebar-button docs-navbar-link fa-solid fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a><nav class="breadcrumb"><ul class="is-hidden-mobile"><li><a class="is-disabled">Models</a></li><li class="is-active"><a href>Light interception</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>Light interception</a></li></ul></nav><div class="docs-right"><a class="docs-navbar-link" href="https://github.com/VEZY/PlantBiophysics.jl" title="View the repository on GitHub"><span class="docs-icon fa-brands"></span><span class="docs-label is-hidden-touch">GitHub</span></a><a class="docs-navbar-link" href="https://github.com/VEZY/PlantBiophysics.jl/blob/master/docs/src/models/light.md" title="Edit source on GitHub"><span class="docs-icon fa-solid"></span></a><a class="docs-settings-button docs-navbar-link fa-solid fa-gear" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-article-toggle-button fa-solid fa-chevron-up" id="documenter-article-toggle-button" href="javascript:;" title="Collapse all docstrings"></a></div></header><article class="content" id="documenter-page"><h1 id="light_page"><a class="docs-heading-anchor" href="#light_page">Light Interception</a><a id="light_page-1"></a><a class="docs-heading-anchor-permalink" href="#light_page" title="Permalink"></a></h1><p>PlantBiophysics provides two Beer-Lambert implementations:</p><ul><li><a href="../../functions/#PlantBiophysics.Beer"><code>Beer</code></a> computes absorbed photosynthetic photon flux density (<code>aPPFD</code>);</li><li><a href="../../functions/#PlantBiophysics.BeerShortwave"><code>BeerShortwave</code></a> also computes absorbed shortwave radiation (<code>Ra_SW_f</code>) for energy-balance models.</li></ul><p>These are canopy models. Their radiation outputs are expressed per unit ground area, not per unit leaf area. <code>LAI</code> is the ratio of leaf area to ground area. The outputs remain current per-second rates on status; request temporal integration explicitly when exporting totals.</p><pre><code class="language-julia hljs">using PlantBiophysics, PlantSimEngine, PlantMeteo, Dates
 
-m = ModelMapping(BeerShortwave(0.6), status=(LAI=2.0,))
+scene = CompositeModel(
+    Object(:plant; scale=:Plant, status=Status(LAI=2.0));
+    applications=(
+        ModelSpec(
+            BeerShortwave(0.6);
+            name=:canopy_light,
+            on=One(scale=:Plant),
+        ),
+    ),
+    environment=Atmosphere(
+        T=20.0,
+        Wind=1.0,
+        P=101.3,
+        Rh=0.65,
+        Ri_PAR_f=300.0,
+        Ri_NIR_f=350.0,
+        duration=Hour(1),
+    ),
+)
 
-meteo = Atmosphere(T=20.0, Wind=1.0, P=101.3, Rh=0.65, Ri_PAR_f=300.0)
+run!(scene)
+plant = model_object(scene, :plant)
+(aPPFD=plant.status.aPPFD, Ra_SW_f=plant.status.Ra_SW_f)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">(aPPFD = 958.0627354683709, Ra_SW_f = 425.62922633505013)</code></pre><p>The values above are therefore in <code>μmol[photon] m[ground]⁻² s⁻¹</code> and <code>W m[ground]⁻²</code>, respectively. The one-argument <code>BeerShortwave(k)</code> constructor preserves the historical NIR coefficient <code>k_NIR = 0.48</code>. Pass both coefficients as <code>BeerShortwave(k_PAR, k_NIR)</code> to choose another value.</p><p><code>outputs=:all</code> records these raw rates at each step. Request an integrated quantity only at the boundary that needs it, for example:</p><pre><code class="language-julia hljs">requests = [
+    OutputRequest(
+        Many(scale=:Plant),
+        :aPPFD;
+        name=:absorbed_photons,
+        application=:canopy_light,
+        policy=Integrate(PlantMeteo.DurationSumReducer()),
+        clock=Hour(24),
+    ),
+    OutputRequest(
+        Many(scale=:Plant),
+        :Ra_SW_f;
+        name=:absorbed_shortwave_energy,
+        application=:canopy_light,
+        policy=Integrate(PlantMeteo.RadiationEnergy()),
+        clock=Hour(24),
+    ),
+]
+simulation = run!(scene; steps=24, outputs=requests)</code></pre><p><code>DurationSumReducer</code> converts a photon rate to the corresponding duration sum; <code>RadiationEnergy</code> converts irradiance to <code>MJ m[ground]⁻²</code> over the requested window. Neither changes the current rate stored on the Plant status.</p><h2 id="Convert-canopy-radiation-before-leaf-physiology"><a class="docs-heading-anchor" href="#Convert-canopy-radiation-before-leaf-physiology">Convert canopy radiation before leaf physiology</a><a id="Convert-canopy-radiation-before-leaf-physiology-1"></a><a class="docs-heading-anchor-permalink" href="#Convert-canopy-radiation-before-leaf-physiology" title="Permalink"></a></h2><p>Leaf photosynthesis and energy balance consume radiation per unit leaf area. Put an explicit conversion model between a Beer canopy output and either leaf model. The source-to-adapter and adapter-to-consumer mappings are both named; <code>HoldLast()</code> makes their temporal meaning explicit.</p><p>For absorbed PPFD, map <code>Beer.aPPFD</code> to <code>aPPFD_ground</code>, then map the distinct leaf-mean output to the photosynthesis input:</p><pre><code class="language-julia hljs">ModelSpec(
+    Beer(0.6);
+    name=:canopy_light,
+    on=Many(scale=:Plant),
+)
 
-out = run!(m, meteo)
+ModelSpec(
+    GroundToMeanLeafPPFD();
+    name=:mean_leaf_ppfd,
+    on=Many(scale=:Plant),
+    inputs=(
+        :aPPFD_ground =&gt; One(
+            within=Self(),
+            application=:canopy_light,
+            var=:aPPFD,
+            policy=HoldLast(),
+        ),
+    ),
+)
 
-out</code></pre><table>
-  <thead>
-    <tr class = "title">
-      <td colspan = "6" style = "font-size: x-large; font-weight: bold; text-align: center;">TimeStepTable{Status{(:LAI, :Ra_SW_f, :Ra_P...}(1 x 5):</td>
-    </tr>
-    <tr class = "columnLabelRow">
-      <th class = "stubheadLabel" style = "font-weight: bold; text-align: right;"></th>
-      <th style = "font-weight: bold; text-align: right;">LAI</th>
-      <th style = "font-weight: bold; text-align: right;">Ra_SW_f</th>
-      <th style = "font-weight: bold; text-align: right;">Ra_PAR_f</th>
-      <th style = "font-weight: bold; text-align: right;">Ra_NIR_f</th>
-      <th style = "font-weight: bold; text-align: right;">aPPFD</th>
-    </tr>
-    <tr class = "columnLabelRow">
-      <th class = "stubheadLabel" style = "font-weight: bold; text-align: right;"></th>
-      <th style = "text-align: right;">Float64</th>
-      <th style = "text-align: right;">Float64</th>
-      <th style = "text-align: right;">Float64</th>
-      <th style = "text-align: right;">Float64</th>
-      <th style = "text-align: right;">Float64</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr class = "dataRow">
-      <td class = "rowLabel" style = "font-weight: bold; text-align: right;">1</td>
-      <td style = "text-align: right;">2.0</td>
-      <td style = "text-align: right;">Inf</td>
-      <td style = "text-align: right;">209.642</td>
-      <td style = "text-align: right;">Inf</td>
-      <td style = "text-align: right;">958.063</td>
-    </tr>
-  </tbody>
-</table>
-<div class="admonition is-info" id="Note-9bf33ff8f522b5ca"><header class="admonition-header">Note<a class="admonition-anchor" href="#Note-9bf33ff8f522b5ca" title="Permalink"></a></header><div class="admonition-body"><p>If you have a 3D plant in the OPF format, you can use <a href="https://archimed-platform.github.io/archimed-phys-user-doc/">Archimed-ϕ</a>.</p></div></div></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../energy_balance/">« Energy balance</a><a class="docs-footer-nextpage" href="../../climate/microclimate/">Micro-climate »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.17.0 on <span class="colophon-date" title="Friday 28 August 2026 13:11">Friday 28 August 2026</span>. Using Julia version 1.12.7.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+ModelSpec(
+    Fvcb();
+    name=:photosynthesis,
+    on=Many(scale=:Leaf),
+    inputs=(
+        :aPPFD =&gt; One(
+            scale=:Plant,
+            within=SelfPlant(),
+            application=:mean_leaf_ppfd,
+            var=:aPPFD_leaf_mean,
+            policy=HoldLast(),
+        ),
+    ),
+)</code></pre><p>For energy balance, use the analogous shortwave boundary:</p><pre><code class="language-julia hljs">ModelSpec(
+    BeerShortwave(0.6);
+    name=:canopy_light,
+    on=Many(scale=:Plant),
+)
+
+ModelSpec(
+    GroundToMeanLeafShortwave();
+    name=:mean_leaf_shortwave,
+    on=Many(scale=:Plant),
+    inputs=(
+        :Ra_SW_f_ground =&gt; One(
+            within=Self(),
+            application=:canopy_light,
+            var=:Ra_SW_f,
+            policy=HoldLast(),
+        ),
+    ),
+)
+
+ModelSpec(
+    Monteith();
+    name=:energy_balance,
+    on=Many(scale=:Leaf),
+    inputs=(
+        :Ra_SW_f =&gt; One(
+            scale=:Plant,
+            within=SelfPlant(),
+            application=:mean_leaf_shortwave,
+            var=:Ra_SW_f_leaf_mean,
+            policy=HoldLast(),
+        ),
+    ),
+)</code></pre><p>Both adapters reject non-finite or non-positive <code>LAI</code>, as well as negative or non-finite radiation. PlantSimEngine also rejects a direct Beer-to-FvCB or BeerShortwave-to-Monteith connection because the producer is ground-based and no conversion boundary was declared.</p><p>These two adapters are specific to the ground-area canopy rates produced by <code>Beer</code> and <code>BeerShortwave</code>. Do not use them for geometry-resolved light: dividing an organ-level irradiance by canopy LAI would apply the wrong area conversion.</p><div class="admonition is-compat" id="Historical-ARCHIMED-model-files-6fa3295ef138924b"><header class="admonition-header">Historical ARCHIMED model files<a class="admonition-anchor" href="#Historical-ARCHIMED-model-files-6fa3295ef138924b" title="Permalink"></a></header><div class="admonition-body"><p>PlantBiophysics does not parse ARCHIMED light-model YAML or provide a per-organ <code>Translucent</code> copier. Use <code>ArchimedLight.read_models</code> for those optical definitions. To ignore light interception, omit the light application; a no-op model is unnecessary.</p></div></div><h2 id="Convert-3D-light-on-its-own-area-boundary"><a class="docs-heading-anchor" href="#Convert-3D-light-on-its-own-area-boundary">Convert 3D light on its own area boundary</a><a id="Convert-3D-light-on-its-own-area-boundary-1"></a><a class="docs-heading-anchor-permalink" href="#Convert-3D-light-on-its-own-area-boundary" title="Permalink"></a></h2><p>ArchimedLight organ flux densities are normalized by <code>radiative_mesh_area</code>. That area can differ from the botanical leaf area used by FvCB and Monteith. The raw <code>aPPFD</code> and <code>Ra_SW_f</code> values must therefore not be connected directly to those physiology inputs.</p><p>Use a separate explicit conversion for each organ:</p><p class="math-container">\[\mathrm{flux}_{leaf} =
+\mathrm{flux}_{radiative}\,
+\frac{\mathrm{radiative\_mesh\_area}}{\mathrm{botanical\_leaf\_area}}.\]</p><p>This preserves the absorbed amount while changing the normalization area. A leaf must therefore carry an explicit, finite, positive <code>botanical_leaf_area</code>. Put <a href="../../functions/#PlantBiophysics.RadiativeMeshToLeafPPFD"><code>RadiativeMeshToLeafPPFD</code></a> and <a href="../../functions/#PlantBiophysics.RadiativeMeshToLeafShortwave"><code>RadiativeMeshToLeafShortwave</code></a> between the ArchimedLight scene writer and the physiology models:</p><pre><code class="language-julia hljs">leaf = Object(
+    :leaf_42;
+    scale=:Leaf,
+    status=Status(
+        botanical_leaf_area=0.012,
+        sky_fraction=1.0,
+        d=0.03,
+    ),
+)
+
+ppfd_boundary = ModelSpec(
+    RadiativeMeshToLeafPPFD();
+    name=:radiative_to_leaf_ppfd,
+    on=Many(scale=:Leaf),
+    inputs=(
+        :aPPFD_radiative =&gt; One(
+            within=Self(), application=:archimed_light, var=:aPPFD,
+            policy=HoldLast(),
+        ),
+        :radiative_mesh_area =&gt; One(
+            within=Self(), application=:archimed_light,
+            var=:radiative_mesh_area, policy=HoldLast(),
+        ),
+    ),
+)
+
+shortwave_boundary = ModelSpec(
+    RadiativeMeshToLeafShortwave();
+    name=:radiative_to_leaf_shortwave,
+    on=Many(scale=:Leaf),
+    inputs=(
+        :Ra_SW_f_radiative =&gt; One(
+            within=Self(), application=:archimed_light, var=:Ra_SW_f,
+            policy=HoldLast(),
+        ),
+        :radiative_mesh_area =&gt; One(
+            within=Self(), application=:archimed_light,
+            var=:radiative_mesh_area, policy=HoldLast(),
+        ),
+    ),
+)</code></pre><p>Map <code>aPPFD_leaf_mean</code> from <code>ppfd_boundary</code> to FvCB&#39;s <code>aPPFD</code> input, and <code>Ra_SW_f_leaf_mean</code> from <code>shortwave_boundary</code> to Monteith&#39;s <code>Ra_SW_f</code> input. The distinct names prevent raw radiative-area values from being mistaken for leaf-area values, and PlantSimEngine rejects a contracted direct connection. The Beer LAI adapters above are not a substitute for this organ-area boundary.</p><p>Keep source ownership exact. Build the <code>CompositeModel</code> from the same MTG as the <code>PlantGeom.SceneGeometry</code> when possible. For another topology, pass exact MTG roots through <code>source_roots</code>, or an explicit <code>object_resolver</code> from each source-owner key to its <code>ObjectId</code>. Never infer this relationship from row or traversal order.</p><p>ArchimedLight raw <code>aPPFD</code> is in <span>$\mu mol\ m_{\mathrm{radiative}}^{-2}\ s^{-1}$</span> and raw <code>Ra_SW_f</code> is in <span>$W\ m_{\mathrm{radiative}}^{-2}$</span>. After the conversion bindings are compiled, <code>final_state(...).aPPFD</code> and <code>final_state(...).Ra_SW_f</code> are the botanical-leaf-area values seen by FvCB and Monteith. Read the raw radiative-area values from the <code>:archimed_light</code> output history when both representations are needed. The same sampled environment row must provide sun azimuth in [0, 360°), sun elevation in [-90°, 90°], non-negative incident PAR and NIR (<span>$W\ m^{-2}$</span>), a direct fraction in [0, 1], and a finite, strictly positive timestep duration.</p><p><code>sky_fraction</code> is deliberately absent from both <code>ArchimedLightModel</code> output schemas (<code>:coupling</code> and <code>:full</code>). It is the longwave sky-view assumption used by <a href="../../functions/#PlantBiophysics.Monteith"><code>Monteith</code></a>, including the chosen one- or two-sided convention, and must be initialized explicitly as scenario state for every leaf. Its valid range is 0–2: 0 means that neither effective leaf face sees the sky, 1 corresponds to one fully exposed effective face, and 2 to both faces seeing the sky. This keeps a shortwave interception result from silently standing in for a scientifically distinct longwave view factor.</p><p>Use <code>Diagnostics.explain_bindings</code>, <code>Diagnostics.explain_writers</code>, and <code>Diagnostics.explain_schedule</code> to verify both conversion edges and their ordering before the Monteith → FvCB → stomatal-conductance hard-call chain.</p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../energy_balance/">« Energy balance</a><a class="docs-footer-nextpage" href="../../evaluation/">Evaluation »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.19.0 on <span class="colophon-date" title="Wednesday 2 September 2026 16:03">Wednesday 2 September 2026</span>. Using Julia version 1.12.7.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
