@@ -180,12 +180,11 @@ function light_application(kernel)
         name=:archimed_light,
         on=PlantSimEngine.One(scale=:Scene),
         outputs_to=(
-            organs=PlantSimEngine.OutputTo(
+            PlantSimEngine.OutputTo(
                 PlantSimEngine.Many(
                     scale=:Leaf,
                     within=PlantSimEngine.SceneScope(),
-                );
-                vars=ArchimedLight.archimed_light_outputs(:coupling),
+                ),
             ),
         ),
         every=Dates.Minute(1),
