@@ -58,32 +58,29 @@ operations support those types. Model parameter types do not implicitly change
 runtime status carriers: use `type_promotion` for a general mapping or
 `status_transform` for variable-specific conversion.
 
-## Development with PlantSimEngine
+## Development
 
-Until PlantSimEngine 0.15 is released, check out its `multi-plants` branch
-wherever you keep development packages, then point the PlantBiophysics
-environment to that working tree:
+PlantBiophysics 0.18 uses the registered PlantSimEngine 0.15 release series.
+From a checkout of this repository, install the dependencies and run the tests:
 
 ```julia-repl
 pkg> activate .
-pkg> develop /path/to/PlantSimEngine
+pkg> instantiate
 pkg> test
 ```
 
-`Pkg.develop` records the working-tree path only in the local `Manifest.toml`;
-the repository does not assume where PlantSimEngine is cloned. Once a
-compatible PlantSimEngine release is available, run `free` in each environment
-where it was developed:
+If an existing local environment uses a development checkout or a Git revision
+of PlantSimEngine, return it to the registered release with:
 
 ```julia-repl
 pkg> free PlantSimEngine
 ```
 
-The documentation uses the same workflow:
+Build the documentation with the current Julia release. Its environment uses
+this PlantBiophysics checkout and registered dependency releases:
 
 ```julia-repl
 pkg> activate docs
-pkg> develop /path/to/PlantSimEngine
 pkg> instantiate
 ```
 
