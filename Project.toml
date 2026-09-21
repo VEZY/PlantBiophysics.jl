@@ -19,7 +19,7 @@ YAML = "ddb6d928-2868-570f-bddf-ab3f9cf99eb6"
 PlantSimEngine = {rev = "bb3ceea306fb0bc0fb3a569f36c0d96aa929327c", url = "https://github.com/VirtualPlantLab/PlantSimEngine.jl"}
 
 [compat]
-CSV = "0.8, 0.10"
+CSV = "0.8, 0.10, 1.0"
 DataFrames = "1"
 Dates = "1.10"
 LsqFit = "0.12, 0.13, 0.15, 0.16"
