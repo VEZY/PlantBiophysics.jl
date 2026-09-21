@@ -1,0 +1,21 @@
+[deps]
+ArchimedLight = "ca362a0f-208d-4994-8e0e-d922fd0d438a"
+Dates = "ade2ca70-3891-5945-98fb-dc099432e06a"
+GeometryBasics = "5c1252a2-5f33-56bf-86c9-59e7332b4326"
+PlantBiophysics = "7ae8fcfa-76ad-4ec6-9ea7-5f8f5e2d6ec9"
+PlantGeom = "5edaa67e-25db-4eb9-bf81-05d793b2238d"
+PlantMeteo = "4630fe09-e0fb-4da5-a846-781cb73437b6"
+PlantSimEngine = "9a576370-710b-4269-adf9-4f603a9c6423"
+Statistics = "10745b16-79ce-11e8-11f9-7d13ad32a3b2"
+Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
+
+[sources]
+PlantBiophysics = {path = "../.."}
+
+[compat]
+ArchimedLight = "0.2"
+PlantBiophysics = "0.18"
+PlantGeom = "0.20"
+PlantMeteo = "0.9"
+PlantSimEngine = "0.15"
+julia = "1.10"

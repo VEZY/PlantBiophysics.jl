@@ -1,9 +1,24 @@
 name: CI
 on:
-  - push
-  - pull_request
+  push:
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      run_scene_integration:
+        description: Run scene integration instead of the package test matrix
+        type: boolean
+        default: false
+      archimedlight_ref:
+        description: ArchimedLight branch, tag, or commit for scene integration
+        type: string
+        default: main
+      run_benchmarks:
+        description: Measure the existing scene-light performance comparison
+        type: boolean
+        default: false
 jobs:
   test:
+    if: github.event_name != 'workflow_dispatch' || !inputs.run_scene_integration
     name: Julia ${{ matrix.version }} - ${{ matrix.os }} - ${{github.event_name }}
     runs-on: ${{ matrix.os }}
     strategy:
@@ -34,3 +49,11 @@ jobs:
             ${{ runner.os }}-
       - uses: julia-actions/julia-buildpkg@latest
       - uses: julia-actions/julia-runtest@latest
+  scene-integration:
+    if: github.event_name == 'workflow_dispatch' && inputs.run_scene_integration
+    permissions:
+      contents: read
+    uses: ./.github/workflows/SceneIntegration.yml
+    with:
+      archimedlight_ref: ${{ inputs.archimedlight_ref }}
+      run_benchmarks: ${{ inputs.run_benchmarks }}
