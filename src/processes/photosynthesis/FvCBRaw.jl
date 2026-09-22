@@ -96,7 +96,8 @@ Modify the first argument in place for A, the carbon assimilation (μmol[CO₂] 
 - The target status provides initial values for:
     - `Tₗ` (°C): leaf temperature
     - `aPPFD` (μmol[photon] m[leaf]⁻² s⁻¹): absorbed Photosynthetic
-      Photon Flux Density on the botanical leaf-area basis
+      Photon Flux Density per unit reference leaf surface area. For geometry-resolved
+      light, this is the represented mesh surface area (`:surface_area`).
     - `Cₛ` (ppm): Air CO₂ concentration at the leaf surface
     - `Dₗ` (kPa): vapour pressure difference between the surface and the saturated
     air vapour pressure in case you're using the stomatal conductance model of [`Medlyn`](@ref).
