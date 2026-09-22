@@ -91,7 +91,6 @@ export AbstractLight_InterceptionModel
 export AbstractRadiation_Basis_ConversionModel
 export Beer, BeerShortwave  # structs to hold the values for the Beer-Lambert law of light extinction
 export GroundToMeanLeafPPFD, GroundToMeanLeafShortwave
-export RadiativeMeshToLeafPPFD, RadiativeMeshToLeafShortwave
 
 # Energy balance
 export AbstractEnergy_BalanceModel

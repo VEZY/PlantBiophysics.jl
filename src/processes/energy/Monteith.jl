@@ -104,8 +104,9 @@ the energy balance using the mass flux (~ Rn - λE).
 - the declared photosynthesis hard-call target owns its coupled model parameters.
 - `status`: the state shared by the coupled leaf applications, including:
     - `Ra_SW_f` (W m[leaf]⁻²): net shortwave radiation (PAR + NIR) on
-      the botanical leaf-area basis. Convert canopy or radiative-mesh outputs
-      explicitly before coupling them here.
+      the reference leaf surface-area basis (`:surface_area`). Geometry-resolved
+      light uses the same mesh surface area and couples directly; canopy
+      radiation requires an explicit ground-to-mean-leaf conversion.
     - `sky_fraction` (0-2): view factor between the object and the sky for both faces (see details).
     - `d` (m): characteristic dimension, *e.g.* leaf width (see eq. 10.9 from Monteith and Unsworth, 2013).
 - `environment`: meteorology structure, see [`Atmosphere`](https://palmstudio.github.io/PlantMeteo.jl/stable/#PlantMeteo.Atmosphere)

@@ -65,6 +65,73 @@ function ground_rate_scene(environment)
     )
 end
 
+# A small stand-in for a geometry-resolved radiation producer. Declare its
+# contracts independently so these tests detect incompatible package tokens.
+PlantSimEngine.@process "surface_radiation_source" verbose = false
+
+struct SurfaceRadiationSource <: AbstractSurface_Radiation_SourceModel
+    aPPFD::Float64
+    Ra_SW_f::Float64
+end
+
+PlantSimEngine.inputs_(::SurfaceRadiationSource) = NamedTuple()
+PlantSimEngine.outputs_(::SurfaceRadiationSource) = (aPPFD=-Inf, Ra_SW_f=-Inf)
+PlantSimEngine.variable_contracts_(::SurfaceRadiationSource) = (
+    aPPFD=VariableContract(
+        unit=:micromol_photon, basis=:surface_area, temporal=:second,
+        aggregation=:rate, extent=:intensive,
+    ),
+    Ra_SW_f=VariableContract(
+        unit=:joule, basis=:surface_area, temporal=:second,
+        aggregation=:rate, extent=:intensive,
+    ),
+)
+
+function PlantSimEngine.run!(
+    model::SurfaceRadiationSource,
+    status,
+    environment,
+    constants,
+    context=nothing,
+)
+    status.aPPFD = model.aPPFD
+    status.Ra_SW_f = model.Ra_SW_f
+    return nothing
+end
+
+function surface_radiation_scene(; energy_balance::Bool, producer::Bool)
+    radiation = (aPPFD=900.0, Ra_SW_f=240.0)
+    physiology = (
+        ModelSpec(Fvcb(α=0.24); name=:photosynthesis, on=One(scale=:Leaf)),
+        ModelSpec(Medlyn(0.03, 12.0); name=:stomatal_conductance, on=One(scale=:Leaf)),
+    )
+    applications = energy_balance ? (
+        ModelSpec(Monteith(); name=:energy_balance, on=One(scale=:Leaf)),
+        physiology...,
+    ) : physiology
+    if producer
+        # Deliberately declared last: the dependency must schedule it first.
+        applications = (
+            applications...,
+            ModelSpec(
+                SurfaceRadiationSource(radiation.aPPFD, radiation.Ra_SW_f);
+                name=:surface_light,
+                on=One(scale=:Leaf),
+            ),
+        )
+    end
+    initial = (Tₗ=25.0, Cₛ=400.0, Dₗ=1.2, sky_fraction=1.0, d=0.03)
+    return CompositeModel(
+        Object(
+            :leaf;
+            scale=:Leaf,
+            status=Status(producer ? initial : merge(initial, radiation)),
+        );
+        applications=applications,
+        environment=meteo,
+    )
+end
+
 @testset "Beer-Lambert" begin
     @test Beer <: AbstractLight_InterceptionModel
     scene = canopy_light_scene(Beer(0.5), meteo)
@@ -111,24 +178,6 @@ end
     end
     @test variable_contracts(Monteith()).Ra_SW_f ==
           PlantBiophysics.LEAF_IRRADIANCE_CONTRACT
-
-    ppfd_mesh_contracts = variable_contracts(RadiativeMeshToLeafPPFD())
-    @test ppfd_mesh_contracts == (
-        aPPFD_radiative=
-            PlantBiophysics.RADIATIVE_MESH_PAR_PHOTON_FLUX_CONTRACT,
-        radiative_mesh_area=PlantBiophysics.RADIATIVE_MESH_AREA_CONTRACT,
-        botanical_leaf_area=PlantBiophysics.BOTANICAL_LEAF_AREA_CONTRACT,
-        aPPFD_leaf_mean=PlantBiophysics.LEAF_PAR_PHOTON_FLUX_CONTRACT,
-    )
-    shortwave_mesh_contracts =
-        variable_contracts(RadiativeMeshToLeafShortwave())
-    @test shortwave_mesh_contracts == (
-        Ra_SW_f_radiative=
-            PlantBiophysics.RADIATIVE_MESH_IRRADIANCE_CONTRACT,
-        radiative_mesh_area=PlantBiophysics.RADIATIVE_MESH_AREA_CONTRACT,
-        botanical_leaf_area=PlantBiophysics.BOTANICAL_LEAF_AREA_CONTRACT,
-        Ra_SW_f_leaf_mean=PlantBiophysics.LEAF_IRRADIANCE_CONTRACT,
-    )
 end
 
 @testset "BeerShortwave extinction and numerical outputs" begin
@@ -295,6 +344,57 @@ end
     @test isfinite(leaf_status(shortwave_scene).Tₗ)
 end
 
+@testset "Surface radiation couples directly to leaf physiology" begin
+    for energy_balance in (false, true)
+        scene = surface_radiation_scene(; energy_balance, producer=true)
+        compiled = Advanced.compile_composite_model(scene)
+        # Hard-call inputs share the caller's status; explain_bindings lists
+        # the root application's ordinary radiation input only.
+        root_application = energy_balance ? :energy_balance : :photosynthesis
+        root_input = energy_balance ? :Ra_SW_f : :aPPFD
+        binding = only(
+            row for row in Diagnostics.explain_bindings(compiled)
+            if row.application_id == root_application && row.input == root_input
+        )
+        @test binding.source_application_ids == [:surface_light]
+        @test binding.source_var == root_input
+        @test binding.policy == HoldLast()
+        writers = [
+            row for row in Diagnostics.explain_writers(compiled)
+            if row.object_id == :leaf && row.variable in (:aPPFD, :Ra_SW_f)
+        ]
+        @test length(writers) == 2
+        @test all(row.application_ids == [:surface_light] for row in writers)
+        schedule = Dict(
+            row.application_id => row.execution_index
+            for row in Diagnostics.explain_schedule(compiled)
+        )
+        @test schedule[:surface_light] < schedule[root_application]
+        if energy_balance
+            @test only(
+                row for row in Diagnostics.explain_calls(compiled)
+                if row.application_id == :energy_balance
+            ).callee_application_ids == [:photosynthesis]
+        end
+
+        simulation = run!(scene; constants=constants, outputs=:none)
+        state = final_state(simulation, :leaf)
+        @test state.aPPFD == 900.0
+        @test state.Ra_SW_f == 240.0
+        @test isfinite(state.A) && state.A > 0.0
+
+        reference = surface_radiation_scene(; energy_balance, producer=false)
+        reference_simulation = run!(reference; constants=constants, outputs=:none)
+        reference_state = final_state(reference_simulation, :leaf)
+        variables = energy_balance ?
+                    (:A, :Gₛ, :Cᵢ, :Cₛ, :Tₗ, :Rn, :H, :λE) :
+                    (:A, :Gₛ, :Cᵢ, :Cₛ)
+        for variable in variables
+            @test getproperty(state, variable) ≈ getproperty(reference_state, variable)
+        end
+    end
+end
+
 @testset "Ground radiation cannot couple directly to leaf physiology" begin
     direct_ppfd_scene = CompositeModel(
         Object(
@@ -428,128 +528,6 @@ end
     @test_throws "source output `Ra_NIR_f`" Advanced.compile_composite_model(
         nir_as_shortwave_scene,
     )
-end
-
-
-@testset "Radiative-mesh adapters conserve absorbed quantity" begin
-    ppfd_status = Status(
-        aPPFD_radiative=900.0,
-        radiative_mesh_area=0.4,
-        botanical_leaf_area=0.6,
-        aPPFD_leaf_mean=-Inf,
-    )
-    PlantSimEngine.run!(
-        RadiativeMeshToLeafPPFD(),
-        ppfd_status,
-        nothing,
-        constants,
-        nothing,
-    )
-    @test ppfd_status.aPPFD_leaf_mean ≈ 600.0
-    @test ppfd_status.aPPFD_radiative * ppfd_status.radiative_mesh_area ≈
-          ppfd_status.aPPFD_leaf_mean * ppfd_status.botanical_leaf_area
-
-    shortwave_status = Status(
-        Ra_SW_f_radiative=120.0,
-        radiative_mesh_area=0.4,
-        botanical_leaf_area=0.6,
-        Ra_SW_f_leaf_mean=-Inf,
-    )
-    PlantSimEngine.run!(
-        RadiativeMeshToLeafShortwave(),
-        shortwave_status,
-        nothing,
-        constants,
-        nothing,
-    )
-    @test shortwave_status.Ra_SW_f_leaf_mean ≈ 80.0
-    @test shortwave_status.Ra_SW_f_radiative *
-          shortwave_status.radiative_mesh_area ≈
-          shortwave_status.Ra_SW_f_leaf_mean *
-          shortwave_status.botanical_leaf_area
-
-    for invalid_area in (0.0, -1.0, Inf, -Inf, NaN)
-        invalid_ppfd = Status(
-            aPPFD_radiative=900.0,
-            radiative_mesh_area=invalid_area,
-            botanical_leaf_area=0.6,
-            aPPFD_leaf_mean=-Inf,
-        )
-        @test_throws DomainError PlantSimEngine.run!(
-            RadiativeMeshToLeafPPFD(),
-            invalid_ppfd,
-            nothing,
-            constants,
-            nothing,
-        )
-        invalid_ppfd_botanical = Status(
-            aPPFD_radiative=900.0,
-            radiative_mesh_area=0.4,
-            botanical_leaf_area=invalid_area,
-            aPPFD_leaf_mean=-Inf,
-        )
-        @test_throws DomainError PlantSimEngine.run!(
-            RadiativeMeshToLeafPPFD(),
-            invalid_ppfd_botanical,
-            nothing,
-            constants,
-            nothing,
-        )
-
-        invalid_shortwave = Status(
-            Ra_SW_f_radiative=120.0,
-            radiative_mesh_area=0.4,
-            botanical_leaf_area=invalid_area,
-            Ra_SW_f_leaf_mean=-Inf,
-        )
-        @test_throws DomainError PlantSimEngine.run!(
-            RadiativeMeshToLeafShortwave(),
-            invalid_shortwave,
-            nothing,
-            constants,
-            nothing,
-        )
-        invalid_shortwave_radiative = Status(
-            Ra_SW_f_radiative=120.0,
-            radiative_mesh_area=invalid_area,
-            botanical_leaf_area=0.6,
-            Ra_SW_f_leaf_mean=-Inf,
-        )
-        @test_throws DomainError PlantSimEngine.run!(
-            RadiativeMeshToLeafShortwave(),
-            invalid_shortwave_radiative,
-            nothing,
-            constants,
-            nothing,
-        )
-    end
-
-    for invalid_radiation in (-1.0, Inf, -Inf, NaN)
-        @test_throws DomainError PlantSimEngine.run!(
-            RadiativeMeshToLeafPPFD(),
-            Status(
-                aPPFD_radiative=invalid_radiation,
-                radiative_mesh_area=0.4,
-                botanical_leaf_area=0.6,
-                aPPFD_leaf_mean=-Inf,
-            ),
-            nothing,
-            constants,
-            nothing,
-        )
-        @test_throws DomainError PlantSimEngine.run!(
-            RadiativeMeshToLeafShortwave(),
-            Status(
-                Ra_SW_f_radiative=invalid_radiation,
-                radiative_mesh_area=0.4,
-                botanical_leaf_area=0.6,
-                Ra_SW_f_leaf_mean=-Inf,
-            ),
-            nothing,
-            constants,
-            nothing,
-        )
-    end
 end
 
 
