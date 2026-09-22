@@ -29,16 +29,40 @@ scene = leaf_scene(
     environment=meteo,
 )
 
-simulation = run!(scene; steps=3)
-outputs = DataFrame(collect_outputs(simulation; sink=nothing))
-first(outputs, 6)
+simulation = run!(scene; steps=3, outputs=:all)
+nothing # hide
 ```
+
+`outputs=:all` retains the simulated values at each timestep. Display the
+net radiation (`Rn`), sensible heat flux (`H`), latent heat flux (`λE`),
+leaf temperature (`Tₗ`), net CO₂ assimilation (`A`), and stomatal conductance
+to CO₂ (`Gₛ`) together, with one row per timestep:
+
+```@example first_leaf
+rows = DataFrame(collect_outputs(simulation; sink=nothing))
+leaf_rows = subset(
+    rows,
+    :application_id => ByRow(==(:energy_balance)),
+    :variable => ByRow(in((:Rn, :H, :λE, :Tₗ, :A, :Gₛ))),
+)
+outputs = unstack(
+    select(leaf_rows, :timestep, :variable, :value),
+    :timestep, :variable, :value,
+)
+select(outputs, :timestep, :Rn, :H, :λE, :Tₗ, :A, :Gₛ)
+```
+
+`Rn`, `H`, and `λE` are in W m⁻²; `Tₗ` is in °C; `A` is in
+µmol CO₂ m⁻² s⁻¹; and `Gₛ` is in mol CO₂ m⁻² s⁻¹.
 
 The latest state remains available on the leaf object:
 
 ```@example first_leaf
 leaf = only(model_objects(scene; scale=:Leaf))
-(Tₗ=leaf.status.Tₗ, A=leaf.status.A, λE=leaf.status.λE)
+(
+    Rn=leaf.status.Rn, H=leaf.status.H, λE=leaf.status.λE,
+    Tₗ=leaf.status.Tₗ, A=leaf.status.A, Gₛ=leaf.status.Gₛ,
+)
 ```
 
 Use `Diagnostics.explain_calls(Advanced.compile_composite_model(scene))` to inspect the manually controlled
