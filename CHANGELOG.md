@@ -10,11 +10,12 @@
   when exporting totals. Model-to-model bindings remain rate-valued; a model
   that consumes a total needs a separate, explicitly contracted adapter.
 - Radiation normalization is now checked during model compilation. Beer
-  outputs are per ground area, while FvCB and Monteith inputs are per leaf
-  area. Use `GroundToMeanLeafPPFD` or `GroundToMeanLeafShortwave` at that
-  boundary. For geometry-resolved ArchimedLight outputs, use
-  `RadiativeMeshToLeafPPFD` or `RadiativeMeshToLeafShortwave` with explicit
-  `radiative_mesh_area` and `botanical_leaf_area`. The component diagnostics
+  outputs are per ground area, while FvCB and Monteith inputs use the
+  `:surface_area` basis. Use `GroundToMeanLeafPPFD` or
+  `GroundToMeanLeafShortwave` at the canopy boundary. Geometry-resolved
+  ArchimedLight outputs use the same represented mesh surface as physiology
+  and couple directly. Removed the separate mesh-to-leaf area adapters and
+  their second area requirement. The component diagnostics
   `Ra_PAR_f` and `Ra_NIR_f` remain uncontracted so neither can be renamed into
   the canonical PAR+NIR shortwave input.
 - `BeerShortwave(k)` continues to preserve its historical `k_NIR = 0.48`

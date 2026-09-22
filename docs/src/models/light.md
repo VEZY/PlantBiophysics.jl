@@ -175,76 +175,66 @@ organ-level irradiance by canopy LAI would apply the wrong area conversion.
     optical definitions. To ignore light interception, omit the light
     application; a no-op model is unnecessary.
 
-## Convert 3D light on its own area boundary
+## Couple 3D light directly to physiology
 
-ArchimedLight organ flux densities are normalized by `radiative_mesh_area`.
-That area can differ from the botanical leaf area used by FvCB and Monteith.
-The raw `aPPFD` and `Ra_SW_f` values must therefore not be connected directly
-to those physiology inputs.
+ArchimedLight and PlantBiophysics use the represented mesh surface as the
+reference area for geometry-resolved radiation. ArchimedLight publishes
+`aPPFD` in `μmol[photon] m⁻² s⁻¹`, `Ra_SW_f` in `W m⁻²`, and the corresponding
+mesh surface `area` in `m²` for each destination organ. FvCB and Monteith use
+the same `:surface_area` radiation contracts, so those fluxes couple directly.
+The light solver's pixel projection correction does not change the reference
+surface area.
 
-Use a separate explicit conversion for each organ:
+For a leaf mesh, this represented surface is the leaf area used by the
+physiology calculation. Leaf-area model parameters and observations must use
+that same reference surface. Beer-Lambert canopy fluxes still require the
+LAI adapters above because their denominator is ground area.
 
-```math
-\mathrm{flux}_{leaf} =
-\mathrm{flux}_{radiative}\,
-\frac{\mathrm{radiative\_mesh\_area}}{\mathrm{botanical\_leaf\_area}}.
-```
-
-This preserves the absorbed amount while changing the normalization area. A
-leaf must therefore carry an explicit, finite, positive
-`botanical_leaf_area`. Put [`RadiativeMeshToLeafPPFD`](@ref) and
-[`RadiativeMeshToLeafShortwave`](@ref) between the ArchimedLight scene writer
-and the physiology models:
+Given an ArchimedLight scene application named `:archimed_light` that publishes
+to the leaf objects, bind its radiation directly to the physiology models:
 
 ```julia
 leaf = Object(
     :leaf_42;
     scale=:Leaf,
-    status=Status(
-        botanical_leaf_area=0.012,
-        sky_fraction=1.0,
-        d=0.03,
-    ),
+    status=Status(sky_fraction=1.0, d=0.03),
 )
 
-ppfd_boundary = ModelSpec(
-    RadiativeMeshToLeafPPFD();
-    name=:radiative_to_leaf_ppfd,
+photosynthesis = ModelSpec(
+    Fvcb();
+    name=:photosynthesis,
     on=Many(scale=:Leaf),
     inputs=(
-        :aPPFD_radiative => One(
+        :aPPFD => One(
             within=Self(), application=:archimed_light, var=:aPPFD,
             policy=HoldLast(),
         ),
-        :radiative_mesh_area => One(
-            within=Self(), application=:archimed_light,
-            var=:radiative_mesh_area, policy=HoldLast(),
-        ),
     ),
 )
 
-shortwave_boundary = ModelSpec(
-    RadiativeMeshToLeafShortwave();
-    name=:radiative_to_leaf_shortwave,
+energy_balance = ModelSpec(
+    Monteith();
+    name=:energy_balance,
     on=Many(scale=:Leaf),
     inputs=(
-        :Ra_SW_f_radiative => One(
+        :Ra_SW_f => One(
             within=Self(), application=:archimed_light, var=:Ra_SW_f,
             policy=HoldLast(),
         ),
-        :radiative_mesh_area => One(
-            within=Self(), application=:archimed_light,
-            var=:radiative_mesh_area, policy=HoldLast(),
-        ),
     ),
+)
+
+stomatal_conductance = ModelSpec(
+    Medlyn(0.03, 12.0);
+    name=:stomatal_conductance,
+    on=Many(scale=:Leaf),
 )
 ```
 
-Map `aPPFD_leaf_mean` from `ppfd_boundary` to FvCB's `aPPFD` input, and
-`Ra_SW_f_leaf_mean` from `shortwave_boundary` to Monteith's `Ra_SW_f` input.
-The distinct names prevent raw radiative-area values from being mistaken for
-leaf-area values, and PlantSimEngine rejects a contracted direct connection.
-The Beer LAI adapters above are not a substitute for this organ-area boundary.
+Include these applications alongside the scene light application in the
+`CompositeModel`. PlantSimEngine schedules the light producer before the
+Monteith → FvCB → stomatal-conductance hard-call chain. The flux values read
+by FvCB and Monteith are the values published by ArchimedLight.
 
 Keep source ownership exact. Build the `CompositeModel` from the same MTG as
 the `PlantGeom.SceneGeometry` when possible. For another topology, pass exact
@@ -252,15 +242,8 @@ MTG roots through `source_roots`, or an explicit `object_resolver` from each
 source-owner key to its `ObjectId`. Never infer this relationship from row or
 traversal order.
 
-ArchimedLight raw `aPPFD` is in
-``\mu mol\ m_{\mathrm{radiative}}^{-2}\ s^{-1}`` and raw `Ra_SW_f` is in
-``W\ m_{\mathrm{radiative}}^{-2}``.
-After the conversion bindings are compiled, `final_state(...).aPPFD` and
-`final_state(...).Ra_SW_f` are the botanical-leaf-area values seen by FvCB and
-Monteith. Read the raw radiative-area values from the `:archimed_light` output
-history when both representations are needed.
 The same sampled environment row must provide sun azimuth in [0, 360°), sun
-elevation in [-90°, 90°], non-negative incident PAR and NIR (``W\ m^{-2}``), a
+elevation in [-90°, 90°], non-negative incident PAR and NIR (`W m⁻²`), a
 direct fraction in [0, 1], and a finite, strictly positive timestep duration.
 
 `sky_fraction` is deliberately absent from both `ArchimedLightModel` output
@@ -272,7 +255,6 @@ corresponds to one fully exposed effective face, and 2 to both faces seeing
 the sky. This keeps a shortwave interception result from silently standing in
 for a scientifically distinct longwave view factor.
 
-Use
-`Diagnostics.explain_bindings`, `Diagnostics.explain_writers`, and
-`Diagnostics.explain_schedule` to verify both conversion edges and their
-ordering before the Monteith → FvCB → stomatal-conductance hard-call chain.
+Use `Diagnostics.explain_bindings`, `Diagnostics.explain_writers`, and
+`Diagnostics.explain_schedule` to verify the radiation sources and execution
+order.

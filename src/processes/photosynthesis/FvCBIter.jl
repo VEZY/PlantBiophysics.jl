@@ -113,7 +113,8 @@ Modify the first argument in place for A, Gₛ and Cᵢ:
   the shared status provides initial values for:
     - `Tₗ` (°C): leaf temperature
     - `aPPFD` (μmol[photon] m[leaf]⁻² s⁻¹): absorbed Photosynthetic
-      Photon Flux Density on the botanical leaf-area basis
+      Photon Flux Density per unit reference leaf surface area. For geometry-resolved
+      light, this is the represented mesh surface area (`:surface_area`).
     - `Gbc` (mol m-2 s-1): boundary conductance for CO₂
     - `Dₗ` (kPa): is the difference between the vapour pressure at the leaf surface and the
     saturated air vapour pressure in case you're using the stomatal conductance model of [`Medlyn`](@ref).
