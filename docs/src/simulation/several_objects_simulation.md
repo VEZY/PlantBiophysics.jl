@@ -64,15 +64,10 @@ shared, while the two `Status` objects remain independent. Radiation is held
 constant per leaf here; see [Simulation over several time steps](several_simulation.md)
 for externally prescribed drivers that vary over time.
 
-For repeated plants, a `CompositeModelTemplate` can share the topology and
-default model values while `ObjectInstance` provides plant-local scopes.
-Parameters may then be overridden for one instance or one exceptional object
-without duplicating the unchanged template.
-
 ## Run every leaf over the shared weather
 
-Output retention is explicit. `outputs=:all` is convenient for a small
-tutorial; use `OutputRequest` for large plants.
+`outputs=:all` saves the calculated values for both leaves at each timestep.
+As in the previous tutorial, we collect and reshape them into a table:
 
 ```@example several_objects
 simulation = run!(scene; steps=length(weather), outputs=:all)
@@ -93,9 +88,10 @@ leaf_results = unstack(
 sort!(leaf_results, [:timestep, :object_id])
 ```
 
-The `object_id` column associates every value with the leaf that produced it;
-object declaration order is not an output contract. The latest state also
-remains available on each object:
+There is one row per leaf and timestep. Use `object_id` to distinguish
+`:sun_leaf` from `:shade_leaf`. `Tₗ` is in °C, `A` in µmol CO₂ m⁻² s⁻¹,
+`Gₛ` in mol CO₂ m⁻² s⁻¹, and `λE` in W m⁻², all fluxes per unit leaf area.
+The latest state also remains available on each object:
 
 ```@example several_objects
 Dict(
@@ -104,9 +100,11 @@ Dict(
 )
 ```
 
-## Select values within a plant
+## When a model needs values from other objects
 
-Selectors make cross-object coupling explicit:
+The two leaves above only share their weather. If you later add a model that
+combines leaf results at plant scale, it needs to know which leaves belong
+to that plant. PlantSimEngine provides selectors for this:
 
 - `Self()` means only the object where the consuming application runs.
 - `Subtree()` means that object and its descendants. A plant-scale model uses
@@ -114,22 +112,11 @@ Selectors make cross-object coupling explicit:
 - `SceneScope()` searches the complete scene and is appropriate for a
   scene-scale aggregate.
 
-For example, an input declaration for a plant-scale summary model would be:
-
-```julia
-ModelSpec(
-    PlantSummaryModel();
-    inputs=(
-        :leaf_assimilation => Many(
-            scale=:Leaf,
-            within=Subtree(),
-            application=:energy_balance,
-            var=:A,
-            policy=HoldLast(),
-        ),
-    ),
-)
-```
+The leaf assimilation rates above are per unit leaf area. To calculate a
+whole-plant assimilation rate, multiply each rate by its leaf area before
+adding them. Simply adding the rates would not give a whole-plant total.
+See [PlantSimEngine's coupling guide](https://virtualplantlab.github.io/PlantSimEngine.jl/stable/guides/coupling/)
+when you need to implement this type of model.
 
 Continue with [Whole-plant simulation from an MTG](mtg_simulation.md) to adapt
 an existing plant topology to the same applications.

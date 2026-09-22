@@ -1,9 +1,14 @@
 # Simulation Over Several Time Steps
 
-This page runs the coupled leaf model over six hourly timesteps. It shows how
-meteorology advances through a `Weather` series, how an external control loop
-can update nonmeteorological drivers between steps, and how retained model
-outputs map back to the input table.
+After the [one-timestep example](first_simulation.md), let's simulate a leaf
+over six hours. The weather and absorbed light change each hour. We will
+collect one row of results per timestep and plot the leaf's response.
+
+## Prepare the input table
+
+`Weather` is a sequence of `Atmosphere` values, one for each timestep. Here we
+create it from a small table; you can also import measured weather as shown
+on the [Micro-climate](../climate/microclimate.md) page.
 
 ```@example several_steps
 using PlantBiophysics, PlantSimEngine, PlantMeteo, Dates, DataFrames
@@ -36,6 +41,10 @@ appropriate row automatically at each timestep. Absorbed shortwave radiation
 (`Ra_SW_f`) and absorbed photosynthetic photon flux (`aPPFD`) are externally
 prescribed leaf drivers in this example.
 
+The units are °C for `T`, m s⁻¹ for `Wind`, W m⁻² of leaf for `Ra_SW_f`,
+and µmol photons m⁻² of leaf s⁻¹ for `aPPFD`. `Rh` is a fraction, not a
+percentage.
+
 ## Assemble the leaf model
 
 ```@example several_steps
@@ -56,19 +65,14 @@ leaf = only(model_objects(scene; scale=:Leaf))
 nothing
 ```
 
-A value in `Status` may itself be scalar or vector-valued, but it is one state
-value and is never interpreted implicitly as a timestep series. In an
-externally controlled stepping loop, update prescribed state before advancing
-the simulation. For a reusable, declarative scenario, represent time-varying
-forcing with an environment backend or a source application. A unique
-same-object source binds automatically; use `ModelSpec(...; inputs=...)` for
-cross-object, renamed, ambiguous, or explicitly time-aggregated values.
+The leaf starts with the first row's absorbed light. Unlike `Weather`, a
+vector stored in `Status` does not automatically advance through time. To
+change a leaf input, we update its value before running the next step.
 
 ## Run and retain the results
 
-`run!` starts the timeline and consumes the first row of `Weather`. Subsequent
-calls to `step!` preserve the environment position, scheduler state, and
-retained output streams.
+`run!` runs the first row of `Weather`. Each call to `step!` then advances
+to the next weather row and adds its results to the same simulation.
 
 ```@example several_steps
 simulation = run!(scene; outputs=:all)
@@ -82,10 +86,10 @@ end
 current_step(simulation)
 ```
 
-Output retention is explicit in PlantSimEngine 0.15: the default is
-`outputs=:none`. Here `outputs=:all` keeps every output published by the
-energy-balance application. For a large simulation, use `OutputRequest` to
-retain only the variables you need.
+`outputs=:all` saves the calculated values at every step; the default
+`outputs=:none` only leaves the latest values on the leaf. If the leaf inputs
+are constant and only the weather changes, the loop can be replaced by a
+single `run!(scene; steps=length(weather), outputs=:all)` call.
 
 The latest state is always available directly on the leaf:
 
@@ -95,9 +99,9 @@ The latest state is always available directly on the leaf:
 
 ## Match outputs to input timesteps
 
-`collect_outputs` returns a long table. Its `timestep` column uses the same
-one-based scheduler steps as the input table, so the retained results can be
-reshaped and joined without relying on row order:
+`collect_outputs` returns one row per variable and timestep. `unstack` turns
+the variables into columns, then `leftjoin` puts the inputs and results in
+the same table. We use `timestep` to match each result to its input row:
 
 ```@example several_steps
 rows = DataFrame(collect_outputs(simulation; sink=nothing))
@@ -122,3 +126,26 @@ select(results, :timestep, :T, :Ra_SW_f, :aPPFD, :Tₗ, :A, :Gₛ, :λE)
 The long-form representation also records the publishing application and
 object. Filter by `application_id` before reshaping whenever several
 applications may publish variables with the same name.
+
+## Plot the leaf response
+
+The first panel compares leaf and air temperature. The second shows how net
+assimilation changes with the supplied weather and light. This is a response
+to the illustrative six-hour sequence above, not a measured daily cycle.
+
+```@example several_steps
+using CairoMakie
+
+figure = Figure(size=(800, 330))
+temperature_axis = Axis(figure[1, 1]; xlabel="Timestep (hour)", ylabel="Temperature (°C)")
+lines!(temperature_axis, results.timestep, results.T; label="Air")
+lines!(temperature_axis, results.timestep, Float64.(results.Tₗ); label="Leaf")
+axislegend(temperature_axis; position=:lt)
+
+assimilation_axis = Axis(figure[1, 2]; xlabel="Timestep (hour)", ylabel="A (µmol CO₂ m⁻² s⁻¹)")
+scatterlines!(assimilation_axis, results.timestep, Float64.(results.A))
+figure
+```
+
+Continue with [Several objects](several_objects_simulation.md) to compare
+leaves receiving different amounts of light.

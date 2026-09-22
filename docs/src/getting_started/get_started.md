@@ -65,5 +65,6 @@ leaf = only(model_objects(scene; scale=:Leaf))
 )
 ```
 
-Use `Diagnostics.explain_calls(Advanced.compile_composite_model(scene))` to inspect the manually controlled
-energy-balance call stack.
+Continue with [Design](../concepts/package_design.md) to understand how the
+models fit together, or [First simulation](../simulation/first_simulation.md)
+for a step-by-step explanation.

@@ -1,81 +1,116 @@
 # [Micro-climate](@id microclimate_page)
 
 ```@setup usepkg
-using PlantBiophysics, PlantMeteo
+using PlantBiophysics, PlantMeteo, Dates
 ```
 
-The micro-climatic/meteorological conditions measured close to the object or component are given as the second argument of the simulation functions shown earlier.
+Leaf processes respond to the air temperature, humidity, wind, and CO₂
+concentration around the leaf. PlantMeteo describes these conditions with
+an `Atmosphere` for one timestep or a `Weather` series for several timesteps.
+Pass either one as `environment=meteo` when creating a `leaf_scene` or
+`CompositeModel`.
 
-PlantBiophysics usually uses a special data structure from the PlantMeteo package to declare those conditions, and to pre-compute other required variables. This data structure is a type called `Atmosphere`.
+## Describe one timestep
 
-The mandatory variables to provide are: `T` (air temperature in °C), `Rh` (relative humidity, 0-1), `Wind` (the wind speed in m s-1) and `P` (the air pressure in kPa).
+Start with the conditions measured near your leaf:
 
-We can declare such conditions using `Atmosphere` such as:
+| Input | Meaning | Unit |
+|:--|:--|:--|
+| `T` | Air temperature | °C |
+| `Rh` | Relative humidity | Fraction from 0 to 1 |
+| `Wind` | Wind speed | m s⁻¹ |
+| `P` | Air pressure | kPa |
+| `Cₐ` | Air CO₂ concentration | µmol mol⁻¹ |
+| `duration` | Timestep duration | A period such as `Hour(1)` |
+
+`Atmosphere` supplies defaults for optional inputs, including `Cₐ`, but
+provide measured values when available. Specify the duration explicitly
+when using a time series or calculating totals.
 
 ```@example usepkg
 using PlantMeteo
-meteo = Atmosphere(T = 20.0, Wind = 1.0, P = 101.3, Rh = 0.65)
+meteo = Atmosphere(T=20.0, Wind=1.0, P=101.3, Rh=0.65, duration=Hour(1))
 ```
 
-The `Atmosphere` also computes other variables based on the provided conditions, such as the vapor pressure deficit (VPD) or the air density (ρ). You can also provide those variables as inputs if necessary. For example if you need another way of computing the VPD, you can provide it as follows:
+`Atmosphere` calculates related quantities such as vapour pressure deficit
+(`VPD`, kPa) and air density (`ρ`, kg m⁻³). You can override a derived value
+when you have an independent measurement or calculation:
 
 ```@example usepkg
 using PlantMeteo
-Atmosphere(T = 20.0, Wind = 1.0, P = 101.3, Rh = 0.65, VPD = 0.82)
+Atmosphere(T=20.0, Wind=1.0, P=101.3, Rh=0.65, VPD=0.82, duration=Hour(1))
 ```
 
-To access the values of the variables after instantiation, we can use the dot syntax. For example if we need the vapor pressure at saturation, we would do as follows:
+Read a value with the dot syntax. For example, saturation vapour pressure
+(`eₛ`) is in kPa:
 
 ```@example usepkg
 meteo.eₛ
 ```
 
-See the documentation of the function if you need more information about the variables: `Atmosphere`.
+Incident radiation can also be supplied through `Atmosphere`, using
+`Ri_PAR_f` and `Ri_NIR_f` in W m⁻². Leaf models need **absorbed** radiation,
+which is supplied on the leaf or calculated by a light model. See
+[Light interception](../models/light.md) for the distinction.
 
-If you want to simulate several time-steps with varying conditions, you can do so by using `Weather` instead of `Atmosphere`.
+## Describe changing weather
 
-`Weather` is just an array of `Atmosphere` along with some optional metadata. For example for three time-steps, we can declare it like so:
+`Weather` collects consecutive `Atmosphere` values, with optional metadata
+such as a site name. Here are three hourly timesteps:
 
 ```@example usepkg
 using PlantMeteo
 w = Weather(
     [
-        Atmosphere(T = 20.0, Wind = 1.0, P = 101.3, Rh = 0.65),
-        Atmosphere(T = 23.0, Wind = 1.5, P = 101.3, Rh = 0.60),
-        Atmosphere(T = 25.0, Wind = 3.0, P = 101.3, Rh = 0.55)
+        Atmosphere(T=20.0, Wind=1.0, P=101.3, Rh=0.65, duration=Hour(1)),
+        Atmosphere(T=23.0, Wind=1.5, P=101.3, Rh=0.60, duration=Hour(1)),
+        Atmosphere(T=25.0, Wind=3.0, P=101.3, Rh=0.55, duration=Hour(1))
     ],
     (
         site = "Montpellier",
-        other_info = "another crucial metadata"
     )
 )
 ```
 
-As you see the first argument is an array of `Atmosphere`, and the second is a named tuple of optional metadata such as the site or whatever you think is important.
+Use this series as the scene's `environment` and run three steps with
+`run!(scene; steps=3, outputs=:all)`. PlantSimEngine reads the corresponding
+weather row at each step; the [several-timestep tutorial](../simulation/several_simulation.md)
+shows the complete workflow.
+
+## Read a weather table
 
 A `Weather` can also be declared from a DataFrame, provided each row is an observation from a time-step, and each column is a variable needed for `Atmosphere` (see the help of `Atmosphere` for more details on the possible variables and their units).
 
-Here's an example of using a DataFrame as input:
+This example uses a CSV fixture shipped with PlantMeteo. Replace its path
+with your own file and match the column names and units to your data.
 
 ```@example usepkg
 using CSV, DataFrames, PlantMeteo
-file = joinpath(dirname(dirname(pathof(PlantMeteo))),"test","data","meteo.csv")
+file = joinpath(pkgdir(PlantMeteo), "test", "data", "meteo.csv")
 df = CSV.read(file, DataFrame; header=5, skipto = 6, dateformat = "yyyy/mm/dd")
+# Preserve the start time of each observation before selecting columns:
+df.date = Date.(df.date) .+ Time.(df.hour_start)
 # Select and rename the variables:
 select!(df, :date, :temperature => :T, :relativeHumidity => (x -> x ./ 100 ) => :Rh, :wind => :Wind, :atmosphereCO2_ppm => :Cₐ)
-df[!,:duration] .= 1800 # Add the time-step duration, 30min
+df[!, :duration] = fill(Minute(30), nrow(df))
 
 # Make the weather, and add some metadata:
 Weather(df, (site = "Aquiares", file = file))
 ```
 
-One can also directly import the Weather from an [Archimed-ϕ](https://archimed-platform.github.io/archimed-phys-user-doc/)-formatted meteorology file (a csv file optionally enriched with some metadata). In this case, the user can rename and transform the variables from the file to match the names and units needed in PlantBiophysics using a [`DataFrame.jl`](https://dataframes.juliadata.org/stable/)-alike syntax:
+The three records retain their start times: 12:00, 12:30, and 13:00 on
+12 June 2016. Keeping these timestamps makes it possible to match simulated
+outputs to the original measurements.
+
+For an Archimed-ϕ-formatted CSV with metadata, `read_weather` handles the
+import directly. The column transformations below convert relative humidity
+from percent to a fraction and rename the weather variables:
 
 ```@example usepkg
 using Dates, PlantMeteo
 
 meteo = read_weather(
-    joinpath(dirname(dirname(pathof(PlantMeteo))),"test","data","meteo.csv"),
+    file,
     :temperature => :T,
     :relativeHumidity => (x -> x ./100) => :Rh,
     :wind => :Wind,
@@ -86,9 +121,7 @@ meteo = read_weather(
 
 ## Helper functions
 
-PlantBiophysics provides some helper functions to compute some micro-climate related variables.
-
-Here is a complete list of these functions:
+PlantMeteo also provides functions for individual weather calculations:
 
 - `vapor_pressure` computes e (kPa), the vapor pressure from the air temperature and the relative humidity
 - `e_sat` computes eₛ (kPa), the saturated vapor pressure from the air temperature
@@ -96,7 +129,7 @@ Here is a complete list of these functions:
 - `latent_heat_vaporization` computes λ (J kg-1), the latent heat of vaporization from the air temperature and a constant
 - `psychrometer_constant` computes γ (kPa K−1), the psychrometer "constant" from the air pressure, the latent heat of vaporization and some constants
 - `atmosphere_emissivity(T,e,constants.K₀)` computes ε (0-1), the atmosphere emissivity from the air temperature, the vapor pressure and a constant
-- `e_sat_slope` computes Δ (0-1), the slope of the saturation vapor pressure at air temperature, from the air temperature
+- `PlantMeteo.e_sat_slope` computes Δ (kPa K⁻¹), the slope of saturation vapour pressure with temperature
 
 !!! note
     All constants are found in `Constants`

@@ -1,19 +1,37 @@
-# [Light Interception](@id light_page)
+# [Light interception](@id light_page)
 
-PlantBiophysics provides two Beer-Lambert implementations:
+Light-interception models estimate how much incoming radiation a canopy
+absorbs. Photosynthesis uses the photosynthetically active part of the
+spectrum (**PAR**); leaf energy balance also needs near-infrared radiation
+(**NIR**).
 
-- [`Beer`](@ref) computes absorbed photosynthetic photon flux density
-  (`aPPFD`);
-- [`BeerShortwave`](@ref) also computes absorbed shortwave radiation
-  (`Ra_SW_f`) for energy-balance models.
+## Choose a model
 
-These are canopy models. Their radiation outputs are expressed per unit ground
-area, not per unit leaf area. `LAI` is the ratio of leaf area to ground area.
-The outputs remain current per-second rates on status; request temporal
-integration explicitly when exporting totals.
+Both models use the Beer-Lambert law: the absorbed fraction increases with
+leaf area index (`LAI`, leaf area divided by ground area) and an extinction
+coefficient `k`. For one spectral band, that fraction is `1 - exp(-k * LAI)`.
+
+| Model | Weather inputs | Main outputs | Use when |
+|:--|:--|:--|:--|
+| [`Beer(k)`](@ref Beer) | Incident PAR, `Ri_PAR_f` | Absorbed photon flux, `aPPFD` | You need light for photosynthesis |
+| [`BeerShortwave(k_PAR, k_NIR)`](@ref BeerShortwave) | Incident PAR and NIR, `Ri_PAR_f` and `Ri_NIR_f` | `aPPFD` and absorbed shortwave radiation, `Ra_SW_f` | You also need radiation for energy balance |
+
+The coefficients describe light extinction in the canopy. The shorter form
+`BeerShortwave(k_PAR)` uses `k_NIR = 0.48`. That number is an extinction
+coefficient, not a PAR-to-shortwave conversion factor.
+
+## Run a canopy light simulation
+
+Here we use `LAI = 2.0`, `k_PAR = 0.6`, and the default NIR coefficient.
+The incoming PAR and NIR are in W m⁻² of ground area.
 
 ```@example light
 using PlantBiophysics, PlantSimEngine, PlantMeteo, Dates
+
+meteo = Atmosphere(
+    T=20.0, Wind=1.0, P=101.3, Rh=0.65,
+    Ri_PAR_f=300.0, Ri_NIR_f=350.0, duration=Hour(1),
+)
 
 scene = CompositeModel(
     Object(:plant; scale=:Plant, status=Status(LAI=2.0));
@@ -24,15 +42,7 @@ scene = CompositeModel(
             on=One(scale=:Plant),
         ),
     ),
-    environment=Atmosphere(
-        T=20.0,
-        Wind=1.0,
-        P=101.3,
-        Rh=0.65,
-        Ri_PAR_f=300.0,
-        Ri_NIR_f=350.0,
-        duration=Hour(1),
-    ),
+    environment=meteo,
 )
 
 run!(scene)
@@ -40,221 +50,33 @@ plant = model_object(scene, :plant)
 (aPPFD=plant.status.aPPFD, Ra_SW_f=plant.status.Ra_SW_f)
 ```
 
-The values above are therefore in `μmol[photon] m[ground]⁻² s⁻¹` and
-`W m[ground]⁻²`, respectively. The one-argument `BeerShortwave(k)` constructor
-preserves the historical NIR coefficient `k_NIR = 0.48`. Pass both coefficients
-as `BeerShortwave(k_PAR, k_NIR)` to choose another value.
+`Object` represents the canopy, and `ModelSpec` assigns the light model to
+it. The example uses the plant scale because the Beer-Lambert calculation
+describes a canopy rather than an individual leaf.
 
-`outputs=:all` records these raw rates at each step. Request an integrated
-quantity only at the boundary that needs it, for example:
+The output `aPPFD` is in µmol photons m⁻² ground s⁻¹, and `Ra_SW_f` is in
+W m⁻² ground. `BeerShortwave` also provides the absorbed PAR and NIR
+separately as `Ra_PAR_f` and `Ra_NIR_f`:
 
-```julia
-requests = [
-    OutputRequest(
-        Many(scale=:Plant),
-        :aPPFD;
-        name=:absorbed_photons,
-        application=:canopy_light,
-        policy=Integrate(PlantMeteo.DurationSumReducer()),
-        clock=Hour(24),
-    ),
-    OutputRequest(
-        Many(scale=:Plant),
-        :Ra_SW_f;
-        name=:absorbed_shortwave_energy,
-        application=:canopy_light,
-        policy=Integrate(PlantMeteo.RadiationEnergy()),
-        clock=Hour(24),
-    ),
-]
-simulation = run!(scene; steps=24, outputs=requests)
+```@example light
+(Ra_PAR_f=plant.status.Ra_PAR_f, Ra_NIR_f=plant.status.Ra_NIR_f)
 ```
 
-`DurationSumReducer` converts a photon rate to the corresponding duration sum;
-`RadiationEnergy` converts irradiance to `MJ m[ground]⁻²` over the requested
-window. Neither changes the current rate stored on the Plant status.
+These are rates at the simulated conditions. Use `outputs=:all` when running
+several timesteps to keep a history, as in the
+[several-timestep tutorial](../simulation/several_simulation.md).
 
-## Convert canopy radiation before leaf physiology
+## Use the light in a leaf simulation
 
-Leaf photosynthesis and energy balance consume radiation per unit leaf area.
-Put an explicit conversion model between a Beer canopy output and either leaf
-model. The source-to-adapter and adapter-to-consumer mappings are both named;
-`HoldLast()` makes their temporal meaning explicit.
+A canopy output is per unit **ground area**, while leaf photosynthesis and
+energy balance need radiation per unit **leaf area**. To obtain the canopy
+mean per leaf area, use `GroundToMeanLeafPPFD` for photons and
+`GroundToMeanLeafShortwave` for shortwave radiation. These conversion models
+use the canopy's `LAI`; they do not describe differences between sunlit and
+shaded leaves.
 
-For absorbed PPFD, map `Beer.aPPFD` to `aPPFD_ground`, then map the distinct
-leaf-mean output to the photosynthesis input:
-
-```julia
-ModelSpec(
-    Beer(0.6);
-    name=:canopy_light,
-    on=Many(scale=:Plant),
-)
-
-ModelSpec(
-    GroundToMeanLeafPPFD();
-    name=:mean_leaf_ppfd,
-    on=Many(scale=:Plant),
-    inputs=(
-        :aPPFD_ground => One(
-            within=Self(),
-            application=:canopy_light,
-            var=:aPPFD,
-            policy=HoldLast(),
-        ),
-    ),
-)
-
-ModelSpec(
-    Fvcb();
-    name=:photosynthesis,
-    on=Many(scale=:Leaf),
-    inputs=(
-        :aPPFD => One(
-            scale=:Plant,
-            within=SelfPlant(),
-            application=:mean_leaf_ppfd,
-            var=:aPPFD_leaf_mean,
-            policy=HoldLast(),
-        ),
-    ),
-)
-```
-
-For energy balance, use the analogous shortwave boundary:
-
-```julia
-ModelSpec(
-    BeerShortwave(0.6);
-    name=:canopy_light,
-    on=Many(scale=:Plant),
-)
-
-ModelSpec(
-    GroundToMeanLeafShortwave();
-    name=:mean_leaf_shortwave,
-    on=Many(scale=:Plant),
-    inputs=(
-        :Ra_SW_f_ground => One(
-            within=Self(),
-            application=:canopy_light,
-            var=:Ra_SW_f,
-            policy=HoldLast(),
-        ),
-    ),
-)
-
-ModelSpec(
-    Monteith();
-    name=:energy_balance,
-    on=Many(scale=:Leaf),
-    inputs=(
-        :Ra_SW_f => One(
-            scale=:Plant,
-            within=SelfPlant(),
-            application=:mean_leaf_shortwave,
-            var=:Ra_SW_f_leaf_mean,
-            policy=HoldLast(),
-        ),
-    ),
-)
-```
-
-Both adapters reject non-finite or non-positive `LAI`, as well as negative or
-non-finite radiation. PlantSimEngine also rejects a direct Beer-to-FvCB or
-BeerShortwave-to-Monteith connection because the producer is ground-based and
-no conversion boundary was declared.
-
-These two adapters are specific to the ground-area canopy rates produced by `Beer` and
-`BeerShortwave`. Do not use them for geometry-resolved light: dividing an
-organ-level irradiance by canopy LAI would apply the wrong area conversion.
-
-!!! compat "Historical ARCHIMED model files"
-    PlantBiophysics does not parse ARCHIMED light-model YAML or provide a
-    per-organ `Translucent` copier. Use `ArchimedLight.read_models` for those
-    optical definitions. To ignore light interception, omit the light
-    application; a no-op model is unnecessary.
-
-## Couple 3D light directly to physiology
-
-ArchimedLight and PlantBiophysics use the represented mesh surface as the
-reference area for geometry-resolved radiation. ArchimedLight publishes
-`aPPFD` in `μmol[photon] m⁻² s⁻¹`, `Ra_SW_f` in `W m⁻²`, and the corresponding
-mesh surface `area` in `m²` for each destination organ. FvCB and Monteith use
-the same `:surface_area` radiation contracts, so those fluxes couple directly.
-The light solver's pixel projection correction does not change the reference
-surface area.
-
-For a leaf mesh, this represented surface is the leaf area used by the
-physiology calculation. Leaf-area model parameters and observations must use
-that same reference surface. Beer-Lambert canopy fluxes still require the
-LAI adapters above because their denominator is ground area.
-
-Given an ArchimedLight scene application named `:archimed_light` that publishes
-to the leaf objects, bind its radiation directly to the physiology models:
-
-```julia
-leaf = Object(
-    :leaf_42;
-    scale=:Leaf,
-    status=Status(sky_fraction=1.0, d=0.03),
-)
-
-photosynthesis = ModelSpec(
-    Fvcb();
-    name=:photosynthesis,
-    on=Many(scale=:Leaf),
-    inputs=(
-        :aPPFD => One(
-            within=Self(), application=:archimed_light, var=:aPPFD,
-            policy=HoldLast(),
-        ),
-    ),
-)
-
-energy_balance = ModelSpec(
-    Monteith();
-    name=:energy_balance,
-    on=Many(scale=:Leaf),
-    inputs=(
-        :Ra_SW_f => One(
-            within=Self(), application=:archimed_light, var=:Ra_SW_f,
-            policy=HoldLast(),
-        ),
-    ),
-)
-
-stomatal_conductance = ModelSpec(
-    Medlyn(0.03, 12.0);
-    name=:stomatal_conductance,
-    on=Many(scale=:Leaf),
-)
-```
-
-Include these applications alongside the scene light application in the
-`CompositeModel`. PlantSimEngine schedules the light producer before the
-Monteith → FvCB → stomatal-conductance hard-call chain. The flux values read
-by FvCB and Monteith are the values published by ArchimedLight.
-
-Keep source ownership exact. Build the `CompositeModel` from the same MTG as
-the `PlantGeom.SceneGeometry` when possible. For another topology, pass exact
-MTG roots through `source_roots`, or an explicit `object_resolver` from each
-source-owner key to its `ObjectId`. Never infer this relationship from row or
-traversal order.
-
-The same sampled environment row must provide sun azimuth in [0, 360°), sun
-elevation in [-90°, 90°], non-negative incident PAR and NIR (`W m⁻²`), a
-direct fraction in [0, 1], and a finite, strictly positive timestep duration.
-
-`sky_fraction` is deliberately absent from both `ArchimedLightModel` output
-schemas (`:coupling` and `:full`). It is the longwave sky-view assumption used
-by [`Monteith`](@ref), including the chosen one- or two-sided convention, and
-must be initialized explicitly as scenario state for every leaf. Its valid
-range is 0–2: 0 means that neither effective leaf face sees the sky, 1
-corresponds to one fully exposed effective face, and 2 to both faces seeing
-the sky. This keeps a shortwave interception result from silently standing in
-for a scientifically distinct longwave view factor.
-
-Use `Diagnostics.explain_bindings`, `Diagnostics.explain_writers`, and
-`Diagnostics.explain_schedule` to verify the radiation sources and execution
-order.
+[Coupling light and leaf physiology](../simulation/light_coupling.md) shows
+how to connect these models, how to use 3D radiation from ArchimedLight,
+and how to record daily radiation totals. If you already have measured or
+prescribed radiation per leaf area, you can provide it directly, as in the
+[TL;DR leaf example](../getting_started/get_started.md).

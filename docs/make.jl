@@ -50,6 +50,7 @@ makedocs(;
             "Multi-rate simulation" => "./simulation/multirate_simulation.md",
             "Several objects" => "./simulation/several_objects_simulation.md",
             "Whole-plant simulation" => "./simulation/mtg_simulation.md",
+            "Coupling light and physiology" => "./simulation/light_coupling.md",
         ],
         "Tutorial: Uncertainty propagation" => "./simulation/uncertainty_propagation.md",
         "Extending PlantBiophysics" => [

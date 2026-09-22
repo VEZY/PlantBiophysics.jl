@@ -1,21 +1,23 @@
 # Model evaluation
 
-This page compares PlantBiophysics simulations with empirical measurements
-used in the package paper. Only PlantBiophysics results are shown: the global
-figure deliberately omits the other models compared in the original paper.
+This page compares simulated assimilation, transpiration, stomatal
+conductance, leaf temperature, and energy fluxes with measurements used in
+the package paper. The figures show the PlantBiophysics results.
 
-Each panel reports the normalized root mean squared error (NRMSE, normalized by
-the observed range) and modelling efficiency (EF) for the current simulation.
-The same scenarios feed the figures and the automated regression tests, so the
-visual and numerical evaluations use identical inputs, parameters, filters,
-and unit conversions.
+## How to read the figures
 
-!!! note "Numerical regression gate"
-    The tests compare the current NRMSE, RMSE, bias, normalized bias, and EF
-    against the statistics from the `main` branch of the paper repository.
-    Tolerances account for floating-point and dependency differences. The
-    checks are one-sided: better model skill passes, while a meaningful loss of
-    skill fails.
+In an observed-versus-simulated plot, points close to the 1:1 line indicate
+agreement. Each panel reports two measures:
+
+- **NRMSE** is the root mean squared error divided by the observed range.
+  Smaller values indicate less error.
+- **EF** is modelling efficiency. A value of 1 indicates perfect agreement;
+  0 is equivalent to always predicting the mean observation, and negative
+  values indicate a poorer prediction than that mean.
+
+The descriptions below identify which quantities are simulated and which
+are supplied from measurements. This matters when interpreting a model's
+performance, especially when stomatal conductance is prescribed.
 
 ## Global evaluation
 
@@ -74,13 +76,19 @@ second copy of the scientific computation.
 
 The SVG files are regenerated at the start of every Documenter build.
 Generation uses only the committed offline test fixtures. To regenerate the
-figures without building the rest of the documentation, first instantiate the
-`docs` environment with the same developed PlantSimEngine checkout used for
-package testing, then run:
+figures without building the rest of the documentation, instantiate the
+`docs` environment and run:
 
 ```bash
+julia --project=docs -e 'using Pkg; Pkg.instantiate()'
 julia --project=docs docs/figures/generate_evaluation_figures.jl
 ```
+
+The figures and numerical regression tests share the same scenarios, inputs,
+parameters, filters, and unit conversions. The tests compare NRMSE, RMSE,
+bias, normalized bias, and EF with the paper repository's reference results.
+Their tolerances allow small numerical differences while detecting a
+meaningful loss of model performance.
 
 The Medlyn fixtures are distributed under CC BY 4.0. Their file identifiers,
 checksums, extraction history, and the provenance note for the Schymanski data
