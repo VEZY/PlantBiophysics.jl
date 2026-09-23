@@ -2,16 +2,12 @@
 CurrentModule = PlantBiophysics
 ```
 
-# PlantBiophysics.jl
+# Your first leaf simulation
 
 PlantBiophysics is a Julia package for simulating photosynthesis, stomatal
 conductance, leaf temperature, and exchanges of heat and water. It also
 provides simple canopy light-interception models.
 
-You can [run a leaf simulation](getting_started/get_started.md),
-[fit model parameters to measurements](getting_started/first_fit.md),
-[compare photosynthesis models](models/photosynthesis.md), or
-[propagate uncertainty in your inputs](simulation/uncertainty_propagation.md).
 The models run together through PlantSimEngine and can be applied to one
 leaf, several organs, or a whole plant.
 

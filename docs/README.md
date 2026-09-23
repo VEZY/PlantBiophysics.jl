@@ -1,7 +1,15 @@
 # Building the documentation
 
-The documentation has its own Julia environment in `docs/Project.toml`.
+The documentation uses Bonito's Documenter writer for its landing page, theme,
+navigation, and search. It has its own Julia environment in `docs/Project.toml`
+and requires Julia 1.11 or later (CI uses Julia 1.12).
 It uses the package from this checkout and runs the examples as part of the build.
+
+The build checks exported pages, figures, local links, API anchors, and search
+entries before deployment. It keeps redirects for the previous directory URLs
+and an `objects.inv` inventory for links from other documentation sites.
+Bonito is bounded to the 5.2 series because the navigation helper adapts that
+theme's export; review the helper when upgrading Bonito.
 
 To build locally without deployment, start a Julia session with the `docs`
 environment, instantiate it, and run:
