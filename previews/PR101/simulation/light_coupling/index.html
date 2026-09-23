@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Coupling light and physiology · PlantBiophysics.jl</title><meta name="title" content="Coupling light and physiology · PlantBiophysics.jl"/><meta property="og:title" content="Coupling light and physiology · PlantBiophysics.jl"/><meta property="twitter:title" content="Coupling light and physiology · PlantBiophysics.jl"/><meta name="description" content="Documentation for PlantBiophysics.jl."/><meta property="og:description" content="Documentation for PlantBiophysics.jl."/><meta property="twitter:description" content="Documentation for PlantBiophysics.jl."/><meta property="og:url" content="https://VEZY.github.io/PlantBiophysics.jl/simulation/light_coupling/"/><meta property="twitter:url" content="https://VEZY.github.io/PlantBiophysics.jl/simulation/light_coupling/"/><link rel="canonical" href="https://VEZY.github.io/PlantBiophysics.jl/simulation/light_coupling/"/><script data-outdated-warner src="../../assets/warner.js"></script><link href="https://cdnjs.cloudflare.com/ajax/libs/lato-font/3.0.0/css/lato-font.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/juliamono/0.63.2/juliamono.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.8/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL="../.."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../../assets/documenter.js"></script><script src="../../search_index.js"></script><script src="../../siteinfo.js"></script><script src="../../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/catppuccin-mocha.css" data-theme-name="catppuccin-mocha"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/catppuccin-macchiato.css" data-theme-name="catppuccin-macchiato"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/catppuccin-frappe.css" data-theme-name="catppuccin-frappe"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/catppuccin-latte.css" data-theme-name="catppuccin-latte"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../../assets/themeswap.js"></script></head><body><div id="documenter"><nav class="docs-sidebar"><a class="docs-logo" href="../../"><img src="../../assets/logo.png" alt="PlantBiophysics.jl logo"/></a><div class="docs-package-name"><span class="docs-autofit"><a href="../../">PlantBiophysics.jl</a></span></div><button class="docs-search-query input is-rounded is-small is-clickable my-2 mx-auto py-1 px-2" id="documenter-search-query">Search docs (Ctrl + /)</button><ul class="docs-menu"><li><a class="tocitem" href="../../">Home</a></li><li><span class="tocitem">Getting started</span><ul><li><a class="tocitem" href="../../getting_started/get_started/">TL;DR</a></li><li><a class="tocitem" href="../../getting_started/first_fit/">Parameter fitting</a></li></ul></li><li><a class="tocitem" href="../../concepts/package_design/">Design</a></li><li><a class="tocitem" href="../../variables/">Variables</a></li><li><span class="tocitem">Models</span><ul><li><a class="tocitem" href="../../models/photosynthesis/">Photosynthesis</a></li><li><a class="tocitem" href="../../models/gs/">Stomatal conductance</a></li><li><a class="tocitem" href="../../models/energy_balance/">Energy balance</a></li><li><a class="tocitem" href="../../models/light/">Light interception</a></li></ul></li><li><a class="tocitem" href="../../evaluation/">Evaluation</a></li><li><a class="tocitem" href="../../climate/microclimate/">Micro-climate</a></li><li><a class="tocitem" href="../../fitting/parameter_fitting/">Tutorial: Parameter fitting</a></li><li><span class="tocitem">Tutorial: Simulation</span><ul><li><a class="tocitem" href="../first_simulation/">Simple Simulation</a></li><li><a class="tocitem" href="../several_simulation/">Several time steps</a></li><li><a class="tocitem" href="../multirate_simulation/">Multi-rate simulation</a></li><li><a class="tocitem" href="../several_objects_simulation/">Several objects</a></li><li><a class="tocitem" href="../mtg_simulation/">Whole-plant simulation</a></li><li class="is-active"><a class="tocitem" href>Coupling light and physiology</a><ul class="internal"><li><a class="tocitem" href="#Convert-canopy-radiation-before-leaf-physiology"><span>Convert canopy radiation before leaf physiology</span></a></li><li><a class="tocitem" href="#Couple-3D-light-directly-to-physiology"><span>Couple 3D light directly to physiology</span></a></li><li><a class="tocitem" href="#Record-radiation-totals"><span>Record radiation totals</span></a></li></ul></li></ul></li><li><a class="tocitem" href="../uncertainty_propagation/">Tutorial: Uncertainty propagation</a></li><li><span class="tocitem">Extending PlantBiophysics</span><ul><li><a class="tocitem" href="../../extending/implement_a_model/">Implement a model</a></li><li><a class="tocitem" href="../../extending/implement_a_process/">Implement a process</a></li></ul></li><li><a class="tocitem" href="../../functions/">API</a></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><a class="docs-sidebar-button docs-navbar-link fa-solid fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a><nav class="breadcrumb"><ul class="is-hidden-mobile"><li><a class="is-disabled">Tutorial: Simulation</a></li><li class="is-active"><a href>Coupling light and physiology</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>Coupling light and physiology</a></li></ul></nav><div class="docs-right"><a class="docs-navbar-link" href="https://github.com/VEZY/PlantBiophysics.jl" title="View the repository on GitHub"><span class="docs-icon fa-brands"></span><span class="docs-label is-hidden-touch">GitHub</span></a><a class="docs-navbar-link" href="https://github.com/VEZY/PlantBiophysics.jl/blob/master/docs/src/simulation/light_coupling.md" title="Edit source on GitHub"><span class="docs-icon fa-solid"></span></a><a class="docs-settings-button docs-navbar-link fa-solid fa-gear" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-article-toggle-button fa-solid fa-chevron-up" id="documenter-article-toggle-button" href="javascript:;" title="Collapse all docstrings"></a></div></header><article class="content" id="documenter-page"><h1 id="Coupling-light-and-leaf-physiology"><a class="docs-heading-anchor" href="#Coupling-light-and-leaf-physiology">Coupling light and leaf physiology</a><a id="Coupling-light-and-leaf-physiology-1"></a><a class="docs-heading-anchor-permalink" href="#Coupling-light-and-leaf-physiology" title="Permalink"></a></h1><p>Use this guide when radiation comes from a canopy light model or a 3D light simulation. For choosing a Beer-Lambert model and running it on its own, start with <a href="../../models/light/">Light interception</a>.</p><p>The first question is the area used to express radiation. A canopy output is per unit <strong>ground area</strong>, whereas a leaf model needs radiation per unit <strong>leaf area</strong>. The conversion models below use leaf area index (<code>LAI</code>) to calculate a canopy mean per leaf area. Light resolved on a leaf mesh already uses that mesh&#39;s surface area and follows a different route.</p><h2 id="Convert-canopy-radiation-before-leaf-physiology"><a class="docs-heading-anchor" href="#Convert-canopy-radiation-before-leaf-physiology">Convert canopy radiation before leaf physiology</a><a id="Convert-canopy-radiation-before-leaf-physiology-1"></a><a class="docs-heading-anchor-permalink" href="#Convert-canopy-radiation-before-leaf-physiology" title="Permalink"></a></h2><p>This complete example uses one <code>BeerShortwave</code> model to calculate both PAR and shortwave absorption for a canopy. Two conversion models divide its outputs by <code>LAI</code>; a representative leaf then uses these mean values to calculate photosynthesis and energy balance. This does not distinguish sunlit and shaded leaves.</p><p>First, describe the weather and a plant containing one representative leaf. The plant supplies <code>LAI</code>, while the leaf supplies its sky view and characteristic dimension:</p><pre><code class="language-julia hljs">using PlantBiophysics, PlantSimEngine, PlantMeteo, Dates
+
+weather = Atmosphere(
+    T=20.0, Wind=1.0, P=101.3, Rh=0.65,
+    Ri_PAR_f=300.0, Ri_NIR_f=350.0, duration=Hour(1),
+)
+objects = (
+    Object(:plant; scale=:Plant, status=Status(LAI=2.0)),
+    Object(
+        :leaf; scale=:Leaf, parent=:plant,
+        status=Status(sky_fraction=1.0, d=0.03),
+    ),
+)</code></pre><p>The canopy applications calculate the ground-area fluxes and convert them to mean leaf-area fluxes. <code>Self()</code> finds the current plant; naming the source application makes each connection explicit. <code>HoldLast()</code> uses the latest available value until its source updates it.</p><pre><code class="language-julia hljs">canopy_models = (
+    ModelSpec(
+        BeerShortwave(0.6); name=:canopy_light, on=One(scale=:Plant),
+    ),
+    ModelSpec(
+        GroundToMeanLeafPPFD();
+        name=:mean_leaf_ppfd, on=One(scale=:Plant),
+        inputs=(
+            :aPPFD_ground =&gt; One(
+                within=Self(), application=:canopy_light,
+                var=:aPPFD, policy=HoldLast(),
+            ),
+        ),
+    ),
+    ModelSpec(
+        GroundToMeanLeafShortwave();
+        name=:mean_leaf_shortwave, on=One(scale=:Plant),
+        inputs=(
+            :Ra_SW_f_ground =&gt; One(
+                within=Self(), application=:canopy_light,
+                var=:Ra_SW_f, policy=HoldLast(),
+            ),
+        ),
+    ),
+)</code></pre><p>Next, connect the leaf models to the converted radiation. <code>SelfPlant()</code> finds the plant containing the leaf. <code>Fvcb</code> receives the converted photon flux, and <code>Monteith</code> receives the converted shortwave radiation:</p><pre><code class="language-julia hljs">leaf_models = (
+    ModelSpec(
+        Fvcb(); name=:photosynthesis, on=One(scale=:Leaf),
+        inputs=(
+            :aPPFD =&gt; One(
+                scale=:Plant, within=SelfPlant(),
+                application=:mean_leaf_ppfd,
+                var=:aPPFD_leaf_mean, policy=HoldLast(),
+            ),
+        ),
+    ),
+    ModelSpec(
+        Monteith(); name=:energy_balance, on=One(scale=:Leaf),
+        inputs=(
+            :Ra_SW_f =&gt; One(
+                scale=:Plant, within=SelfPlant(),
+                application=:mean_leaf_shortwave,
+                var=:Ra_SW_f_leaf_mean, policy=HoldLast(),
+            ),
+        ),
+    ),
+    ModelSpec(
+        Medlyn(0.03, 12.0);
+        name=:stomatal_conductance, on=One(scale=:Leaf),
+    ),
+)</code></pre><p>Combine these applications in one scene and run it. The <code>...</code> syntax expands both tuples into the full list of models or objects:</p><pre><code class="language-julia hljs">coupled_scene = CompositeModel(
+    objects...;
+    applications=(canopy_models..., leaf_models...),
+    environment=weather,
+)
+run!(coupled_scene)
+leaf = model_object(coupled_scene, :leaf)
+(
+    Rn=leaf.status.Rn, H=leaf.status.H, λE=leaf.status.λE,
+    Tₗ=leaf.status.Tₗ, A=leaf.status.A, Gₛ=leaf.status.Gₛ,
+)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">(Rn = 212.27881951817014, H = 7.5656365379374595, λE = 204.71318298023272, Tₗ = 20.164620722649833, A = 24.45796563009095, Gₛ = 0.9850216229788608)</code></pre><p>The heat fluxes are in W m⁻² leaf, temperature is in °C, assimilation is in µmol CO₂ m⁻² leaf s⁻¹, and stomatal conductance is in mol CO₂ m⁻² leaf s⁻¹. You can inspect the conversion separately:</p><pre><code class="language-julia hljs">plant = model_object(coupled_scene, :plant)
+(
+    ground_PPFD=plant.status.aPPFD,
+    mean_leaf_PPFD=plant.status.aPPFD_leaf_mean,
+    ground_shortwave=plant.status.Ra_SW_f,
+    mean_leaf_shortwave=plant.status.Ra_SW_f_leaf_mean,
+)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">(ground_PPFD = 958.0627354683709, mean_leaf_PPFD = 479.03136773418544, ground_shortwave = 425.62922633505013, mean_leaf_shortwave = 212.81461316752507)</code></pre><p>With <code>LAI=2</code>, the mean leaf-area values are half the ground-area values. The photon flux is in µmol photons m⁻² s⁻¹ and shortwave radiation is in W m⁻², with the area basis given by each name.</p><p>Both conversion models reject non-finite or non-positive <code>LAI</code>, as well as negative or non-finite radiation. PlantSimEngine also rejects a direct Beer-to-FvCB or BeerShortwave-to-Monteith connection because the producer is ground-based and no conversion boundary was declared.</p><p>These two conversion models are specific to the ground-area canopy rates produced by <code>Beer</code> and <code>BeerShortwave</code>. Do not use them for geometry-resolved light: dividing an organ-level irradiance by canopy LAI would apply the wrong area conversion.</p><div class="admonition is-compat" id="Historical-ARCHIMED-model-files-b124225cfb7bb549"><header class="admonition-header">Historical ARCHIMED model files<a class="admonition-anchor" href="#Historical-ARCHIMED-model-files-b124225cfb7bb549" title="Permalink"></a></header><div class="admonition-body"><p>PlantBiophysics does not parse ARCHIMED light-model YAML or provide a per-organ <code>Translucent</code> copier. Use <code>ArchimedLight.read_models</code> for those optical definitions. To ignore light interception, omit the light application; a no-op model is unnecessary.</p></div></div><h2 id="Couple-3D-light-directly-to-physiology"><a class="docs-heading-anchor" href="#Couple-3D-light-directly-to-physiology">Couple 3D light directly to physiology</a><a id="Couple-3D-light-directly-to-physiology-1"></a><a class="docs-heading-anchor-permalink" href="#Couple-3D-light-directly-to-physiology" title="Permalink"></a></h2><p>ArchimedLight and PlantBiophysics use the represented mesh surface as the reference area for geometry-resolved radiation. ArchimedLight publishes <code>aPPFD</code> in <code>μmol[photon] m⁻² s⁻¹</code>, <code>Ra_SW_f</code> in <code>W m⁻²</code>, and the corresponding mesh surface <code>area</code> in <code>m²</code> for each destination organ. FvCB and Monteith use the same <code>:surface_area</code> radiation contracts, so those fluxes couple directly. The light solver&#39;s pixel projection correction does not change the reference surface area.</p><p>For a leaf mesh, this represented surface is the leaf area used by the physiology calculation. Leaf-area model parameters and observations must use that same reference surface. Beer-Lambert canopy fluxes still require the LAI adapters above because their denominator is ground area.</p><p>Given an ArchimedLight scene application named <code>:archimed_light</code> that publishes to the leaf objects, bind its radiation directly to the physiology models:</p><pre><code class="language-julia hljs">leaf = Object(
+    :leaf_42;
+    scale=:Leaf,
+    status=Status(sky_fraction=1.0, d=0.03),
+)
+
+photosynthesis = ModelSpec(
+    Fvcb();
+    name=:photosynthesis,
+    on=Many(scale=:Leaf),
+    inputs=(
+        :aPPFD =&gt; One(
+            within=Self(), application=:archimed_light, var=:aPPFD,
+            policy=HoldLast(),
+        ),
+    ),
+)
+
+energy_balance = ModelSpec(
+    Monteith();
+    name=:energy_balance,
+    on=Many(scale=:Leaf),
+    inputs=(
+        :Ra_SW_f =&gt; One(
+            within=Self(), application=:archimed_light, var=:Ra_SW_f,
+            policy=HoldLast(),
+        ),
+    ),
+)
+
+stomatal_conductance = ModelSpec(
+    Medlyn(0.03, 12.0);
+    name=:stomatal_conductance,
+    on=Many(scale=:Leaf),
+)</code></pre><p>Include these applications alongside the scene light application in the <code>CompositeModel</code>. PlantSimEngine runs the light calculation before the coupled leaf energy-balance, photosynthesis, and stomatal-conductance models. The flux values read by FvCB and Monteith are the values published by ArchimedLight.</p><p>Match each mesh to the correct plant object. Build the <code>CompositeModel</code> from the same MTG as the <code>PlantGeom.SceneGeometry</code> when possible. For another topology, pass exact MTG roots through <code>source_roots</code>, or an explicit <code>object_resolver</code> from each source-owner key to its <code>ObjectId</code>. Never infer this relationship from row or traversal order.</p><p>The same sampled environment row must provide sun azimuth in [0, 360°), sun elevation in [-90°, 90°], non-negative incident PAR and NIR (<code>W m⁻²</code>), a direct fraction in [0, 1], and a finite, strictly positive timestep duration.</p><p><code>sky_fraction</code> is deliberately absent from both <code>ArchimedLightModel</code> output schemas (<code>:coupling</code> and <code>:full</code>). It is the longwave sky-view assumption used by <a href="../../functions/#PlantBiophysics.Monteith"><code>Monteith</code></a>, including the chosen one- or two-sided convention, and must be initialized explicitly as scenario state for every leaf. Its valid range is 0–2: 0 means that neither effective leaf face sees the sky, 1 corresponds to one fully exposed effective face, and 2 to both faces seeing the sky. This keeps a shortwave interception result from silently standing in for a scientifically distinct longwave view factor.</p><p>Use <code>Diagnostics.explain_bindings</code>, <code>Diagnostics.explain_writers</code>, and <code>Diagnostics.explain_schedule</code> to verify the radiation sources and execution order.</p><h2 id="Record-radiation-totals"><a class="docs-heading-anchor" href="#Record-radiation-totals">Record radiation totals</a><a id="Record-radiation-totals-1"></a><a class="docs-heading-anchor-permalink" href="#Record-radiation-totals" title="Permalink"></a></h2><p>This example uses the standalone canopy <code>scene</code> from the <a href="../../models/light/">Light interception example</a>, independently of <code>coupled_scene</code> above. It repeats the same conditions for 24 hourly steps to illustrate conversion from rates to totals.</p><p><code>outputs=:all</code> records these raw rates at each step. Request an integrated quantity only at the boundary that needs it, for example:</p><pre><code class="language-julia hljs">requests = [
+    OutputRequest(
+        Many(scale=:Plant),
+        :aPPFD;
+        name=:absorbed_photons,
+        application=:canopy_light,
+        policy=Integrate(PlantMeteo.DurationSumReducer()),
+        clock=Hour(24),
+    ),
+    OutputRequest(
+        Many(scale=:Plant),
+        :Ra_SW_f;
+        name=:absorbed_shortwave_energy,
+        application=:canopy_light,
+        policy=Integrate(PlantMeteo.RadiationEnergy()),
+        clock=Hour(24),
+    ),
+]
+simulation = run!(scene; steps=24, outputs=requests)</code></pre><p><code>DurationSumReducer</code> converts a photon rate to the corresponding duration sum; <code>RadiationEnergy</code> converts irradiance to <code>MJ m[ground]⁻²</code> over the requested window. Neither changes the current rate stored on the Plant status.</p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../mtg_simulation/">« Whole-plant simulation</a><a class="docs-footer-nextpage" href="../uncertainty_propagation/">Tutorial: Uncertainty propagation »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.19.0 on <span class="colophon-date" title="Wednesday 23 September 2026 08:36">Wednesday 23 September 2026</span>. Using Julia version 1.13.0.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
