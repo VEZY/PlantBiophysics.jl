@@ -20,18 +20,18 @@ generally only implement this function)
 # Examples
 
 ```julia
-using PlantMeteo, PlantSimEngine, PlantBiophysics
-environment = Atmosphere(T = 22.0, Wind = 0.8333, P = 101.325, Rh = 0.4490995)
+using PlantMeteo, PlantSimEngine, PlantBiophysics, Dates
+environment = Atmosphere(T = 22.0, Wind = 0.8333, P = 101.325, Rh = 0.4490995, duration = Hour(1))
 
 # Using a constant value for Gs:
 
-scene = leaf_scene(
+scene = CompositeModel(
     Medlyn(0.03,12.0);
     status=Status(A=20.0, Cₛ=380.0, Dₗ=environment.VPD),
     environment=environment,
 )
 run!(scene)
-only(model_objects(scene; scale=:Leaf)).status.Gₛ
+only(model_objects(scene)).status.Gₛ
 ```
 """ verbose = false
 

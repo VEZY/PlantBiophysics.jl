@@ -264,7 +264,7 @@ end
     plant_status = model_object(ppfd_scene, :plant).status
     @test plant_status.aPPFD ≈ expected_ground_ppfd
     @test plant_status.aPPFD_leaf_mean ≈ expected_ground_ppfd / 2.0
-    @test isfinite(leaf_status(ppfd_scene).A)
+    @test isfinite(model_object(ppfd_scene, :leaf).status.A)
 
     shortwave_meteo = Atmosphere(
         T=20.0,
@@ -341,7 +341,7 @@ end
     @test plant_status.Ra_SW_f ≈ expected_ground_shortwave
     @test plant_status.Ra_SW_f_leaf_mean ≈
           expected_ground_shortwave / 2.0
-    @test isfinite(leaf_status(shortwave_scene).Tₗ)
+    @test isfinite(model_object(shortwave_scene, :leaf).status.Tₗ)
 end
 
 @testset "Surface radiation couples directly to leaf physiology" begin

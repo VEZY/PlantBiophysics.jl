@@ -36,14 +36,12 @@ using PlantSimEngine, PlantBiophysics, PlantMeteo
 
 environment = Atmosphere(T=20.0, Wind=1.0, P=101.3, Rh=0.65, Ri_PAR_f=300.0, Ri_NIR_f=280.0)
 scene = CompositeModel(
-    Object(:plant; scale=:Plant, status=Status(LAI=2.0));
-    applications=(
-        ModelSpec(BeerShortwave(0.5); name=:canopy_light, on=One(scale=:Plant)),
-    ),
+    BeerShortwave(0.5);
+    status=Status(LAI=2.0),
     environment=environment,
 )
 run!(scene)
-plant = model_object(scene, :plant)
+plant = only(model_objects(scene))
 (plant.status.aPPFD, plant.status.Ra_SW_f, plant.status.Ra_PAR_f, plant.status.Ra_NIR_f)
 ```
 """

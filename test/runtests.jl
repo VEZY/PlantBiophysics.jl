@@ -14,13 +14,7 @@ using MultiScaleTreeGraph
 using PlantBiophysics.PlantMeteo
 using PlantBiophysics.PlantSimEngine
 
-leaf_status(scene) = only(model_objects(scene; scale=:Leaf)).status
-
-function output_values(sim, variable::Symbol; application=nothing, object=:leaf)
-    rows = collect_outputs(sim, object, variable; sink=nothing)
-    isnothing(application) || filter!(row -> row.application_id == application, rows)
-    return getproperty.(rows, :value)
-end
+leaf_status(scene) = only(model_objects(scene)).status
 
 @testset "Testing PlantBiophysics" begin
 

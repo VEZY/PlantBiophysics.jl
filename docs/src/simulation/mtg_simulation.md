@@ -107,7 +107,7 @@ simulation = run!(
     ),
 )
 
-DataFrame(collect_outputs(simulation, :leaf_temperature; sink=nothing))
+collect_outputs(simulation, :leaf_temperature; sink=DataFrame)
 ```
 
 There are six saved values: two leaves × three timesteps. The object identity
@@ -181,7 +181,7 @@ coffee_simulation = run!(
     outputs=OutputRequest(Many(scale=:Leaf), :Tₗ;
         name=:leaf_temperature, application=:energy_balance),
 )
-coffee_results = DataFrame(collect_outputs(coffee_simulation, :leaf_temperature; sink=nothing))
+coffee_results = collect_outputs(coffee_simulation, :leaf_temperature; sink=DataFrame)
 first(DataFrames.select(coffee_results, :timestep, :datetime, :object_id, :value), 6)
 ```
 
@@ -211,3 +211,28 @@ exposure respond to the same weather. To drive the plant with changing
 light, provide new radiation inputs at each step, as in
 [Several time steps](several_simulation.md), or couple a light model using
 the appropriate leaf-area inputs.
+
+## [Oil-palm photosynthesis through the day](@id fspm_2023_oil_palm)
+
+This animation from our FSPM 2023 presentation shows a young oil palm under
+three chamber scenarios: 400 ppm CO₂, cloudy conditions, and 600 ppm CO₂.
+It combines leaf energy balance, photosynthesis, and stomatal conductance
+with the plant's 3D structure and light interception.
+
+```@raw html
+<video class="pb-example-video" controls muted loop playsinline preload="none" poster="../assets/home-oil-palm-assimilation.png" aria-label="Oil-palm photosynthesis through the day under three chamber scenarios" width="1800" height="1000">
+  <source src="../assets/home-oil-palm-assimilation.mp4" type="video/mp4">
+  <a href="../assets/home-oil-palm-assimilation.mp4">Watch the oil-palm simulation.</a>
+</video>
+```
+
+- **Leaf colours** show simulated net CO₂ assimilation, `A`, in
+  µmol CO₂ m⁻² of leaf s⁻¹.
+- **Curves below each plant** compare simulated whole-plant CO₂ uptake
+  (line) with chamber measurements (points), in µmol CO₂ plant⁻¹ s⁻¹.
+- **The clock** follows the daily course of the three scenarios, measured
+  on separate days in March 2021.
+
+This is an archived result from the presentation, illustrating CO₂ uptake
+rather than the allocation of carbon to growing organs. The coffee example
+above shows how to run and visualise a plant simulation with the current API.
