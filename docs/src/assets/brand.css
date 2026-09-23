@@ -57,6 +57,65 @@ html.dark .VPNav .title img {
   white-space: normal;
 }
 
+/* Result cards pair a reproducible fit with an archived plant simulation. */
+.pb-home-results {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 24px;
+  margin: 28px 0 40px;
+}
+
+.pb-home-results figure {
+  min-width: 0;
+  margin: 0;
+  padding: 16px;
+  border: 1px solid var(--vp-c-divider);
+  border-radius: 14px;
+}
+
+.pb-result-media {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 680 / 420;
+  object-fit: contain;
+  border-radius: 8px;
+  background: white;
+}
+
+.pb-home-results figcaption {
+  margin-top: 18px;
+  font-size: 15px;
+  line-height: 1.65;
+}
+
+.pb-home-results figcaption strong {
+  display: block;
+  font-size: 18px;
+}
+
+.pb-home-results figcaption p {
+  margin: 8px 0;
+}
+
+.pb-home-results figcaption a {
+  display: inline-block;
+  margin-top: 4px;
+}
+
+.pb-example-video {
+  display: block;
+  width: 100%;
+  height: auto;
+  border-radius: 8px;
+}
+
+@media (max-width: 760px) {
+  .pb-home-results {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
 @media (max-width: 640px) {
   .VPHero .image img {
     max-width: 220px;

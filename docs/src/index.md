@@ -2,7 +2,36 @@
 CurrentModule = PlantBiophysics
 ```
 
-# Your first leaf simulation
+# From measurements to whole plants
+
+Fit a model to leaf measurements, then explore how individual leaves contribute
+to the exchanges of a whole plant.
+
+```@raw html
+<div class="pb-home-results">
+  <figure>
+    <img class="pb-result-media" src="assets/home-fitting.svg" alt="Measured net CO2 assimilation and the fitted photosynthesis response to intercellular CO2 concentration." loading="lazy" width="680" height="420">
+    <figcaption>
+      <strong>Fit photosynthesis to measurements</strong>
+      <p>Estimate photosynthetic capacities from gas-exchange measurements and compare the fitted response with the observations.</p>
+      <a href="fitting/parameter_fitting.html">Try the fitting example →</a>
+    </figcaption>
+  </figure>
+  <figure>
+    <video class="pb-result-media" controls muted loop playsinline preload="none" poster="assets/home-oil-palm-assimilation.png" aria-label="Oil-palm photosynthesis through the day under three chamber scenarios" width="1800" height="1000">
+      <source src="assets/home-oil-palm-assimilation.mp4" type="video/mp4">
+      <a href="assets/home-oil-palm-assimilation.mp4">Watch the oil-palm simulation.</a>
+    </video>
+    <figcaption>
+      <strong>See photosynthesis through the day</strong>
+      <p>Leaf colours show net CO₂ uptake in a young oil palm under three chamber scenarios. An animation from the FSPM 2023 example.</p>
+      <a href="simulation/mtg_simulation.html#fspm_2023_oil_palm">Explore the 3D simulation →</a>
+    </figcaption>
+  </figure>
+</div>
+```
+
+## Your first leaf simulation
 
 PlantBiophysics is a Julia package for simulating photosynthesis, stomatal
 conductance, leaf temperature, and exchanges of heat and water. It also

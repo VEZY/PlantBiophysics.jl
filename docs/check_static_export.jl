@@ -99,7 +99,7 @@ end
 
 function _pb_normalize_links(html, page_path, build_dir)
     # Raw image embeds and some contents links remain page-relative.
-    return replace(html, r"(?:href|src)=\"[^\"]*\"" => matched -> begin
+    return replace(html, r"(?:href|src|poster)=\"[^\"]*\"" => matched -> begin
         attribute, reference = split(matched, "=\""; limit=2)
         reference = chop(reference; tail=1)
         occursin(r"^(?:[A-Za-z][A-Za-z0-9+.-]*:|/|#)", reference) && return matched
@@ -170,7 +170,7 @@ function check_static_export(build_dir=joinpath(@__DIR__, "build"); pages=_pb_ex
         # Ignore inline scripts except the explicit session fetch and search index.
         markup = replace(html, r"<script\b[^>]*>.*?</script>"s => matched ->
             first(split(matched, '>'; limit=2)) * ">")
-        for matched in eachmatch(r"(?:href|src)=\"([^\"]+)\"", markup)
+        for matched in eachmatch(r"(?:href|src|poster)=\"([^\"]+)\"", markup)
             check_reference(matched.captures[1], page)
         end
         for matched in eachmatch(r"Bonito\.fetch_binary\([\"']([^\"']+)[\"']\)", html)

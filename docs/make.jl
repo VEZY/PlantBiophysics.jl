@@ -10,12 +10,16 @@ using PlantSimEngine
 include(joinpath(@__DIR__, "bonito_rendering.jl"))
 include(joinpath(@__DIR__, "src", "assets", "logo.jl"))
 include(joinpath(@__DIR__, "figures", "generate_evaluation_figures.jl"))
+include(joinpath(@__DIR__, "figures", "generate_home_fitting.jl"))
 
 @info "Regenerating documentation logo"
 PlantBiophysicsLogo.generate_logo()
 
 @info "Regenerating evaluation figures"
 EvaluationFigures.generate_evaluation_figures()
+
+@info "Regenerating the homepage fitting example"
+HomeFitting.generate_home_fitting()
 
 DocMeta.setdocmeta!(PlantBiophysics, :DocTestSetup, :(using PlantBiophysics, DataFrames, CSV, PlantMeteo, PlantSimEngine); recursive=true)
 
