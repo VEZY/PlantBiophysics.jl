@@ -142,7 +142,7 @@ start at step 1, then run at steps 25, 49, and so on.
 
 ```@example multirate
 simulation = run!(scene; steps=length(weather), outputs=:all)
-rows = DataFrame(collect_outputs(simulation; sink=nothing))
+rows = collect_outputs(simulation; sink=DataFrame)
 daily_rows = subset(rows, :application_id => ByRow(==(:daily_summary)))
 daily_results = unstack(
     select(daily_rows, :timestep, :variable, :value),

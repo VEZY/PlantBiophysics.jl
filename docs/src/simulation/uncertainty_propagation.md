@@ -170,7 +170,7 @@ series_scene = leaf_scene(
 )
 
 series_simulation = run!(series_scene; steps=length(weather), outputs=:all)
-rows = DataFrame(collect_outputs(series_simulation; sink=nothing))
+rows = collect_outputs(series_simulation; sink=DataFrame)
 temperatures = subset(
     rows,
     :application_id => ByRow(==(:energy_balance)),

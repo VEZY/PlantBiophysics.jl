@@ -25,9 +25,9 @@ DocMeta.setdocmeta!(PlantBiophysics, :DocTestSetup, :(using PlantBiophysics, Dat
 
 home = (
     name="PlantBiophysics.jl",
-    text="Simulate how leaves exchange carbon, water, and heat",
+    text="Simulate plant carbon, water, and heat exchanges",
     tagline="Combine photosynthesis, stomatal conductance, and energy balance in Julia. " *
-            "Fit parameters to measurements and run models from one leaf to whole plants.",
+        "Fit parameters to measurements and run models from one leaf to whole plants.",
     image="assets/logo.png",
     actions=[
         (text="Run a leaf simulation", link="getting_started/get_started.html", theme="brand"),

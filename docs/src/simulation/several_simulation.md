@@ -20,22 +20,15 @@ forcing = DataFrame(
     Rh=[0.65, 0.62, 0.58, 0.55, 0.58, 0.63],
     Ra_SW_f=[5.0, 10.0, 20.0, 25.0, 15.0, 5.0],
     aPPFD=[500.0, 1000.0, 1500.0, 1800.0, 1000.0, 400.0],
+    P=fill(101.3, 6),
+    duration=fill(Hour(1), 6)
 )
 
-weather = Weather([
-    Atmosphere(
-        T=row.T,
-        Wind=row.Wind,
-        P=101.3,
-        Rh=row.Rh,
-        duration=Hour(1),
-    )
-    for row in eachrow(forcing)
-])
+
+weather = Weather(forcing)
 first(forcing, 3)
 ```
 
-The values are a compact illustrative sequence, not a calibrated experiment.
 `T`, `Wind`, and `Rh` are meteorological variables, so `Weather` supplies the
 appropriate row automatically at each timestep. Absorbed shortwave radiation
 (`Ra_SW_f`) and absorbed photosynthetic photon flux (`aPPFD`) are externally
@@ -60,12 +53,9 @@ scene = leaf_scene(
     ),
     environment=weather,
 )
-
-leaf = only(model_objects(scene; scale=:Leaf))
-nothing
 ```
 
-The leaf starts with the first row's absorbed light. Unlike `Weather`, a
+The leaf is initialized with the first row's absorbed light. Unlike `Weather`, a
 vector stored in `Status` does not automatically advance through time. To
 change a leaf input, we update its value before running the next step.
 
@@ -76,7 +66,7 @@ to the next weather row and adds its results to the same simulation.
 
 ```@example several_steps
 simulation = run!(scene; outputs=:all)
-
+leaf = only(model_objects(scene; scale=:Leaf))
 for timestep in 2:nrow(forcing)
     leaf.status.Ra_SW_f = forcing.Ra_SW_f[timestep]
     leaf.status.aPPFD = forcing.aPPFD[timestep]
@@ -104,7 +94,7 @@ the variables into columns, then `leftjoin` puts the inputs and results in
 the same table. We use `timestep` to match each result to its input row:
 
 ```@example several_steps
-rows = DataFrame(collect_outputs(simulation; sink=nothing))
+rows = collect_outputs(simulation; sink=DataFrame)
 
 leaf_rows = subset(
     rows,

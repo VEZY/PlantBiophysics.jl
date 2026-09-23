@@ -91,7 +91,7 @@ flux (W m⁻²). `Tₗ` is leaf temperature (°C), `A` is net CO₂ assimilation
 at one timestep; here we select the six results above:
 
 ```@example first_simulation
-rows = DataFrame(collect_outputs(simulation; sink=nothing))
+rows = collect_outputs(simulation; sink=DataFrame)
 results = subset(
     rows,
     :application_id => ByRow(==(:energy_balance)),
@@ -101,9 +101,7 @@ select(results, :timestep, :variable, :value)
 ```
 
 All six values are saved under `:energy_balance` because `Monteith` calls the
-photosynthesis and stomatal models during its calculations. Without
-`outputs=:all`, the leaf still holds its latest values, but there is no saved
-history to collect.
+photosynthesis and stomatal models during its calculations.
 
 Continue with [Simulation over several time steps](several_simulation.md)
 to supply changing weather, save a time series, and plot the results.

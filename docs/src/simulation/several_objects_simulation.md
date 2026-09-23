@@ -72,7 +72,7 @@ As in the previous tutorial, we collect and reshape them into a table:
 ```@example several_objects
 simulation = run!(scene; steps=length(weather), outputs=:all)
 
-rows = DataFrame(collect_outputs(simulation; sink=nothing))
+rows = collect_outputs(simulation; sink=DataFrame)
 leaf_rows = subset(
     rows,
     :application_id => ByRow(==(:energy_balance)),

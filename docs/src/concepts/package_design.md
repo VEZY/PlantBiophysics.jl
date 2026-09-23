@@ -102,7 +102,7 @@ is the object created by `leaf_scene`, and `leaf.status.Gₛ` is its latest valu
 Recorded outputs can also be read as a table:
 
 ```@example design
-results = DataFrame(collect_outputs(simulation; sink=nothing))
+results = collect_outputs(simulation; sink=DataFrame)
 select(results, :timestep, :variable, :value)
 ```
 

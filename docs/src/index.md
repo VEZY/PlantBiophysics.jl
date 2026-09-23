@@ -23,8 +23,8 @@ to the exchanges of a whole plant.
       <a href="assets/home-oil-palm-assimilation.mp4">Watch the oil-palm simulation.</a>
     </video>
     <figcaption>
-      <strong>See photosynthesis through the day</strong>
-      <p>Leaf colours show net CO₂ uptake in a young oil palm under three chamber scenarios. An animation from the FSPM 2023 example.</p>
+      <strong>See what you can do</strong>
+      <p>You can simulate whole-plant fluxes in 3D. Colours show net CO₂ uptake in a young oil palm under three chamber scenarios. An animation from our presentation at the FSPM 2023 conference.</p>
       <a href="simulation/mtg_simulation.html#fspm_2023_oil_palm">Explore the 3D simulation →</a>
     </figcaption>
   </figure>
@@ -49,7 +49,7 @@ In the Julia REPL, press `]` to enter package mode, then install the packages
 used in the examples:
 
 ```text
-pkg> add PlantBiophysics PlantSimEngine PlantMeteo
+pkg> add PlantBiophysics PlantSimEngine PlantMeteo, DataFrames
 ```
 
 Press Backspace to return to the Julia prompt.
@@ -61,7 +61,7 @@ model (`Fvcb`), and a stomatal-conductance model (`Medlyn`) for one leaf.
 The input values are illustrative.
 
 ```@example home
-using PlantBiophysics, PlantSimEngine, PlantMeteo, Dates
+using PlantBiophysics, PlantSimEngine, PlantMeteo, Dates, DataFrames
 
 meteo = Atmosphere(
     T=22.0,
@@ -84,12 +84,12 @@ scene = leaf_scene(
     environment=meteo,
 )
 
-simulation = run!(scene)
-leaf = only(model_objects(scene; scale=:Leaf))
-(Tₗ=leaf.status.Tₗ, A=leaf.status.A, Gₛ=leaf.status.Gₛ)
+simulation = run!(scene, outputs=:all)
+outs = collect_outputs(simulation, sink=DataFrame) |> unstack |> first
+(Tₗ=df.Tₗ, A=df.A, Gₛ=df.Gₛ)
 ```
 
-`leaf_scene` brings the models, leaf inputs, and weather together. `run!`
+`leaf_scene` set up the simulation by combining the models, leaf inputs, and weather. `run!`
 calculates their results, which remain available on the leaf's `status`.
 The values shown are leaf temperature (`Tₗ`, °C), net CO₂ assimilation
 (`A`, µmol CO₂ m⁻² s⁻¹), and stomatal conductance to CO₂

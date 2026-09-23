@@ -107,7 +107,7 @@ simulation = run!(
     ),
 )
 
-DataFrame(collect_outputs(simulation, :leaf_temperature; sink=nothing))
+collect_outputs(simulation, :leaf_temperature; sink=DataFrame)
 ```
 
 There are six saved values: two leaves × three timesteps. The object identity
@@ -181,7 +181,7 @@ coffee_simulation = run!(
     outputs=OutputRequest(Many(scale=:Leaf), :Tₗ;
         name=:leaf_temperature, application=:energy_balance),
 )
-coffee_results = DataFrame(collect_outputs(coffee_simulation, :leaf_temperature; sink=nothing))
+coffee_results = collect_outputs(coffee_simulation, :leaf_temperature; sink=DataFrame)
 first(DataFrames.select(coffee_results, :timestep, :datetime, :object_id, :value), 6)
 ```
 

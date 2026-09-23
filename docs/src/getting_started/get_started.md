@@ -39,7 +39,7 @@ leaf temperature (`Tₗ`), net CO₂ assimilation (`A`), and stomatal conductanc
 to CO₂ (`Gₛ`) together, with one row per timestep:
 
 ```@example first_leaf
-rows = DataFrame(collect_outputs(simulation; sink=nothing))
+rows = collect_outputs(simulation; sink=DataFrame)
 leaf_rows = subset(
     rows,
     :application_id => ByRow(==(:energy_balance)),
