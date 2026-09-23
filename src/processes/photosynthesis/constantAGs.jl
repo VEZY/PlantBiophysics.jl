@@ -23,7 +23,7 @@ end
 
 PlantSimEngine.dep(::ConstantAGs) = (
     stomatal_conductance=PlantSimEngine.Call(
-        PlantSimEngine.One(scale=:Leaf, process=:stomatal_conductance),
+        PlantSimEngine.One(within=PlantSimEngine.Self(), process=:stomatal_conductance),
     ),
 )
 

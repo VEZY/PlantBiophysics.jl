@@ -86,7 +86,7 @@ PlantSimEngine.output_policy(::Type{<:Monteith}) = (
 
 PlantSimEngine.dep(::Monteith) = (
     photosynthesis=PlantSimEngine.Call(
-        PlantSimEngine.One(scale=:Leaf, process=:photosynthesis),
+        PlantSimEngine.One(within=PlantSimEngine.Self(), process=:photosynthesis),
     ),
 )
 

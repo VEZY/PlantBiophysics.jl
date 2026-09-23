@@ -133,7 +133,7 @@ Base.eltype(x::Fvcb) = typeof(x).parameters[1]
 
 PlantSimEngine.dep(::Fvcb) = (
     stomatal_conductance=PlantSimEngine.Call(
-        PlantSimEngine.One(scale=:Leaf, process=:stomatal_conductance),
+        PlantSimEngine.One(within=PlantSimEngine.Self(), process=:stomatal_conductance),
     ),
 )
 PlantSimEngine.timestep_hint(::Type{<:Fvcb}) = (
