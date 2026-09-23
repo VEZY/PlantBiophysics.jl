@@ -63,6 +63,10 @@ makedocs(;
 
 
 
-deploydocs(;
-    repo="github.com/VEZY/PlantBiophysics.jl.git"
-)
+if get(ENV, "PLANTBIOPHYSICS_DOCS_BUILD_ONLY", "false") != "true"
+    deploydocs(;
+        repo="github.com/VEZY/PlantBiophysics.jl.git",
+        devbranch="master",
+        push_preview=true,
+    )
+end
