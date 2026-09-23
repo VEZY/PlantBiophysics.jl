@@ -32,7 +32,6 @@ include("processes/energy/energy_balance.jl")
 
 # Conversions
 include("conversions.jl")
-include("simulation.jl")
 
 # γ_star
 include("processes/γ_star.jl")
@@ -116,6 +115,5 @@ export Medlyn, Tuzet, ConstantGs
 # Model helpers
 export get_km, Γ_star, arrhenius, get_J, gs_closure, get_Cᵢⱼ, get_Cᵢᵥ, get_Dₕ
 export Fvcb_net_assimilation, Fvcb_net_assimiliation
-export leaf_scene
 
 end

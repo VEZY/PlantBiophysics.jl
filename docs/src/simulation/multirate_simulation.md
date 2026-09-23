@@ -93,17 +93,17 @@ integrate_rate = Integrate((values, seconds) -> sum(values .* seconds))
 integrate_water = Integrate((values, seconds) -> sum(values .* seconds) / λ_ref)
 
 scene = CompositeModel(
-    Object(:leaf; scale=:Leaf, kind=:plant, status=Status(
+    Object(:scene; status=Status(
         d=0.03, Ra_SW_f=150.0, sky_fraction=1.0, aPPFD=1200.0,
     ));
     applications=(
-        ModelSpec(Monteith(); name=:energy_balance, on=One(scale=:Leaf), every=Hour(1)),
-        ModelSpec(Fvcb(); name=:photosynthesis, on=One(scale=:Leaf), every=Hour(1)),
-        ModelSpec(Medlyn(0.03, 12.0); name=:stomatal_conductance, on=One(scale=:Leaf), every=Hour(1)),
+        ModelSpec(Monteith(); name=:energy_balance, on=One(), every=Hour(1)),
+        ModelSpec(Fvcb(); name=:photosynthesis, on=One(), every=Hour(1)),
+        ModelSpec(Medlyn(0.03, 12.0); name=:stomatal_conductance, on=One(), every=Hour(1)),
         ModelSpec(
             DailyLeafSummary();
             name=:daily_summary,
-            on=One(scale=:Leaf),
+            on=One(),
             inputs=(
                 A_integrated=One(within=Self(), application=:energy_balance,
                     var=:A, policy=integrate_rate, window=Day(1)),
@@ -124,7 +124,8 @@ scene = CompositeModel(
 nothing # hide
 ```
 
-`Self()` selects the same leaf, and `application=:energy_balance` selects
+`on=One()` applies each model to the only object in the scene, our leaf.
+`Self()` selects that same leaf, and `application=:energy_balance` selects
 results saved by the coupled energy-balance calculation. `window=Day(1)`
 chooses the period to summarize. With an hourly base step,
 `ClockSpec(24.0, 24.0)` runs the summary every 24 steps, starting at step 24.

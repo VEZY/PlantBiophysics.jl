@@ -34,32 +34,26 @@ meteo = Atmosphere(
 )
 
 scene = CompositeModel(
-    Object(:plant; scale=:Plant, status=Status(LAI=2.0));
-    applications=(
-        ModelSpec(
-            BeerShortwave(0.6);
-            name=:canopy_light,
-            on=One(scale=:Plant),
-        ),
-    ),
+    BeerShortwave(0.6);
+    status=Status(LAI=2.0),
     environment=meteo,
 )
 
 run!(scene)
-plant = model_object(scene, :plant)
-(aPPFD=plant.status.aPPFD, Ra_SW_f=plant.status.Ra_SW_f)
+canopy = only(model_objects(scene))
+(aPPFD=canopy.status.aPPFD, Ra_SW_f=canopy.status.Ra_SW_f)
 ```
 
-`Object` represents the canopy, and `ModelSpec` assigns the light model to
-it. The example uses the plant scale because the Beer-Lambert calculation
-describes a canopy rather than an individual leaf.
+`CompositeModel` applies the light model to one object, representing the
+canopy. Its status supplies the leaf area index and stores the calculated
+radiation.
 
 The output `aPPFD` is in µmol photons m⁻² ground s⁻¹, and `Ra_SW_f` is in
 W m⁻² ground. `BeerShortwave` also provides the absorbed PAR and NIR
 separately as `Ra_PAR_f` and `Ra_NIR_f`:
 
 ```@example light
-(Ra_PAR_f=plant.status.Ra_PAR_f, Ra_NIR_f=plant.status.Ra_NIR_f)
+(Ra_PAR_f=canopy.status.Ra_PAR_f, Ra_NIR_f=canopy.status.Ra_NIR_f)
 ```
 
 These are rates at the simulated conditions. Use `outputs=:all` when running

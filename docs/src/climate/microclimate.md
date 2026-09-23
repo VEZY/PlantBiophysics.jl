@@ -7,8 +7,7 @@ using PlantBiophysics, PlantMeteo, Dates
 Leaf processes respond to the air temperature, humidity, wind, and CO₂
 concentration around the leaf. PlantMeteo describes these conditions with
 an `Atmosphere` for one timestep or a `Weather` series for several timesteps.
-Pass either one as `environment=meteo` when creating a `leaf_scene` or
-`CompositeModel`.
+Pass either one as `environment=meteo` when creating a `CompositeModel`.
 
 ## Describe one timestep
 

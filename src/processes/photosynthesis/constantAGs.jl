@@ -61,16 +61,16 @@ Modify the leaf status in place for A, Gₛ and Cᵢ:
 # Examples
 
 ```julia
-using PlantBiophysics, PlantMeteo, PlantSimEngine
-environment = Atmosphere(T = 20.0, Wind = 1.0, P = 101.3, Rh = 0.65)
-scene = leaf_scene(
+using PlantBiophysics, PlantMeteo, PlantSimEngine, Dates
+environment = Atmosphere(T = 20.0, Wind = 1.0, P = 101.3, Rh = 0.65, duration = Hour(1))
+scene = CompositeModel(
     ConstantAGs(),
     Medlyn(0.03, 12.0);
     status=Status(Cₛ=400.0, Dₗ=2.0),
     environment=environment,
 )
 run!(scene)
-leaf = only(model_objects(scene; scale=:Leaf))
+leaf = only(model_objects(scene))
 (leaf.status.A, leaf.status.Cᵢ)
 ```
 """

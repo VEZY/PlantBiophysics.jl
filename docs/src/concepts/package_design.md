@@ -68,11 +68,11 @@ net assimilation (`A`, µmol CO₂ m⁻² s⁻¹), leaf-surface CO₂ concentrat
 Using `meteo.VPD` for `Dₗ` assumes that leaf temperature equals air temperature
 in this simple example.
 
-`leaf_scene` assembles a simulation with one leaf, the chosen model, its
-initial status, and its weather:
+`CompositeModel` combines the chosen model, its initial status, and its
+weather. With this concise form, it creates one object representing our leaf:
 
 ```@example design
-scene = leaf_scene(
+scene = CompositeModel(
     stomata;
     status=Status(A=20.0, Cₛ=400.0, Dₗ=meteo.VPD),
     environment=meteo,
@@ -80,9 +80,7 @@ scene = leaf_scene(
 nothing # hide
 ```
 
-This `scene` is a PlantSimEngine `CompositeModel`: it brings together the
-objects, models, and conditions to simulate. The [Variables](../variables.md)
-page lists variable names, meanings, and units; the
+The [Variables](../variables.md) page lists variable names, meanings, and units; the
 [Micro-climate](../climate/microclimate.md) page explains weather inputs.
 
 ## Run the simulation and read the results
@@ -93,12 +91,12 @@ so they can be collected afterwards.
 
 ```@example design
 simulation = run!(scene; outputs=:all)
-leaf = model_object(scene, :leaf)
+leaf = only(model_objects(scene))
 leaf.status.Gₛ
 ```
 
 The result is stomatal conductance to CO₂ (`Gₛ`, mol CO₂ m⁻² s⁻¹). Here `leaf`
-is the object created by `leaf_scene`, and `leaf.status.Gₛ` is its latest value.
+is the only object in this simulation, and `leaf.status.Gₛ` is its latest value.
 Recorded outputs can also be read as a table:
 
 ```@example design

@@ -49,7 +49,7 @@ In the Julia REPL, press `]` to enter package mode, then install the packages
 used in the examples:
 
 ```text
-pkg> add PlantBiophysics PlantSimEngine PlantMeteo, DataFrames
+pkg> add PlantBiophysics PlantSimEngine PlantMeteo DataFrames
 ```
 
 Press Backspace to return to the Julia prompt.
@@ -71,7 +71,7 @@ meteo = Atmosphere(
     duration=Hour(1),
 )
 
-scene = leaf_scene(
+scene = CompositeModel(
     Monteith(),
     Fvcb(),
     Medlyn(0.03, 12.0);
@@ -84,13 +84,14 @@ scene = leaf_scene(
     environment=meteo,
 )
 
-simulation = run!(scene, outputs=:all)
-outs = collect_outputs(simulation, sink=DataFrame) |> unstack |> first
-(Tₗ=df.Tₗ, A=df.A, Gₛ=df.Gₛ)
+simulation = run!(scene; outputs=:all)
+outs = collect_outputs(simulation; sink=DataFrame) |> unstack |> first
+(Tₗ=outs.Tₗ, A=outs.A, Gₛ=outs.Gₛ)
 ```
 
-`leaf_scene` set up the simulation by combining the models, leaf inputs, and weather. `run!`
-calculates their results, which remain available on the leaf's `status`.
+`CompositeModel` sets up the simulation by combining the models, leaf inputs,
+and weather. `run!` calculates their results, and `collect_outputs` retrieves
+the saved values as a table.
 The values shown are leaf temperature (`Tₗ`, °C), net CO₂ assimilation
 (`A`, µmol CO₂ m⁻² s⁻¹), and stomatal conductance to CO₂
 (`Gₛ`, mol CO₂ m⁻² s⁻¹).

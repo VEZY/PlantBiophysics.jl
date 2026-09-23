@@ -2,6 +2,7 @@ module HomeFitting
 
 using CairoMakie
 using DataFrames
+using Dates
 using PlantBiophysics
 using PlantSimEngine
 
@@ -43,12 +44,13 @@ function fitting_response()
 
     photosynthesis = FvcbRaw(; fitted...)
     predicted = map(eachrow(co2_curve)) do row
-        scene = leaf_scene(
+        scene = CompositeModel(
             photosynthesis;
             status=Status(Tₗ=row.Tₗ, aPPFD=row.aPPFD, Cᵢ=row.Cᵢ),
+            environment=(duration=Hour(1),),
         )
         run!(scene)
-        leaf = model_object(scene, :leaf)
+        leaf = only(model_objects(scene))
         # FvcbRaw must keep the measured drivers paired with this prediction.
         @assert leaf.status.Tₗ == row.Tₗ
         @assert leaf.status.aPPFD == row.aPPFD

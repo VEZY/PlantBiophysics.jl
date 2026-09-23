@@ -10,18 +10,18 @@ for photosynthesis and `Medlyn` for its stomatal-conductance hard dependency.
 # Examples
 
 ```julia
-using PlantSimEngine, PlantMeteo, PlantBiophysics
+using PlantSimEngine, PlantMeteo, PlantBiophysics, Dates
 
-meteo = Atmosphere(T = 20.0, Wind = 1.0, P = 101.3, Rh = 0.65)
+meteo = Atmosphere(T = 20.0, Wind = 1.0, P = 101.3, Rh = 0.65, duration = Hour(1))
 
-scene = leaf_scene(
+scene = CompositeModel(
     Fvcb(),
     Medlyn(0.03, 12.0);
     status=Status(Tₗ=25.0, aPPFD=1000.0, Cₛ=400.0, Dₗ=meteo.VPD),
     environment=meteo,
 )
 run!(scene)
-only(model_objects(scene; scale=:Leaf)).status.A
+only(model_objects(scene)).status.A
 ```
 
 Note that we use `VPD` as an approximation of `Dₗ` here because we don't have the leaf temperature (*i.e.* `Dₗ = VPD` when `Tₗ = T`).

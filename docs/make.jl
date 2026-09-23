@@ -113,7 +113,9 @@ finish_static_export()
 # Preserve the inventory used by other packages to link to these API docs.
 # Bonito renders flat HTML paths, so use the same paths in the inventory.
 cd(@__DIR__) do
-    context = Documenter.HTMLWriter.HTMLContext(documentation, Documenter.HTML(prettyurls=false))
+    context = Documenter.HTMLWriter.HTMLContext(
+        documentation, Documenter.HTML(prettyurls=false, edit_link="master"),
+    )
     Documenter.HTMLWriter.write_inventory(documentation, context)
 end
 

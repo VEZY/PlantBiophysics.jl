@@ -6,7 +6,7 @@
 end
 
 @testset "Compiled leaf hard-call graph" begin
-    scene = leaf_scene(
+    scene = CompositeModel(
         Monteith(),
         Fvcb(α=0.24),
         Medlyn(0.03, 12.0);

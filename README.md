@@ -29,7 +29,7 @@ meteo = Atmosphere(
     duration=Hour(1),
 )
 
-scene = leaf_scene(
+scene = CompositeModel(
     Monteith(),
     Fvcb(),
     Medlyn(0.03, 12.0);
@@ -43,14 +43,14 @@ scene = leaf_scene(
 )
 
 simulation = run!(scene)
-leaf = only(model_objects(scene; scale=:Leaf))
+leaf = only(model_objects(scene))
 (temperature=leaf.status.Tₗ, assimilation=leaf.status.A)
 ```
 
-`leaf_scene` is a convenience constructor. The returned value is an ordinary
-`PlantSimEngine.CompositeModel`, so applications can also be assembled explicitly with
-`Object`, `ModelSpec`, selectors such as `One` and `Many`, explicit `inputs=`,
-`Call` dependencies, and `every=` timestep policies.
+`CompositeModel` combines these models on one object representing the leaf.
+For simulations with several objects, use `Object`, `ModelSpec`, and selectors
+such as `One` and `Many` to describe which models apply and how they exchange
+values.
 
 PlantBiophysics models preserve generic numeric types, which supports units,
 automatic differentiation, and uncertainty propagation when the supplied

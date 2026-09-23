@@ -27,12 +27,13 @@ This implementation uses Cₛ instead of Cᵢ.
 # Examples
 
 ```julia
-using PlantMeteo, PlantSimEngine, PlantBiophysics
-meteo = Atmosphere(T = 20.0, Wind = 1.0, P = 101.3, Rh = 0.65)
+using PlantMeteo, PlantSimEngine, PlantBiophysics, Dates
+meteo = Atmosphere(T = 20.0, Wind = 1.0, P = 101.3, Rh = 0.65, duration = Hour(1))
 
-scene = leaf_scene(
+scene = CompositeModel(
     Tuzet(0.03, 12.0, -1.5, 2.0, 30.0);
-    status=Status(Cₛ=380.0, Ψₗ=-1.0),
+    # Prescribe assimilation (µmol CO₂ m⁻² s⁻¹) for this standalone model.
+    status=Status(A=20.0, Cₛ=380.0, Ψₗ=-1.0),
     environment=meteo,
 )
 run!(scene)

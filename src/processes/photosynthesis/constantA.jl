@@ -50,11 +50,11 @@ Modify the leaf status in place for A with a constant value:
 # Examples
 
 ```julia
-using PlantBiophysics, PlantMeteo, PlantSimEngine
-environment = Atmosphere(T = 20.0, Wind = 1.0, P = 101.3, Rh = 0.65)
-scene = leaf_scene(ConstantA(26.0); environment=environment)
+using PlantBiophysics, PlantMeteo, PlantSimEngine, Dates
+environment = Atmosphere(T = 20.0, Wind = 1.0, P = 101.3, Rh = 0.65, duration = Hour(1))
+scene = CompositeModel(ConstantA(26.0); environment=environment)
 run!(scene)
-only(model_objects(scene; scale=:Leaf)).status.A
+only(model_objects(scene)).status.A
 ```
 """
 function PlantSimEngine.run!(model::ConstantA, status, environment, constants=PlantMeteo.Constants(), context=nothing)

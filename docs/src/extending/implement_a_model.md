@@ -124,13 +124,13 @@ status.Gₛ
 Then assemble the model exactly as you would use a built-in model:
 
 ```@example new_model
-scene = leaf_scene(
+scene = CompositeModel(
     stomata;
     status=Status(A=20.0, Cₛ=400.0),
     environment=meteo,
 )
 run!(scene)
-model_object(scene, :leaf).status.Gₛ
+only(model_objects(scene)).status.Gₛ
 ```
 
 The direct and scene calculations should agree. For a model you intend to
@@ -144,14 +144,14 @@ The same `BandB` instance can replace `Medlyn` in a coupled leaf example.
 Here [`Fvcb`](@ref) supplies assimilation, so we no longer prescribe `A`:
 
 ```@example new_model
-coupled_scene = leaf_scene(
+coupled_scene = CompositeModel(
     Fvcb(),
     stomata;
     status=Status(Tₗ=25.0, aPPFD=1000.0, Cₛ=400.0),
     environment=meteo,
 )
 run!(coupled_scene)
-leaf = model_object(coupled_scene, :leaf)
+leaf = only(model_objects(coupled_scene))
 (A=leaf.status.A, Gₛ=leaf.status.Gₛ, Cᵢ=leaf.status.Cᵢ)
 ```
 

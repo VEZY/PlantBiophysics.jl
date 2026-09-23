@@ -41,7 +41,7 @@ percentage.
 ## Assemble the leaf model
 
 ```@example several_steps
-scene = leaf_scene(
+scene = CompositeModel(
     Monteith(),
     Fvcb(),
     Medlyn(0.03, 12.0);
@@ -66,7 +66,7 @@ to the next weather row and adds its results to the same simulation.
 
 ```@example several_steps
 simulation = run!(scene; outputs=:all)
-leaf = only(model_objects(scene; scale=:Leaf))
+leaf = only(model_objects(scene))
 for timestep in 2:nrow(forcing)
     leaf.status.Ra_SW_f = forcing.Ra_SW_f[timestep]
     leaf.status.aPPFD = forcing.aPPFD[timestep]

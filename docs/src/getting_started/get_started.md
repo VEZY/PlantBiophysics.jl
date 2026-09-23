@@ -16,7 +16,7 @@ meteo = Weather([
     for hour in 1:3
 ])
 
-scene = leaf_scene(
+scene = CompositeModel(
     Monteith(),
     Fvcb(),
     Medlyn(0.03, 12.0);
@@ -58,7 +58,7 @@ select(outputs, :timestep, :Rn, :H, :λE, :Tₗ, :A, :Gₛ)
 The latest state remains available on the leaf object:
 
 ```@example first_leaf
-leaf = only(model_objects(scene; scale=:Leaf))
+leaf = only(model_objects(scene))
 (
     Rn=leaf.status.Rn, H=leaf.status.H, λE=leaf.status.λE,
     Tₗ=leaf.status.Tₗ, A=leaf.status.A, Gₛ=leaf.status.Gₛ,

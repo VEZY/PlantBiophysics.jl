@@ -30,7 +30,7 @@ boundary can be set using [-Inf, Inf].
 # Examples
 
 ```julia
-using PlantBiophysics, PlantSimEngine, PlantSimEngine.Evaluation, PlantMeteo, Plots, DataFrames
+using PlantBiophysics, PlantSimEngine, PlantSimEngine.Evaluation, PlantMeteo, Plots, DataFrames, Dates
 
 file = joinpath(dirname(dirname(pathof(PlantBiophysics))),"test","inputs","data","P1F20129.csv")
 df = read_walz(file)
@@ -50,12 +50,12 @@ sort!(df, :Cᵢ)
 
 # Re-simulating A using the newly fitted parameters:
 A_sim = map(eachrow(df)) do row
-    scene = leaf_scene(
+    scene = CompositeModel(
         FvcbRaw(VcMaxRef = VcMaxRef, JMaxRef = JMaxRef, RdRef = RdRef, TPURef = TPURef);
         status = Status(Tₗ = row.Tₗ, aPPFD = row.aPPFD, Cᵢ = row.Cᵢ),
+        environment = (duration = Hour(1),),
     )
-    run!(scene)
-    only(model_objects(scene; scale = :Leaf)).status.A
+    final_state(run!(scene)).A
 end
 
 # Visualising the results:
@@ -67,15 +67,14 @@ plot(ACi_struct,leg=:bottomright)
 df[!, :Wind] .= 10.0
 
 A_sim2 = map(eachrow(df)) do row
-    meteo = Atmosphere(T = row.T, P = row.P, Rh = row.Rh, Cₐ = row.Cₐ, Wind = 10.0)
-    scene = leaf_scene(
+    meteo = Atmosphere(T = row.T, P = row.P, Rh = row.Rh, Cₐ = row.Cₐ, Wind = 10.0, duration = Hour(1))
+    scene = CompositeModel(
         Fvcb(VcMaxRef = VcMaxRef, JMaxRef = JMaxRef, RdRef = RdRef, Tᵣ = 25.0, TPURef = TPURef),
         Medlyn(0.03, 12.0);
         status = Status(Tₗ = row.Tₗ, aPPFD = row.aPPFD, Cₛ = row.Cₐ, Dₗ = 0.1),
         environment = meteo,
     )
-    run!(scene)
-    only(model_objects(scene; scale = :Leaf)).status.A
+    final_state(run!(scene)).A
 end
 
 # And finally we plot the results:
@@ -118,7 +117,7 @@ function PlantSimEngine.Evaluation.fit(
         )
         simulated = Vector{typeof(A)}(undef, size(x, 1))
         for i in axes(x, 1)
-            leaf = leaf_scene(
+            scene = PlantSimEngine.CompositeModel(
                 photosynthesis;
                 status=Status(
                     Tₗ=x[i, 1],
@@ -126,11 +125,10 @@ function PlantSimEngine.Evaluation.fit(
                     Cᵢ=x[i, 3],
                     A=A,
                 ),
+                environment=(duration=Dates.Hour(1),),
             )
-            PlantSimEngine.run!(leaf)
-            simulated[i] = only(
-                PlantSimEngine.model_objects(leaf; scale=:Leaf),
-            ).status.A
+            simulation = PlantSimEngine.run!(scene)
+            simulated[i] = PlantSimEngine.final_state(simulation).A
         end
         return simulated
     end

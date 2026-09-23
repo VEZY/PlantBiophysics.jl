@@ -43,11 +43,11 @@ The models also need four leaf inputs:
 | `sky_fraction` | Fraction of the sky visible from the leaf | 0–1 |
 | `d` | Characteristic leaf dimension used for boundary-layer exchange | m |
 
-`leaf_scene` creates a simulation containing one leaf. Its `Status` stores
-these inputs and the values the models will calculate.
+`CompositeModel` combines the models on one object, representing our leaf.
+Its `Status` stores these inputs and the values the models will calculate.
 
 ```@example first_simulation
-scene = leaf_scene(
+scene = CompositeModel(
     Monteith(),
     Fvcb(),
     Medlyn(0.03, 12.0);
@@ -75,7 +75,7 @@ directly on the leaf:
 
 ```@example first_simulation
 simulation = run!(scene; outputs=:all)
-leaf = only(model_objects(scene; scale=:Leaf))
+leaf = only(model_objects(scene))
 (Rn=leaf.status.Rn, H=leaf.status.H, λE=leaf.status.λE,
  Tₗ=leaf.status.Tₗ, A=leaf.status.A, Gₛ=leaf.status.Gₛ)
 ```
