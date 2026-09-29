@@ -210,7 +210,7 @@ The colours show how leaves under different absorbed radiation and sky
 exposure respond to the same weather. To drive the plant with changing
 light, provide new radiation inputs at each step, as in
 [Several time steps](several_simulation.md), or couple a light model using
-the appropriate leaf-area inputs.
+the appropriate leaf-area inputs (see e.g. [ArchimedLight.jl](https://vezy.github.io/ArchimedLight.jl/stable/)).
 
 ## [Oil-palm photosynthesis through the day](@id fspm_2023_oil_palm)
 

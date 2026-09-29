@@ -19,7 +19,7 @@ PlantBiophysics provides models for four processes:
 
 | Process | What it describes | Available models |
 |:--|:--|:--|
-| [Light interception](../models/light.md) | Radiation absorbed by a canopy | `Beer`, `BeerShortwave` |
+| [Light interception](../models/light.md) | Radiation absorbed by a leaf or canopy | `ConstantAbsorption`, `Beer`, `BeerShortwave` |
 | [Energy balance](../models/energy_balance.md) | Leaf temperature and heat exchanges | `Monteith` |
 | [Photosynthesis](../models/photosynthesis.md) | CO₂ assimilation | `Fvcb`, `FvcbIter`, `FvcbRaw`, `ConstantA`, `ConstantAGs` |
 | [Stomatal conductance](../models/gs.md) | How readily CO₂ passes through stomata | `Medlyn`, `Tuzet`, `ConstantGs` |

@@ -151,41 +151,23 @@ These two conversion models are specific to the ground-area canopy rates produce
 `BeerShortwave`. Do not use them for geometry-resolved light: dividing an
 organ-level irradiance by canopy LAI would apply the wrong area conversion.
 
-!!! compat "Historical ARCHIMED model files"
-    PlantBiophysics does not parse ARCHIMED light-model YAML or provide a
-    per-organ `Translucent` copier. Use `ArchimedLight.read_models` for those
-    optical definitions. To ignore light interception, omit the light
-    application; a no-op model is unnecessary.
-
 ## Couple 3D light directly to physiology
 
-ArchimedLight and PlantBiophysics use the represented mesh surface as the
-reference area for geometry-resolved radiation. ArchimedLight publishes
-`aPPFD` in `μmol[photon] m⁻² s⁻¹`, `Ra_SW_f` in `W m⁻²`, and the corresponding
-mesh surface `area` in `m²` for each destination organ. FvCB and Monteith use
-the same `:surface_area` radiation contracts, so those fluxes couple directly.
-The light solver's pixel projection correction does not change the reference
-surface area.
+Use **ArchimedLight.jl 0.2.0 or later** for this coupling. Its
+`ArchimedLightModel` publishes the light and sky-view results from a 3D scene
+to each selected leaf object. The default `:coupling` output schema includes
+`aPPFD` (µmol photons m⁻² s⁻¹), `Ra_SW_f` (W m⁻²), `area` (m²), and
+`sky_fraction` (dimensionless). The two radiation fluxes use the mesh surface
+as their area basis, so FvCB and Monteith can use them directly. `sky_fraction` is used by `Monteith` to calculate the longwave radiation exchange, with the assumption that most of the exchanges of thermal radiation are between the organ and the sky, because other objects have a temperature that is within a few degrees of the organ's temperature, whereas the sky usually has a much lower temperature.
 
-For a leaf mesh, this represented surface is the leaf area used by the
-physiology calculation. Leaf-area model parameters and observations must use
-that same reference surface. Beer-Lambert canopy fluxes still require the
-LAI adapters above because their denominator is ground area.
-
-Given an ArchimedLight scene application named `:archimed_light` that publishes
-to the leaf objects, bind its radiation directly to the physiology models:
+Given a scene application named `:archimed_light` whose `outputs_to` selector
+covers the leaves, bind the published values to the physiology applications:
 
 ```julia
-leaf = Object(
-    :leaf_42;
-    scale=:Leaf,
-    status=Status(sky_fraction=1.0, d=0.03),
-)
+leaf = Object(:leaf_42; scale=:Leaf, status=Status(d=0.03))
 
 photosynthesis = ModelSpec(
-    Fvcb();
-    name=:photosynthesis,
-    on=Many(scale=:Leaf),
+    Fvcb(); name=:photosynthesis, on=Many(scale=:Leaf),
     inputs=(
         :aPPFD => One(
             within=Self(), application=:archimed_light, var=:aPPFD,
@@ -195,51 +177,29 @@ photosynthesis = ModelSpec(
 )
 
 energy_balance = ModelSpec(
-    Monteith();
-    name=:energy_balance,
-    on=Many(scale=:Leaf),
+    Monteith(); name=:energy_balance, on=Many(scale=:Leaf),
     inputs=(
         :Ra_SW_f => One(
             within=Self(), application=:archimed_light, var=:Ra_SW_f,
             policy=HoldLast(),
         ),
+        :sky_fraction => One(
+            within=Self(), application=:archimed_light, var=:sky_fraction,
+            policy=HoldLast(),
+        ),
     ),
-)
-
-stomatal_conductance = ModelSpec(
-    Medlyn(0.03, 12.0);
-    name=:stomatal_conductance,
-    on=Many(scale=:Leaf),
 )
 ```
 
-Include these applications alongside the scene light application in the
-`CompositeModel`. PlantSimEngine runs the light calculation before the coupled leaf
-energy-balance, photosynthesis, and stomatal-conductance models. The flux values read
-by FvCB and Monteith are the values published by ArchimedLight.
-
-Match each mesh to the correct plant object. Build the `CompositeModel` from the same MTG as
-the `PlantGeom.SceneGeometry` when possible. For another topology, pass exact
-MTG roots through `source_roots`, or an explicit `object_resolver` from each
-source-owner key to its `ObjectId`. Never infer this relationship from row or
-traversal order.
-
-The same sampled environment row must provide sun azimuth in [0, 360°), sun
-elevation in [-90°, 90°], non-negative incident PAR and NIR (`W m⁻²`), a
-direct fraction in [0, 1], and a finite, strictly positive timestep duration.
-
-`sky_fraction` is deliberately absent from both `ArchimedLightModel` output
-schemas (`:coupling` and `:full`). It is the longwave sky-view assumption used
-by [`Monteith`](@ref), including the chosen one- or two-sided convention, and
-must be initialized explicitly as scenario state for every leaf. Its valid
-range is 0–2: 0 means that neither effective leaf face sees the sky, 1
-corresponds to one fully exposed effective face, and 2 to both faces seeing
-the sky. This keeps a shortwave interception result from silently standing in
-for a scientifically distinct longwave view factor.
+Include these applications with the ArchimedLight scene application in the
+`CompositeModel`. PlantSimEngine schedules the scene calculation before its
+leaf consumers. The leaf's `d` remains a physiology input; its `sky_fraction`
+comes from the scene calculation. See the
+[ArchimedLight PlantSimEngine coupling guide](https://vezy.github.io/ArchimedLight.jl/stable/plantsimengine/)
+for the scene application and its organ selector.
 
 Use `Diagnostics.explain_bindings`, `Diagnostics.explain_writers`, and
-`Diagnostics.explain_schedule` to verify the radiation sources and execution
-order.
+`Diagnostics.explain_schedule` to verify the sources and execution order.
 
 ## Record radiation totals
 

@@ -44,7 +44,6 @@ We add a keyword constructor that promotes mixed input types to a common type:
 
 ```@example new_model
 BandB(; g0, g1, gs_min=0.001) = BandB(promote(g0, g1, gs_min)...)
-Base.eltype(::BandB{T}) where {T} = T
 
 stomata = BandB(g0=0, g1=2.0)
 (process(stomata), stomata.g0, stomata.gs_min)

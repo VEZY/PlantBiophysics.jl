@@ -5,12 +5,17 @@ summary only once a day. This tutorial runs the coupled leaf model for
 48 hours and produces one summary for each day:
 
 - total net CO₂ assimilation per unit leaf area;
-- transpiration expressed as a water depth;
+- transpiration expressed in mm;
 - mean, minimum, and maximum leaf temperature.
 
 Start with [Several time steps](several_simulation.md) if you only need models
 that all run at the same interval. This page adds a small summary model to
 show how calculations at different intervals can work together.
+
+!!! note "Don't have time? Ask you AI agent"
+    This section is a bit advanced. If you find it too hard to follow, just ask your AI agent
+    to do the work for you. First, install [PlantSimEngine's skill](https://virtualplantlab.github.io/PlantSimEngine.jl/stable/agent_skill.html) (you can aslo point your agent to this page and ask it to install the skill), then
+    just ask it what you need and it will be able to produce all the code for you.
 
 ## Prepare two days of hourly weather
 
@@ -80,6 +85,11 @@ function PlantSimEngine.run!(::DailyLeafSummary, status, environment, constants,
     return nothing
 end
 ```
+
+The `DailyLeafSummary` model is just a very simple model used only for teaching purposes. The only thing it does is
+taking some inputs, and renaming them. This is because a model is defined to run for one time-step, one object, without
+any knowledge about other models time-steps and objects. The integration over several time-steps (or objects) is done
+at the time we define the simulation setup to build a composite model. You'll understand how in the next sections.
 
 ## Connect the hourly values to the daily model
 
