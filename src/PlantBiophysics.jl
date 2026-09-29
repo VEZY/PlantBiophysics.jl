@@ -39,6 +39,7 @@ include("processes/γ_star.jl")
 # Light interception
 include("processes/light/Beer.jl")
 include("processes/light/Beer_shortwave.jl")
+include("processes/light/constant_absorption.jl")
 
 # Photosynthesis related files:
 include("processes/photosynthesis/constantA.jl")
@@ -89,6 +90,7 @@ export gsc_to_gsw
 export AbstractLight_InterceptionModel
 export AbstractRadiation_Basis_ConversionModel
 export Beer, BeerShortwave  # structs to hold the values for the Beer-Lambert law of light extinction
+export ConstantAbsorption
 export GroundToMeanLeafPPFD, GroundToMeanLeafShortwave
 
 # Energy balance
