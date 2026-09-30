@@ -23,7 +23,7 @@ which gives Dₗ = VPD.
 # Examples
 
 ```julia
-using PlantBiophysics, PlantSimEngine, PlantSimEngine.Evaluation, PlantMeteo, Plots, DataFrames
+using PlantBiophysics, PlantSimEngine, PlantSimEngine.Evaluation, PlantMeteo, Plots, DataFrames, Dates
 
 file = joinpath(dirname(dirname(pathof(PlantBiophysics))),"test","inputs","data","P1F20129.csv")
 df = read_walz(file)
@@ -35,12 +35,12 @@ g0, g1 = Evaluation.fit(Medlyn, df)
 
 # Re-simulating Gₛ using the newly fitted parameters:
 gs_sim = map(eachrow(df)) do row
-    scene = leaf_scene(
+    scene = CompositeModel(
         Medlyn(g0, g1);
         status = Status(A = row.A, Cₛ = row.Cₐ, Dₗ = row.Dₗ),
+        environment = (duration = Hour(1),),
     )
-    run!(scene)
-    only(model_objects(scene; scale = :Leaf)).status.Gₛ
+    final_state(run!(scene)).Gₛ
 end
 
 # Visualising the results:

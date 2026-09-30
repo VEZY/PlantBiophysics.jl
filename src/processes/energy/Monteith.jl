@@ -86,7 +86,7 @@ PlantSimEngine.output_policy(::Type{<:Monteith}) = (
 
 PlantSimEngine.dep(::Monteith) = (
     photosynthesis=PlantSimEngine.Call(
-        PlantSimEngine.One(scale=:Leaf, process=:photosynthesis),
+        PlantSimEngine.One(within=PlantSimEngine.Self(), process=:photosynthesis),
     ),
 )
 
@@ -129,9 +129,9 @@ More information [here](https://docs.julialang.org/en/v1/stdlib/Logging/#Environ
 # Examples
 
 ```julia
-using PlantBiophysics, PlantMeteo, PlantSimEngine
-environment = Atmosphere(T = 22.0, Wind = 0.8333, P = 101.325, Rh = 0.4490995)
-scene = leaf_scene(
+using PlantBiophysics, PlantMeteo, PlantSimEngine, Dates
+environment = Atmosphere(T = 22.0, Wind = 0.8333, P = 101.325, Rh = 0.4490995, duration = Hour(1))
+scene = CompositeModel(
     Monteith(),
     Fvcb(),
     Medlyn(0.03, 12.0);
@@ -139,7 +139,7 @@ scene = leaf_scene(
     environment=environment,
 )
 run!(scene)
-leaf = only(model_objects(scene; scale=:Leaf))
+leaf = only(model_objects(scene))
 (leaf.status.Rn, leaf.status.Ra_LW_f, leaf.status.A)
 ```
 

@@ -34,7 +34,7 @@ meteo = Atmosphere(
     duration=Hour(1),
 )
 
-scene = leaf_scene(
+scene = CompositeModel(
     Monteith(),
     Fvcb(),
     Medlyn(0.03, 12.0);
@@ -70,7 +70,7 @@ standard deviation of each calculated distribution:
 
 ```@example uncertainty
 simulation = run!(scene; outputs=:all)
-leaf = only(model_objects(scene; scale=:Leaf))
+leaf = only(model_objects(scene))
 
 variables = [:Rn, :H, :λE, :Tₗ, :A, :Gₛ]
 summary = DataFrame(
@@ -119,7 +119,7 @@ bounded_meteo = Atmosphere(
     duration=Hour(1),
 )
 
-bounded_scene = leaf_scene(
+bounded_scene = CompositeModel(
     Monteith(), Fvcb(), Medlyn(0.03, 12.0);
     status=Status(
         Ra_SW_f=13.747 ± 1.0,
@@ -131,7 +131,7 @@ bounded_scene = leaf_scene(
     environment=bounded_meteo,
 )
 run!(bounded_scene)
-bounded_leaf = only(model_objects(bounded_scene; scale=:Leaf))
+bounded_leaf = only(model_objects(bounded_scene))
 (Tₗ=bounded_leaf.status.Tₗ, A=bounded_leaf.status.A)
 ```
 
@@ -157,7 +157,7 @@ weather = read_weather(
     date_format=DateFormat("yyyy/mm/dd"),
 )
 
-series_scene = leaf_scene(
+series_scene = CompositeModel(
     Monteith(), Fvcb(), Medlyn(0.03, 12.0);
     status=Status(
         Ra_SW_f=13.747 ± 2.0,
@@ -170,7 +170,7 @@ series_scene = leaf_scene(
 )
 
 series_simulation = run!(series_scene; steps=length(weather), outputs=:all)
-rows = DataFrame(collect_outputs(series_simulation; sink=nothing))
+rows = collect_outputs(series_simulation; sink=DataFrame)
 temperatures = subset(
     rows,
     :application_id => ByRow(==(:energy_balance)),

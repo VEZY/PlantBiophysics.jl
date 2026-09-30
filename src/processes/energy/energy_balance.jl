@@ -19,10 +19,10 @@ For example, `Monteith` requires `Ra_SW_f`, `d`, and `sky_fraction`.
 # Examples
 
 ```julia
-using PlantMeteo, PlantSimEngine, PlantBiophysics
+using PlantMeteo, PlantSimEngine, PlantBiophysics, Dates
 
-meteo = Atmosphere(T = 20.0, Wind = 1.0, P = 101.3, Rh = 0.65)
-scene = leaf_scene(
+meteo = Atmosphere(T = 20.0, Wind = 1.0, P = 101.3, Rh = 0.65, duration = Hour(1))
+scene = CompositeModel(
     Monteith(),
     Fvcb(),
     Medlyn(0.03, 12.0);
@@ -30,7 +30,7 @@ scene = leaf_scene(
     environment=meteo,
 )
 run!(scene)
-leaf = only(model_objects(scene; scale=:Leaf))
+leaf = only(model_objects(scene))
 (leaf.status.Rn, leaf.status.A, leaf.status.Cᵢ)
 ```
 

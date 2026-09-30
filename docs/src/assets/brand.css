@@ -1,0 +1,130 @@
+/* Shared botanical colours, with room for equations and scientific figures. */
+:root {
+  --vp-c-brand-1: #156f64;
+  --vp-c-brand-2: #197b6f;
+  --vp-c-brand-3: #156f64;
+  --vp-c-brand-soft: rgba(21, 111, 100, 0.12);
+}
+
+html.dark {
+  --vp-c-brand-1: #83cfa7;
+  --vp-c-brand-2: #197b6f;
+  --vp-c-brand-3: #156f64;
+  --vp-c-brand-soft: rgba(131, 207, 167, 0.14);
+}
+
+.VPHero .name {
+  color: var(--vp-c-brand-1);
+  background: none;
+  -webkit-text-fill-color: currentColor;
+}
+
+.VPHero .image img {
+  max-width: 340px;
+  height: auto;
+  border-radius: 50%;
+  background: radial-gradient(circle, #f4f8f2 45%, transparent 72%);
+}
+
+html.dark .VPHero .image img {
+  background: radial-gradient(circle, rgba(185, 210, 190, 0.3) 35%, transparent 72%);
+  filter: brightness(1.3);
+}
+
+html.dark .VPNav .title img {
+  filter: brightness(1.6);
+}
+
+.VPHome .VPDoc .vp-doc {
+  max-width: 960px;
+  margin-inline: auto;
+}
+
+@media (min-width: 640px) {
+  .VPFeatures {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 1100px) {
+  .VPFeatures {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+.vp-doc :not(pre) > code {
+  overflow-wrap: anywhere;
+  white-space: normal;
+}
+
+/* Result cards pair a reproducible fit with an archived plant simulation. */
+.pb-home-results {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 24px;
+  margin: 28px 0 40px;
+}
+
+.pb-home-results figure {
+  min-width: 0;
+  margin: 0;
+  padding: 16px;
+  border: 1px solid var(--vp-c-divider);
+  border-radius: 14px;
+}
+
+.pb-result-media {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 680 / 420;
+  object-fit: contain;
+  border-radius: 8px;
+  background: white;
+}
+
+.pb-home-results figcaption {
+  margin-top: 18px;
+  font-size: 15px;
+  line-height: 1.65;
+}
+
+.pb-home-results figcaption strong {
+  display: block;
+  font-size: 18px;
+}
+
+.pb-home-results figcaption p {
+  margin: 8px 0;
+}
+
+.pb-home-results figcaption a {
+  display: inline-block;
+  margin-top: 4px;
+}
+
+.pb-example-video {
+  display: block;
+  width: 100%;
+  height: auto;
+  border-radius: 8px;
+}
+
+@media (max-width: 760px) {
+  .pb-home-results {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 640px) {
+  .VPHero .image img {
+    max-width: 220px;
+  }
+}
+
+/* Keep search, version and navigation controls reachable on small screens. */
+@media (max-width: 480px) {
+  .VPNav .title > span {
+    display: none;
+  }
+}

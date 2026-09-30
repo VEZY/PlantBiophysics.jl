@@ -42,7 +42,7 @@ only when leaf and air temperatures are equal. The energy-balance model
 calculates this difference from the simulated leaf temperature.
 
 ```@example photosynthesis
-scene = leaf_scene(
+scene = CompositeModel(
     Fvcb(),
     Medlyn(g0=0.03, g1=12.0);
     status=Status(
@@ -57,7 +57,7 @@ Run one timestep and read the calculated values from the leaf:
 
 ```@example photosynthesis
 run!(scene)
-leaf = model_object(scene, :leaf)
+leaf = only(model_objects(scene))
 (A=leaf.status.A, Gₛ=leaf.status.Gₛ, Cᵢ=leaf.status.Cᵢ)
 ```
 
@@ -168,14 +168,14 @@ to CO₂ (mol CO₂ m⁻² s⁻¹). It uses atmospheric CO₂ from `meteo.Cₐ` 
 the leaf-surface concentration as well as the intercellular concentration.
 
 ```@example photosynthesis
-iter_scene = leaf_scene(
+iter_scene = CompositeModel(
     FvcbIter(),
     Medlyn(g0=0.03, g1=12.0);
     status=Status(Tₗ=25.0, aPPFD=1000.0, Gbc=0.67, Dₗ=meteo.VPD),
     environment=meteo,
 )
 run!(iter_scene)
-iter_leaf = model_object(iter_scene, :leaf)
+iter_leaf = only(model_objects(iter_scene))
 (A=iter_leaf.status.A, Gₛ=iter_leaf.status.Gₛ,
  Cₛ=iter_leaf.status.Cₛ, Cᵢ=iter_leaf.status.Cᵢ)
 ```
@@ -187,13 +187,13 @@ for exploring an A–Cᵢ response or fitting photosynthetic capacities without
 also fitting a stomatal model.
 
 ```@example photosynthesis
-raw_scene = leaf_scene(
+raw_scene = CompositeModel(
     FvcbRaw();
     status=Status(Tₗ=25.0, aPPFD=1000.0, Cᵢ=400.0),
     environment=meteo,
 )
 run!(raw_scene)
-model_object(raw_scene, :leaf).status.A
+only(model_objects(raw_scene)).status.A
 ```
 
 ### [Prescribe assimilation](@id exemple_constanta)
@@ -201,23 +201,23 @@ model_object(raw_scene, :leaf).status.A
 `ConstantA` simply sets `A` to its parameter value. It needs no leaf inputs:
 
 ```@example photosynthesis
-constant_scene = leaf_scene(ConstantA(25.0); environment=meteo)
+constant_scene = CompositeModel(ConstantA(25.0); environment=meteo)
 run!(constant_scene)
-model_object(constant_scene, :leaf).status.A
+only(model_objects(constant_scene)).status.A
 ```
 
 Use `ConstantAGs` when you also need stomatal conductance and intercellular
 CO₂. Supply `Cₛ` and the inputs of your stomatal model:
 
 ```@example photosynthesis
-constant_gs_scene = leaf_scene(
+constant_gs_scene = CompositeModel(
     ConstantAGs(25.0),
     Medlyn(g0=0.03, g1=12.0);
     status=Status(Cₛ=380.0, Dₗ=2.0),
     environment=meteo,
 )
 run!(constant_gs_scene)
-constant_leaf = model_object(constant_gs_scene, :leaf)
+constant_leaf = only(model_objects(constant_gs_scene))
 (A=constant_leaf.status.A, Gₛ=constant_leaf.status.Gₛ, Cᵢ=constant_leaf.status.Cᵢ)
 ```
 

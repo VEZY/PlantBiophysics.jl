@@ -70,7 +70,7 @@ end;
         Rh=0.65,
         duration=Hour(1),
     )
-    leaf = leaf_scene(
+    leaf = CompositeModel(
         Monteith(),
         Fvcb(α=0.24),
         Medlyn(0.03, 12.0);

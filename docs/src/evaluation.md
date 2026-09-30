@@ -1,8 +1,8 @@
 # Model evaluation
 
 This page compares simulated assimilation, transpiration, stomatal
-conductance, leaf temperature, and energy fluxes with measurements used in
-the package paper. The figures show the PlantBiophysics results.
+conductance, leaf temperature, and energy fluxes with measurements. The figures only show the PlantBiophysics results, but comparison with other models is available from the [paper](https://academic.oup.com/insilicoplants/article/7/2/diaf021/8285686) and its
+[companion website](https://vezy.github.io/PlantBiophysics-paper/).
 
 ## How to read the figures
 

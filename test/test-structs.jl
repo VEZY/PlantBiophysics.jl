@@ -1,11 +1,12 @@
 A = Fvcb(α=0.24)
 Gs = Medlyn(0.03, 12.0)
 
-@testset "leaf_scene" begin
-    scene = leaf_scene(
+@testset "One-object CompositeModel" begin
+    scene = CompositeModel(
         A,
         Gs;
         status=Status(Tₗ=25.0, aPPFD=1000.0, Cₛ=400.0, Dₗ=1.2),
+        environment=(duration=Hour(1),),
     )
     applications = PlantSimEngine.Diagnostics.explain_applications(Advanced.compile_composite_model(scene))
     @test Set(row.application_id for row in applications) ==
@@ -21,20 +22,22 @@ Gs = Medlyn(0.03, 12.0)
 end
 
 @testset "Generated and initialized status" begin
-    scene = leaf_scene(
+    scene = CompositeModel(
         A,
         Gs;
         status=Status(Tₗ=25.0, aPPFD=1000.0, Cₛ=400.0, Dₗ=1.2),
+        environment=(duration=Hour(1),),
     )
     compiled = Advanced.compile_composite_model(scene)
     @test compiled isa Advanced.CompiledCompositeModel
     @test leaf_status(scene).Tₗ == 25.0
 end
 
-@testset "leaf_scene forwards status type policies" begin
-    scene = leaf_scene(
+@testset "CompositeModel status type policies" begin
+    scene = CompositeModel(
         ConstantA(Float32(25));
         type_promotion=Dict(Float64 => Float32),
+        environment=(duration=Hour(1),),
     )
     run!(scene)
     @test leaf_status(scene).A isa Float32
@@ -58,14 +61,14 @@ end
     dataframe = DataFrame([values])
     dataframe_values = NamedTuple(first(eachrow(dataframe)))
 
-    scene_named = leaf_scene(
+    scene_named = CompositeModel(
         Monteith(),
         Fvcb(α=0.24),
         Medlyn(0.03, 12.0);
         status=Status(; values...),
         environment=meteo,
     )
-    scene_dataframe = leaf_scene(
+    scene_dataframe = CompositeModel(
         Monteith(),
         Fvcb(α=0.24),
         Medlyn(0.03, 12.0);

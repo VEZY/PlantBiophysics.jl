@@ -13,7 +13,7 @@ using Statistics
 using PlantBiophysics
 using PlantBiophysics.PlantMeteo
 import PlantBiophysics.PlantSimEngine
-using PlantBiophysics.PlantSimEngine: Status, model_objects, run!
+using PlantBiophysics.PlantSimEngine: CompositeModel, Status, model_objects, run!
 
 const ROOT = normpath(joinpath(@__DIR__, "..", ".."))
 const OUTPUT_DIR = joinpath(ROOT, "docs", "src", "assets", "evaluation")

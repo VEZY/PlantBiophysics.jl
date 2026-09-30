@@ -47,18 +47,11 @@ meteo = Atmosphere(
     Ri_PAR_f = df.Ri_PAR_f[1],
 )
 scene = CompositeModel(
-    Object(:plant; scale = :Plant, status = Status(LAI = df.LAI[1]));
-    applications = (
-        ModelSpec(
-            Beer(fitted.k);
-            name = :canopy_light,
-            on = One(scale = :Plant),
-        ),
-    ),
+    Beer(fitted.k);
+    status = Status(LAI = df.LAI[1]),
     environment = meteo,
 )
-run!(scene)
-model_object(scene, :plant).status.aPPFD
+final_state(run!(scene)).aPPFD
 ```
 """
 function PlantSimEngine.Evaluation.fit(::Type{Beer}, df; J_to_umol=PlantMeteo.Constants().J_to_umol)

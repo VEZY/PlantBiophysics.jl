@@ -61,12 +61,13 @@ sort!(co2_curve, :Cᵢ)
 photosynthesis = FvcbRaw(; fitted...)
 
 A_sim = map(eachrow(co2_curve)) do row
-    scene = leaf_scene(
+    scene = CompositeModel(
         photosynthesis;
         status=Status(Tₗ=row.Tₗ, aPPFD=row.aPPFD, Cᵢ=row.Cᵢ),
+        environment=(duration=Hour(1),),
     )
     run!(scene)
-    model_object(scene, :leaf).status.A
+    only(model_objects(scene)).status.A
 end
 
 comparison = select(co2_curve, :Cᵢ, :A => :A_measured)
@@ -114,14 +115,14 @@ coupled_values = map(eachrow(co2_curve)) do row
     meteo = Atmosphere(
         T=row.T, P=row.P, Rh=row.Rh, Cₐ=row.Cₐ, Wind=10.0, duration=Hour(1),
     )
-    scene = leaf_scene(
+    scene = CompositeModel(
         Fvcb(; fitted...),
         Medlyn(0.03, 12.0);
         status=Status(Tₗ=row.Tₗ, aPPFD=row.aPPFD, Cₛ=row.Cₐ, Dₗ=0.1),
         environment=meteo,
     )
     run!(scene)
-    leaf = model_object(scene, :leaf)
+    leaf = only(model_objects(scene))
     (A=leaf.status.A, Cᵢ=leaf.status.Cᵢ, Gₛ=leaf.status.Gₛ)
 end
 coupled = DataFrame(coupled_values)
@@ -175,17 +176,15 @@ Use the coefficient in a canopy simulation and compare the predicted values:
 ```@example fitting
 canopy_predictions = map(eachrow(canopy_observations)) do row
     scene = CompositeModel(
-        Object(:plant; scale=:Plant, status=Status(LAI=row.LAI));
-        applications=(
-            ModelSpec(Beer(light_fit.k); name=:canopy_light, on=One(scale=:Plant)),
-        ),
+        Beer(light_fit.k);
+        status=Status(LAI=row.LAI),
         environment=Atmosphere(
             T=25.0, Wind=1.0, P=101.3, Rh=0.5,
             Ri_PAR_f=row.Ri_PAR_f, duration=Hour(1),
         ),
     )
     run!(scene)
-    model_object(scene, :plant).status.aPPFD
+    only(model_objects(scene)).status.aPPFD
 end
 transform(canopy_observations, :aPPFD => (_ -> canopy_predictions) => :aPPFD_simulated)
 ```

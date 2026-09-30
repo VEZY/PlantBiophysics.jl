@@ -72,7 +72,7 @@ As in the previous tutorial, we collect and reshape them into a table:
 ```@example several_objects
 simulation = run!(scene; steps=length(weather), outputs=:all)
 
-rows = DataFrame(collect_outputs(simulation; sink=nothing))
+rows = collect_outputs(simulation; sink=DataFrame)
 leaf_rows = subset(
     rows,
     :application_id => ByRow(==(:energy_balance)),
@@ -106,7 +106,7 @@ The two leaves above only share their weather. If you later add a model that
 combines leaf results at plant scale, it needs to know which leaves belong
 to that plant. PlantSimEngine provides selectors for this:
 
-- `Self()` means only the object where the consuming application runs.
+- `Self()` means only the object where the consuming application runs, this is the default.
 - `Subtree()` means that object and its descendants. A plant-scale model uses
   `Many(scale=:Leaf, within=Subtree(), var=:A)` to read only its own leaves.
 - `SceneScope()` searches the complete scene and is appropriate for a

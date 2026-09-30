@@ -10,7 +10,7 @@ meteo = Atmosphere(
 )
 
 @testset "Medlyn et al. (2011)" begin
-    scene = leaf_scene(
+    scene = CompositeModel(
         Medlyn(0.03, 12.0, 0.0);
         status=Status(A=A, Cₛ=Cₛ, Dₗ=meteo.VPD),
         environment=meteo,
@@ -20,14 +20,14 @@ meteo = Atmosphere(
 end
 
 @testset "Constant stomatal conductance" begin
-    scene = leaf_scene(ConstantGs(0.0, 0.2); environment=meteo)
+    scene = CompositeModel(ConstantGs(0.0, 0.2); environment=meteo)
     run!(scene; constants=constants)
     @test leaf_status(scene).Gₛ == 0.2
 end
 
 @testset "Tuzet et al. (2003)" begin
     values = map((0.0, -1.0, -2.0)) do Ψₗ
-        scene = leaf_scene(
+        scene = CompositeModel(
             Tuzet(0.03, 12.0, -1.5, 2.0, 30.0);
             status=Status(A=A, Cₛ=Cₛ, Ψₗ=Ψₗ),
             environment=meteo,

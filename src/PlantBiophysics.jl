@@ -32,7 +32,6 @@ include("processes/energy/energy_balance.jl")
 
 # Conversions
 include("conversions.jl")
-include("simulation.jl")
 
 # γ_star
 include("processes/γ_star.jl")
@@ -40,6 +39,7 @@ include("processes/γ_star.jl")
 # Light interception
 include("processes/light/Beer.jl")
 include("processes/light/Beer_shortwave.jl")
+include("processes/light/constant_absorption.jl")
 
 # Photosynthesis related files:
 include("processes/photosynthesis/constantA.jl")
@@ -90,6 +90,7 @@ export gsc_to_gsw
 export AbstractLight_InterceptionModel
 export AbstractRadiation_Basis_ConversionModel
 export Beer, BeerShortwave  # structs to hold the values for the Beer-Lambert law of light extinction
+export ConstantAbsorption
 export GroundToMeanLeafPPFD, GroundToMeanLeafShortwave
 
 # Energy balance
@@ -116,6 +117,5 @@ export Medlyn, Tuzet, ConstantGs
 # Model helpers
 export get_km, Γ_star, arrhenius, get_J, gs_closure, get_Cᵢⱼ, get_Cᵢᵥ, get_Dₕ
 export Fvcb_net_assimilation, Fvcb_net_assimiliation
-export leaf_scene
 
 end

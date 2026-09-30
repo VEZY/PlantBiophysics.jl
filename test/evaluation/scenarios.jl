@@ -6,7 +6,7 @@ file so that the model setup, input filtering, and unit conversions cannot
 drift apart.
 """
 
-evaluation_leaf_status(scene) = only(model_objects(scene; scale=:Leaf)).status
+evaluation_leaf_status(scene) = only(model_objects(scene)).status
 
 struct PaperForcedGs{T} <: PlantBiophysics.AbstractStomatal_ConductanceModel
     g0::T
@@ -89,7 +89,7 @@ function run_global_evaluation()
             Cₐ=row.Ca,
             duration=Minute(1),
         )
-        scene = leaf_scene(
+        scene = CompositeModel(
             Monteith(aₛₕ=2, aₛᵥ=1, ε=0.95, maxiter=100),
             Fvcb(
                 Tᵣ=row.Tr,
@@ -176,7 +176,7 @@ function run_daily_evaluation(; seed=0x5eed)
         )
         absorbed_ppfd = row.PPFD * 0.85
         measured_Gs = gsw_to_gsc(row.Gsw)
-        scene = leaf_scene(
+        scene = CompositeModel(
             Monteith(maxiter=100),
             Fvcb(; fitted...),
             PaperForcedGs();
@@ -188,6 +188,7 @@ function run_daily_evaluation(; seed=0x5eed)
                 Gₛ=measured_Gs ± 0.0,
             ),
             environment=environment,
+            type_promotion=Dict(Float64 => Particles{Float64,2000}),
         )
         run!(scene; constants=constants)
         status = evaluation_leaf_status(scene)
@@ -252,7 +253,7 @@ function run_schymanski_evaluation()
             duration=Minute(1),
         )
         measured_Gs = gsw_to_gsc(ms_to_mol(row.g_sw, temperature, pressure))
-        scene = leaf_scene(
+        scene = CompositeModel(
             Monteith(aₛᵥ=parameters["a_s"], maxiter=20),
             ConstantA(0.0);
             status=Status(

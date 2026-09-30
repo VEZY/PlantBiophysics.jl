@@ -28,13 +28,13 @@ meteo = Atmosphere(
     T=20.0, Wind=1.0, P=101.3, Rh=0.65, duration=Hour(1),
 )
 stomata = Medlyn(g0=0.03, g1=12.0)
-scene = leaf_scene(
+scene = CompositeModel(
     stomata;
     status=Status(A=20.0, Cₛ=400.0, Dₗ=meteo.VPD),
     environment=meteo,
 )
 run!(scene)
-leaf = model_object(scene, :leaf)
+leaf = only(model_objects(scene))
 leaf.status.Gₛ
 ```
 
@@ -96,13 +96,13 @@ the Medlyn `g1`. Supply assimilation and surface CO₂ as before, replacing
 `Dₗ` with `Ψₗ`:
 
 ```@example gs
-tuzet_scene = leaf_scene(
+tuzet_scene = CompositeModel(
     Tuzet(g0=0.03, g1=12.0, Ψᵥ=-1.5, sf=2.0, Γ=30.0);
     status=Status(A=20.0, Cₛ=400.0, Ψₗ=-1.0),
     environment=meteo,
 )
 run!(tuzet_scene)
-model_object(tuzet_scene, :leaf).status.Gₛ
+only(model_objects(tuzet_scene)).status.Gₛ
 ```
 
 For positive assimilation and the same other inputs, a more negative `Ψₗ`
@@ -115,9 +115,9 @@ reference gives the response function.
 value of 0.1 mol CO₂ m⁻² s⁻¹:
 
 ```@example gs
-constant_scene = leaf_scene(ConstantGs(Gₛ=0.1); environment=meteo)
+constant_scene = CompositeModel(ConstantGs(Gₛ=0.1); environment=meteo)
 run!(constant_scene)
-model_object(constant_scene, :leaf).status.Gₛ
+only(model_objects(constant_scene)).status.Gₛ
 ```
 
 Its `Gₛ` parameter is the prescribed conductance; the optional `g0` parameter

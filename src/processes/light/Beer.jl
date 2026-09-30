@@ -33,14 +33,12 @@ Computes the light interception of an object using the Beer-Lambert law.
 using PlantSimEngine, PlantBiophysics, PlantMeteo
 environment = Atmosphere(T=20.0, Wind=1.0, P=101.3, Rh=0.65, Ri_PAR_f=300.0)
 scene = CompositeModel(
-    Object(:plant; scale=:Plant, status=Status(LAI=2.0));
-    applications=(
-        ModelSpec(Beer(0.5); name=:canopy_light, on=One(scale=:Plant)),
-    ),
+    Beer(0.5);
+    status=Status(LAI=2.0),
     environment=environment,
 )
 run!(scene)
-model_object(scene, :plant).status.aPPFD
+only(model_objects(scene)).status.aPPFD
 ```
 """
 function PlantSimEngine.run!(model::Beer, status, environment, constants, context=nothing)

@@ -43,11 +43,11 @@ The models also need four leaf inputs:
 | `sky_fraction` | Fraction of the sky visible from the leaf | 0–1 |
 | `d` | Characteristic leaf dimension used for boundary-layer exchange | m |
 
-`leaf_scene` creates a simulation containing one leaf. Its `Status` stores
-these inputs and the values the models will calculate.
+`CompositeModel` combines the models on one object, representing our leaf.
+Its `Status` stores these inputs and the values the models will calculate.
 
 ```@example first_simulation
-scene = leaf_scene(
+scene = CompositeModel(
     Monteith(),
     Fvcb(),
     Medlyn(0.03, 12.0);
@@ -75,7 +75,7 @@ directly on the leaf:
 
 ```@example first_simulation
 simulation = run!(scene; outputs=:all)
-leaf = only(model_objects(scene; scale=:Leaf))
+leaf = only(model_objects(scene))
 (Rn=leaf.status.Rn, H=leaf.status.H, λE=leaf.status.λE,
  Tₗ=leaf.status.Tₗ, A=leaf.status.A, Gₛ=leaf.status.Gₛ)
 ```
@@ -91,7 +91,7 @@ flux (W m⁻²). `Tₗ` is leaf temperature (°C), `A` is net CO₂ assimilation
 at one timestep; here we select the six results above:
 
 ```@example first_simulation
-rows = DataFrame(collect_outputs(simulation; sink=nothing))
+rows = collect_outputs(simulation; sink=DataFrame)
 results = subset(
     rows,
     :application_id => ByRow(==(:energy_balance)),
@@ -101,9 +101,7 @@ select(results, :timestep, :variable, :value)
 ```
 
 All six values are saved under `:energy_balance` because `Monteith` calls the
-photosynthesis and stomatal models during its calculations. Without
-`outputs=:all`, the leaf still holds its latest values, but there is no saved
-history to collect.
+photosynthesis and stomatal models during its calculations.
 
 Continue with [Simulation over several time steps](several_simulation.md)
 to supply changing weather, save a time series, and plot the results.

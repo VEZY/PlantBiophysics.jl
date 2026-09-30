@@ -1,5 +1,5 @@
 function run_energy_case(; sky_fraction, meteo)
-    scene = leaf_scene(
+    scene = CompositeModel(
         Monteith(),
         Fvcb(α=0.24),
         Medlyn(0.03, 12.0);

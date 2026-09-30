@@ -20,6 +20,7 @@ using PlantSimEngine
 
 @process "growth" "Models that calculate plant growth." verbose=false
 AbstractGrowthModel
+nothing # hide
 ```
 
 This creates `AbstractGrowthModel`, the parent type for implementations of
@@ -28,13 +29,15 @@ it when you want that help in a Julia REPL.
 
 ## Give a model that identity
 
-A model inherits from the generated type. This small placeholder demonstrates
-only the identity; it does not yet implement a growth equation:
+A model inherits from the generated type. For example if we implement a growth model named `GrowthExample`, we would declare it as:
 
 ```@example new_process
 struct GrowthExample <: AbstractGrowthModel end
 process(GrowthExample())
 ```
+
+The `process` function made a process name as an abstract type, here `AbstractGrowthModel`. It is
+used to group models that implement the same process using `model <: AbstractProcessModel`.
 
 Before this can run, choose and document the scientific equation, its
 parameters, and the meaning and units of its variables. Then add:

@@ -11,11 +11,11 @@ Medlyn et al. (2011) stomatal conductance model for CO₂.
 # Examples
 
 ```julia
-using PlantMeteo, PlantSimEngine, PlantBiophysics
-meteo = Atmosphere(T = 20.0, Wind = 1.0, P = 101.3, Rh = 0.65)
+using PlantMeteo, PlantSimEngine, PlantBiophysics, Dates
+meteo = Atmosphere(T = 20.0, Wind = 1.0, P = 101.3, Rh = 0.65, duration = Hour(1))
 
 leaf =
-    leaf_scene(
+    CompositeModel(
         Medlyn(0.03, 12.0);
         status=Status(A=20.0, Cₛ=380.0, Dₗ=meteo.VPD),
         environment=meteo,
@@ -103,16 +103,17 @@ https://doi.org/10.1111/pce.14041
 # Examples
 
 ```julia
-meteo = Atmosphere(T = 20.0, Wind = 1.0, P = 101.3, Rh = 0.65)
+using PlantMeteo, PlantSimEngine, PlantBiophysics, Dates
+meteo = Atmosphere(T = 20.0, Wind = 1.0, P = 101.3, Rh = 0.65, duration = Hour(1))
 
 A = 20 # example assimilation (μmol m-2 s-1)
-scene = leaf_scene(
+scene = CompositeModel(
     Medlyn(0.03, 12.0);
     status=Status(A=A, Cₛ=380.0, Dₗ=meteo.VPD),
     environment=meteo,
 )
 run!(scene)
-only(model_objects(scene; scale=:Leaf)).status.Gₛ
+only(model_objects(scene)).status.Gₛ
 ```
 
 Note that we use `VPD` as an approximation of `Dₗ` here because we don't have the leaf temperature (*i.e.* `Dₗ = VPD` when `Tₗ = T`).

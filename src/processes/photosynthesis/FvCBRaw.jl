@@ -114,13 +114,14 @@ balance of the leaf with the photosynthesis to get those variables. See
 # Examples
 
 ```julia
-using PlantBiophysics, PlantSimEngine
-scene = leaf_scene(
+using PlantBiophysics, PlantSimEngine, Dates
+scene = CompositeModel(
     FvcbRaw();
     status=Status(Tₗ=25.0, aPPFD=1000.0, Cᵢ=400.0),
+    environment=(duration=Hour(1),),
 )
 run!(scene)
-only(model_objects(scene; scale=:Leaf)).status.A
+only(model_objects(scene)).status.A
 ```
 
 # References

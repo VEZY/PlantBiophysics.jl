@@ -83,7 +83,7 @@ PlantSimEngine.output_policy(::Type{<:FvcbIter}) = (
 
 PlantSimEngine.dep(::FvcbIter) = (
     stomatal_conductance=PlantSimEngine.Call(
-        PlantSimEngine.One(scale=:Leaf, process=:stomatal_conductance),
+        PlantSimEngine.One(within=PlantSimEngine.Self(), process=:stomatal_conductance),
     ),
 )
 
@@ -132,16 +132,16 @@ balance of the leaf with the photosynthesis to get those variables. See
 # Examples
 
 ```julia
-using PlantBiophysics, PlantMeteo, PlantSimEngine
-environment = Atmosphere(T = 20.0, Wind = 1.0, P = 101.3, Rh = 0.65)
-scene = leaf_scene(
+using PlantBiophysics, PlantMeteo, PlantSimEngine, Dates
+environment = Atmosphere(T = 20.0, Wind = 1.0, P = 101.3, Rh = 0.65, duration = Hour(1))
+scene = CompositeModel(
     FvcbIter(),
     Medlyn(0.03, 12.0);
     status=Status(Tₗ=25.0, aPPFD=1000.0, Gbc=0.67, Dₗ=environment.VPD),
     environment=environment,
 )
 run!(scene)
-leaf = only(model_objects(scene; scale=:Leaf))
+leaf = only(model_objects(scene))
 (leaf.status.A, leaf.status.Cᵢ)
 ```
 

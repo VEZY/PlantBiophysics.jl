@@ -151,41 +151,70 @@ These two conversion models are specific to the ground-area canopy rates produce
 `BeerShortwave`. Do not use them for geometry-resolved light: dividing an
 organ-level irradiance by canopy LAI would apply the wrong area conversion.
 
-!!! compat "Historical ARCHIMED model files"
-    PlantBiophysics does not parse ARCHIMED light-model YAML or provide a
-    per-organ `Translucent` copier. Use `ArchimedLight.read_models` for those
-    optical definitions. To ignore light interception, omit the light
-    application; a no-op model is unnecessary.
-
 ## Couple 3D light directly to physiology
 
-ArchimedLight and PlantBiophysics use the represented mesh surface as the
-reference area for geometry-resolved radiation. ArchimedLight publishes
-`aPPFD` in `μmol[photon] m⁻² s⁻¹`, `Ra_SW_f` in `W m⁻²`, and the corresponding
-mesh surface `area` in `m²` for each destination organ. FvCB and Monteith use
-the same `:surface_area` radiation contracts, so those fluxes couple directly.
-The light solver's pixel projection correction does not change the reference
-surface area.
+Use **[ArchimedLight.jl](https://vezy.github.io/ArchimedLight.jl/stable/) 0.2.0 or later** for this example, together with `PlantGeom`, `GeometryBasics`,
+`MultiScaleTreeGraph`, and `DataFrames`. The code below is self-contained:
+it creates two rectangular leaves, places one above the other, and calculates
+light interception, leaf temperature, photosynthesis, and stomatal conductance.
+No plant file is needed. Run the blocks in order.
 
-For a leaf mesh, this represented surface is the leaf area used by the
-physiology calculation. Leaf-area model parameters and observations must use
-that same reference surface. Beer-Lambert canopy fluxes still require the
-LAI adapters above because their denominator is ground area.
-
-Given an ArchimedLight scene application named `:archimed_light` that publishes
-to the leaf objects, bind its radiation directly to the physiology models:
+First, build the geometry in metres and choose the leaves' optical properties.
+Each rectangle is 10 cm long and 3 cm wide. The optical coefficients below
+scatter 15% of incident PAR and 30% of incident near-infrared radiation;
+the remaining radiation is absorbed. These are illustrative values. The scene
+domain includes empty space around the leaves so oblique sky rays reach them.
 
 ```julia
-leaf = Object(
-    :leaf_42;
-    scale=:Leaf,
-    status=Status(sky_fraction=1.0, d=0.03),
-)
+using PlantBiophysics, PlantSimEngine, PlantMeteo, Dates, DataFrames
+using ArchimedLight, PlantGeom, GeometryBasics, MultiScaleTreeGraph
 
+lamina = GeometryBasics.Mesh(
+    Point3f[
+        Point3f(0, 0, 0), Point3f(0.10, 0, 0),
+        Point3f(0.10, 0.03, 0), Point3f(0, 0.03, 0),
+    ],
+    TriangleFace{Int}[
+        TriangleFace{Int}(1, 2, 3), TriangleFace{Int}(1, 3, 4),
+    ],
+)
+geometry = PlantGeom.make_scene(domain=(-2.0, -2.0, 2.0, 2.0)) do builder
+    PlantGeom.add_object!(builder, lamina;
+        group="plant", type="Leaf", id=1, at=(0.0, 0.0, 0.10))
+    PlantGeom.add_object!(builder, lamina;
+        group="plant", type="Leaf", id=2, at=(0.0, 0.0, 0.20))
+end
+optical_models = ArchimedLight.models_for(
+    "plant" => ("Leaf" => ArchimedLight.translucent(par=0.15, nir=0.30),),
+)
+light_sim = LightSimulation(
+    geometry, optical_models;
+    options=LightOptions(
+        turtle_sectors=16, pixel_size=0.002,
+        scattering=false, toricity=false,
+    ),
+)
+```
+
+Next, declare the four model applications. ArchimedLight runs once on the
+scene and publishes its results to both leaves. FvCB reads the absorbed
+photon flux (`aPPFD`, µmol photons m⁻² s⁻¹); Monteith reads absorbed shortwave
+radiation (`Ra_SW_f`, W m⁻²) and the visible-sky fraction (`sky_fraction`).
+These fluxes are already expressed per unit leaf mesh area, so no LAI
+conversion is needed. Monteith uses the sky fraction for longwave exchange
+and couples leaf temperature with FvCB and Medlyn on the same leaf.
+
+```julia
+light_application = ModelSpec(
+    ArchimedLightModel(light_sim;
+        par_energy_to_photon=Constants().J_to_umol);
+    name=:archimed_light, on=One(scale=:Scene),
+    outputs_to=(
+        OutputTo(Many(scale=:Leaf, within=SceneScope()); coverage=:exact),
+    ),
+)
 photosynthesis = ModelSpec(
-    Fvcb();
-    name=:photosynthesis,
-    on=Many(scale=:Leaf),
+    Fvcb(); name=:photosynthesis, on=Many(scale=:Leaf),
     inputs=(
         :aPPFD => One(
             within=Self(), application=:archimed_light, var=:aPPFD,
@@ -193,53 +222,82 @@ photosynthesis = ModelSpec(
         ),
     ),
 )
-
+stomatal_conductance = ModelSpec(
+    Medlyn(0.03, 12.0); name=:stomatal_conductance, on=Many(scale=:Leaf),
+)
 energy_balance = ModelSpec(
-    Monteith();
-    name=:energy_balance,
-    on=Many(scale=:Leaf),
+    Monteith(); name=:energy_balance, on=Many(scale=:Leaf),
     inputs=(
         :Ra_SW_f => One(
             within=Self(), application=:archimed_light, var=:Ra_SW_f,
             policy=HoldLast(),
         ),
+        :sky_fraction => One(
+            within=Self(), application=:archimed_light, var=:sky_fraction,
+            policy=HoldLast(),
+        ),
     ),
-)
-
-stomatal_conductance = ModelSpec(
-    Medlyn(0.03, 12.0);
-    name=:stomatal_conductance,
-    on=Many(scale=:Leaf),
 )
 ```
 
-Include these applications alongside the scene light application in the
-`CompositeModel`. PlantSimEngine runs the light calculation before the coupled leaf
-energy-balance, photosynthesis, and stomatal-conductance models. The flux values read
-by FvCB and Monteith are the values published by ArchimedLight.
+Finally, supply the weather and assemble the `CompositeModel` from the same
+MTG as the geometry. This keeps each leaf's light results associated with
+the correct simulation object. The only leaf input we initialize is its
+characteristic dimension `d` (m); ArchimedLight supplies radiation, area,
+and sky fraction. Here the sun is overhead and 80% of incident radiation
+is direct. `HoldLast()` uses the latest light result; PlantSimEngine
+schedules ArchimedLight before the leaf calculations.
 
-Match each mesh to the correct plant object. Build the `CompositeModel` from the same MTG as
-the `PlantGeom.SceneGeometry` when possible. For another topology, pass exact
-MTG roots through `source_roots`, or an explicit `object_resolver` from each
-source-owner key to its `ObjectId`. Never infer this relationship from row or
-traversal order.
+```julia
+weather_3d = Atmosphere(
+    T=25.0, Wind=1.0, P=101.3, Rh=0.65, Cₐ=400.0,
+    Ri_PAR_f=300.0, Ri_NIR_f=350.0, duration=Hour(1),
+    sun_azimuth_deg=180.0, sun_elevation_deg=90.0, direct_fraction=0.8,
+)
+initial_leaf_status(node) = MultiScaleTreeGraph.symbol(node) == :Leaf ?
+    Status(d=0.03) : Status()
 
-The same sampled environment row must provide sun azimuth in [0, 360°), sun
-elevation in [-90°, 90°], non-negative incident PAR and NIR (`W m⁻²`), a
-direct fraction in [0, 1], and a finite, strictly positive timestep duration.
+coupled_3d = CompositeModel(
+    geometry.mtg;
+    status=initial_leaf_status,
+    applications=(light_application, energy_balance,
+        photosynthesis, stomatal_conductance),
+    environment=weather_3d,
+)
+simulation_3d = run!(coupled_3d; outputs=:all)
 
-`sky_fraction` is deliberately absent from both `ArchimedLightModel` output
-schemas (`:coupling` and `:full`). It is the longwave sky-view assumption used
-by [`Monteith`](@ref), including the chosen one- or two-sided convention, and
-must be initialized explicitly as scenario state for every leaf. Its valid
-range is 0–2: 0 means that neither effective leaf face sees the sky, 1
-corresponds to one fully exposed effective face, and 2 to both faces seeing
-the sky. This keeps a shortwave interception result from silently standing in
-for a scientifically distinct longwave view factor.
+leaf_ids = object_ids(coupled_3d; scale=:Leaf)
+leaf_states = [final_state(simulation_3d, id) for id in leaf_ids]
+DataFrame(
+    leaf=leaf_ids,
+    aPPFD=getproperty.(leaf_states, :aPPFD),
+    sky_fraction=getproperty.(leaf_states, :sky_fraction),
+    Rn=getproperty.(leaf_states, :Rn),
+    H=getproperty.(leaf_states, :H),
+    λE=getproperty.(leaf_states, :λE),
+    Tₗ=getproperty.(leaf_states, :Tₗ),
+    A=getproperty.(leaf_states, :A),
+    Gₛ=getproperty.(leaf_states, :Gₛ),
+)
+```
 
-Use `Diagnostics.explain_bindings`, `Diagnostics.explain_writers`, and
-`Diagnostics.explain_schedule` to verify the radiation sources and execution
-order.
+The table contains one row per leaf. Compare their absorbed light and sky
+view, then their net radiation (`Rn`), sensible heat (`H`), latent heat
+(`λE`, all W m⁻²), temperature (`Tₗ`, °C), photosynthesis
+(`A`, µmol CO₂ m⁻² s⁻¹), and stomatal conductance
+(`Gₛ`, mol CO₂ m⁻² s⁻¹). The lower leaf is shaded by the upper one.
+With these settings, the results are approximately:
+
+| Leaf | `aPPFD` | `Rn` | `H` | `λE` | `Tₗ` | `A` | `Gₛ` |
+|:--|--:|--:|--:|--:|--:|--:|--:|
+| Lower, shaded | 150 | 68.8 | -68.1 | 136.9 | 23.65 | 10.0 | 0.392 |
+| Upper, exposed | 1165 | 493.0 | 99.8 | 393.1 | 26.96 | 34.9 | 1.115 |
+
+For larger scenes and alternative output schemas, see the
+[ArchimedLight PlantSimEngine coupling guide](https://vezy.github.io/ArchimedLight.jl/stable/plantsimengine/).
+Use `Diagnostics.explain_bindings(coupled_3d)` and
+`Diagnostics.explain_schedule(coupled_3d)` to inspect the connections and
+execution order.
 
 ## Record radiation totals
 

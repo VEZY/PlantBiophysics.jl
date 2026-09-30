@@ -2,16 +2,41 @@
 CurrentModule = PlantBiophysics
 ```
 
-# PlantBiophysics.jl
+# From measurements to whole plants
+
+Fit a model to leaf measurements, then explore how individual leaves contribute
+to the exchanges of a whole plant.
+
+```@raw html
+<div class="pb-home-results">
+  <figure>
+    <img class="pb-result-media" src="assets/home-fitting.svg" alt="Measured net CO2 assimilation and the fitted photosynthesis response to intercellular CO2 concentration." loading="lazy" width="680" height="420">
+    <figcaption>
+      <strong>Fit photosynthesis to measurements</strong>
+      <p>Estimate photosynthetic capacities from gas-exchange measurements and compare the fitted response with the observations.</p>
+      <a href="fitting/parameter_fitting.html">Try the fitting example →</a>
+    </figcaption>
+  </figure>
+  <figure>
+    <video class="pb-result-media" controls muted loop playsinline preload="none" poster="assets/home-oil-palm-assimilation.png" aria-label="Oil-palm photosynthesis through the day under three chamber scenarios" width="1800" height="1000">
+      <source src="assets/home-oil-palm-assimilation.mp4" type="video/mp4">
+      <a href="assets/home-oil-palm-assimilation.mp4">Watch the oil-palm simulation.</a>
+    </video>
+    <figcaption>
+      <strong>See what you can do</strong>
+      <p>You can simulate whole-plant fluxes in 3D. Colours show net CO₂ uptake in a young oil palm under three chamber scenarios. An animation from our presentation at the FSPM 2023 conference.</p>
+      <a href="simulation/mtg_simulation.html#fspm_2023_oil_palm">Explore the 3D simulation →</a>
+    </figcaption>
+  </figure>
+</div>
+```
+
+## Your first leaf simulation
 
 PlantBiophysics is a Julia package for simulating photosynthesis, stomatal
 conductance, leaf temperature, and exchanges of heat and water. It also
 provides simple canopy light-interception models.
 
-You can [run a leaf simulation](getting_started/get_started.md),
-[fit model parameters to measurements](getting_started/first_fit.md),
-[compare photosynthesis models](models/photosynthesis.md), or
-[propagate uncertainty in your inputs](simulation/uncertainty_propagation.md).
 The models run together through PlantSimEngine and can be applied to one
 leaf, several organs, or a whole plant.
 
@@ -24,7 +49,7 @@ In the Julia REPL, press `]` to enter package mode, then install the packages
 used in the examples:
 
 ```text
-pkg> add PlantBiophysics PlantSimEngine PlantMeteo
+pkg> add PlantBiophysics PlantSimEngine PlantMeteo DataFrames
 ```
 
 Press Backspace to return to the Julia prompt.
@@ -36,7 +61,7 @@ model (`Fvcb`), and a stomatal-conductance model (`Medlyn`) for one leaf.
 The input values are illustrative.
 
 ```@example home
-using PlantBiophysics, PlantSimEngine, PlantMeteo, Dates
+using PlantBiophysics, PlantSimEngine, PlantMeteo, Dates, DataFrames
 
 meteo = Atmosphere(
     T=22.0,
@@ -46,7 +71,7 @@ meteo = Atmosphere(
     duration=Hour(1),
 )
 
-scene = leaf_scene(
+scene = CompositeModel(
     Monteith(),
     Fvcb(),
     Medlyn(0.03, 12.0);
@@ -59,13 +84,14 @@ scene = leaf_scene(
     environment=meteo,
 )
 
-simulation = run!(scene)
-leaf = only(model_objects(scene; scale=:Leaf))
-(Tₗ=leaf.status.Tₗ, A=leaf.status.A, Gₛ=leaf.status.Gₛ)
+simulation = run!(scene; outputs=:all)
+outs = collect_outputs(simulation; sink=DataFrame) |> unstack |> first
+(Tₗ=outs.Tₗ, A=outs.A, Gₛ=outs.Gₛ)
 ```
 
-`leaf_scene` brings the models, leaf inputs, and weather together. `run!`
-calculates their results, which remain available on the leaf's `status`.
+`CompositeModel` sets up the simulation by combining the models, leaf inputs,
+and weather. `run!` calculates their results, and `collect_outputs` retrieves
+the saved values as a table.
 The values shown are leaf temperature (`Tₗ`, °C), net CO₂ assimilation
 (`A`, µmol CO₂ m⁻² s⁻¹), and stomatal conductance to CO₂
 (`Gₛ`, mol CO₂ m⁻² s⁻¹).
