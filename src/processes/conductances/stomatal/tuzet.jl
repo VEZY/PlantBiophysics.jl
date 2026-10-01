@@ -56,11 +56,11 @@ Tuzet(g0, g1, Ψᵥ, sf, Γ, gs_min=oftype(g0, 0.001)) = Tuzet(promote(g0, g1, �
 Tuzet(; g0, g1, Ψᵥ, sf, Γ, gs_min=0.001) = Tuzet(g0, g1, Ψᵥ, sf, Γ, gs_min)
 
 function PlantSimEngine.inputs_(::Tuzet)
-    (Ψₗ=PlantSimEngine.Required(Real), Cₛ=PlantSimEngine.Required(Real))
+    (Ψₗ=PlantSimEngine.Required(Real), Cₛ=PlantSimEngine.Required(Real), A=PlantSimEngine.Required(Real),)
 end
 
 function PlantSimEngine.outputs_(::Tuzet)
-    (Gₛ=-Inf,)
+    (Gₛ=(-Inf),)
 end
 
 Base.eltype(::Tuzet{T}) where T = T
@@ -88,8 +88,7 @@ The stomatal conductance is calculated as:
 where `Γ` is the CO₂ compensation point.
 """
 function gs_closure(m::Tuzet, status, environment, constants=nothing, context=nothing)
-    fpsif = (1 + exp(m.sf * m.Ψᵥ)) /
-            (1 + exp(m.sf * (m.Ψᵥ - status.Ψₗ)))
+    fpsif = (1 + exp(m.sf * m.Ψᵥ)) / (1 + exp(m.sf * (m.Ψᵥ - status.Ψₗ)))
     (m.g1 / (status.Cₛ - m.Γ)) * fpsif
 end
 
