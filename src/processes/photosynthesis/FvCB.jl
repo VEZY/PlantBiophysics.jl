@@ -376,7 +376,11 @@ julia> PlantBiophysics.get_J(1500, A.JMaxRef, A.α, A.θ)
 ```
 """
 function get_J(aPPFD, JMax, α, θ)
-    (α * aPPFD + JMax - sqrt((α * aPPFD + JMax)^2 - 4 * α * θ * aPPFD * JMax)) / (2 * θ)
+    photons = α * aPPFD
+    θ == 0 && return JMax * photons / (JMax + photons)
+    # Rationalized smaller root avoids subtractive cancellation for θ ≈ 0.
+    2 * photons * JMax /
+        (photons + JMax + sqrt((photons + JMax)^2 - 4 * θ * photons * JMax))
 end
 
 """
