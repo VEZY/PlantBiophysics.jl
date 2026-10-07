@@ -60,6 +60,8 @@ leaf_status(scene) = only(model_objects(scene)).status
         include("test-energy_balance.jl")
     end
 
+    include("test-fvcb-mechanisms.jl")
+
     @testset "Multi-rate" begin
         include("test-multirate.jl")
     end

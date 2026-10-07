@@ -48,6 +48,7 @@ include("processes/photosynthesis/FvCB.jl")
 include("processes/photosynthesis/FvCBIter.jl")
 include("processes/photosynthesis/FvCBRaw.jl")
 include("processes/photosynthesis/temperature-dependence.jl")
+include("processes/photosynthesis/FvCBMechanisms.jl")
 
 # Stomatal conductance related files:
 include("processes/conductances/stomatal/constantGs.jl")
@@ -107,6 +108,7 @@ export ConstantA, ConstantAGs
 export Fvcb # Parameters for the coupled Farquhar et al. (1980) model
 export FvcbIter # To update...
 export FvcbRaw # Parameters for the original Farquhar et al. (1980) model
+export FvcbMechanisms
 
 # Conductances
 export AbstractStomatal_ConductanceModel

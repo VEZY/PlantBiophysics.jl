@@ -189,8 +189,12 @@ function PlantSimEngine.run!(model::Monteith, status, environment, constants=Pla
         )
 
         # Stomatal resistance to water vapor
-        Rsᵥ = 1.0 / (gsc_to_gsw(mol_to_ms(status.Gₛ, environment.T, environment.P, constants.R, constants.K₀),
-            constants.Gsc_to_Gsw))
+        # A gas-exchange model may report total leaf water conductance directly,
+        # including a cuticular pathway. Existing models retain the Gₛ conversion.
+        water_conductance = hasproperty(status, :Gₗw) && isfinite(status.Gₗw) ? status.Gₗw :
+            status.Gₛ * constants.Gsc_to_Gsw
+        Rsᵥ = 1.0 / mol_to_ms(water_conductance, environment.T,
+            environment.P, constants.R, constants.K₀)
 
         # Re-computing the net radiation according to simulated leaf temperature:
         status.Ra_LW_f = net_longwave_radiation(status.Tₗ, environment.T, model.ε, environment.ε,
