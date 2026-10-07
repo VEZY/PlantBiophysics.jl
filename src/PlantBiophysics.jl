@@ -115,7 +115,7 @@ export gbₕ_forced
 export Medlyn, Tuzet, ConstantGs
 
 # Model helpers
-export get_km, Γ_star, arrhenius, get_J, gs_closure, get_Cᵢⱼ, get_Cᵢᵥ, get_Dₕ
+export get_km, Γ_star, arrhenius, get_J, gs_closure, gs_coupling, get_Cᵢⱼ, get_Cᵢᵥ, get_Dₕ
 export Fvcb_net_assimilation, Fvcb_net_assimiliation
 
 end
