@@ -292,7 +292,9 @@ function PlantSimEngine.run!(m::Fvcb, status, environment, constants=PlantMeteo.
     Cᵢⱼ = get_Cᵢⱼ(Vⱼ, Γˢ, status.Cₛ, Rd, stomatal_model.g0, st_closure)
 
     # Electron-transport-limited rate of CO2 assimilation (RuBP regeneration-limited):
-    Wⱼ = Vⱼ * (Cᵢⱼ - Γˢ) / (Cᵢⱼ + 2.0 * Γˢ) # also called Aⱼ
+    # Reject nonphysical intercellular CO₂, as in the Rubisco branch below.
+    # At zero/low light, the analytical root can be -2Γˢ (an undefined 0/0).
+    Wⱼ = iszero(Vⱼ) || Cᵢⱼ <= 0.0 ? zero(Vⱼ) : Vⱼ * (Cᵢⱼ - Γˢ) / (Cᵢⱼ + 2.0 * Γˢ) # also called Aⱼ
     # See Von Caemmerer, Susanna. 2000. Biochemical models of leaf photosynthesis.
     # Csiro publishing, eq. 2.23.
     # NB: here the equation is modified because we use Vⱼ instead of J, but it is the same.

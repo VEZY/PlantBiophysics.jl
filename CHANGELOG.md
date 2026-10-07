@@ -1,5 +1,13 @@
 # Changelog
 
+## Unreleased
+
+### Fixed
+
+- FvCB now keeps electron-transport assimilation finite at zero and near-zero
+  light when its analytical intercellular CO₂ root is nonphysical. Zero-light
+  net assimilation remains `A = -Rd`, preserving nighttime respiration.
+
 ## 0.18.0
 
 This release adopts PlantSimEngine 0.15's `CompositeModel` API and makes radiation

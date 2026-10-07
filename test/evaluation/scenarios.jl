@@ -153,7 +153,10 @@ function run_daily_evaluation(; seed=0x5eed)
     fixture = normpath(
         joinpath(@__DIR__, "..", "inputs", "evaluation", "medlyn_daily.csv"),
     )
-    observations = CSV.read(fixture, DataFrame)
+    observations = CSV.read(fixture, DataFrame;
+        types=Dict(:time => Time),
+        dateformat=Dict(:time => dateformat"HH:MM"),
+    )
 
     # Fitted on the 29 main-branch A-Ci observations for leaf age 1 on
     # 2001-11-14. Freezing the fit keeps this a simulation-quality regression.
