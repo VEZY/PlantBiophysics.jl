@@ -4,9 +4,20 @@
 
 ### Fixed
 
-- FvCB now keeps electron-transport assimilation finite at zero and near-zero
-  light when its analytical intercellular CO₂ root is nonphysical. Zero-light
-  net assimilation remains `A = -Rd`, preserving nighttime respiration.
+- `Fvcb` now solves signed net assimilation, stomatal conductance, and CO₂
+  diffusion consistently at zero, low, and high light. Zero-light net
+  assimilation remains `A = -Rd`, preserving nighttime respiration. Negative
+  `A` can produce `Cᵢ > Cₛ`; low-light photosynthesis is retained before
+  subtracting respiration. Medlyn and Tuzet
+  conductance floors are included as analytical solution branches. Prescribed
+  `ConstantGs` conductance no longer depends on division by assimilation.
+
+### Added
+
+- `gs_coupling` exposes the affine conductance relation used by the analytical
+  `Fvcb` solver. Custom conductance models can declare their intercept, slope,
+  and floor explicitly; a nonlinear dependence on assimilation requires a
+  different coupled solution.
 
 ## 0.18.0
 

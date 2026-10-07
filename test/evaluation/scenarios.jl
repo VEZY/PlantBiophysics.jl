@@ -28,6 +28,13 @@ function PlantBiophysics.gs_closure(
     return (status.Gₛ - model.g0) / status.A
 end
 
+# The analytical coupling uses the prescribed conductance, without dividing
+# by an assimilation from a previous energy-balance iteration.
+function PlantBiophysics.gs_coupling(::PaperForcedGs, status,
+    environment=missing, constants=nothing, context=nothing)
+    return (g0=status.Gₛ, slope=zero(status.Gₛ), gs_min=zero(status.Gₛ))
+end
+
 PlantSimEngine.inputs_(::PaperForcedGs) = (Gₛ=PlantSimEngine.Required(Real),)
 PlantSimEngine.outputs_(::PaperForcedGs) = (Gₛ=-Inf,)
 
