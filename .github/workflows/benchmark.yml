@@ -1,0 +1,28 @@
+name: Benchmarks
+
+on:
+  pull_request_target:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: benchmarks-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  compare-pr:
+    name: Compare PR benchmarks
+    permissions:
+      contents: read
+      pull-requests: write
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: MilesCranmer/AirspeedVelocity.jl@action-v1
+        with:
+          julia-version: "1.10"
+          job-summary: "false"
+          rev: "${{ github.event.pull_request.base.sha }},${{ github.event.pull_request.head.sha }}"
+          bench-on: "${{ github.event.pull_request.head.sha }}"
+          exeflags: "--threads=1"
