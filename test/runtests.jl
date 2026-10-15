@@ -47,6 +47,10 @@ leaf_status(scene) = only(model_objects(scene)).status
         include("test-temp-dependence.jl")
     end
 
+    @testset "Photosynthesis" begin
+        include("test-fvcb.jl")
+    end
+
     @testset "Light interception" begin
         include("test-beer.jl")
         include("test-constant-absorption.jl")

@@ -66,6 +66,52 @@ leaf = only(model_objects(scene))
 equivalent to ppm). These are the latest values; to save a time series, use
 `outputs=:all` as in [Several time steps](../simulation/several_simulation.md).
 
+### Net assimilation and CO₂ release
+
+`A` is a signed net rate: positive values represent CO₂ uptake, and negative
+values represent CO₂ release. The analytical `Fvcb` coupling satisfies
+
+```math
+A = G_s(C_s-C_i), \qquad C_i = C_s-\frac{A}{G_s}.
+```
+
+With `Gₛ` in mol CO₂ m⁻² s⁻¹ and concentrations in µmol mol⁻¹, this gives
+`A` in µmol CO₂ m⁻² s⁻¹. For a positive conductance, negative assimilation
+therefore requires `Cᵢ > Cₛ`. Capping `Cᵢ` at `Cₛ` would remove the concentration
+gradient needed for that outward flux. This follows the diffusion relation in
+[Duursma and Medlyn (2012), equation 5](https://doi.org/10.5194/gmd-5-919-2012).
+
+At zero absorbed light, electron transport is zero and `A = -Rd`, where `Rd`
+is the model's temperature-corrected respiration term. At low light, a small
+positive photosynthetic contribution can still coexist with negative net `A`;
+it is retained when subtracting respiration.
+
+Here we prescribe leaf temperature at the reference temperature, so
+`Rd = RdRef`. The conductance floor keeps CO₂ exchange finite in darkness:
+
+```@example photosynthesis
+night_model = Fvcb(RdRef=1.0)
+night_scene = CompositeModel(
+    night_model,
+    Medlyn(g0=0.0, g1=5.8, gs_min=0.001);
+    status=Status(Tₗ=25.0, aPPFD=0.0, Cₛ=400.0, Dₗ=2.0),
+    environment=meteo,
+)
+run!(night_scene)
+night = only(model_objects(night_scene)).status
+@assert night.A ≈ -night_model.RdRef
+@assert night.Gₛ == 0.001
+@assert night.Cᵢ > night.Cₛ
+@assert night.A ≈ night.Gₛ * (night.Cₛ - night.Cᵢ)
+(A=night.A, Gₛ=night.Gₛ, Cᵢ=night.Cᵢ)
+```
+
+This uses the configured respiration response in darkness; it does not add a
+separately calibrated nighttime respiration or nocturnal stomatal model. A
+strictly zero conductance cannot carry a nonzero respiration flux under these
+steady-state assumptions. Such a combination has no finite coupled solution
+and raises a `DomainError`.
+
 ### [Inputs and their units](@id inputs_fvcb)
 
 | Input | Meaning | Unit |

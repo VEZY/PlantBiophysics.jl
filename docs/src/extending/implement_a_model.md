@@ -165,6 +165,41 @@ declares the call with `dep`; [`Fvcb`](@ref) and [`Monteith`](@ref) are examples
 Those more advanced calls use `call_model`, `call_targets`, and `run_call!`
 from PlantSimEngine, rather than calling a whole simulation again.
 
+### Declare the analytical conductance law
+
+The default [`gs_coupling`](@ref) method supplies `Fvcb` with
+`(g0=model.g0, slope=gs_closure(...), gs_min=model.gs_min)`, using zero for
+`gs_min` when that field is absent. `BandB` satisfies this contract: its slope
+depends on humidity and surface CO₂, and remains independent of the current
+assimilation `A`. Medlyn and Tuzet use the same interface.
+
+An alternative model with a different parameter layout can implement
+`PlantBiophysics.gs_coupling` explicitly. For example, a model that prescribes
+conductance must declare a constant relation:
+
+```julia
+function PlantBiophysics.gs_coupling(
+    model::YourPrescribedGs, status, environment, constants=nothing, context=nothing,
+)
+    conductance = model.Gₛ
+    return (g0=conductance, slope=zero(conductance), gs_min=zero(conductance))
+end
+```
+
+`YourPrescribedGs` is a placeholder for your own model type. Its `run!` method
+must set `status.Gₛ` to that same prescribed conductance. If conductance is a
+supplied status value instead of a parameter, read that input in both methods.
+Declare the needed inputs and environmental variables in the usual way.
+`ConstantGs` implements the fixed-conductance case directly.
+
+The relation must match the model's standalone calculation for every tested
+assimilation value, including negative and zero values. Do not recover a
+constant conductance by dividing by `status.A`: that is undefined at zero
+assimilation. If `gs_closure` itself depends on the current `A`, verify whether
+the full response is affine; a genuinely nonlinear conductance law cannot be
+represented by this analytical interface. Test the standalone law and the
+coupled diffusion balance, including the conductance floor and darkness.
+
 For a reusable model, document its units, area basis, assumptions, references,
 and supported domain. Where connected models use `VariableContract`, declare
 matching physical meanings with `variable_contracts_`; converting units or

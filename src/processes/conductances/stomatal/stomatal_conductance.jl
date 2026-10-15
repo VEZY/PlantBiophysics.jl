@@ -50,3 +50,23 @@ function PlantSimEngine.run!(Gs::Gsm, status, environment, constants, context) w
         Gs.g0 + closure * status.A,
     )
 end
+
+"""
+    gs_coupling(model, status, environment, constants=nothing, context=nothing)
+
+Return `(g0=..., slope=..., gs_min=...)` describing the CO₂ conductance law
+`Gₛ = max(gs_min, g0 + slope * A)` used by analytical [`Fvcb`](@ref).
+The slope must be independent of the current assimilation `status.A`.
+The default uses the model's `g0`, [`gs_closure`](@ref), and `gs_min` (or zero
+when the model has no floor). Medlyn and Tuzet use this affine law.
+
+For a prescribed conductance, specialize this hook with `g0=Gₛ`, `slope=0`,
+and `gs_min=0`. The stomatal model's `run!` must implement the same law.
+Models whose conductance depends nonlinearly on A need a different solver.
+"""
+function gs_coupling(model::AbstractStomatal_ConductanceModel, status,
+    environment, constants=nothing, context=nothing)
+    return (g0=model.g0,
+        slope=gs_closure(model, status, environment, constants, context),
+        gs_min=hasproperty(model, :gs_min) ? model.gs_min : zero(model.g0))
+end
