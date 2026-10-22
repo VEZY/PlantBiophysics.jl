@@ -86,6 +86,10 @@ pkg> instantiate
 
 Then build it with `julia --project=docs docs/make.jl`.
 
+Performance benchmarks use [AirspeedVelocity.jl](https://github.com/MilesCranmer/AirspeedVelocity.jl)
+with PlantSimEngine 0.15. See [benchmark/README.md](benchmark/README.md) for
+local comparisons and automatic PR benchmark comments.
+
 ## Questions
 
 Use the [issue tracker](https://github.com/VEZY/PlantBiophysics.jl/issues) or

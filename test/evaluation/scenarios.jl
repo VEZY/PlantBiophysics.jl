@@ -28,6 +28,13 @@ function PlantBiophysics.gs_closure(
     return (status.Gₛ - model.g0) / status.A
 end
 
+# The analytical coupling uses the prescribed conductance, without dividing
+# by an assimilation from a previous energy-balance iteration.
+function PlantBiophysics.gs_coupling(::PaperForcedGs, status,
+    environment=missing, constants=nothing, context=nothing)
+    return (g0=status.Gₛ, slope=zero(status.Gₛ), gs_min=zero(status.Gₛ))
+end
+
 PlantSimEngine.inputs_(::PaperForcedGs) = (Gₛ=PlantSimEngine.Required(Real),)
 PlantSimEngine.outputs_(::PaperForcedGs) = (Gₛ=-Inf,)
 
@@ -153,7 +160,10 @@ function run_daily_evaluation(; seed=0x5eed)
     fixture = normpath(
         joinpath(@__DIR__, "..", "inputs", "evaluation", "medlyn_daily.csv"),
     )
-    observations = CSV.read(fixture, DataFrame)
+    observations = CSV.read(fixture, DataFrame;
+        types=Dict(:time => Time),
+        dateformat=Dict(:time => dateformat"HH:MM"),
+    )
 
     # Fitted on the 29 main-branch A-Ci observations for leaf age 1 on
     # 2001-11-14. Freezing the fit keeps this a simulation-quality regression.

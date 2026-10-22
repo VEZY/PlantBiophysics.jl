@@ -283,49 +283,22 @@ function PlantSimEngine.run!(m::Fvcb, status, environment, constants=PlantMeteo.
     # RuBP regeneration
     Vⱼ = J / 4
 
-    # Stomatal conductance (mol[CO₂] m-2 s-1), dispatched on type of first argument (gs_closure):
-    stomatal_model =
-        PlantSimEngine.call_model(context, :stomatal_conductance)
-    st_closure =
-        gs_closure(stomatal_model, status, environment, constants, context)
-
-    Cᵢⱼ = get_Cᵢⱼ(Vⱼ, Γˢ, status.Cₛ, Rd, stomatal_model.g0, st_closure)
-
-    # Electron-transport-limited rate of CO2 assimilation (RuBP regeneration-limited):
-    Wⱼ = Vⱼ * (Cᵢⱼ - Γˢ) / (Cᵢⱼ + 2.0 * Γˢ) # also called Aⱼ
-    # See Von Caemmerer, Susanna. 2000. Biochemical models of leaf photosynthesis.
-    # Csiro publishing, eq. 2.23.
-    # NB: here the equation is modified because we use Vⱼ instead of J, but it is the same.
-
-    # If Rd is larger than Wⱼ, no assimilation:
-    if Wⱼ - Rd < 1.0e-6
-        Cᵢⱼ = Γˢ
-        Wⱼ = Vⱼ * (Cᵢⱼ - Γˢ) / (Cᵢⱼ + 2.0 * Γˢ)
-    end
-
-    Cᵢᵥ = get_Cᵢᵥ(VcMax, Γˢ, status.Cₛ, Rd, stomatal_model.g0, st_closure, Km)
-
-    # Rubisco-carboxylation-limited rate of CO₂ assimilation (RuBP activity-limited):
-    if Cᵢᵥ <= 0.0 || Cᵢᵥ > status.Cₛ
-        Wᵥ = 0.0
-    else
-        Wᵥ = VcMax * (Cᵢᵥ - Γˢ) / (Cᵢᵥ + Km)
-    end
-
-    # Net assimilation (μmol m-2 s-1)
-    status.A = min(Wᵥ, Wⱼ, 3 * m.TPURef) - Rd
+    stomatal_model = PlantSimEngine.call_model(context, :stomatal_conductance)
+    coupling = gs_coupling(stomatal_model, status, environment, constants, context)
+    status.A = _fvcb_assimilation(VcMax, Vⱼ, Γˢ, status.Cₛ, Rd, Km, m.TPURef,
+        coupling.g0, coupling.slope, coupling.gs_min)
 
     # Stomatal conductance (mol[CO₂] m-2 s-1)
     # FvCB owns Gₛ; the stomatal model updates the shared trial status only.
     PlantSimEngine.run_call!(
         context,
         :stomatal_conductance;
-        sampled_environment=st_closure,
+        sampled_environment=coupling.slope,
         publish=false,
     )
 
     # Intercellular CO₂ concentration (Cᵢ, μmol mol)
-    status.Cᵢ = min(status.Cₛ, status.Cₛ - status.A / status.Gₛ)
+    status.Cᵢ = _fvcb_ci(status.Cₛ, status.A, status.Gₛ)
     nothing
 end
 
@@ -467,4 +440,119 @@ computation of Cᵢ (gives A = 0 in this case).
 function negative_root(a, b, c)
     Δ = b^2.0 - 4.0 * a * c
     return Δ >= 0.0 ? (-b - sqrt(Δ)) / (2.0 * a) : 0.0
+end
+
+# Return both real roots without subtracting nearly equal numbers. A linear
+# equation is retained when its quadratic coefficient vanishes.
+function _coupled_roots(a, b, c)
+    if iszero(a)
+        root = iszero(b) ? oftype(a + b + c, NaN) : -c / b
+        return (root, root)
+    end
+    discriminant = b * b - 4 * a * c
+    if discriminant < zero(discriminant)
+        invalid = oftype(discriminant, NaN)
+        return (invalid, invalid)
+    end
+    q = -(b + copysign(sqrt(discriminant), b)) / 2
+    iszero(q) && return (zero(q), zero(q))
+    return (q / a, c / q)
+end
+
+# The biochemical limitation A = k1*(Ci-Γ)/(Ci+k2)-Rd, together with
+# A = (g0+slope*A)*(Cs-Ci), is quadratic in net assimilation A.
+function _assimilation_roots(k1, k2, Γ, Cs, Rd, g0, slope)
+    a = slope * (Cs + k2) - 1
+    b = g0 * (Cs + k2) + Rd * a - k1 * (slope * (Cs - Γ) - 1)
+    c = g0 * (Rd * (Cs + k2) - k1 * (Cs - Γ))
+    return _coupled_roots(a, b, c)
+end
+
+@inline _coupled_tolerance(A, expected, Rd) =
+    64 * eps(one(A)) * max(one(A), abs(A), abs(expected), abs(Rd))
+
+@inline function _limitation_candidate(A, k1, k2, Γ, Cs, Rd, g0, slope, gs_min)
+    isfinite(A) || return false
+    gs = g0 + slope * A
+    gs >= gs_min && gs > zero(gs) || return false
+    Ci = Cs - A / gs
+    Ci >= zero(Ci) || return false
+    expected = k1 * (Ci - Γ) / (Ci + k2) - Rd
+    return abs(A - expected) <= _coupled_tolerance(A, expected, Rd)
+end
+
+function _limitation_assimilation(k1, k2, Γ, Cs, Rd, g0, slope, gs_min)
+    best = oftype(Rd, -Inf)
+    for A in _assimilation_roots(k1, k2, Γ, Cs, Rd, g0, slope)
+        if _limitation_candidate(A, k1, k2, Γ, Cs, Rd, g0, slope, gs_min)
+            best = max(best, A)
+        end
+    end
+    isfinite(best) && return best
+    # The affine solution may imply conductance below its floor. Solve the
+    # same biochemical equation again with the actual prescribed minimum.
+    if gs_min > zero(gs_min)
+        for A in _assimilation_roots(k1, k2, Γ, Cs, Rd, gs_min, zero(slope))
+            if _limitation_candidate(A, k1, k2, Γ, Cs, Rd, gs_min, zero(slope), gs_min) &&
+               g0 + slope * A <= gs_min + 64 * eps(one(gs_min)) * max(abs(gs_min), abs(g0 + slope * A))
+                best = max(best, A)
+            end
+        end
+    end
+    return best
+end
+
+@inline function _coupled_candidate(A, VcMax, Vj, Γ, Cs, Rd, Km, TPU, g0, slope, gs_min)
+    isfinite(A) || return false
+    gs = max(gs_min, g0 + slope * A)
+    gs > zero(gs) || return false
+    Ci = Cs - A / gs
+    Ci >= zero(Ci) || return false
+    expected = min(VcMax * (Ci - Γ) / (Ci + Km),
+        Vj * (Ci - Γ) / (Ci + 2Γ), 3TPU) - Rd
+    return abs(A - expected) <= _coupled_tolerance(A, expected, Rd)
+end
+
+_fvcb_assimilation(VcMax, Vj, Γ, Cs, Rd, Km, TPU, g0, slope, gs_min) =
+    _fvcb_assimilation(promote(VcMax, Vj, Γ, Cs, Rd, Km, TPU, g0, slope, gs_min))
+
+function _fvcb_assimilation(parameters::NTuple{10,T}) where {T<:Real}
+    VcMax, Vj, Γ, Cs, Rd, Km, TPU, g0, slope, gs_min = parameters
+    # At zero light and zero respiration the stationary flux is zero even
+    # with closed stomata. Ci = Cs is one admissible state when Cs >= Γ.
+    if iszero(Vj) && iszero(Rd) && Cs >= Γ
+        return zero(Rd)
+    end
+    if iszero(Vj) && _coupled_candidate(-Rd, parameters...)
+        return -Rd
+    end
+    if g0 >= zero(g0) && slope >= zero(slope)
+        # For nonnegative intercept/slope, Ci decreases with A and each
+        # biochemical branch has a unique admissible solution.
+        Ac = _limitation_assimilation(VcMax, Km, Γ, Cs, Rd, g0, slope, gs_min)
+        Aj = _limitation_assimilation(Vj, 2Γ, Γ, Cs, Rd, g0, slope, gs_min)
+        A = min(Ac, Aj, 3TPU - Rd)
+        _coupled_candidate(A, parameters...) && return A
+    else
+        # Negative fitted intercepts can produce multiple admissible roots.
+        # Check the complete minimum of biochemical limitations, then retain
+        # its highest admissible assimilation (the open daytime branch).
+        best = oftype(Rd, -Inf)
+        for (k1, k2) in ((VcMax, Km), (Vj, 2Γ)),
+            (intercept, closure) in ((g0, slope), (gs_min, zero(slope))),
+            A in _assimilation_roots(k1, k2, Γ, Cs, Rd, intercept, closure)
+            _coupled_candidate(A, parameters...) && (best = max(best, A))
+        end
+        A = 3TPU - Rd
+        _coupled_candidate(A, parameters...) && (best = max(best, A))
+        isfinite(best) && return best
+    end
+    throw(DomainError((g0, slope, gs_min),
+        "Fvcb has no admissible finite coupled state; check the stomatal law and use a positive conductance for nonzero CO₂ flux."))
+end
+
+_fvcb_ci(Cs, A, gs) = _fvcb_ci(promote(Cs, A, gs))
+function _fvcb_ci(parameters::NTuple{3,T}) where {T<:Real}
+    Cs, A, gs = parameters
+    return iszero(gs) && iszero(A) ? Cs : Cs - A / gs
 end

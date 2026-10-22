@@ -17,6 +17,33 @@ The examples below run each model alone with prescribed assimilation.
 In a [photosynthesis simulation](photosynthesis.md), `Fvcb` calculates
 assimilation and stomatal conductance together, so you do not supply `A`.
 
+## Analytical coupling with Fvcb
+
+For fixed leaf and environmental inputs, Medlyn and Tuzet use the law
+
+```math
+G_s = \max\left(g_{s,\min},\; g_0 + k A\right),
+```
+
+where `k` is their `gs_closure` result. `Fvcb` solves both the affine branch
+(`Gₛ = g0 + k*A`) and the floor branch (`Gₛ = gs_min`) analytically, and checks
+the candidates against the complete conductance law, biochemical limitations,
+and CO₂ diffusion balance. The floor participates in the solution instead of
+being imposed after solving with a different conductance.
+
+When a negative fitted `g0` permits several consistent roots, the solver
+selects the largest admissible net assimilation. This is its explicit root
+selection convention. Changing the solver does not calibrate the conductance
+parameters or establish their validity at night.
+
+[`gs_coupling`](@ref) describes this relation to `Fvcb` as
+`(g0=..., slope=..., gs_min=...)`. Its default method uses a model's `g0`, its
+`gs_closure` result, and `gs_min` when that field is present (otherwise zero).
+The slope must be independent of the current assimilation `A` for fixed
+inputs. A genuinely nonlinear response to `A` needs another coupled solution;
+the analytical contract does not describe it. See
+[Implement a model](../extending/implement_a_model.md) for custom models.
+
 ## [Run the Medlyn model](@id exemple_medlyn)
 
 Choose the model parameters, set the weather, and provide the leaf inputs:
@@ -120,9 +147,12 @@ run!(constant_scene)
 only(model_objects(constant_scene)).status.Gₛ
 ```
 
-Its `Gₛ` parameter is the prescribed conductance; the optional `g0` parameter
-defaults to zero and supports coupling with photosynthesis. The model needs
-no input variables when run alone. Prescribing measured conductance is useful
+Its `Gₛ` parameter is the prescribed conductance. In the analytical `Fvcb`
+coupling, `ConstantGs` supplies a fixed-conductance branch with zero slope;
+there is no division by the current assimilation. Its optional `g0` parameter
+is retained for constructor compatibility and does not affect that coupled
+solution. The model needs no input variables when run alone.
+Prescribing measured conductance is useful
 when evaluating photosynthesis or energy balance independently of a stomatal
 model, as in the [daily evaluation](../evaluation.md#Daily-evaluation).
 

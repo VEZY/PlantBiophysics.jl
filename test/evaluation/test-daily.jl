@@ -43,6 +43,10 @@ const DAILY_EVALUATION_REFERENCE = Dict(
     @test closure ≈ 0.018
     @test model.g0 + closure * status.A ≈ status.Gₛ
     @test PlantBiophysics.gs_closure(model, (A=-Inf, Gₛ=0.2)) == 0.2
+    for previous_A in (-Inf, 0.0, 10.0)
+        @test PlantBiophysics.gs_coupling(model, (A=previous_A, Gₛ=0.2)) ==
+              (g0=0.2, slope=0.0, gs_min=0.0)
+    end
 end
 
 @testset "Medlyn daily forced-Gs evaluation" begin

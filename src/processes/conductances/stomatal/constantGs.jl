@@ -4,7 +4,7 @@ Constant stomatal conductance for CO₂ struct.
 
 # Arguments
 
-- `g0`: intercept (only used when calling from a photosynthesis model, *e.g.* Fvcb).
+- `g0`: legacy intercept retained for constructor compatibility; Fvcb uses `Gₛ` directly.
 - `Gₛ`: stomatal conductance.
 
 Then used as follows:
@@ -58,3 +58,9 @@ PlantSimEngine.timestep_hint(::Type{<:ConstantGs}) = (
     required=(Dates.Minute(1), Dates.Hour(6)),
     preferred=Dates.Hour(1)
 )
+
+# A prescribed conductance is independent of the previous assimilation.
+function gs_coupling(model::ConstantGs, status, environment=missing,
+    constants=nothing, context=nothing)
+    return (g0=model.Gₛ, slope=zero(model.Gₛ), gs_min=zero(model.Gₛ))
+end
