@@ -18,8 +18,13 @@ function PlantSimEngine.inputs_(::ConstantAGs)
 end
 
 function PlantSimEngine.outputs_(::ConstantAGs)
-    (A=-Inf, Gₛ=-Inf, Cᵢ=-Inf)
+    (A=-Inf, Gₛ=-Inf, Gₗw=-Inf, Cᵢ=-Inf)
 end
+
+PlantSimEngine.variable_contracts_(::ConstantAGs) = (
+    Gₛ=STOMATAL_CO2_CONDUCTANCE_CONTRACT,
+    Gₗw=LEAF_WATER_CONDUCTANCE_CONTRACT,
+)
 
 PlantSimEngine.dep(::ConstantAGs) = (
     stomatal_conductance=PlantSimEngine.Call(
@@ -31,6 +36,7 @@ PlantSimEngine.output_policy(::Type{<:ConstantAGs}) = (
     A=PlantSimEngine.Integrate(PlantMeteo.DurationSumReducer()), # from μmol m-2 s-1 to μmol m-2 timerstep-1
     Cᵢ=PlantSimEngine.Integrate(PlantMeteo.MeanReducer()),
     Gₛ=PlantSimEngine.Integrate(PlantMeteo.DurationSumReducer()),
+    Gₗw=PlantSimEngine.Integrate(PlantMeteo.DurationSumReducer()),
 )
 
 Base.eltype(x::ConstantAGs) = typeof(x).parameters[1]
@@ -80,7 +86,7 @@ function PlantSimEngine.run!(model::ConstantAGs, status, environment, constants=
     status.A = model.A
 
     # Stomatal conductance (mol[CO₂] m-2 s-1)
-    # ConstantAGs owns Gₛ; the stomatal model updates the shared trial status only.
+    # ConstantAGs owns Gₛ and Gₗw; the stomatal model updates the shared trial status only.
     PlantSimEngine.run_call!(
         context,
         :stomatal_conductance;

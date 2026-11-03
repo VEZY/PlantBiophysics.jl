@@ -58,7 +58,11 @@ reads relative humidity from the weather and writes stomatal conductance:
 
 ```@example new_model
 PlantSimEngine.inputs_(::BandB) = (A=Required(Real), Cₛ=Required(Real))
-PlantSimEngine.outputs_(model::BandB) = (Gₛ=zero(model.g0),)
+PlantSimEngine.outputs_(model::BandB) = (Gₛ=zero(model.g0), Gₗw=zero(model.g0))
+PlantSimEngine.variable_contracts_(::BandB) = (
+    Gₛ=PlantBiophysics.STOMATAL_CO2_CONDUCTANCE_CONTRACT,
+    Gₗw=PlantBiophysics.LEAF_WATER_CONDUCTANCE_CONTRACT,
+)
 PlantSimEngine.environment_inputs_(::BandB) = (Rh=0.0,)
 PlantSimEngine.environment_outputs_(::BandB) = NamedTuple()
 
@@ -89,7 +93,8 @@ end
 ```
 
 The shared stomatal `run!` method already applies this multiplier and the
-minimum conductance, so `BandB` needs no new `run!` method. Prefixing the
+minimum conductance and writes the water conductance `Gₗw` using
+`constants.Gsc_to_Gsw`, so `BandB` needs no new `run!` method. Prefixing the
 function with `PlantBiophysics.` extends the package's function rather than
 creating an unrelated function with the same name.
 

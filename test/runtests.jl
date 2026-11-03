@@ -65,6 +65,8 @@ leaf_status(scene) = only(model_objects(scene)).status
     end
 
     include("test-fvcb-mechanisms.jl")
+    include("test-water-conductance-interface.jl")
+    include("test-steady-hydraulics.jl")
 
     @testset "Multi-rate" begin
         include("test-multirate.jl")

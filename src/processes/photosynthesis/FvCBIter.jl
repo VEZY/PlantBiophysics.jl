@@ -60,12 +60,14 @@ end
 
 PlantSimEngine.variable_contracts_(::FvcbIter) = (
     aPPFD=LEAF_PAR_PHOTON_FLUX_CONTRACT,
+    Gₛ=STOMATAL_CO2_CONDUCTANCE_CONTRACT,
+    Gₗw=LEAF_WATER_CONDUCTANCE_CONTRACT,
 )
 
 PlantSimEngine.environment_inputs_(::FvcbIter) = (Cₐ=0.0,)
 
 function PlantSimEngine.outputs_(::FvcbIter)
-    (A=-Inf, Gₛ=-Inf, Cᵢ=-Inf, Cₛ=-Inf)
+    (A=-Inf, Gₛ=-Inf, Gₗw=-Inf, Cᵢ=-Inf, Cₛ=-Inf)
 end
 
 Base.eltype(x::FvcbIter) = typeof(x).parameters[1]
@@ -78,6 +80,7 @@ PlantSimEngine.output_policy(::Type{<:FvcbIter}) = (
     A=PlantSimEngine.Integrate(PlantMeteo.DurationSumReducer()), # from μmol m-2 s-1 to μmol m-2 timerstep-1
     Cᵢ=PlantSimEngine.Integrate(PlantMeteo.MeanReducer()),
     Gₛ=PlantSimEngine.Integrate(PlantMeteo.DurationSumReducer()),
+    Gₗw=PlantSimEngine.Integrate(PlantMeteo.DurationSumReducer()),
     Cₛ=PlantSimEngine.Integrate(PlantMeteo.MeanReducer()),
 )
 
@@ -202,7 +205,7 @@ function PlantSimEngine.run!(m::FvcbIter, status, environment, constants=PlantMe
 
     while iter
         # Stomatal conductance (mol[CO₂] m-2 s-1)
-        # FvCBIter owns Gₛ; each stomatal evaluation is an unpublished trial.
+        # FvCBIter owns Gₛ and Gₗw; each stomatal evaluation is an unpublished trial.
         PlantSimEngine.run_call!(
             context,
             :stomatal_conductance;

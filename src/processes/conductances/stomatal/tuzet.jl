@@ -52,7 +52,7 @@ struct Tuzet{T} <: AbstractStomatal_ConductanceModel
     gs_min::T
 end
 
-Tuzet(g0, g1, Ψᵥ, sf, Γ, gs_min=oftype(g0, 0.001)) = Tuzet(promote(g0, g1, Ψᵥ, sf, Γ, gs_min))
+Tuzet(g0, g1, Ψᵥ, sf, Γ, gs_min=oftype(g0, 0.001)) = Tuzet(promote(g0, g1, Ψᵥ, sf, Γ, gs_min)...)
 Tuzet(; g0, g1, Ψᵥ, sf, Γ, gs_min=0.001) = Tuzet(g0, g1, Ψᵥ, sf, Γ, gs_min)
 
 function PlantSimEngine.inputs_(::Tuzet)
@@ -60,8 +60,14 @@ function PlantSimEngine.inputs_(::Tuzet)
 end
 
 function PlantSimEngine.outputs_(::Tuzet)
-    (Gₛ=(-Inf),)
+    (Gₛ=-Inf, Gₗw=-Inf)
 end
+
+PlantSimEngine.variable_contracts_(::Tuzet) = (
+    Ψₗ=WATER_POTENTIAL_CONTRACT,
+    Gₛ=STOMATAL_CO2_CONDUCTANCE_CONTRACT,
+    Gₗw=LEAF_WATER_CONDUCTANCE_CONTRACT,
+)
 
 Base.eltype(::Tuzet{T}) where T = T
 

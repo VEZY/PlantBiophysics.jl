@@ -5,6 +5,11 @@ and the air spaces inside the leaf. PlantBiophysics calculates conductance
 **to CO₂**, `Gₛ`, in mol CO₂ m⁻² s⁻¹. Stomata also control water loss, which is
 why this process matters for both photosynthesis and leaf cooling.
 
+Every stomatal model also publishes water conductance `Gₗw`, in mol H₂O
+m⁻² s⁻¹ per reference leaf surface. For a stomatal pathway alone this is
+`constants.Gsc_to_Gsw * Gₛ`. `Gₗw` excludes the atmospheric boundary layer,
+which is handled separately by the energy-balance model.
+
 ## Choose a model
 
 | Model | Use it to… | Inputs to supply when run alone |
@@ -12,6 +17,7 @@ why this process matters for both photosynthesis and leaf cooling.
 | [`Medlyn`](@ref) | Describe the response to assimilation, CO₂, and air dryness. | `A`, `Cₛ`, `Dₗ` |
 | [`Tuzet`](@ref) | Include stomatal closure as leaf water potential decreases. | `A`, `Cₛ`, `Ψₗ` |
 | [`ConstantGs`](@ref) | Prescribe a measured conductance or make a controlled comparison. | None |
+| [`CuticularConductance`](@ref) | Add a parallel cuticular pathway to a stomatal model. | The wrapped model's inputs and `A` |
 
 The examples below run each model alone with prescribed assimilation.
 In a [photosynthesis simulation](photosynthesis.md), `Fvcb` calculates
@@ -168,3 +174,27 @@ The models follow [Medlyn et al. (2011)](https://doi.org/10.1111/j.1365-2486.201
 conductance*, and Tuzet, Perrier and Leuning (2003), *A coupled model of
 stomatal conductance, photosynthesis and transpiration*, Plant, Cell &
 Environment 26(7), 1097–1116.
+
+## Include the cuticle
+
+`CuticularConductance(Medlyn(g0=0.01, g1=5.5); gcw=0.005)` is a concrete
+conductance model. It preserves the wrapped stomatal law and publishes
+`Gₗw = Gsw + gcw`. Its default cuticular coefficient is an illustrative prior,
+not a measurement valid for every species. The cuticular CO₂ conductance is
+`gcw / 20` by default. These parallel pathways must not be converted using
+the same water-to-CO₂ ratio.
+
+The wrapped `g0` and `gs_min` describe stomata alone. If an old fit estimated
+a **total-water** intercept `g0w`, its stomatal CO₂ intercept is
+`(g0w - gcw) / constants.Gsc_to_Gsw`, before applying the floor. Adding a
+cuticle to a previously fitted stomatal law is a different transfer assumption.
+Use the [transport-aware photosynthesis models](transport_photosynthesis.md)
+to include the cuticular CO₂ pathway too. Pairing the wrapper with legacy
+`Fvcb` changes water loss but retains that model's stomatal-only CO₂ equation.
+
+The transport photosynthesis family requires a cuticular provider, normally
+`CuticularConductance(stomata)`. Its default includes the cuticle; use an
+explicit `gcw=0` to compare the zero-cuticle limit. Passing a bare stomatal
+provider to that family raises an error instead of silently dropping this
+pathway. Coupled calls retain the sampled weather so custom affine laws can
+use humidity and other environmental drivers.

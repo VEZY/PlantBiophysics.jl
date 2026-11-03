@@ -150,3 +150,22 @@ The energy-balance formulation follows Monteith and Unsworth (2013),
 Its implementation is close to the MAESPA formulation described by
 [Duursma and Medlyn (2012)](https://doi.org/10.5194/gmd-5-919-2012) and
 [Vezy et al. (2018)](https://doi.org/10.1016/j.agrformet.2018.02.005).
+
+## Explicit water conductance
+
+Monteith consumes `Gₗw` produced by the coupled gas-exchange calculation.
+It does not discover this variable at runtime or infer it from `Gₛ` when it
+is absent. For energy-only experiments using `ConstantA`, prescribe `Gₗw`
+explicitly; `ConstantA` remains usable alone without a conductance input.
+
+In the iterative PlantSimEngine composition, Monteith calls photosynthesis,
+which calls stomatal conductance. These trial calls are unpublished. Each
+parent therefore declares `Gₗw` among its accepted outputs, just as it does
+for `A` and `Gₛ`. An additional ordinary scheduled input would create a
+cycle rather than describe these nested trials. The explicit interface is
+shared by providers and callers, with one final publisher.
+
+`Gₗw` excludes the boundary layer. Its cuticular and stomatal contributions
+must use the same reference surface, and `aₛᵥ` still controls the number of
+vapour-exchanging surfaces. Do not add a whole-leaf cuticular coefficient
+and then count both faces again.

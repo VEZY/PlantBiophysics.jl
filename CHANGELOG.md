@@ -2,6 +2,31 @@
 
 ## Unreleased
 
+- Add `SteadyPlantHydraulics` and `HydraulicLeafEnergy` to balance whole-plant water supply with coupled leaf transpiration, including gravity and accepted-state publication. Soil potential and whole-plant conductance are explicit; no storage or soil model is implied.
+- Fix mixed-numeric-type constructors for Medlyn and Tuzet, and declare Tuzet's leaf water-potential contract for hydraulic coupling.
+
+### Explicit conductance and concrete photosynthesis hypotheses
+
+- Replace the conference `FvcbMechanisms` option matrix with concrete
+  `FvcbMarquez`, `FvcbRectangularMarquez`, `JohnsonBerry` and
+  `JohnsonBerryThermal` models. The stomatal law remains an interchangeable
+  process. Numerical roots must satisfy biochemical and diffusion equations,
+  including signed net exchange and stomatal floors.
+- Add `CuticularConductance` for parallel cuticular water and CO₂ pathways.
+  Its default pathway coefficient is a documented prior; stomatal intercepts
+  remain stomatal CO₂ quantities. Use a transport-aware photosynthesis model
+  to include cuticular CO₂ diffusion as well as water loss.
+- Require every stomatal provider to publish `Gₗw` alongside `Gₛ`. Photosynthesis
+  and Monteith forward this value through their nested trial calls and publish
+  the accepted state. Remove Monteith's optional-variable fallback. Custom
+  providers must declare both conductance contracts; energy-only simulations
+  must prescribe water conductance explicitly. Standard models retain their
+  previous numerical predictions.
+- Document a conditional high-light-fit/lower-light test of the four hypotheses,
+  separate from unchanged-coefficient coupled transfer. The rectangular response
+  and Johnson–Berry are close on this dataset; no universal winner is claimed.
+
+
 ### Fixed
 
 - `Fvcb` now solves signed net assimilation, stomatal conductance, and CO₂
