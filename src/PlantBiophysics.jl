@@ -19,6 +19,7 @@ import Base.getindex
 import Base.length
 import Base.iterate
 import Base.keys
+import LinearAlgebra
 import LsqFit
 using RecipesBase
 import Statistics
@@ -78,6 +79,7 @@ include("io/read_ess_dive.jl")
 
 # Parameters optimization
 include("fitting/fit_FvCB.jl")
+include("fitting/fit_transport.jl")
 include("fitting/fit_Medlyn.jl")
 include("fitting/fit_Beer.jl")
 

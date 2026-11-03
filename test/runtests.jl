@@ -83,6 +83,7 @@ leaf_status(scene) = only(model_objects(scene)).status
 
     @testset "Fitting" begin
         include("test-fitting.jl")
+        include("test-fit-transport.jl")
     end
 
     @testset "Uncertainty propagation" begin

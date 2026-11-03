@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+- Add bounded `Evaluation.fit` methods for the Márquez and Johnson–Berry
+  photosynthesis models using prescribed intercellular CO₂, leaf temperature
+  and absorbed light. Fit TPU only when requested, and allow unsupported
+  parameters to be fixed explicitly.
+
 - Add `SteadyPlantHydraulics` and `HydraulicLeafEnergy` to balance whole-plant water supply with coupled leaf transpiration, including gravity and accepted-state publication. Soil potential and whole-plant conductance are explicit; no storage or soil model is implied.
 - Add `Q10MaintenanceRespiration` with explicit organ dry biomass, living fraction and organ temperature. Outputs are positive carbohydrate-equivalent and CO2 release rates; it does not subtract leaf respiration a second time.
 - Fix mixed-numeric-type constructors for Medlyn and Tuzet, and declare Tuzet's leaf water-potential contract for hydraulic coupling.
