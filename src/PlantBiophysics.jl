@@ -66,6 +66,7 @@ include("processes/energy/Monteith.jl")
 
 # Whole-plant water balance and organ maintenance respiration
 include("processes/hydraulics/steady_hydraulics.jl")
+include("processes/respiration/Q10MaintenanceRespiration.jl")
 
 # File IO
 include("io/read_file.jl")
@@ -123,6 +124,7 @@ export Medlyn, Tuzet, ConstantGs
 # Hydraulics and respiration
 export AbstractPlant_HydraulicsModel, AbstractLeaf_HydraulicsModel
 export SteadyPlantHydraulics, HydraulicLeafEnergy
+export AbstractMaintenance_RespirationModel, Q10MaintenanceRespiration
 
 # Model helpers
 export get_km, Γ_star, arrhenius, get_J, gs_closure, gs_coupling, get_Cᵢⱼ, get_Cᵢᵥ, get_Dₕ
