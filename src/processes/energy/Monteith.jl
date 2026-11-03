@@ -40,6 +40,8 @@ end
 
 PlantSimEngine.variable_contracts_(::Monteith) = (
     Ra_SW_f=LEAF_IRRADIANCE_CONTRACT,
+    Gₛ=STOMATAL_CO2_CONDUCTANCE_CONTRACT,
+    Gₗw=LEAF_WATER_CONDUCTANCE_CONTRACT,
 )
 
 PlantSimEngine.environment_inputs_(::Monteith) = (
@@ -58,7 +60,7 @@ PlantSimEngine.environment_inputs_(::Monteith) = (
 function PlantSimEngine.outputs_(::Monteith)
     (
         Tₗ=-Inf, Rn=-Inf, Ra_LW_f=-Inf, H=-Inf, λE=-Inf, Cₛ=-Inf, Cᵢ=-Inf,
-        A=-Inf, Gₛ=-Inf, Gbₕ=-Inf, Dₗ=-Inf, Gbc=-Inf, iter=typemin(Int)
+        A=-Inf, Gₛ=-Inf, Gₗw=-Inf, Gbₕ=-Inf, Dₗ=-Inf, Gbc=-Inf, iter=typemin(Int)
     )
 end
 
@@ -78,6 +80,7 @@ PlantSimEngine.output_policy(::Type{<:Monteith}) = (
     Cₛ=PlantSimEngine.Integrate(PlantMeteo.MeanReducer()),
     Cᵢ=PlantSimEngine.Integrate(PlantMeteo.MeanReducer()),
     Gₛ=PlantSimEngine.Integrate(PlantMeteo.DurationSumReducer()),
+    Gₗw=PlantSimEngine.Integrate(PlantMeteo.DurationSumReducer()),
     Gbₕ=PlantSimEngine.Integrate(PlantMeteo.DurationSumReducer()),
     Dₗ=PlantSimEngine.Integrate(PlantMeteo.MeanReducer()),
     Gbc=PlantSimEngine.Integrate(PlantMeteo.DurationSumReducer()),
@@ -109,6 +112,10 @@ the energy balance using the mass flux (~ Rn - λE).
       radiation requires an explicit ground-to-mean-leaf conversion.
     - `sky_fraction` (0-2): view factor between the object and the sky for both faces (see details).
     - `d` (m): characteristic dimension, *e.g.* leaf width (see eq. 10.9 from Monteith and Unsworth, 2013).
+    - `Gₗw` (mol H₂O m⁻² s⁻¹): leaf-surface water conductance, supplied by
+      the called gas-exchange model or prescribed explicitly for energy-only
+      simulations. It excludes the atmospheric boundary layer. Monteith
+      publishes its accepted trial value together with `Gₛ` and `A`.
 - `environment`: meteorology structure, see [`Atmosphere`](https://palmstudio.github.io/PlantMeteo.jl/stable/#PlantMeteo.Atmosphere)
 - `constants = PlantMeteo.Constants()`: physical constants. See `PlantMeteo.Constants` for more details
 
@@ -179,8 +186,8 @@ function PlantSimEngine.run!(model::Monteith, status, environment, constants=Pla
     # Iterative resolution of the energy balance
     for i in 1:model.maxiter
 
-        # Update A, Gₛ, Cᵢ on the shared status:
-        # Monteith owns A, Gₛ, and Cᵢ; photosynthesis calls are unpublished trials.
+        # Update A, Gₛ, Gₗw, Cᵢ on the shared status:
+        # Monteith owns A, Gₛ, Gₗw, and Cᵢ; photosynthesis calls are unpublished trials.
         PlantSimEngine.run_call!(
             context,
             :photosynthesis;
@@ -188,9 +195,14 @@ function PlantSimEngine.run!(model::Monteith, status, environment, constants=Pla
             publish=false,
         )
 
-        # Stomatal resistance to water vapor
-        Rsᵥ = 1.0 / (gsc_to_gsw(mol_to_ms(status.Gₛ, environment.T, environment.P, constants.R, constants.K₀),
-            constants.Gsc_to_Gsw))
+        # Leaf-surface resistance to water vapour, including any cuticular
+        # pathway. The gas-exchange call supplies Gₗw explicitly; Monteith does
+        # not infer it from CO₂ conductance. A zero value means no water loss.
+        isfinite(status.Gₗw) && status.Gₗw >= zero(status.Gₗw) || throw(
+            DomainError(status.Gₗw, "Monteith requires finite Gₗw ≥ 0 from gas exchange or an explicit prescribed value"),
+        )
+        Rsᵥ = 1.0 / mol_to_ms(status.Gₗw, environment.T,
+            environment.P, constants.R, constants.K₀)
 
         # Re-computing the net radiation according to simulated leaf temperature:
         status.Ra_LW_f = net_longwave_radiation(status.Tₗ, environment.T, model.ε, environment.ε,

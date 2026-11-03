@@ -123,10 +123,12 @@ end
 
 PlantSimEngine.variable_contracts_(::Fvcb) = (
     aPPFD=LEAF_PAR_PHOTON_FLUX_CONTRACT,
+    Gₛ=STOMATAL_CO2_CONDUCTANCE_CONTRACT,
+    Gₗw=LEAF_WATER_CONDUCTANCE_CONTRACT,
 )
 
 function PlantSimEngine.outputs_(::Fvcb)
-    (A=-Inf, Gₛ=-Inf, Cᵢ=-Inf)
+    (A=-Inf, Gₛ=-Inf, Gₗw=-Inf, Cᵢ=-Inf)
 end
 
 Base.eltype(x::Fvcb) = typeof(x).parameters[1]
@@ -145,6 +147,7 @@ PlantSimEngine.output_policy(::Type{<:Fvcb}) = (
     A=PlantSimEngine.Integrate(PlantMeteo.DurationSumReducer()), # from μmol m-2 s-1 to μmol m-2 timerstep-1
     Cᵢ=PlantSimEngine.Integrate(PlantMeteo.MeanReducer()),
     Gₛ=PlantSimEngine.Integrate(PlantMeteo.DurationSumReducer()),
+    Gₗw=PlantSimEngine.Integrate(PlantMeteo.DurationSumReducer()),
 )
 
 """
@@ -289,11 +292,11 @@ function PlantSimEngine.run!(m::Fvcb, status, environment, constants=PlantMeteo.
         coupling.g0, coupling.slope, coupling.gs_min)
 
     # Stomatal conductance (mol[CO₂] m-2 s-1)
-    # FvCB owns Gₛ; the stomatal model updates the shared trial status only.
+    # FvCB owns Gₛ and Gₗw; the stomatal model updates the shared trial status only.
     PlantSimEngine.run_call!(
         context,
         :stomatal_conductance;
-        sampled_environment=coupling.slope,
+        sampled_environment=environment,
         publish=false,
     )
 

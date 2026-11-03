@@ -36,15 +36,20 @@ function PlantBiophysics.gs_coupling(::PaperForcedGs, status,
 end
 
 PlantSimEngine.inputs_(::PaperForcedGs) = (Gₛ=PlantSimEngine.Required(Real),)
-PlantSimEngine.outputs_(::PaperForcedGs) = (Gₛ=-Inf,)
+PlantSimEngine.outputs_(::PaperForcedGs) = (Gₛ=-Inf, Gₗw=-Inf)
+PlantSimEngine.variable_contracts_(::PaperForcedGs) = (
+    Gₛ=PlantBiophysics.STOMATAL_CO2_CONDUCTANCE_CONTRACT,
+    Gₗw=PlantBiophysics.LEAF_WATER_CONDUCTANCE_CONTRACT,
+)
 
 function PlantSimEngine.run!(
     ::PaperForcedGs,
     status,
     environment,
-    constants=nothing,
+    constants=Constants(),
     context=nothing,
 )
+    status.Gₗw = gsc_to_gsw(status.Gₛ, constants.Gsc_to_Gsw)
     return nothing
 end
 
@@ -271,6 +276,7 @@ function run_schymanski_evaluation()
                 sky_fraction=2.0,
                 d=row.L_l,
                 Gₛ=measured_Gs,
+                Gₗw=gsc_to_gsw(measured_Gs, constants.Gsc_to_Gsw),
             ),
             environment=environment,
         )

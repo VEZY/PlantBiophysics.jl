@@ -39,7 +39,7 @@ struct Medlyn{T} <: AbstractStomatal_ConductanceModel
 end
 
 function Medlyn(g0, g1, gs_min=oftype(g0, 0.001))
-    Medlyn(promote(g0, g1, gs_min))
+    Medlyn(promote(g0, g1, gs_min)...)
 end
 
 Medlyn(; g0, g1, gs_min=0.001) = Medlyn(g0, g1, gs_min)
@@ -53,11 +53,17 @@ function PlantSimEngine.inputs_(::Medlyn)
 end
 
 function PlantSimEngine.outputs_(::Medlyn)
-    (Gₛ=-Inf,)
+    (Gₛ=-Inf, Gₗw=-Inf)
 end
 
 PlantSimEngine.output_policy(::Type{<:Medlyn}) = (
     Gₛ=PlantSimEngine.Integrate(PlantMeteo.DurationSumReducer()),
+    Gₗw=PlantSimEngine.Integrate(PlantMeteo.DurationSumReducer()),
+)
+
+PlantSimEngine.variable_contracts_(::Medlyn) = (
+    Gₛ=STOMATAL_CO2_CONDUCTANCE_CONTRACT,
+    Gₗw=LEAF_WATER_CONDUCTANCE_CONTRACT,
 )
 
 Base.eltype(::Medlyn{T}) where T = T

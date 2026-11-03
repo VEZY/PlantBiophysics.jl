@@ -19,6 +19,7 @@ import Base.getindex
 import Base.length
 import Base.iterate
 import Base.keys
+import LinearAlgebra
 import LsqFit
 using RecipesBase
 import Statistics
@@ -48,11 +49,13 @@ include("processes/photosynthesis/FvCB.jl")
 include("processes/photosynthesis/FvCBIter.jl")
 include("processes/photosynthesis/FvCBRaw.jl")
 include("processes/photosynthesis/temperature-dependence.jl")
+include("processes/photosynthesis/FvCBTransport.jl")
 
 # Stomatal conductance related files:
 include("processes/conductances/stomatal/constantGs.jl")
 include("processes/conductances/stomatal/medlyn.jl")
 include("processes/conductances/stomatal/tuzet.jl")
+include("processes/conductances/stomatal/cuticular.jl")
 
 # Boundary layer conductance:
 include("processes/conductances/boundary/gb.jl")
@@ -61,6 +64,10 @@ include("processes/conductances/boundary/gb.jl")
 include("processes/energy/longwave_energy.jl")
 # include("processes/energy/Missing.jl")
 include("processes/energy/Monteith.jl")
+
+# Whole-plant water balance and organ maintenance respiration
+include("processes/hydraulics/steady_hydraulics.jl")
+include("processes/respiration/Q10MaintenanceRespiration.jl")
 
 # File IO
 include("io/read_file.jl")
@@ -72,6 +79,7 @@ include("io/read_ess_dive.jl")
 
 # Parameters optimization
 include("fitting/fit_FvCB.jl")
+include("fitting/fit_transport.jl")
 include("fitting/fit_Medlyn.jl")
 include("fitting/fit_Beer.jl")
 
@@ -107,12 +115,18 @@ export ConstantA, ConstantAGs
 export Fvcb # Parameters for the coupled Farquhar et al. (1980) model
 export FvcbIter # To update...
 export FvcbRaw # Parameters for the original Farquhar et al. (1980) model
+export FvcbMarquez, FvcbRectangularMarquez, JohnsonBerry, JohnsonBerryThermal, CuticularConductance
 
 # Conductances
 export AbstractStomatal_ConductanceModel
 export gbₕ_free
 export gbₕ_forced
 export Medlyn, Tuzet, ConstantGs
+
+# Hydraulics and respiration
+export AbstractPlant_HydraulicsModel, AbstractLeaf_HydraulicsModel
+export SteadyPlantHydraulics, HydraulicLeafEnergy
+export AbstractMaintenance_RespirationModel, Q10MaintenanceRespiration
 
 # Model helpers
 export get_km, Γ_star, arrhenius, get_J, gs_closure, gs_coupling, get_Cᵢⱼ, get_Cᵢᵥ, get_Dₕ

@@ -1,7 +1,8 @@
 # Generate all methods for the stomatal conductance process: several environment time-steps, components,
 #  over an MTG, and the mutating /non-mutating versions
 @process "stomatal_conductance" """
-Process for the stomatal conductance for CO₂ (μmol m⁻² s⁻¹), it takes the form:
+Process for stomatal conductance to CO₂ (mol m⁻² s⁻¹) and leaf-surface
+conductance to water vapour (mol m⁻² s⁻¹). The CO₂ conductance takes the form:
 
 `leaf.stomatal_conductance.g0 + gs_closure(leaf,environment) * leaf.status.A`
 
@@ -35,9 +36,24 @@ only(model_objects(scene)).status.Gₛ
 ```
 """ verbose = false
 
+# Conductances are expressed per represented leaf surface, before adding the
+# atmospheric boundary layer. Gₛ is specifically stomatal CO₂ conductance;
+# Gₗw may include a parallel cuticular water pathway in other models.
+const STOMATAL_CO2_CONDUCTANCE_CONTRACT = PlantSimEngine.VariableContract(
+    unit=:mole_co2, basis=:surface_area, temporal=:second,
+    aggregation=:rate, extent=:intensive,
+)
+const LEAF_WATER_CONDUCTANCE_CONTRACT = PlantSimEngine.VariableContract(
+    unit=:mole_h2o, basis=:surface_area, temporal=:second,
+    aggregation=:rate, extent=:intensive,
+)
+
 # Default policy for stomatal conductance when consumed at coarser clocks.
 # Conductance is typically summarized over a window rather than accumulated.
-PlantSimEngine.output_policy(::Type{<:AbstractStomatal_ConductanceModel}) = (Gₛ=PlantSimEngine.Aggregate(PlantMeteo.DurationSumReducer()),)
+PlantSimEngine.output_policy(::Type{<:AbstractStomatal_ConductanceModel}) = (
+    Gₛ=PlantSimEngine.Aggregate(PlantMeteo.DurationSumReducer()),
+    Gₗw=PlantSimEngine.Aggregate(PlantMeteo.DurationSumReducer()),
+)
 
 # A parent photosynthesis model can pass a precomputed closure value through
 # sampled_environment; ordinary scheduled execution receives a sampled environment row.
@@ -49,6 +65,10 @@ function PlantSimEngine.run!(Gs::Gsm, status, environment, constants, context) w
         Gs.gs_min,
         Gs.g0 + closure * status.A,
     )
+    # This generic law represents a stomatal pathway only. Models with another
+    # water pathway implement their own run! and publish the total Gₗw.
+    status.Gₗw = gsc_to_gsw(status.Gₛ, constants.Gsc_to_Gsw)
+    return nothing
 end
 
 """

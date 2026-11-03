@@ -64,6 +64,11 @@ leaf_status(scene) = only(model_objects(scene)).status
         include("test-energy_balance.jl")
     end
 
+    include("test-fvcb-mechanisms.jl")
+    include("test-water-conductance-interface.jl")
+    include("test-q10-maintenance-respiration.jl")
+    include("test-steady-hydraulics.jl")
+
     @testset "Multi-rate" begin
         include("test-multirate.jl")
     end
@@ -78,6 +83,7 @@ leaf_status(scene) = only(model_objects(scene)).status
 
     @testset "Fitting" begin
         include("test-fitting.jl")
+        include("test-fit-transport.jl")
     end
 
     @testset "Uncertainty propagation" begin

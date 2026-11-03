@@ -83,8 +83,11 @@ documentation = makedocs(;
         "Variables" => "variables.md",
         "Models" => [
             "Photosynthesis" => "models/photosynthesis.md",
+            "Cuticular and electron transport" => "models/transport_photosynthesis.md",
             "Stomatal conductance" => "models/gs.md",
             "Energy balance" => "models/energy_balance.md",
+            "Steady plant hydraulics" => "models/steady_hydraulics.md",
+            "Organ maintenance respiration" => "models/maintenance_respiration.md",
             "Light interception" => "models/light.md",
         ],
         "Evaluation" => "evaluation.md",

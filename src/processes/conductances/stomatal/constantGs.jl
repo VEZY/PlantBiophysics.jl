@@ -26,8 +26,13 @@ function PlantSimEngine.inputs_(::ConstantGs)
 end
 
 function PlantSimEngine.outputs_(::ConstantGs)
-    (Gₛ=-Inf,)
+    (Gₛ=-Inf, Gₗw=-Inf)
 end
+
+PlantSimEngine.variable_contracts_(::ConstantGs) = (
+    Gₛ=STOMATAL_CO2_CONDUCTANCE_CONTRACT,
+    Gₗw=LEAF_WATER_CONDUCTANCE_CONTRACT,
+)
 
 Base.eltype(x::ConstantGs) = typeof(x).parameters[1]
 
@@ -52,6 +57,8 @@ photosynthesis (need a constant way of calling the functions).
 """
 function PlantSimEngine.run!(model::ConstantGs, status, environment, constants, context=nothing)
     status.Gₛ = model.Gₛ
+    status.Gₗw = gsc_to_gsw(status.Gₛ, constants.Gsc_to_Gsw)
+    return nothing
 end
 
 PlantSimEngine.timestep_hint(::Type{<:ConstantGs}) = (
